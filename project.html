@@ -7,14 +7,19 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     
     <style>
         :root {
             /* --- COLOR PALETTE --- */
             --brand: #83CD20; --brand-dark: #3f6212; --brand-tint: rgba(131, 205, 32, 0.08);
+            --brand-hover: #72b51b;
             --bg-page: radial-gradient(circle at top left, #ffffff, #f8fafc); 
             --text-main: #1e293b; --text-secondary: #475569; --text-muted: #94a3b8;
+            --border-light: #e2e8f0;
             
             /* --- DIMENSIONS --- */
             --nav-height: 80px;
@@ -42,6 +47,10 @@
             /* --- FONTS --- */
             --font-sans: 'Inter', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
+
+             /* --- MAP DYNAMIC VARS --- */
+            --site-color: #0f172a; 
+            --site-color-tint: rgba(15, 23, 42, 0.05);
         }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: var(--font-sans); background: var(--bg-page); color: var(--text-main); overflow: hidden; }
@@ -56,7 +65,7 @@
            ========================================= */
         .project-nav-bar {
             position: absolute; top: 0; left: 0; width: 100%; height: var(--nav-height);
-            z-index: 1000;
+            z-index: 5000; /* Increased Z-index for map overlays */
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px);
             border-bottom: 1px solid rgba(255,255,255,0.3);
             display: flex; align-items: center;
@@ -107,7 +116,7 @@
         .crumb-btn:hover { background: white; color: var(--brand-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         .crumb-wrapper.active .crumb-btn { color: var(--brand-dark); background: #eef2f6; }
         
-        .crumb-dropdown { position: absolute; top: calc(100% + 14px); left: 0; min-width: 320px; background: white; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15); padding: 0; z-index: 1002; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: 0.2s; }
+        .crumb-dropdown { position: absolute; top: calc(100% + 14px); left: 0; min-width: 320px; background: white; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15); padding: 0; z-index: 5002; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: 0.2s; }
         .crumb-wrapper.active .crumb-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
         
         .dropdown-search-box { padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.06); }
@@ -152,7 +161,7 @@
         .user-capsule-btn:hover .user-avatar-icon { background: var(--brand); color: white; box-shadow: 0 2px 6px rgba(131, 205, 32, 0.3); }
 
         .user-wrapper.active .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
-        .dropdown-menu { position: absolute; top: calc(100% + 14px); right: 0; width: 200px; background: white; border-radius: 20px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); padding: 8px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: 0.2s; z-index: 1001; }
+        .dropdown-menu { position: absolute; top: calc(100% + 14px); right: 0; width: 200px; background: white; border-radius: 20px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); padding: 8px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: 0.2s; z-index: 5005; }
         .dropdown-item { display: flex; gap: 14px; padding: 12px 16px; border-radius: 14px; text-decoration: none; color: var(--text-main); font-size: 0.95rem; font-weight: 600; }
         .dropdown-item:hover { background: var(--brand-tint); color: var(--brand-dark); }
 
@@ -161,9 +170,20 @@
            ========================================= */
         .content-wrapper { 
             position: absolute; top: var(--nav-height); bottom: 0; left: 0; right: 0; 
+            /* Padding is removed for map view, but kept for others via specific rules if needed. 
+               For Project 1 default style, we keep padding but Map will override. */
             padding: 30px 40px 40px 40px; 
             box-sizing: border-box; overflow: hidden; 
         }
+        
+        /* Specific override for Map Tab to be full screen relative to content wrapper */
+        #tab-map.tab-page {
+            padding: 0;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            margin: 0;
+            width: 100%; height: 100%;
+        }
+
         .tab-page { width: 100%; height: 100%; display: none; animation: fadeIn 0.5s ease forwards; }
         .tab-page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -174,62 +194,49 @@
         .dashboard-card { background: var(--glass-bg); border: var(--card-border); border-radius: var(--radius); box-shadow: var(--card-shadow); overflow: hidden; display: flex; flex-direction: column; height: 100%; }
 
         /* =========================================
-           PAGE 1: DESCRIPTION
+           PAGE 1, 2, 3, 5 Styles (Kept from Project 1)
            ========================================= */
+        /* ... (Keeping existing styles for Description, Summary, Media, Timeline) ... */
         .desc-layout { position: relative; width: 100%; height: 100%; }
         .panel-anim { transition: transform var(--anim-layout-duration) var(--anim-layout-ease), left var(--anim-layout-duration) var(--anim-layout-ease), width var(--anim-layout-duration) var(--anim-layout-ease), opacity var(--anim-fade-duration) var(--anim-fade-ease); }
-        
         #panel-proj-desc { position: absolute; left: 0; top: 0; bottom: 0; width: var(--w-wide); opacity: 1; transform: translateX(0); z-index: 10; background: var(--glass-bg); border: var(--card-border); border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 48px; box-sizing: border-box; display: flex; flex-direction: column; }
         #panel-visual { position: absolute; top: 0; bottom: 0; left: calc(var(--w-wide) + var(--gap)); width: calc(100% - var(--w-wide) - var(--gap)); z-index: 20; will-change: left, width; }
         #panel-col-desc { position: absolute; top: 0; bottom: 0; left: calc(var(--w-wide) + var(--gap)); width: calc(100% - var(--w-wide) - var(--gap)); transform: translateX(150%); opacity: 0; z-index: 15; display: flex; flex-direction: column; }
-        
         .desc-layout.mode-collection #panel-proj-desc { transform: translateX(-100%); opacity: 0; }
         .desc-layout.mode-collection #panel-visual { left: 0; width: var(--w-wide); }
         .desc-layout.mode-collection #panel-col-desc { transform: translateX(0); opacity: 1; }
-
+        
+        /* Headers, Text, etc. */
         .desc-header-section { flex-shrink: 0; padding-bottom: 24px; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 30px; display: flex; flex-direction: column; gap: 20px; }
         .title-row { display: flex; align-items: center; gap: 14px; margin: 0; }
         .desc-title-text { font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; margin: 0; line-height: 1.1; color: var(--text-main); font-family: var(--font-sans); }
         .title-link-icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: white; color: var(--text-muted); transition: 0.3s; border: 1px solid rgba(0,0,0,0.05); }
         .title-link-icon:hover { background: var(--brand); color: white; }
-        
         .desc-content-area { flex: 1; overflow-y: auto; padding-right: 12px; }
         .desc-image-container { width: 100%; height: 100%; border-radius: var(--radius); overflow: hidden; background: #e2e8f0; box-shadow: var(--card-shadow); border: var(--card-border); transform: translateZ(0); display: flex; align-items: center; justify-content: center; }
         .desc-project-img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s var(--anim-fade-ease); }
         .desc-project-img.loaded { opacity: 1; }
-        
         .meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .meta-capsule { 
-            display: inline-flex; align-items: center; gap: 10px;
-            background: #ffffff; border: 1px solid rgba(0,0,0,0.06);
-            padding: 6px 16px 6px 6px; border-radius: 40px;
-            font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; cursor: default;
-        }
+        .meta-capsule { display: inline-flex; align-items: center; gap: 10px; background: #ffffff; border: 1px solid rgba(0,0,0,0.06); padding: 6px 16px 6px 6px; border-radius: 40px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; cursor: default; }
         .meta-capsule:hover { border-color: rgba(131, 205, 32, 0.3); box-shadow: 0 4px 12px rgba(131, 205, 32, 0.1); transform: translateY(-1px); color: var(--text-main); }
         .meta-icon-circle { width: 28px; height: 28px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s; }
         .meta-capsule:hover .meta-icon-circle { background: var(--brand); color: white; }
         .meta-icon-circle svg { width: 14px; height: 14px; }
         .meta-text-mono { font-family: var(--font-mono); letter-spacing: -0.3px; font-size: 0.8rem; }
-
-        /* Rich Text & Collection */
         .collection-card { background: var(--card-bg); width: 100%; height: 100%; border-radius: var(--radius); box-shadow: var(--card-shadow); border: var(--card-border); padding: 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; position: relative; overflow: hidden; }
         .col-header-group { display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
         .col-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--brand); color: white; padding: 6px 14px; border-radius: 30px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; align-self: flex-start; margin-bottom: -5px; }
         .col-title { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.5px; margin: 0; color: var(--text-secondary); }
         .col-rich-text { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; flex: 1; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 24px; overflow-y: auto; }
-        
         .col-meta-row { display: flex; gap: 8px; margin-top: 4px; }
         .meta-pill { display: inline-flex; align-items: center; gap: 6px; background: #f8fafc; border: 1px solid rgba(0,0,0,0.04); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
         .meta-pill.doi-pill { font-family: var(--font-mono); letter-spacing: -0.5px; }
         .meta-pill i { color: var(--brand); opacity: 0.8; }
-
         .col-rt-modern h3 { font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin: 1.5em 0 1em 0; display: flex; align-items: center; gap: 10px; }
         .col-rt-modern h3 i { color: var(--brand); }
         .col-rt-modern ul { padding-left: 0; display: grid; gap: 10px; }
         .col-rt-modern li { padding: 10px 14px; background: #f8fafc; border-radius: 10px; border: 1px solid rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
         .col-rt-modern li::before { content: ""; display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
-        
         .style-modern { color: var(--text-main); line-height: 1.8; }
         .style-modern h1 { font-size: 2.2rem; margin: 0 0 0.5em 0; font-weight: 800; }
         .style-modern h2 { font-size: 1.5rem; margin: 2em 0 1em 0; font-weight: 800; border-bottom: 3px solid var(--brand); display: inline-block; padding-bottom: 5px; }
@@ -238,12 +245,9 @@
         .style-modern .data-val { font-size: 1.8rem; font-weight: 900; display: block; }
         .style-modern .data-key { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
-        /* =========================================
-           PAGE 2: SUMMARY
-           ========================================= */
+        /* Summary */
         .summary-layout { display: flex; gap: var(--gap); height: 100%; width: 100%; }
         .summary-stats-container { flex: 1.5; display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(140px, 1fr); gap: 20px; height: 100%; overflow-y: auto; padding-right: 6px; }
-
         .summary-stat-card { background: var(--glass-bg); border: var(--card-border); border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 0 32px; display: flex; align-items: center; justify-content: flex-start; transition: all 0.3s ease; position: relative; overflow: hidden; cursor: default; }
         .summary-stat-card:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.1); background: white; }
         .stat-content-left { position: relative; z-index: 2; display: flex; flex-direction: column; }
@@ -251,7 +255,6 @@
         .summary-stat-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
         .summary-stat-card .bg-icon { position: absolute; bottom: -30px; right: -30px; width: 180px; height: 180px; opacity: 0.06; color: var(--text-main); transform: rotate(-15deg); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; z-index: 1; }
         .summary-stat-card:hover .bg-icon { bottom: 0; right: 0; width: 150px; height: 150px; opacity: 0.15; color: var(--brand); transform: rotate(0deg); }
-
         .summary-contributors-card { flex: 1; display: flex; flex-direction: column; background: var(--glass-bg); border: var(--card-border); border-radius: var(--radius); box-shadow: var(--card-shadow); overflow: hidden; height: 100%; position: relative; }
         .summary-contributors-card .bg-icon-contrib { position: absolute; bottom: -50px; right: -30px; width: 300px; height: 300px; opacity: 0.04; color: var(--text-main); transform: rotate(-10deg); pointer-events: none; z-index: 1; transition: all 0.5s ease; }
         .summary-contributors-card:hover .bg-icon-contrib { bottom: 0; right: 0; width: 280px; height: 280px; opacity: 0.08; color: var(--brand); transform: rotate(0deg); }
@@ -260,7 +263,6 @@
         .card-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
         .card-title i { color: var(--brand); }
         .card-body { padding: 0; overflow-y: auto; flex: 1; }
-        
         .contributors-list { display: flex; flex-direction: column; overflow-y: auto; flex: 1; min-height: 0; }
         .contrib-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; border-bottom: 1px solid rgba(0,0,0,0.03); transition: background 0.2s; }
         .contrib-item:hover { background: rgba(131, 205, 32, 0.04); }
@@ -277,9 +279,7 @@
         .contrib-role-text { display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); text-align: right; }
         .contrib-role-text.creator-role { color: var(--brand-dark); }
 
-        /* =========================================
-           PAGE 3: MEDIA (GALLERY & LIST UPDATED)
-           ========================================= */
+        /* Media */
         .media-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-shrink: 0; }
         .media-title { font-size: 1.8rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 12px; }
         .media-count-badge { background: #f1f5f9; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); }
@@ -288,241 +288,251 @@
         .media-search-box:focus-within { background: white; border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand-tint); }
         .media-search-icon { color: var(--text-muted); width: 16px; height: 16px; margin-right: 8px; }
         .media-search-input { border: none; background: transparent; outline: none; font-size: 0.9rem; width: 100%; color: var(--text-main); font-family: var(--font-sans); }
-        
         .view-switcher-container { position: relative; display: flex; background: #f1f5f9; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); border-radius: 40px; padding: 4px; height: 44px; box-sizing: border-box; }
         .view-pill { position: absolute; top: 4px; bottom: 4px; left: 4px; width: 90px; background: white; border-radius: 30px; box-shadow: 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,1); transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1); z-index: 1; pointer-events: none; }
         .view-btn { position: relative; z-index: 2; background: transparent; border: none; padding: 0 20px; height: 100%; border-radius: 30px; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); transition: color 0.3s ease; display: flex; align-items: center; gap: 8px; font-family: var(--font-sans); }
         .view-btn.active { color: var(--brand-dark); }
         .view-btn:hover { color: var(--text-main); }
-        
         .media-scroll-area { flex: 1; overflow-y: auto; padding-right: 6px; min-height: 0; }
         .media-container.view-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding-bottom: 20px; }
-
-        /* --- CARD STYLE FOR GALLERY --- */
-        .media-item-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.04);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
+        .media-item-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.04); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s; cursor: pointer; display: flex; flex-direction: column; position: relative; }
         .media-item-card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.1); border-color: rgba(131, 205, 32, 0.4); }
-
         .spectrogram-cover { width: 100%; aspect-ratio: 2 / 1; background: #0f172a; position: relative; overflow: hidden; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .spectrogram-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; mix-blend-mode: screen; filter: sepia(1) hue-rotate(60deg) saturate(3) contrast(1.2); transition: transform 0.5s ease; }
         .media-item-card:hover .spectrogram-img { transform: scale(1.05); opacity: 1; }
-
         .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; backdrop-filter: blur(2px); }
         .media-item-card:hover .play-overlay { opacity: 1; }
         .play-circle { width: 56px; height: 56px; background: var(--brand); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .media-item-card:hover .play-circle { transform: scale(1); }
-
         .duration-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; font-family: var(--font-mono); pointer-events: none; }
-
         .media-card-info { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
         .media-name { font-weight: 700; font-size: 1rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
-        
         .tags-row { display: flex; gap: 6px; flex-wrap: wrap; min-height: 24px; }
         .media-tag { display: inline-flex; align-items: center; background: var(--brand); color: white; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.2px; box-shadow: 0 2px 5px rgba(131, 205, 32, 0.25); }
-
         .media-meta-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.05); font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono); }
         .meta-icon-text { display: flex; align-items: center; gap: 5px; }
-
-        /* --- UPDATED LIST VIEW (TABLE-LIKE) --- */
         .media-container.view-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px; }
-        
-        /* 使用 Grid 布局模拟表格 */
-        .media-item-row {
-            background: white; border-radius: 12px; 
-            display: grid; 
-            /* Play | Spec | Main(Flex) | Date/Time | Dur | Site | Sensor | Creator | License */
-            grid-template-columns: 36px 100px minmax(180px, 3fr) 110px 60px 80px 120px 100px 70px;
-            align-items: center;
-            gap: 16px;
-            padding: 10px 20px; 
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: all 0.2s;
-            overflow: hidden;
-        }
+        .media-item-row { background: white; border-radius: 12px; display: grid; grid-template-columns: 36px 100px minmax(180px, 3fr) 110px 60px 80px 120px 100px 70px; align-items: center; gap: 16px; padding: 10px 20px; border: 1px solid rgba(0,0,0,0.05); transition: all 0.2s; overflow: hidden; }
         .media-item-row:hover { background: #f8fafc; border-color: var(--brand); transform: translateX(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-
         .media-item-row .row-spec-bar { width: 100%; height: 60px; overflow: hidden; border-radius: 6px; position: relative; background: #0f172a; }
         .row-spec-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; mix-blend-mode: screen; filter: sepia(1) hue-rotate(60deg) saturate(3); }
-        
         .row-play-btn { width: 36px; height: 36px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: 0.2s; cursor: pointer; }
         .media-item-row:hover .row-play-btn { background: var(--brand); color: white; }
-        
         .media-item-row .tags-row { margin-top: 4px; margin-bottom: 2px; }
         .media-item-row .media-tag { padding: 2px 8px; font-size: 0.7rem; }
-        
         .row-info { display: flex; flex-direction: column; overflow: hidden; justify-content: center; }
         .row-name { font-weight: 700; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* New Data Columns */
         .row-data-col { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
         .row-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
         .row-val { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .row-val-small { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
-        
         .license-badge { display: inline-block; padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-align: center; }
 
-        /* --- PLACEHOLDER STYLE --- */
-        .placeholder-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            width: 100%;
-            text-align: center;
-            background: var(--glass-bg);
-            border-radius: var(--radius);
-            border: var(--card-border);
-            box-shadow: var(--card-shadow);
-            color: var(--text-muted);
-        }
-        .placeholder-card h2 { font-size: 1.4rem; color: var(--text-main); margin-bottom: 8px; margin-top: 0; }
-        .placeholder-card p { font-size: 1rem; line-height: 1.6; }
-
-        /* =========================================
-           PAGE 5: TIMELINE (INTERACTIVE PAN & ZOOM)
-           ========================================= */
-        .timeline-layout {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow: hidden;
-            background: #f8fafc;
-            position: relative;
-        }
-
-        .timeline-header {
-            padding: 20px 32px;
-            background: white;
-            border-bottom: 1px solid rgba(0,0,0,0.06);
-            flex-shrink: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-
-        /* The Mask / Viewport */
-        .timeline-viewport {
-            flex: 1;
-            overflow: hidden; /* Hide scrollbars */
-            position: relative;
-            cursor: grab;
-            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-            background-size: 20px 20px; /* Grid background for visual reference */
-            touch-action: none; /* Prevent browser navigation gestures */
-        }
-        
-        .timeline-viewport:active {
-            cursor: grabbing;
-        }
-
-        /* The Moving World Layer */
-        .timeline-world {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            display: flex;
-            gap: 40px; /* Gap between columns */
-            padding: 40px;
-            transform-origin: 0 0; /* Zoom from top-left, adjusted by JS */
-            will-change: transform;
-        }
-
-        /* --- Column Style --- */
-        .tl-column {
-            width: 320px;
-            min-width: 320px;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            border-radius: 16px;
-            border: 1px solid rgba(0,0,0,0.06);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-            height: 100%; /* Full height of world */
-            overflow: hidden; 
-            transition: border-color 0.2s;
-        }
-        
-        /* Prevent card hover scaling from jittering the layout during zoom */
+        /* Timeline */
+        .timeline-layout { display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #f8fafc; position: relative; }
+        .timeline-header { padding: 20px 32px; background: white; border-bottom: 1px solid rgba(0,0,0,0.06); flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .timeline-viewport { flex: 1; overflow: hidden; position: relative; cursor: grab; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; touch-action: none; }
+        .timeline-viewport:active { cursor: grabbing; }
+        .timeline-world { position: absolute; top: 0; left: 0; height: 100%; display: flex; gap: 40px; padding: 40px; transform-origin: 0 0; will-change: transform; }
+        .tl-column { width: 320px; min-width: 320px; display: flex; flex-direction: column; background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 4px 20px rgba(0,0,0,0.04); height: 100%; overflow: hidden; transition: border-color 0.2s; }
         .tl-column:hover { border-color: var(--brand); }
-
-        .tl-col-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.04);
-            background: #f1f5f9;
-            flex-shrink: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        .tl-col-header { padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.04); background: #f1f5f9; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
         .tl-date-day { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
         .tl-date-meta { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
-
-        /* Body scrolls internally */
-        .tl-col-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        
+        .tl-col-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
         .tl-col-body::-webkit-scrollbar { width: 4px; }
         .tl-col-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
-
-        /* --- Card Style (Same as before) --- */
-        .tl-card {
-            background: white;
-            border: 1px solid rgba(0,0,0,0.08);
-            border-radius: 12px;
-            overflow: hidden;
-            flex-shrink: 0; /* Prevent shrinking */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            position: relative;
-        }
-        
+        .tl-card { background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; overflow: hidden; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); position: relative; }
         .tl-card-img-box { width: 100%; height: 100px; background: #0f172a; position: relative; }
         .tl-card-img { width: 100%; height: 100%; object-fit: cover; filter: sepia(1) hue-rotate(60deg) saturate(3); opacity: 0.8; }
         .tl-card-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
         .tl-card-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tl-card-meta { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); display: flex; justify-content: space-between; }
-
-        /* Controls Overlay */
-        .tl-controls {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 8px;
-            z-index: 100;
-        }
-        .tl-ctrl-btn {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            background: white;
-            border: 1px solid rgba(0,0,0,0.1);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
+        .tl-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
+        .tl-ctrl-btn { width: 36px; height: 36px; border-radius: 50%; background: white; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; }
         .tl-ctrl-btn:hover { background: var(--brand); color: white; transform: translateY(-2px); }
+
+        .placeholder-card {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; width: 100%; text-align: center;
+            background: var(--glass-bg); border-radius: var(--radius);
+            border: var(--card-border); box-shadow: var(--card-shadow); color: var(--text-muted);
+        }
+        .placeholder-card h2 { font-size: 1.4rem; color: var(--text-main); margin-bottom: 8px; margin-top: 0; }
+        .placeholder-card p { font-size: 1rem; line-height: 1.6; }
+
+        /* =========================================
+           MAP & FILTER & SIDEBAR STYLES (Merged from Project 2)
+           ========================================= */
+        .map-wrapper { position: relative; width: 100%; height: 100%; }
+        #full-map { width: 100%; height: 100%; z-index: 1; outline: none; background: #f0f3f8; }
+
+        /* Cluster Icons */
+        .custom-cluster-icon { background: transparent; }
+        .donut-cluster {
+            position: relative; width: 50px; height: 50px; border-radius: 50%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer;
+        }
+        .donut-cluster:hover { transform: scale(1.15); z-index: 9000; }
+        .donut-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 40px; height: 40px; background: white; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-main); line-height: 1;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .dc-num { font-family: var(--font-sans); font-weight: 800; font-size: 0.85rem; }
+        .dc-label { font-size: 0.5rem; font-weight: 700; color: var(--text-muted); margin-top: 1px; }
+
+        .site-marker-pin {
+            width: 100%; height: 100%; border-radius: 50%; background: white;
+            border: 4px solid #ccc; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.75rem; color: var(--text-main);
+            transition: transform 0.2s;
+        }
+        .site-marker-pin:hover { transform: scale(1.2); }
+
+        /* Filter Drawer */
+        .filter-trigger-btn {
+            position: absolute; top: 20px; left: 20px; z-index: 1001;
+            width: 44px; height: 44px;
+            background: white; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--brand); border: 1px solid white;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .filter-trigger-btn:hover { transform: scale(1.05); color: var(--brand-hover); box-shadow: 0 8px 20px rgba(131, 205, 32, 0.2); }
+        .filter-trigger-btn.active { opacity: 0; pointer-events: none; transform: translateX(-20px); }
+
+        .filter-drawer {
+            position: absolute; top: 20px; bottom: 20px; left: 20px; width: 280px;
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px);
+            border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            z-index: 1002;
+            display: flex; flex-direction: column;
+            transform: translateX(-150%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .filter-drawer.active { transform: translateX(0); }
+
+        .fd-header {
+            padding: 24px 24px 16px 24px; display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0; border-bottom: 1px solid var(--border-light);
+        }
+        .fd-title { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+        .fd-close {
+            width: 32px; height: 32px; background: #f1f5f9; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center; color: var(--text-secondary);
+            cursor: pointer; transition: 0.2s;
+        }
+        .fd-close:hover { background: var(--text-main); color: white; }
+        .fd-content { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+        .custom-select-wrapper { position: relative; }
+        .select-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block; text-transform: uppercase; }
+        
+        .select-trigger {
+            width: 100%; padding: 12px 14px; background: #f8fafc;
+            border: 1px solid var(--border-light); border-radius: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; font-size: 0.9rem; color: var(--text-main); font-weight: 500;
+            transition: all 0.2s; box-sizing: border-box;
+        }
+        .select-trigger:hover:not(.disabled) { background: white; border-color: #cbd5e1; }
+        .select-trigger.active { background: white; border-color: var(--brand); box-shadow: 0 0 0 2px rgba(131, 205, 32, 0.1); }
+        .select-trigger.disabled { opacity: 0.6; cursor: not-allowed; background: #f1f5f9; }
+        
+        .select-options {
+            position: absolute; top: calc(100% + 6px); left: 0; width: 100%;
+            background: white; border-radius: 10px; border: 1px solid var(--border-light);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            max-height: 200px; overflow-y: auto; z-index: 100;
+            padding: 4px; box-sizing: border-box;
+            opacity: 0; visibility: hidden; transform: translateY(-5px); transition: 0.2s;
+        }
+        .custom-select-wrapper.open .select-options { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        .select-option {
+            padding: 10px; border-radius: 6px; cursor: pointer;
+            font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;
+            transition: 0.1s;
+        }
+        .select-option:hover { background: #f1f5f9; color: var(--brand-hover); }
+        .select-option.selected { background: rgba(131, 205, 32, 0.1); color: var(--brand-hover); font-weight: 600; }
+        .opt-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .btn-reset-filters {
+            margin-top: 12px; width: 100%; padding: 14px;
+            border: 1px dashed #cbd5e1; background: transparent;
+            border-radius: 12px; color: var(--text-secondary);
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-reset-filters:hover { border-color: var(--brand); color: var(--brand-hover); background: rgba(131, 205, 32, 0.05); }
+
+        /* Sidebar */
+        .sidebar {
+            position: absolute; top: 20px; bottom: 20px; right: 20px; width: 380px;
+            background: white; border-radius: 24px; box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+            z-index: 1001; 
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; overflow: hidden; border: none;
+        }
+        .sidebar.active { transform: translateX(0); }
+        
+        .sb-header { 
+            padding: 30px 24px 20px 24px; flex-shrink: 0; 
+            background: var(--site-color);
+            display: flex; justify-content: space-between; align-items: flex-start;
+            transition: background-color 0.3s;
+        }
+        
+        .sb-title { font-size: 1.6rem; font-weight: 800; margin: 0; line-height: 1.2; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .sb-close { 
+            background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            cursor: pointer; color: white; transition: 0.2s; margin-left: 12px; backdrop-filter: blur(4px);
+        }
+        .sb-close:hover { background: white; color: var(--site-color); transform: rotate(90deg); }
+        
+        .sb-content { flex: 1; overflow-y: auto; background: white; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .data-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-bottom: 1px dashed #f1f5f9; }
+        .data-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+        .data-val { font-size: 0.95rem; font-weight: 700; color: var(--text-main); text-align: right; }
+        
+        .stats-box-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; margin-bottom: 10px; }
+        .stat-box { 
+            background: #f8fafc; border: 1px solid var(--border-light); border-radius: 12px; padding: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .stat-box-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-box-val { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+
+        .section-title { font-size: 0.8rem; font-weight: 800; color: var(--text-main); margin-top: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;}
+
+        .media-scroll-container { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding-right: 4px; }
+        .media-item { 
+            display: flex; align-items: center; padding: 12px; border-radius: 12px; 
+            background: white; border: 1px solid var(--border-light);
+            text-decoration: none; transition: all 0.2s;
+        }
+        .media-item:hover { border-color: var(--site-color); background: #fcfcfc; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .media-item:hover .media-icon { background: var(--site-color); color: white; border-color: var(--site-color); }
+
+        .media-icon { 
+            width: 36px; height: 36px; border-radius: 8px; background: #f8fafc; 
+            color: var(--text-secondary); display: flex; align-items: center; justify-content: center; 
+            margin-right: 12px; flex-shrink: 0; transition: 0.2s; border: 1px solid var(--border-light);
+        }
+        .media-meta { flex: 1; min-width: 0; }
+        .media-dur { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
     </style>
 </head>
 <body>
@@ -665,17 +675,97 @@
                 </div>
                 
                 <div class="card-body media-scroll-area">
-                    <div class="media-container view-gallery block-anim" id="media-grid-container">
-                        </div>
+                    <div class="media-container view-gallery block-anim" id="media-grid-container"></div>
                 </div>
             </div>
         </div>
 
         <div id="tab-map" class="tab-page">
-            <div class="placeholder-card">
-                <i data-lucide="map-off" size="48" style="margin-bottom: 20px; opacity: 0.5;"></i>
-                <h2>Map Feature Disabled</h2>
-                <p>Please preview this feature from other files.</p>
+            <div class="map-wrapper">
+                <div id="full-map"></div>
+
+                <button class="filter-trigger-btn" id="filter-btn-main" onclick="openFilterDrawer()">
+                    <i data-lucide="sliders-horizontal" size="22"></i>
+                </button>
+
+                <div class="filter-drawer" id="filter-drawer">
+                    <div class="fd-header">
+                        <div class="fd-title">
+                            <i data-lucide="sliders-horizontal" size="20" color="var(--brand)"></i>
+                            <span>Filters</span>
+                        </div>
+                        <button class="fd-close" onclick="closeFilterDrawer()"><i data-lucide="chevrons-left" size="20"></i></button>
+                    </div>
+
+                    <div class="fd-content">
+                        <div class="custom-select-wrapper" id="sel-realm">
+                            <span class="select-label">1. Eco Realm</span>
+                            <div class="select-trigger" onclick="toggleSelect('sel-realm')">
+                                <span class="trigger-text" id="text-realm">All Realms</span>
+                                <i data-lucide="chevron-down" size="16"></i>
+                            </div>
+                            <div class="select-options" id="opt-realm"></div>
+                        </div>
+
+                        <div class="custom-select-wrapper" id="sel-biome">
+                            <span class="select-label">2. Biome</span>
+                            <div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')">
+                                <span class="trigger-text" id="text-biome">All Biomes</span>
+                                <i data-lucide="chevron-down" size="16"></i>
+                            </div>
+                            <div class="select-options" id="opt-biome"></div>
+                        </div>
+
+                        <div class="custom-select-wrapper" id="sel-group">
+                            <span class="select-label">3. Group</span>
+                            <div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')">
+                                <span class="trigger-text" id="text-group">All Groups</span>
+                                <i data-lucide="chevron-down" size="16"></i>
+                            </div>
+                            <div class="select-options" id="opt-group"></div>
+                        </div>
+
+                        <button class="btn-reset-filters" onclick="resetFilters()">
+                            <i data-lucide="rotate-ccw" size="16"></i> Reset Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div id="sidebar" class="sidebar">
+                    <div class="sb-header" id="sb-header-bg">
+                        <h2 class="sb-title" id="sb-name">Site Name</h2>
+                        <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
+                    </div>
+                    
+                    <div class="sb-content">
+                        <div class="data-row">
+                            <span class="data-label">Realm</span>
+                            <span class="data-val" id="val-realm">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Biome</span>
+                            <span class="data-val" id="val-biome">--</span>
+                        </div>
+                        <div class="data-row" style="border-bottom:none;">
+                            <span class="data-label">Group</span>
+                            <span class="data-val" id="val-group">--</span>
+                        </div>
+
+                        <div class="stats-box-container">
+                            <div class="stat-box">
+                                <span class="stat-box-label">Topography</span>
+                                <span class="stat-box-val" id="val-topo">--</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-label">Water Depth</span>
+                                <span class="stat-box-val" id="val-depth">--</span>
+                            </div>
+                        </div>
+
+                        <div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div>
+                        <div class="media-scroll-container" id="media-container"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -686,22 +776,14 @@
                         <i data-lucide="kanban"></i> Timeline Analysis
                     </div>
                     <div style="display: flex; gap: 12px;">
-                        <div class="meta-capsule">
-                             <div class="meta-icon-circle"><i data-lucide="move"></i></div>
-                             <span>Pan: Drag</span>
-                        </div>
-                        <div class="meta-capsule">
-                             <div class="meta-icon-circle"><i data-lucide="zoom-in"></i></div>
-                             <span>Zoom: Scroll</span>
-                        </div>
+                        <div class="meta-capsule"><div class="meta-icon-circle"><i data-lucide="move"></i></div><span>Pan: Drag</span></div>
+                        <div class="meta-capsule"><div class="meta-icon-circle"><i data-lucide="zoom-in"></i></div><span>Zoom: Scroll</span></div>
                     </div>
                 </div>
-
                 <div class="timeline-viewport" id="tl-viewport">
                     <div class="timeline-world" id="tl-world">
                         <div style="margin: auto; color: var(--text-muted); font-size: 1.2rem;">Loading Data...</div>
                     </div>
-                    
                     <div class="tl-controls">
                         <button class="tl-ctrl-btn" onclick="tlZoom(0.1)"><i data-lucide="plus"></i></button>
                         <button class="tl-ctrl-btn" onclick="tlReset()"><i data-lucide="maximize"></i></button>
@@ -720,10 +802,13 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
     <script>
         lucide.createIcons();
 
-        // --- Mock Data Generators ---
+        // --- Mock Data Generators (from Project 1) ---
         const htmlModern = (title, location) => `<span class="tag-label">Live Monitoring</span><h1>${title} Digital Overview</h1><p>Deploying next-generation <strong>edge-computing nodes</strong> in ${location}.</p>`;
         const htmlAcademic = (title, latinName) => `<div class="abstract-box"><span class="abstract-title">Abstract</span>Study on <em>${title}</em>.</div><h2>1. Introduction</h2><p>Passive Acoustic Monitoring (PAM).</p>`;
         const htmlEditorial = (title) => `<span class="kicker">Expedition Log</span><h1>${title}</h1><p class="lead">Deep canopy sounds.</p>`;
@@ -733,14 +818,12 @@
             (n) => `<div class="col-rt-modern"><h3><i data-lucide="map-pin"></i> Spatial</h3><p>${n} Transect.</p></div>`
         ];
 
-        // --- Data Helpers ---
         const projectImages = [
             'https://ecosound-web.de/ecosound_web/sounds/projects/108.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/117.jpeg',
             'https://ecosound-web.de/ecosound_web/sounds/projects/121.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/105.jpeg',
             'https://ecosound-web.de/ecosound_web/sounds/projects/114.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/123.jpeg'
         ];
         const getImg = (idx) => projectImages[idx % projectImages.length];
-
         const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
         
         const createCollections = (baseName, count, startImgIdx, creatorName) => {
@@ -749,10 +832,7 @@
                 stats: { users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), tags: rInt(50, 300), sites: rInt(1, 5) },
                 contributors: [
                     { name: `Researcher ${String.fromCharCode(65+(i%26))}`, role: "Creator", email: `res.${i}@lab.edu`, uid: `0000-0002-1825-009${i}` }, 
-                    { name: "Field Team A", role: "Recorder", email: "team.a@eco.org", uid: `0000-0001-5727-242${i}` },
-                    { name: "Lab Assistant", role: "Annotator", email: "lab@univ.edu", uid: `0000-0003-4567-890${i}` },
-                    { name: "QC Manager", role: "Reviewer", email: "qc@data.io", uid: `0000-0002-9876-543${i}` },
-                    { name: "Data Clerk", role: "Curator", email: "clerk@archive.org", uid: `0000-0001-1111-222${i}` }
+                    { name: "Field Team A", role: "Recorder", email: "team.a@eco.org", uid: `0000-0001-5727-242${i}` }
                 ]
             }));
         };
@@ -762,73 +842,295 @@
                 id: "p1", name: "Amazon Rainforest Survey", creator: "Dr. Silva", date: "2025-01-10", doi: "10.1234/amz.01", externalUrl: "#", description: htmlModern("Amazon Basin", "Manaus"), styleClass: "style-modern", image: getImg(0),
                 collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
                 stats: { users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", tags: 4500, sites: 12 },
-                contributors: [
-                    { name: "Dr. Silva", role: "Creator", email: "silva@amaz.on", uid: "0000-0002-1825-0097" },
-                    { name: "Prof. Oak", role: "PI", email: "oak@pkm.edu", uid: "0000-0001-2345-6789" },
-                    { name: "J. Goodall", role: "Researcher", email: "jane@chimps.org", uid: "0000-0003-9876-5432" },
-                    { name: "T. Stark", role: "Data Analyst", email: "tony@stark.ind", uid: "0000-0002-1111-2222" },
-                    { name: "M. Lewis", role: "Field Tech", email: "lewis@exp.com", uid: "0000-0001-5555-6666" }
-                ]
+                contributors: [{ name: "Dr. Silva", role: "Creator", email: "silva@amaz.on", uid: "0000-0002-1825-0097" }]
             },
             { 
                 id: "p2", name: "Marine Ecosystems Study", creator: "Prof. Ocean", date: "2024-11-05", doi: "10.5678/mar.02", externalUrl: "#", description: htmlAcademic("Coral Reefs", "Cetacea"), styleClass: "style-academic", image: getImg(1),
                 collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
                 stats: { users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", tags: 2100, sites: 5 },
-                contributors: [
-                    { name: "Prof. Ocean", role: "Creator", email: "ocean@sea.org", uid: "0000-0003-4567-8901" },
-                    { name: "S. Zissou", role: "PI", email: "steve@life.aq", uid: "0000-0002-3333-4444" },
-                    { name: "K. Nemo", role: "Field Lead", email: "nemo@lost.com", uid: "0000-0001-7777-8888" },
-                    { name: "J. Cousteau", role: "Reviewer", email: "jc@calypso.fr", uid: "0000-0002-9999-0000" }
-                ]
+                contributors: [{ name: "Prof. Ocean", role: "Creator", email: "ocean@sea.org", uid: "0000-0003-4567-8901" }]
             },
             {
                 id: "p3", name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15", doi: "10.9999/sav.03", externalUrl: "#", description: htmlEditorial("Serengeti"), styleClass: "style-editorial", image: getImg(2), collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
                 stats: { users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", tags: 1200, sites: 8 },
-                contributors: [{ name: "K. Mbeki", role: "Creator", email: "mbeki@sav.za", uid: "0000-0001-0000-0001" }, { name: "L. Lion", role: "PI", email: "king@pride.rock", uid: "0000-0002-0000-0002" }, { name: "R. Ranger", role: "Field Tech", email: "ranger@park.go", uid: "0000-0003-0000-0003" }]
+                contributors: [{ name: "K. Mbeki", role: "Creator", email: "mbeki@sav.za", uid: "0000-0001-0000-0001" }]
             }
         ];
         const rawProjects = [...initialProjects]; 
 
-        let currProjIdx = 0; let currColIdx = 0; let projSearchQuery = ""; let colSearchQuery = ""; let map = null;
+        let currProjIdx = 0; let currColIdx = 0; let projSearchQuery = ""; let colSearchQuery = "";
+        
+        // --- MAP VARIABLES ---
+        let map = null;
+        let clusterGroup = null;
+        let polyLayer = null;
+        let currentSites = [];
+        let currentSelectedSiteId = null;
+        let filterState = { realm: "", biome: "", group: "" };
+
+        // --- MAP CONSTANTS (from Project 2) ---
+        const REALM_COLORS = { "Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316" };
+        const TAXONOMY = {
+            "Terrestrial": { "Tropical Forests": ["Lowland Rainforest", "Montane Rainforest"], "Savannas": ["Shrubland", "Grassland"] },
+            "Marine": { "Coastal": ["Coral Reefs", "Seagrass"], "Pelagic": ["Epipelagic", "Mesopelagic"] },
+            "Freshwater": { "Riverine": ["Permanent Rivers", "Seasonal Streams"], "Palustrine": ["Peatlands", "Marshes"] },
+            "Subterranean": { "Cave Systems": ["Limestone Caves", "Lava Tubes"], "Aquifers": ["Shallow", "Deep"] },
+            "Atmospheric": { "Aerial": ["Lower Troposphere", "Upper Canopy"], "Urban Air": ["City Center", "Industrial"] },
+            "Estuarine": { "Brackish Water": ["Mangroves", "Salt Marshes"], "Deltas": ["Active Delta", "Inactive Delta"] },
+            "Cryogenic": { "Ice Sheets": ["Polar", "Glacial"], "Tundra": ["Permafrost", "Alpine"] },
+            "Artificial": { "Urban": ["Parks", "Gardens"], "Agricultural": ["Farms", "Plantations"] },
+            "Introduced": { "Invasive Zones": ["Islands", "Mainland"], "Rehabilitation": ["Forest", "Wetland"] },
+            "Unknown": { "Unclassified": ["Region A", "Region B"], "Pending": ["Survey 1", "Survey 2"] }
+        };
+
+        function getRealmColor(r) { return REALM_COLORS[r] || "#0f172a"; }
+
+        // --- MAP DATA GENERATION ---
+        function generateSitesForContext(projId, colId) {
+            let seed = projId.charCodeAt(1) + (colId ? colId.charCodeAt(1) * 10 : 0);
+            const count = 50 + (seed % 20); 
+            let baseLat = -3.4, baseLng = -62.2;
+            if (projId === "p2") { baseLat = -18.2; baseLng = 147.7; }
+            if (projId === "p3") { baseLat = -2.3; baseLng = 34.8; }
+            const realmKeys = Object.keys(TAXONOMY);
+            return Array.from({length: count}, (_, i) => {
+                let rIndex = Math.floor(Math.random() * realmKeys.length);
+                if (projId === "p1" && Math.random() > 0.3) rIndex = 0; 
+                if (projId === "p2" && Math.random() > 0.3) rIndex = 1; 
+                const r = realmKeys[rIndex];
+                const bKeys = Object.keys(TAXONOMY[r]);
+                const b = bKeys[Math.floor(Math.random() * bKeys.length)];
+                const gKeys = TAXONOMY[r][b];
+                const g = gKeys[Math.floor(Math.random() * gKeys.length)];
+                const lat = baseLat + (Math.random()-0.5) * 8;
+                const lng = baseLng + (Math.random()-0.5) * 8;
+                const vertices = 3 + Math.floor(Math.random() * 5); 
+                const baseRadius = 0.03;
+                const poly = [];
+                const rotation = Math.random() * Math.PI;
+                for(let k=0; k<vertices; k++) {
+                    const angle = (k / vertices) * Math.PI * 2 + rotation;
+                    const r = baseRadius * (0.8 + Math.random() * 0.4); 
+                    poly.push([lat + Math.sin(angle)*r, lng + Math.cos(angle)*r]);
+                }
+                return {
+                    id: `${projId}-${colId||'all'}-${i}`, name: `Site ${String.fromCharCode(65+(i%26))}-${100+i}`,
+                    center: [lat, lng], polygon: poly, realm: r, biome: b, group: g,
+                    topography_m: Math.floor(Math.random()*800), freshwater_depth_m: r === 'Freshwater' ? (Math.random()*15).toFixed(1) : "N/A",
+                    mediaCount: Math.floor(Math.random() * 10) + 2,
+                    media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => ({ name: `${r.slice(0,3).toUpperCase()}_REC_${202500+m}.wav`, date: "2025-01-15", duration: "01:00:00" }))
+                };
+            });
+        }
+
+        function loadMapData() {
+            if(!map) return; // Only load if map is init
+            const projId = rawProjects[currProjIdx].id; 
+            const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null;
+            
+            if (!colId) { 
+                currentSites = []; 
+                // Combine all collections roughly
+                rawProjects[currProjIdx].collections.forEach(c => { 
+                    currentSites = [...currentSites, ...generateSitesForContext(projId, c.id)]; 
+                }); 
+            } else { 
+                currentSites = generateSitesForContext(projId, colId); 
+            }
+            resetFilters();
+        }
+
+        // --- MAP INITIALIZATION ---
+        function initMap() {
+            if(map) return; // Already init
+            map = L.map('full-map', { zoomControl: false }).setView([-3.465, -62.215], 6);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            
+            polyLayer = L.layerGroup().addTo(map);
+            clusterGroup = L.markerClusterGroup({
+                showCoverageOnHover: false, zoomToBoundsOnClick: true, spiderfyOnMaxZoom: true, maxClusterRadius: 60,
+                iconCreateFunction: function(cluster) {
+                    const markers = cluster.getAllChildMarkers();
+                    const n = markers.length;
+                    const realmCounts = {};
+                    let totalMedia = 0; 
+                    markers.forEach(m => { 
+                        const r = m.options.customData.realm; 
+                        realmCounts[r] = (realmCounts[r] || 0) + 1; 
+                        totalMedia += m.options.customData.mediaCount;
+                    });
+                    
+                    let gradientParts = []; let currentPercentage = 0; 
+                    Object.keys(realmCounts).sort((a,b) => realmCounts[b] - realmCounts[a]).forEach(r => {
+                        const pct = (realmCounts[r] / n) * 100; 
+                        gradientParts.push(`${getRealmColor(r)} ${currentPercentage}% ${currentPercentage + pct}%`); currentPercentage += pct;
+                    });
+                    
+                    return L.divIcon({ html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`, className: 'custom-cluster-icon', iconSize: L.point(50, 50), iconAnchor: [25, 25] });
+                }
+            });
+            map.addLayer(clusterGroup);
+            
+            // Initial data load
+            loadMapData();
+        }
+
+        function renderMap(shouldZoom = false) {
+            if(!map) return;
+            polyLayer.clearLayers(); clusterGroup.clearLayers();
+            let visibleBounds = L.latLngBounds([]); let visibleCount = 0;
+            let isCurrentSiteVisible = false;
+
+            currentSites.forEach(site => {
+                if (filterState.realm && site.realm !== filterState.realm) return;
+                if (filterState.biome && site.biome !== filterState.biome) return;
+                if (filterState.group && site.group !== filterState.group) return;
+                
+                if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true;
+
+                visibleCount++;
+                const siteColor = getRealmColor(site.realm);
+                const poly = L.polygon(site.polygon, { color: siteColor, weight: 2, opacity: 0.8, fillColor: siteColor, fillOpacity: 0.15 }).addTo(polyLayer);
+                poly.on('click', (e) => { L.DomEvent.stopPropagation(e); openSidebar(site); });
+                const marker = L.marker(site.center, { customData: { realm: site.realm, mediaCount: site.mediaCount }, icon: L.divIcon({ html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28] }) });
+                marker.on('click', () => openSidebar(site));
+                clusterGroup.addLayer(marker); visibleBounds.extend(site.center);
+            });
+            
+            if (currentSelectedSiteId && !isCurrentSiteVisible) closeSidebar();
+
+            if ((shouldZoom || visibleCount > 0) && visibleCount > 0) {
+                if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, { duration: 0.8, easeLinearity: 0.5 });
+                else map.fitBounds(visibleBounds, { padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5 });
+            }
+        }
+
+        // --- SIDEBAR & FILTER LOGIC ---
+        function openSidebar(site) {
+            currentSelectedSiteId = site.id; const color = getRealmColor(site.realm);
+            
+            document.documentElement.style.setProperty('--site-color', color);
+            document.documentElement.style.setProperty('--site-color-tint', color + '12'); 
+            
+            document.getElementById('sb-name').textContent = site.name;
+            document.getElementById('val-realm').textContent = site.realm;
+            document.getElementById('val-realm').style.color = color; 
+            document.getElementById('val-biome').textContent = site.biome; 
+            document.getElementById('val-group').textContent = site.group;
+            document.getElementById('val-topo').textContent = site.topography_m + " m"; 
+            document.getElementById('val-depth').textContent = site.freshwater_depth_m + (site.freshwater_depth_m !== "N/A" ? " m" : "");
+            
+            document.getElementById('media-container').innerHTML = site.media.map(m => `
+                <a href="#" class="media-item" onclick="return false;">
+                    <div class="media-icon"><i data-lucide="play" size="18"></i></div>
+                    <div class="media-meta"><span class="media-name">${m.name}</span><span class="media-dur">${m.date} • ${m.duration}</span></div>
+                </a>
+            `).join('');
+            
+            lucide.createIcons();
+            document.getElementById('sidebar').classList.add('active'); 
+            map.flyTo(site.center, 14, { duration: 0.8, easeLinearity: 0.5 });
+        }
+        function closeSidebar() { currentSelectedSiteId = null; document.getElementById('sidebar').classList.remove('active'); }
+
+        function openFilterDrawer() { document.getElementById('filter-drawer').classList.add('active'); document.getElementById('filter-btn-main').classList.add('active'); }
+        function closeFilterDrawer() { document.getElementById('filter-drawer').classList.remove('active'); document.getElementById('filter-btn-main').classList.remove('active'); }
+
+        function toggleSelect(id) {
+            const el = document.getElementById(id);
+            if (el.querySelector('.select-trigger').classList.contains('disabled')) return;
+            const isOpen = el.classList.contains('open'); closeSelects(); if(!isOpen) el.classList.add('open');
+        }
+        function closeSelects() { document.querySelectorAll('.custom-select-wrapper').forEach(d => d.classList.remove('open')); }
+
+        function getUniqueValues(data, key) { const set = new Set(); data.forEach(s => { if(s[key]) set.add(s[key]); }); return Array.from(set).sort(); }
+
+        function initFilters() { renderSelectOptions('realm'); updateSelectOptions('biome'); updateSelectOptions('group'); }
+        
+        function renderSelectOptions(targetType) {
+            const list = document.getElementById('opt-' + targetType); 
+            const options = getUniqueValues(currentSites, 'realm');
+            let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')"><div class="opt-dot" style="background:#ccc"></div>All Realms</div>`;
+            options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')"><div class="opt-dot" style="background:${getRealmColor(opt)}"></div>${opt}</div>`);
+            list.innerHTML = html;
+        }
+
+        function applyFilter(type, value) {
+            closeSidebar(); 
+            if(type === 'realm') {
+                filterState.realm = value; filterState.biome = ""; filterState.group = "";
+                updateSelectUI('realm', value);
+                updateSelectOptions('biome'); updateSelectUI('biome', '');
+                updateSelectOptions('group'); updateSelectUI('group', '');
+            } else if (type === 'biome') {
+                filterState.biome = value; filterState.group = "";
+                updateSelectUI('biome', value);
+                updateSelectOptions('group'); updateSelectUI('group', '');
+            } else if (type === 'group') {
+                filterState.group = value;
+                updateSelectUI('group', value);
+            }
+            closeSelects();
+            renderMap(true);
+        }
+
+        function updateSelectUI(type, value) {
+            const textEl = document.getElementById('text-' + type);
+            const trigger = type === 'realm' ? document.getElementById('sel-realm').querySelector('.select-trigger') : document.getElementById('trig-' + type);
+            const labelMap = { realm: "All Realms", biome: "All Biomes", group: "All Groups" };
+            
+            if (!value) { textEl.innerText = labelMap[type]; trigger.classList.remove('active'); } 
+            else { textEl.innerText = value; trigger.classList.add('active'); }
+        }
+
+        function updateSelectOptions(targetType) {
+            const list = document.getElementById('opt-' + targetType);
+            const trigger = document.getElementById('trig-' + targetType);
+            let filteredData = currentSites;
+            if (targetType === 'biome') { 
+                if(!filterState.realm) { trigger.classList.add('disabled'); return; }
+                filteredData = currentSites.filter(s => s.realm === filterState.realm);
+            } else if (targetType === 'group') { 
+                if(!filterState.biome) { trigger.classList.add('disabled'); return; }
+                filteredData = currentSites.filter(s => s.realm === filterState.realm && s.biome === filterState.biome);
+            }
+            trigger.classList.remove('disabled');
+            const options = getUniqueValues(filteredData, targetType);
+            const labelMap = { biome: "All Biomes", group: "All Groups" };
+            let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')">${labelMap[targetType]}</div>`;
+            if (options.length === 0) html = `<div style="padding:10px;color:#999;font-size:0.85rem">No options</div>`;
+            else options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')">${opt}</div>`);
+            list.innerHTML = html;
+        }
+
+        function resetFilters() { 
+            closeSidebar(); 
+            filterState = { realm: "", biome: "", group: "" }; 
+            updateSelectUI('realm', ''); 
+            initFilters();
+            renderMap(true); 
+        }
 
         // --- MEDIA PAGE LOGIC (DYNAMIC) ---
         let mediaItems = [];
         let mediaSearchQuery = "";
-
-        // Tag Generator
         const taxonTags = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
         const getRandomTags = () => {
             const count = rInt(1, 3);
             const shuffled = taxonTags.sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         };
-
         const generateMediaForContext = (proj, col) => {
             const prefix = col ? `COL_${col.id}` : `PROJ_${proj.id}`;
             const count = col ? rInt(8, 15) : rInt(24, 40); 
-            
             return Array.from({length: count}, (_, i) => {
                 const h = Math.floor(Math.random() * 24).toString().padStart(2, '0');
                 const m = Math.floor(Math.random() * 60).toString().padStart(2, '0');
                 const s = Math.floor(Math.random() * 60).toString().padStart(2, '0');
-                
                 return {
-                    id: i,
-                    name: `${prefix}_REC_${20250000 + i}.wav`,
-                    date: `2025-01-${(i % 28) + 1}`,
-                    time: `${h}:${m}:${s}`,
-                    fullDate: `2025-01-${(i % 28) + 1} ${h}:${m}`,
-                    duration: `00:${rInt(10, 59)}`,
-                    tags: getRandomTags(),
-                    size: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`,
-                    sr: "48kHz",
-                    spectrogram: "https://upload.wikimedia.org/wikipedia/commons/c/c5/Spectrogram-19thC.png",
-                    
-                    // --- NEW FIELDS FOR LIST VIEW ---
-                    creator: ["Dr. Silva", "M. Lewis", "Field Team A", "Auto-Recorder"][rInt(0,3)],
-                    site: `Site-${rInt(1,12).toString().padStart(2,'0')}`,
-                    sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0,3)],
-                    license: ["CC BY 4.0", "CC BY-NC", "CC0"][rInt(0,2)]
+                    id: i, name: `${prefix}_REC_${20250000 + i}.wav`, date: `2025-01-${(i % 28) + 1}`, time: `${h}:${m}:${s}`, fullDate: `2025-01-${(i % 28) + 1} ${h}:${m}`, duration: `00:${rInt(10, 59)}`, tags: getRandomTags(), size: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`, sr: "48kHz", spectrogram: "https://upload.wikimedia.org/wikipedia/commons/c/c5/Spectrogram-19thC.png",
+                    creator: ["Dr. Silva", "M. Lewis", "Field Team A", "Auto-Recorder"][rInt(0,3)], site: `Site-${rInt(1,12).toString().padStart(2,'0')}`, sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0,3)], license: ["CC BY 4.0", "CC BY-NC", "CC0"][rInt(0,2)]
                 };
             });
         };
@@ -841,100 +1143,36 @@
             const searchInput = document.querySelector('.media-search-input');
             if(searchInput) searchInput.value = "";
             const container = document.getElementById('media-grid-container');
-            animateBlockSwap(container, () => {
-                renderMedia();
-            });
+            animateBlockSwap(container, () => { renderMedia(); });
         }
 
-        function handleSearchMedia(val) {
-            mediaSearchQuery = val.toLowerCase();
-            renderMedia();
-        }
+        function handleSearchMedia(val) { mediaSearchQuery = val.toLowerCase(); renderMedia(); }
 
         function renderMedia() {
             const container = document.getElementById('media-grid-container');
             const badge = document.getElementById('media-count-badge');
             const isGallery = container.classList.contains('view-gallery');
-            
             const filteredItems = mediaItems.filter(item => 
                 item.name.toLowerCase().includes(mediaSearchQuery) || 
                 item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) ||
                 item.site.toLowerCase().includes(mediaSearchQuery) || 
                 item.sensor.toLowerCase().includes(mediaSearchQuery)
             );
-            
             badge.textContent = `${filteredItems.length} Items`;
-
             if (filteredItems.length === 0) {
                 container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
-                lucide.createIcons();
-                return;
+                lucide.createIcons(); return;
             }
-
             let html = '';
             filteredItems.forEach(item => {
                 const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
-
                 if (isGallery) {
-                    html += `
-                        <div class="media-item-card">
-                            <div class="spectrogram-cover">
-                                <img src="${item.spectrogram}" class="spectrogram-img" alt="Spec">
-                                <div class="play-overlay">
-                                    <div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div>
-                                </div>
-                                <div class="duration-badge">${item.duration}</div>
-                            </div>
-                            
-                            <div class="media-card-info">
-                                <div class="media-name" title="${item.name}">${item.name}</div>
-                                <div class="tags-row">${tagsHtml}</div>
-                                <div class="media-meta-row">
-                                    <div class="meta-icon-text"><i data-lucide="calendar" size="12"></i> ${item.date}</div>
-                                    <div class="meta-icon-text"><i data-lucide="clock" size="12"></i> ${item.time}</div>
-                                </div>
-                            </div>
-                        </div>`;
+                    html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><div class="media-name" title="${item.name}">${item.name}</div><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="12"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="12"></i> ${item.time}</div></div></div></div>`;
                 } else {
-                    // --- UPDATED LIST VIEW ROW ---
-                    html += `
-                        <div class="media-item-row">
-                            <div class="row-play-btn"><i data-lucide="play" size="16" fill="currentColor"></i></div>
-                            <div class="row-spec-bar">
-                                <img src="${item.spectrogram}" class="row-spec-img" alt="Spec">
-                            </div>
-                            <div class="row-info">
-                                <div class="row-name" title="${item.name}">${item.name}</div>
-                                <div class="tags-row">${tagsHtml}</div>
-                            </div>
-                            <div class="row-data-col">
-                                <span class="row-val" style="color:var(--text-main); font-weight:700;">${item.date}</span>
-                                <span class="row-val-small">${item.time}</span>
-                            </div>
-                            <div class="row-data-col">
-                                <span class="row-label">Dur</span>
-                                <span class="row-val" style="font-family:var(--font-mono);">${item.duration}</span>
-                            </div>
-                            <div class="row-data-col">
-                                <span class="row-label">Site</span>
-                                <span class="row-val" title="${item.site}">${item.site}</span>
-                            </div>
-                            <div class="row-data-col">
-                                <span class="row-label">Sensor</span>
-                                <span class="row-val" title="${item.sensor}">${item.sensor}</span>
-                            </div>
-                            <div class="row-data-col">
-                                <span class="row-label">Creator</span>
-                                <span class="row-val" title="${item.creator}">${item.creator}</span>
-                            </div>
-                            <div class="row-data-col" style="align-items: center;">
-                                <span class="license-badge">${item.license}</span>
-                            </div>
-                        </div>`;
+                    html += `<div class="media-item-row"><div class="row-play-btn"><i data-lucide="play" size="16" fill="currentColor"></i></div><div class="row-spec-bar"><img src="${item.spectrogram}" class="row-spec-img" alt="Spec"></div><div class="row-info"><div class="row-name" title="${item.name}">${item.name}</div><div class="tags-row">${tagsHtml}</div></div><div class="row-data-col"><span class="row-val" style="color:var(--text-main); font-weight:700;">${item.date}</span><span class="row-val-small">${item.time}</span></div><div class="row-data-col"><span class="row-label">Dur</span><span class="row-val" style="font-family:var(--font-mono);">${item.duration}</span></div><div class="row-data-col"><span class="row-label">Site</span><span class="row-val" title="${item.site}">${item.site}</span></div><div class="row-data-col"><span class="row-label">Sensor</span><span class="row-val" title="${item.sensor}">${item.sensor}</span></div><div class="row-data-col"><span class="row-label">Creator</span><span class="row-val" title="${item.creator}">${item.creator}</span></div><div class="row-data-col" style="align-items: center;"><span class="license-badge">${item.license}</span></div></div>`;
                 }
             });
-            container.innerHTML = html;
-            lucide.createIcons();
+            container.innerHTML = html; lucide.createIcons();
         }
 
         function switchMediaView(mode, btn) {
@@ -944,260 +1182,83 @@
             if (mode === 'gallery') { container.classList.remove('view-list'); container.classList.add('view-gallery'); } else { container.classList.remove('view-gallery'); container.classList.add('view-list'); }
             btns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            pill.style.width = btn.offsetWidth + 'px';
-            pill.style.left = btn.offsetLeft + 'px';
+            pill.style.width = btn.offsetWidth + 'px'; pill.style.left = btn.offsetLeft + 'px';
             renderMedia();
         }
         
         // --- TIMELINE INTERACTION STATE ---
-        let tlState = {
-            scale: 1,
-            panning: false,
-            pointX: 0,
-            pointY: 0,
-            startX: 0,
-            startY: 0,
-            x: 0,
-            y: 0
-        };
-
+        let tlState = { scale: 1, panning: false, pointX: 0, pointY: 0, startX: 0, startY: 0, x: 0, y: 0 };
         function initTimelineInteraction() {
             const viewport = document.getElementById('tl-viewport');
             const world = document.getElementById('tl-world');
             if(!viewport || !world) return;
-
-            // 1. Zoom (Wheel)
             viewport.addEventListener('wheel', (e) => {
-                // If hovering over a scrollable column body, let it scroll naturally vertically
-                // UNLESS ctrl key is pressed OR we are scrolling horizontally
-                if (e.target.closest('.tl-col-body')) {
-                    // Check if the column has scrollable content
-                    const col = e.target.closest('.tl-col-body');
-                    if (col.scrollHeight > col.clientHeight && !e.ctrlKey) {
-                        // Allow default vertical scroll inside column
-                        return; 
-                    }
-                }
-                
+                if (e.target.closest('.tl-col-body')) { const col = e.target.closest('.tl-col-body'); if (col.scrollHeight > col.clientHeight && !e.ctrlKey) return; }
                 e.preventDefault();
-
                 const xs = (e.clientX - tlState.x) / tlState.scale;
                 const ys = (e.clientY - tlState.y) / tlState.scale;
-
-                const delta = -e.deltaY;
-                const factor = 1.1;
-                
-                // Limit zoom
-                const oldScale = tlState.scale;
-                if (delta > 0) tlState.scale *= factor;
-                else tlState.scale /= factor;
-                
-                // Clamp scale
+                const delta = -e.deltaY; const factor = 1.1;
+                if (delta > 0) tlState.scale *= factor; else tlState.scale /= factor;
                 tlState.scale = Math.min(Math.max(0.2, tlState.scale), 4);
-
-                // Adjust position to zoom towards mouse
-                tlState.x = e.clientX - xs * tlState.scale;
-                tlState.y = e.clientY - ys * tlState.scale;
-
+                tlState.x = e.clientX - xs * tlState.scale; tlState.y = e.clientY - ys * tlState.scale;
                 updateTransform();
             }, { passive: false });
-
-            // 2. Pan (Mouse Down)
-            viewport.addEventListener('mousedown', (e) => {
-                // Allow clicking buttons/scrollbars without dragging
-                if(e.target.closest('.tl-ctrl-btn')) return;
-                
-                tlState.panning = true;
-                tlState.startX = e.clientX - tlState.x;
-                tlState.startY = e.clientY - tlState.y;
-                viewport.style.cursor = 'grabbing';
-            });
-
-            window.addEventListener('mousemove', (e) => {
-                if (!tlState.panning) return;
-                e.preventDefault();
-                tlState.x = e.clientX - tlState.startX;
-                tlState.y = e.clientY - tlState.startY;
-                updateTransform();
-            });
-
-            window.addEventListener('mouseup', () => {
-                tlState.panning = false;
-                viewport.style.cursor = 'grab';
-            });
+            viewport.addEventListener('mousedown', (e) => { if(e.target.closest('.tl-ctrl-btn')) return; tlState.panning = true; tlState.startX = e.clientX - tlState.x; tlState.startY = e.clientY - tlState.y; viewport.style.cursor = 'grabbing'; });
+            window.addEventListener('mousemove', (e) => { if (!tlState.panning) return; e.preventDefault(); tlState.x = e.clientX - tlState.startX; tlState.y = e.clientY - tlState.startY; updateTransform(); });
+            window.addEventListener('mouseup', () => { tlState.panning = false; viewport.style.cursor = 'grab'; });
         }
+        function updateTransform() { const world = document.getElementById('tl-world'); if(world) world.style.transform = `translate(${tlState.x}px, ${tlState.y}px) scale(${tlState.scale})`; }
+        function tlReset() { tlState.scale = 1; tlState.x = 40; tlState.y = 40; updateTransform(); }
+        function tlZoom(delta) { const factor = delta > 0 ? 1.2 : 0.8; tlState.scale *= factor; tlState.scale = Math.min(Math.max(0.2, tlState.scale), 4); updateTransform(); }
 
-        function updateTransform() {
-            const world = document.getElementById('tl-world');
-            if(world) {
-                world.style.transform = `translate(${tlState.x}px, ${tlState.y}px) scale(${tlState.scale})`;
-            }
-        }
-
-        function tlReset() {
-            tlState.scale = 1;
-            tlState.x = 40; // Initial padding
-            tlState.y = 40;
-            updateTransform();
-        }
-
-        function tlZoom(delta) {
-            const factor = delta > 0 ? 1.2 : 0.8;
-            tlState.scale *= factor;
-            tlState.scale = Math.min(Math.max(0.2, tlState.scale), 4);
-            updateTransform();
-        }
-
-        // --- RENDER LOGIC ---
         function renderTimeline() {
-            // Note: Targeting 'tl-world' now
             const container = document.getElementById('tl-world');
-            
-            // Group items
-            const grouped = mediaItems.reduce((acc, item) => {
-                if (!acc[item.date]) acc[item.date] = [];
-                acc[item.date].push(item);
-                return acc;
-            }, {});
-
+            const grouped = mediaItems.reduce((acc, item) => { if (!acc[item.date]) acc[item.date] = []; acc[item.date].push(item); return acc; }, {});
             const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
-
-            if (sortedDates.length === 0) {
-                container.innerHTML = `<div style="padding:40px; color:var(--text-muted);">No data available</div>`;
-                return;
-            }
-
+            if (sortedDates.length === 0) { container.innerHTML = `<div style="padding:40px; color:var(--text-muted);">No data available</div>`; return; }
             let html = '';
-
             sortedDates.forEach(date => {
-                const dayItems = grouped[date];
-                dayItems.sort((a, b) => a.time.localeCompare(b.time));
-
+                const dayItems = grouped[date]; dayItems.sort((a, b) => a.time.localeCompare(b.time));
                 let cardsHtml = '';
                 dayItems.forEach(item => {
-                    cardsHtml += `
-                        <div class="tl-card">
-                            <div class="tl-card-img-box">
-                                <img src="${item.spectrogram}" class="tl-card-img" loading="lazy">
-                            </div>
-                            <div class="tl-card-info">
-                                <div class="tl-card-title">${item.name}</div>
-                                <div class="tl-card-meta">
-                                    <span>${item.time}</span>
-                                    <span>${item.duration}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    cardsHtml += `<div class="tl-card"><div class="tl-card-img-box"><img src="${item.spectrogram}" class="tl-card-img" loading="lazy"></div><div class="tl-card-info"><div class="tl-card-title">${item.name}</div><div class="tl-card-meta"><span>${item.time}</span><span>${item.duration}</span></div></div></div>`;
                 });
-
                 const dateObj = new Date(date);
-                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
-                const dayNum = dateObj.getDate();
-
-                html += `
-                    <div class="tl-column">
-                        <div class="tl-col-header">
-                            <div>
-                                <span class="tl-date-day">${dayNum} ${month}</span>
-                                <span class="tl-date-meta">${dayName}</span>
-                            </div>
-                            <div class="tl-badge-count">${dayItems.length}</div>
-                        </div>
-                        <div class="tl-col-body">
-                            ${cardsHtml}
-                        </div>
-                    </div>
-                `;
+                html += `<div class="tl-column"><div class="tl-col-header"><div><span class="tl-date-day">${dateObj.getDate()} ${dateObj.toLocaleDateString('en-US', { month: 'short' })}</span><span class="tl-date-meta">${dateObj.toLocaleDateString('en-US', { weekday: 'short' })}</span></div><div class="tl-badge-count">${dayItems.length}</div></div><div class="tl-col-body">${cardsHtml}</div></div>`;
             });
-
-            container.innerHTML = html;
-            // Reset view to default position on load
-            tlReset();
-            lucide.createIcons();
+            container.innerHTML = html; tlReset(); lucide.createIcons();
         }
 
         // --- GENERAL LOGIC ---
-        function getIconForStat(key) {
-            const map = { 'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban' };
-            return map[key] || 'activity';
-        }
+        function getIconForStat(key) { const map = { 'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban' }; return map[key] || 'activity'; }
 
         function renderSummary() {
             const statsContainer = document.getElementById('summary-stats-grid');
             const contribCard = document.querySelector('.summary-contributors-card');
             const contribList = document.getElementById('summary-contributors-list');
             const contribTitle = document.getElementById('contrib-title');
-            
-            let statsObj = {};
-            let contributorsArr = [];
-            let type = "Project";
-            let contribBgIconName = 'users';
-
+            let statsObj = {}; let contributorsArr = []; let type = "Project"; let contribBgIconName = 'users';
             if (currColIdx === 0) {
-                const proj = rawProjects[currProjIdx];
-                type = "Project";
-                statsObj = proj.stats;
-                order = ['Users', 'Collections', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites'];
-                contributorsArr = proj.contributors;
-                contribBgIconName = 'folder-kanban';
+                const proj = rawProjects[currProjIdx]; type = "Project"; statsObj = proj.stats; order = ['Users', 'Collections', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites']; contributorsArr = proj.contributors; contribBgIconName = 'folder-kanban';
             } else {
-                const col = rawProjects[currProjIdx].collections[currColIdx - 1];
-                type = "Collection";
-                statsObj = col.stats;
-                order = ['Users', 'Projects', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites'];
-                contributorsArr = col.contributors;
-                contribBgIconName = 'library';
+                const col = rawProjects[currProjIdx].collections[currColIdx - 1]; type = "Collection"; statsObj = col.stats; order = ['Users', 'Projects', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites']; contributorsArr = col.contributors; contribBgIconName = 'library';
             }
-
             let statsHTML = '';
             order.forEach((key) => {
-                let val = statsObj[key.toLowerCase()] || 0;
-                const icon = getIconForStat(key);
-                statsHTML += `
-                    <div class="summary-stat-card">
-                        <div class="stat-content-left">
-                            <div class="summary-stat-val ${key==='Users'?'highlight':''}">${val}</div>
-                            <div class="summary-stat-label">${key}</div>
-                        </div>
-                        <i data-lucide="${icon}" class="bg-icon"></i>
-                    </div>
-                `;
+                let val = statsObj[key.toLowerCase()] || 0; const icon = getIconForStat(key);
+                statsHTML += `<div class="summary-stat-card"><div class="stat-content-left"><div class="summary-stat-val ${key==='Users'?'highlight':''}">${val}</div><div class="summary-stat-label">${key}</div></div><i data-lucide="${icon}" class="bg-icon"></i></div>`;
             });
-            
-            animateBlockSwap(statsContainer, () => {
-                statsContainer.innerHTML = statsHTML;
-                lucide.createIcons();
-            });
-
+            animateBlockSwap(statsContainer, () => { statsContainer.innerHTML = statsHTML; lucide.createIcons(); });
             animateBlockSwap(contribCard, () => {
                 contribTitle.innerHTML = `<i data-lucide="${type === 'Project' ? 'folder-kanban' : 'library'}"></i> ${type} Contributors`;
                 let contribHTML = '';
                 contributorsArr.forEach((p, index) => {
                     const isCreator = index === 0; 
-                    contribHTML += `
-                        <div class="contrib-item">
-                            <div class="contrib-info-block">
-                                <span class="contrib-name">${p.name}</span>
-                                <div class="contrib-sub">
-                                    <a href="mailto:${p.email}" class="contrib-email"><i data-lucide="mail"></i>${p.email}</a>
-                                    <span class="contrib-divider">•</span>
-                                    <a href="https://orcid.org/${p.uid}" target="_blank" class="orcid-link" title="ORCID: ${p.uid}"><i data-lucide="id-card"></i><span class="cid">${p.uid}</span></a>
-                                </div>
-                            </div>
-                            <span class="contrib-role-text ${isCreator ? 'creator-role' : ''}">${p.role}</span>
-                        </div>
-                    `;
+                    contribHTML += `<div class="contrib-item"><div class="contrib-info-block"><span class="contrib-name">${p.name}</span><div class="contrib-sub"><a href="mailto:${p.email}" class="contrib-email"><i data-lucide="mail"></i>${p.email}</a><span class="contrib-divider">•</span><a href="https://orcid.org/${p.uid}" target="_blank" class="orcid-link" title="ORCID: ${p.uid}"><i data-lucide="id-card"></i><span class="cid">${p.uid}</span></a></div></div><span class="contrib-role-text ${isCreator ? 'creator-role' : ''}">${p.role}</span></div>`;
                 });
                 contribList.innerHTML = contribHTML;
-
-                const existingIcon = contribCard.querySelector('.bg-icon-contrib');
-                if (existingIcon) existingIcon.remove();
-                const bgIcon = document.createElement('i');
-                bgIcon.setAttribute('data-lucide', contribBgIconName);
-                bgIcon.className = 'bg-icon-contrib';
-                contribCard.appendChild(bgIcon);
+                const existingIcon = contribCard.querySelector('.bg-icon-contrib'); if (existingIcon) existingIcon.remove();
+                const bgIcon = document.createElement('i'); bgIcon.setAttribute('data-lucide', contribBgIconName); bgIcon.className = 'bg-icon-contrib'; contribCard.appendChild(bgIcon);
                 lucide.createIcons();
             });
         }
@@ -1231,31 +1292,23 @@
         const animateBlockSwap = async (containerOrId, updateCallback) => {
             const el = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
             if (!el) { if(updateCallback) updateCallback(); return; }
-            el.classList.add('fading-out');
-            await new Promise(r => setTimeout(r, 300));
-            if (updateCallback) updateCallback();
-            el.classList.remove('fading-out');
+            el.classList.add('fading-out'); await new Promise(r => setTimeout(r, 300));
+            if (updateCallback) updateCallback(); el.classList.remove('fading-out');
         };
 
         const animateImageSwap = async (img, newSrc) => {
             if (img.getAttribute('data-current-src') === newSrc) return;
-            img.style.opacity = 0;
-            await new Promise(r => setTimeout(r, 300));
-            img.src = newSrc;
-            img.setAttribute('data-current-src', newSrc);
+            img.style.opacity = 0; await new Promise(r => setTimeout(r, 300));
+            img.src = newSrc; img.setAttribute('data-current-src', newSrc);
             const handleLoad = () => { img.style.opacity = 1; img.removeEventListener('load', handleLoad); };
-            img.addEventListener('load', handleLoad);
-            if (img.complete && img.naturalWidth > 0) { handleLoad(); }
+            img.addEventListener('load', handleLoad); if (img.complete && img.naturalWidth > 0) { handleLoad(); }
         };
 
         const animateTextSwap = async (elementOrId, newContent) => {
             const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
-            if (!el) return;
-            if (el.textContent === newContent) return;
-            el.classList.add('fading-out');
-            await new Promise(r => setTimeout(r, 300));
-            el.textContent = newContent;
-            el.classList.remove('fading-out');
+            if (!el) return; if (el.textContent === newContent) return;
+            el.classList.add('fading-out'); await new Promise(r => setTimeout(r, 300));
+            el.textContent = newContent; el.classList.remove('fading-out');
         };
 
         function updateContent(project, immediate = false) {
@@ -1267,52 +1320,41 @@
                 document.getElementById('meta-doi-text').textContent = doiDisplay;
                 document.getElementById('meta-link').href = project.externalUrl || "#"; 
                 const projContainer = document.getElementById('rich-text-container');
-                projContainer.innerHTML = project.description;
-                projContainer.className = "";
+                projContainer.innerHTML = project.description; projContainer.className = "";
                 if (project.styleClass) projContainer.classList.add(project.styleClass);
             };
 
             if (immediate) {
                 updateLogic();
                 const img = document.getElementById('main-project-image');
-                img.src = project.image;
-                img.setAttribute('data-current-src', project.image);
+                img.src = project.image; img.setAttribute('data-current-src', project.image);
                 img.onload = () => { img.style.opacity = 1; };
             } else {
                 const headerSection = document.querySelector('.desc-header-section');
                 const contentArea = document.querySelector('.desc-content-area');
-                animateBlockSwap(headerSection, null); 
-                animateBlockSwap(contentArea, updateLogic);
+                animateBlockSwap(headerSection, null); animateBlockSwap(contentArea, updateLogic);
                 const img = document.getElementById('main-project-image');
                 animateImageSwap(img, project.image);
             }
 
             const projLabel = document.getElementById('label-project');
-            if (immediate) projLabel.textContent = project.name;
-            else animateTextSwap(projLabel, project.name);
+            if (immediate) projLabel.textContent = project.name; else animateTextSwap(projLabel, project.name);
 
             const fullList = [{name: "All Collections"}, ...project.collections];
             const colName = fullList[0] ? fullList[0].name : "Select..."; 
-            if (immediate) document.getElementById('label-collection').textContent = colName;
-            else animateTextSwap('label-collection', colName);
+            if (immediate) document.getElementById('label-collection').textContent = colName; else animateTextSwap('label-collection', colName);
             
-            // --- REFRESH LOGIC ---
             const refreshAllViews = () => {
                 renderSummary();
                 updateMediaContext();
+                if (document.getElementById('tab-timeline').classList.contains('active')) renderTimeline();
                 
-                // If timeline is active, refresh it too
-                if (document.getElementById('tab-timeline').classList.contains('active')) {
-                    renderTimeline();
-                }
+                // MAP REFRESH
+                loadMapData();
+                if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
             };
 
-            if(immediate) { 
-                setTimeout(refreshAllViews, 50); 
-            } else { 
-                refreshAllViews();
-            }
-
+            if(immediate) setTimeout(refreshAllViews, 50); else refreshAllViews();
             lucide.createIcons();
         }
 
@@ -1365,10 +1407,11 @@
                 
                 renderSummary();
                 updateMediaContext(); 
-                // If timeline is active, refresh it too
-                if (document.getElementById('tab-timeline').classList.contains('active')) {
-                    renderTimeline();
-                }
+                if (document.getElementById('tab-timeline').classList.contains('active')) renderTimeline();
+
+                // MAP REFRESH
+                loadMapData();
+                if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
 
                 renderCollectionList();
             }
@@ -1378,9 +1421,19 @@
         function handleSearchProject(val) { projSearchQuery = val; renderProjectList(); }
         function handleSearchCollection(val) { colSearchQuery = val; renderCollectionList(); }
         function toggleMenu(id) { const el = document.getElementById(id); const isActive = el.classList.contains('active'); closeAllMenus(); if (!isActive) el.classList.add('active'); }
-        function closeAllMenus() { document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active')); }
+        function closeAllMenus() { 
+            document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.custom-select-wrapper').forEach(d => d.classList.remove('open')); 
+        }
         function toggleUserMenu() { const el = document.getElementById('user-menu'); const isActive = el.classList.contains('active'); closeAllMenus(); if (!isActive) el.classList.add('active'); }
-        document.addEventListener('click', e => { if(!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) { closeAllMenus(); } });
+        
+        document.addEventListener('click', e => { 
+            if(!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) { 
+                document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active')); 
+            }
+            if (!e.target.closest('.custom-select-wrapper')) closeSelects();
+        });
+        
         function movePill(el) { const pill = document.getElementById('nav-sliding-pill'); if(pill && el) { pill.style.width = el.offsetWidth + 'px'; pill.style.left = el.offsetLeft + 'px'; } }
         
         function switchTab(btn, tabName) { 
@@ -1394,20 +1447,24 @@
                 requestAnimationFrame(() => {
                     const activeView = document.querySelector('.view-btn.active');
                     const pill = document.getElementById('view-pill');
-                    if (activeView && pill) {
-                        pill.style.width = activeView.offsetWidth + 'px';
-                        pill.style.left = activeView.offsetLeft + 'px';
-                    }
+                    if (activeView && pill) { pill.style.width = activeView.offsetWidth + 'px'; pill.style.left = activeView.offsetLeft + 'px'; }
                 });
             }
 
-            // --- TIMELINE RENDER TRIGGER ---
-            if (tabName === 'timeline') {
-                renderTimeline();
+            if (tabName === 'timeline') renderTimeline();
+
+            // MAP TAB SWITCH
+            if (tabName === 'map') {
+                if(!map) initMap();
+                setTimeout(() => {
+                    map.invalidateSize();
+                    renderMap(false); // don't zoom on simple tab switch, only on data load
+                }, 100);
             }
         }
         
         window.addEventListener('resize', () => { const active = document.querySelector('.nav-item.active'); if(active) movePill(active); });
+        
         function init() {
             renderProjectList(); renderCollectionList(); updateContent(rawProjects[0], true); 
             const activeView = document.querySelector('.view-btn.active');
@@ -1415,7 +1472,6 @@
             
             const active = document.querySelector('.nav-item.active'); if(active) movePill(active);
 
-            // Initialize timeline interaction listeners
             initTimelineInteraction();
         }
         init();
