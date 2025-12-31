@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ecoSignal | Spatial Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    
+    <style>
+        :root {
+            /* --- COLOR PALETTE --- */
+            --brand: #83CD20; --brand-hover: #72b51b;
+            --bg-page: #f8fafc;
+            --text-main: #0f172a; --text-secondary: #475569; --text-muted: #94a3b8;
+            --border-light: #e2e8f0;
+            
+            --nav-height: 80px;
+            --capsule-height: 48px;
+            
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            /* Dynamic Variables */
+            --site-color: #0f172a; 
+            --site-color-tint: rgba(15, 23, 42, 0.05);
+        }
+
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: var(--font-sans); background: var(--bg-page); color: var(--text-main); overflow: hidden; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        /* =========================================
+           1. NAVIGATION
+           ========================================= */
+        .project-nav-bar {
+            position: absolute; top: 0; left: 0; width: 100%; height: var(--nav-height);
+            z-index: 5000;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 30px; box-sizing: border-box;
+        }
+
+        .nav-left, .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-right { flex-grow: 1; justify-content: flex-end; }
+
+        .nav-capsule-box { 
+            position: relative; display: flex; align-items: center; 
+            background: #f1f5f9; border-radius: 60px; padding: 4px; 
+            height: var(--capsule-height); box-sizing: border-box; 
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+        }
+
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); padding: 0 12px 0 8px; font-weight: 800; font-size: 1.1rem; }
+        .logo-icon-box { width: 28px; height: 28px; background: var(--brand); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(131, 205, 32, 0.4); }
+        .nav-divider { width: 1px; height: 16px; background: rgba(0,0,0,0.1); margin: 0 8px; flex-shrink: 0; }
+
+        .breadcrumb-group { display: flex; align-items: center; gap: 4px; height: 100%; }
+        .crumb-wrapper { position: relative; height: 100%; }
+        .crumb-btn { 
+            display: flex; align-items: center; gap: 6px; background: transparent; border: none; 
+            padding: 0 16px; height: 100%; border-radius: 40px; cursor: pointer; 
+            transition: all 0.2s; color: var(--text-secondary); font-family: var(--font-sans); font-weight: 600; font-size: 0.9rem;
+        }
+        .crumb-btn:hover, .crumb-wrapper.active .crumb-btn { background: white; color: var(--brand-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        
+        .crumb-dropdown { 
+            position: absolute; top: calc(100% + 14px); left: 0; min-width: 280px; 
+            background: white; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15); 
+            padding: 6px; z-index: 5002; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: 0.2s; 
+        }
+        .crumb-wrapper.active .crumb-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+        .crumb-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+        .crumb-item:hover { background: #f1f5f9; color: var(--brand-hover); }
+        .crumb-item.selected { background: rgba(131, 205, 32, 0.12); color: var(--brand-hover); }
+        .crumb-item .check-icon { opacity: 0; width: 16px; height: 16px; color: var(--brand); }
+        .crumb-item.selected .check-icon { opacity: 1; }
+
+        .sliding-pill { position: absolute; top: 4px; bottom: 4px; left: 4px; background: var(--brand); border-radius: 50px; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); z-index: 1; width: 0; pointer-events: none; }
+        .nav-item { 
+            position: relative; z-index: 2; background: transparent; border: none; 
+            padding: 0 20px; height: 100%; border-radius: 50px; cursor: pointer; color: var(--text-muted); 
+            transition: color 0.25s ease; font-weight: 600; font-size: 0.9rem; font-family: var(--font-sans);
+        }
+        .nav-item.active { color: white; }
+        .nav-item:not(.active):hover { color: var(--text-main); }
+
+        .user-wrapper { position: relative; height: 100%; }
+        .user-capsule-btn { 
+            padding: 0 16px 0 6px; border-radius: 40px; gap: 10px; height: 100%; display: flex; align-items: center; cursor: pointer; 
+            color: var(--text-secondary); transition: all 0.2s ease; font-weight: 600; font-size: 0.9rem;
+        }
+        .user-capsule-btn:hover, .user-wrapper.active .user-capsule-btn { background: white; color: var(--brand-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .user-avatar-icon { width: 30px; height: 30px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s; }
+        .user-capsule-btn:hover .user-avatar-icon { background: var(--brand); color: white; }
+        .user-dropdown-menu { 
+            position: absolute; top: calc(100% + 14px); right: 0; width: 200px; 
+            background: white; border-radius: 20px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15); 
+            padding: 8px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: 0.2s; z-index: 5005;
+        }
+        .user-wrapper.active .user-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-item { display: flex; gap: 12px; padding: 12px 16px; border-radius: 14px; text-decoration: none; color: var(--text-main); font-size: 0.95rem; font-weight: 600; align-items: center; }
+        .dropdown-item:hover { background: rgba(131, 205, 32, 0.12); color: var(--brand-hover); }
+        .dropdown-item.danger:hover { background: #fef2f2; color: #ef4444; }
+        .nav-btn-simple { background: transparent; border: none; padding: 0; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); width: 40px; height: 100%; border-radius: 40px; transition: all 0.2s ease; cursor: pointer; }
+        .nav-btn-simple:hover { background: white; color: var(--brand-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+
+        /* =========================================
+           2. MAP & CLUSTER
+           ========================================= */
+        .content-wrapper { position: absolute; top: var(--nav-height); bottom: 0; left: 0; right: 0; background: var(--bg-page); }
+        .tab-page { width: 100%; height: 100%; display: none; }
+        .tab-page.active { display: block; animation: fadeIn 0.3s ease forwards; }
+        
+        .map-wrapper { position: relative; width: 100%; height: 100%; }
+        #full-map { width: 100%; height: 100%; z-index: 1; outline: none; }
+
+        /* DONUT CLUSTER */
+        .custom-cluster-icon { background: transparent; }
+        .donut-cluster {
+            position: relative; width: 50px; height: 50px; border-radius: 50%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer;
+        }
+        .donut-cluster:hover { transform: scale(1.15); z-index: 9000; }
+        .donut-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 40px; height: 40px; background: white; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-main); line-height: 1;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .dc-num { font-family: var(--font-sans); font-weight: 800; font-size: 0.85rem; }
+        .dc-label { font-size: 0.5rem; font-weight: 700; color: var(--text-muted); margin-top: 1px; }
+
+        .site-marker-pin {
+            width: 100%; height: 100%; border-radius: 50%; background: white;
+            border: 4px solid #ccc; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.75rem; color: var(--text-main);
+            transition: transform 0.2s;
+        }
+        .site-marker-pin:hover { transform: scale(1.2); }
+
+        /* =========================================
+           3. LEFT FILTER (SELECT DRAWER)
+           ========================================= */
+        .filter-trigger-btn {
+            position: absolute; top: 20px; left: 20px; z-index: 1001;
+            width: 44px; height: 44px;
+            background: white; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--brand); border: 1px solid white;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .filter-trigger-btn:hover { transform: scale(1.05); color: var(--brand-hover); box-shadow: 0 8px 20px rgba(131, 205, 32, 0.2); }
+        .filter-trigger-btn.active { opacity: 0; pointer-events: none; transform: translateX(-20px); }
+
+        .filter-drawer {
+            position: absolute; top: 20px; bottom: 20px; left: 20px; width: 280px;
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px);
+            border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            z-index: 1002;
+            display: flex; flex-direction: column;
+            transform: translateX(-150%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .filter-drawer.active { transform: translateX(0); }
+
+        .fd-header {
+            padding: 24px 24px 16px 24px; display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0; border-bottom: 1px solid var(--border-light);
+        }
+        .fd-title { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+        .fd-close {
+            width: 32px; height: 32px; background: #f1f5f9; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center; color: var(--text-secondary);
+            cursor: pointer; transition: 0.2s;
+        }
+        .fd-close:hover { background: var(--text-main); color: white; }
+
+        .fd-content { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+        /* CUSTOM SELECT STYLE */
+        .custom-select-wrapper { position: relative; }
+        .select-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block; text-transform: uppercase; }
+        
+        .select-trigger {
+            width: 100%; padding: 12px 14px; background: #f8fafc;
+            border: 1px solid var(--border-light); border-radius: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; font-size: 0.9rem; color: var(--text-main); font-weight: 500;
+            transition: all 0.2s; box-sizing: border-box;
+        }
+        .select-trigger:hover:not(.disabled) { background: white; border-color: #cbd5e1; }
+        .select-trigger.active { background: white; border-color: var(--brand); box-shadow: 0 0 0 2px rgba(131, 205, 32, 0.1); }
+        .select-trigger.disabled { opacity: 0.6; cursor: not-allowed; background: #f1f5f9; }
+        
+        .select-options {
+            position: absolute; top: calc(100% + 6px); left: 0; width: 100%;
+            background: white; border-radius: 10px; border: 1px solid var(--border-light);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            max-height: 200px; overflow-y: auto; z-index: 100;
+            padding: 4px; box-sizing: border-box;
+            opacity: 0; visibility: hidden; transform: translateY(-5px); transition: 0.2s;
+        }
+        .custom-select-wrapper.open .select-options { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        .select-option {
+            padding: 10px; border-radius: 6px; cursor: pointer;
+            font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;
+            transition: 0.1s;
+        }
+        .select-option:hover { background: #f1f5f9; color: var(--brand-hover); }
+        .select-option.selected { background: rgba(131, 205, 32, 0.1); color: var(--brand-hover); font-weight: 600; }
+        .opt-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .btn-reset-filters {
+            margin-top: 12px; width: 100%; padding: 14px;
+            border: 1px dashed #cbd5e1; background: transparent;
+            border-radius: 12px; color: var(--text-secondary);
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-reset-filters:hover { border-color: var(--brand); color: var(--brand-hover); background: rgba(131, 205, 32, 0.05); }
+
+        /* =========================================
+           4. RIGHT SIDEBAR
+           ========================================= */
+        .sidebar {
+            position: absolute; top: 20px; bottom: 20px; right: 20px; width: 380px;
+            background: white; border-radius: 24px; box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+            z-index: 1001; 
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; overflow: hidden; border: none;
+        }
+        .sidebar.active { transform: translateX(0); }
+        
+        .sb-header { 
+            padding: 30px 24px 20px 24px; flex-shrink: 0; 
+            background: var(--site-color);
+            display: flex; justify-content: space-between; align-items: flex-start;
+            transition: background-color 0.3s;
+        }
+        
+        .sb-title { font-size: 1.6rem; font-weight: 800; margin: 0; line-height: 1.2; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .sb-close { 
+            background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            cursor: pointer; color: white; transition: 0.2s; margin-left: 12px; backdrop-filter: blur(4px);
+        }
+        .sb-close:hover { background: white; color: var(--site-color); transform: rotate(90deg); }
+        
+        .sb-content { flex: 1; overflow-y: auto; background: white; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .data-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-bottom: 1px dashed #f1f5f9; }
+        .data-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+        .data-val { font-size: 0.95rem; font-weight: 700; color: var(--text-main); text-align: right; }
+        
+        .stats-box-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; margin-bottom: 10px; }
+        .stat-box { 
+            background: #f8fafc; border: 1px solid var(--border-light); border-radius: 12px; padding: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .stat-box-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-box-val { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+
+        .section-title { font-size: 0.8rem; font-weight: 800; color: var(--text-main); margin-top: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;}
+
+        .media-scroll-container { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding-right: 4px; }
+        .media-item { 
+            display: flex; align-items: center; padding: 12px; border-radius: 12px; 
+            background: white; border: 1px solid var(--border-light);
+            text-decoration: none; transition: all 0.2s;
+        }
+        .media-item:hover { border-color: var(--site-color); background: #fcfcfc; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .media-item:hover .media-icon { background: var(--site-color); color: white; border-color: var(--site-color); }
+
+        .media-icon { 
+            width: 36px; height: 36px; border-radius: 8px; background: #f8fafc; 
+            color: var(--text-secondary); display: flex; align-items: center; justify-content: center; 
+            margin-right: 12px; flex-shrink: 0; transition: 0.2s; border: 1px solid var(--border-light);
+        }
+        
+        .media-meta { flex: 1; min-width: 0; }
+        .media-name { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
+        .media-dur { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+        .placeholder-card { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <nav class="project-nav-bar">
+        <div class="nav-left">
+            <div class="nav-capsule-box">
+                <a href="#" class="nav-logo">
+                    <div class="logo-icon-box"><i data-lucide="activity"></i></div>
+                    <span>ecoSignal</span>
+                </a>
+                <div class="nav-divider"></div>
+                <div class="breadcrumb-group">
+                    <div class="crumb-wrapper" id="project-wrap">
+                        <button class="crumb-btn" onclick="toggleMenu('project-wrap')">
+                            <span id="label-project">Loading...</span><i data-lucide="chevron-down" size="14"></i>
+                        </button>
+                        <div class="crumb-dropdown"><div id="project-list-container"></div></div>
+                    </div>
+                    <span class="crumb-separator" style="color:#cbd5e1; font-weight:300;">/</span>
+                    <div class="crumb-wrapper" id="collection-wrap">
+                        <button class="crumb-btn" onclick="toggleMenu('collection-wrap')">
+                            <span id="label-collection">Loading...</span><i data-lucide="chevron-down" size="14"></i>
+                        </button>
+                        <div class="crumb-dropdown"><div id="collection-list-container"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-capsule-box">
+                <div class="sliding-pill" id="nav-sliding-pill"></div>
+                <button class="nav-item" onclick="switchTab(this, 'desc')">Description</button>
+                <button class="nav-item" onclick="switchTab(this, 'summary')">Summary</button>
+                <button class="nav-item" onclick="switchTab(this, 'media')">Media</button>
+                <button class="nav-item active" onclick="switchTab(this, 'map')">Map</button>
+                <button class="nav-item" onclick="switchTab(this, 'timeline')">Timeline</button>
+                <button class="nav-item" onclick="switchTab(this, 'data')">Data</button>
+            </div>
+            <div class="nav-capsule-box" style="padding-right: 6px;">
+                <button class="nav-btn-simple" title="Information"><i data-lucide="info" size="20"></i></button>
+                <div class="nav-divider"></div>
+                <div class="user-wrapper" id="user-menu">
+                    <div class="user-capsule-btn" onclick="toggleUserMenu()">
+                        <div class="user-avatar-icon"><i data-lucide="user" size="16"></i></div>
+                        <span class="user-name-text">Liudilong</span>
+                        <i data-lucide="chevron-down" size="14"></i>
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <a href="#" class="dropdown-item"><i data-lucide="settings" size="18"></i> Settings</a>
+                        <a href="#" class="dropdown-item danger"><i data-lucide="log-out" size="18"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+        <div id="tab-desc" class="tab-page"><div class="placeholder-card"><h2>Description Placeholder</h2></div></div>
+        <div id="tab-summary" class="tab-page"><div class="placeholder-card"><h2>Summary Placeholder</h2></div></div>
+        <div id="tab-media" class="tab-page"><div class="placeholder-card"><h2>Media Placeholder</h2></div></div>
+        <div id="tab-timeline" class="tab-page"><div class="placeholder-card"><h2>Timeline Placeholder</h2></div></div>
+        <div id="tab-data" class="tab-page"><div class="placeholder-card"><h2>Data Placeholder</h2></div></div>
+
+        <div id="tab-map" class="tab-page active">
+            <div class="map-wrapper">
+                <div id="full-map"></div>
+
+                <button class="filter-trigger-btn" id="filter-btn-main" onclick="openFilterDrawer()">
+                    <i data-lucide="sliders-horizontal" size="22"></i>
+                </button>
+
+                <div class="filter-drawer" id="filter-drawer">
+                    <div class="fd-header">
+                        <div class="fd-title">
+                            <i data-lucide="sliders-horizontal" size="20" color="var(--brand)"></i>
+                            <span>Filters</span>
+                        </div>
+                        <button class="fd-close" onclick="closeFilterDrawer()"><i data-lucide="chevrons-left" size="20"></i></button>
+                    </div>
+
+                    <div class="fd-content">
+                        <div class="custom-select-wrapper" id="sel-realm">
+                            <span class="select-label">1. Eco Realm</span>
+                            <div class="select-trigger" onclick="toggleSelect('sel-realm')">
+                                <span class="trigger-text" id="text-realm">All Realms</span>
+                                <i data-lucide="chevron-down" size="16"></i>
+                            </div>
+                            <div class="select-options" id="opt-realm"></div>
+                        </div>
+
+                        <div class="custom-select-wrapper" id="sel-biome">
+                            <span class="select-label">2. Biome</span>
+                            <div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')">
+                                <span class="trigger-text" id="text-biome">All Biomes</span>
+                                <i data-lucide="chevron-down" size="16"></i>
+                            </div>
+                            <div class="select-options" id="opt-biome"></div>
+                        </div>
+
+                        <div class="custom-select-wrapper" id="sel-group">
+                            <span class="select-label">3. Group</span>
+                            <div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')">
+                                <span class="trigger-text" id="text-group">All Groups</span>
+                                <i data-lucide="chevron-down" size="16"></i>
+                            </div>
+                            <div class="select-options" id="opt-group"></div>
+                        </div>
+
+                        <button class="btn-reset-filters" onclick="resetFilters()">
+                            <i data-lucide="rotate-ccw" size="16"></i> Reset Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div id="sidebar" class="sidebar">
+                    <div class="sb-header" id="sb-header-bg">
+                        <h2 class="sb-title" id="sb-name">Site Name</h2>
+                        <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
+                    </div>
+                    
+                    <div class="sb-content">
+                        <div class="data-row">
+                            <span class="data-label">Realm</span>
+                            <span class="data-val" id="val-realm">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Biome</span>
+                            <span class="data-val" id="val-biome">--</span>
+                        </div>
+                        <div class="data-row" style="border-bottom:none;">
+                            <span class="data-label">Group</span>
+                            <span class="data-val" id="val-group">--</span>
+                        </div>
+
+                        <div class="stats-box-container">
+                            <div class="stat-box">
+                                <span class="stat-box-label">Topography</span>
+                                <span class="stat-box-val" id="val-topo">--</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-box-label">Water Depth</span>
+                                <span class="stat-box-val" id="val-depth">--</span>
+                            </div>
+                        </div>
+
+                        <div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div>
+                        <div class="media-scroll-container" id="media-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    
+    <script>
+        lucide.createIcons();
+
+        const REALM_COLORS = { "Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316" };
+        const TAXONOMY = {
+            "Terrestrial": { "Tropical Forests": ["Lowland Rainforest", "Montane Rainforest"], "Savannas": ["Shrubland", "Grassland"] },
+            "Marine": { "Coastal": ["Coral Reefs", "Seagrass"], "Pelagic": ["Epipelagic", "Mesopelagic"] },
+            "Freshwater": { "Riverine": ["Permanent Rivers", "Seasonal Streams"], "Palustrine": ["Peatlands", "Marshes"] },
+            "Subterranean": { "Cave Systems": ["Limestone Caves", "Lava Tubes"], "Aquifers": ["Shallow", "Deep"] },
+            "Atmospheric": { "Aerial": ["Lower Troposphere", "Upper Canopy"], "Urban Air": ["City Center", "Industrial"] },
+            "Estuarine": { "Brackish Water": ["Mangroves", "Salt Marshes"], "Deltas": ["Active Delta", "Inactive Delta"] },
+            "Cryogenic": { "Ice Sheets": ["Polar", "Glacial"], "Tundra": ["Permafrost", "Alpine"] },
+            "Artificial": { "Urban": ["Parks", "Gardens"], "Agricultural": ["Farms", "Plantations"] },
+            "Introduced": { "Invasive Zones": ["Islands", "Mainland"], "Rehabilitation": ["Forest", "Wetland"] },
+            "Unknown": { "Unclassified": ["Region A", "Region B"], "Pending": ["Survey 1", "Survey 2"] }
+        };
+        const PROJECTS = [
+            { id: "p1", name: "Amazon Basin Survey", collections: [{id: "c1", name: "Rainforest Phase 1"}, {id: "c2", name: "Riverine Phase 2"}] },
+            { id: "p2", name: "Pacific Coral Reefs", collections: [{id: "c3", name: "Great Barrier Reef"}, {id: "c4", name: "Fiji Transects"}] },
+            { id: "p3", name: "African Savanna", collections: [{id: "c5", name: "Serengeti Audio"}, {id: "c6", name: "Okavango Delta"}] }
+        ];
+
+        function getRealmColor(r) { return REALM_COLORS[r] || "#0f172a"; }
+
+        function generateSitesForContext(projId, colId) {
+            let seed = projId.charCodeAt(1) + (colId ? colId.charCodeAt(1) * 10 : 0);
+            const count = 50 + (seed % 20); 
+            let baseLat = -3.4, baseLng = -62.2;
+            if (projId === "p2") { baseLat = -18.2; baseLng = 147.7; }
+            if (projId === "p3") { baseLat = -2.3; baseLng = 34.8; }
+            const realmKeys = Object.keys(TAXONOMY);
+            return Array.from({length: count}, (_, i) => {
+                let rIndex = Math.floor(Math.random() * realmKeys.length);
+                if (projId === "p1" && Math.random() > 0.3) rIndex = 0; 
+                if (projId === "p2" && Math.random() > 0.3) rIndex = 1; 
+                const r = realmKeys[rIndex];
+                const bKeys = Object.keys(TAXONOMY[r]);
+                const b = bKeys[Math.floor(Math.random() * bKeys.length)];
+                const gKeys = TAXONOMY[r][b];
+                const g = gKeys[Math.floor(Math.random() * gKeys.length)];
+                const lat = baseLat + (Math.random()-0.5) * 8;
+                const lng = baseLng + (Math.random()-0.5) * 8;
+                const vertices = 3 + Math.floor(Math.random() * 5); 
+                const baseRadius = 0.03;
+                const poly = [];
+                const rotation = Math.random() * Math.PI;
+                for(let k=0; k<vertices; k++) {
+                    const angle = (k / vertices) * Math.PI * 2 + rotation;
+                    const r = baseRadius * (0.8 + Math.random() * 0.4); 
+                    poly.push([lat + Math.sin(angle)*r, lng + Math.cos(angle)*r]);
+                }
+                return {
+                    id: `${projId}-${colId||'all'}-${i}`, name: `Site ${String.fromCharCode(65+(i%26))}-${100+i}`,
+                    center: [lat, lng], polygon: poly, realm: r, biome: b, group: g,
+                    topography_m: Math.floor(Math.random()*800), freshwater_depth_m: r === 'Freshwater' ? (Math.random()*15).toFixed(1) : "N/A",
+                    mediaCount: Math.floor(Math.random() * 10) + 2,
+                    media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => ({ name: `${r.slice(0,3).toUpperCase()}_REC_${202500+m}.wav`, date: "2025-01-15", duration: "01:00:00" }))
+                };
+            });
+        }
+
+        let currentProjIdx = 0, currentColIdx = -1, currentSites = [], filterState = { realm: "", biome: "", group: "" }, map, clusterGroup, polyLayer, currentSelectedSiteId = null;
+
+        function initNav() { renderNavDropdowns(); updateLabels(); const active = document.querySelector('.nav-item.active'); if(active) movePill(active); }
+        function movePill(el) { const pill = document.getElementById('nav-sliding-pill'); if(pill && el) { pill.style.width = el.offsetWidth + 'px'; pill.style.left = el.offsetLeft + 'px'; } }
+        function switchTab(btn, tabName) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); btn.classList.add('active'); movePill(btn);
+            document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active')); document.getElementById('tab-'+tabName).classList.add('active');
+            if(tabName === 'map' && map) setTimeout(() => map.invalidateSize(), 100);
+        }
+        function renderNavDropdowns() {
+            const pContainer = document.getElementById('project-list-container');
+            pContainer.innerHTML = PROJECTS.map((p, i) => `<div class="crumb-item ${i===currentProjIdx?'selected':''}" onclick="selectProject(${i})"><span>${p.name}</span>${i===currentProjIdx?'<i data-lucide="check" class="check-icon"></i>':''}</div>`).join('');
+            const cContainer = document.getElementById('collection-list-container');
+            const cols = PROJECTS[currentProjIdx].collections;
+            let colHtml = `<div class="crumb-item ${currentColIdx===-1?'selected':''}" onclick="selectCollection(-1)"><span>All Collections</span>${currentColIdx===-1?'<i data-lucide="check" class="check-icon"></i>':''}</div>`;
+            colHtml += cols.map((c, i) => `<div class="crumb-item ${i===currentColIdx?'selected':''}" onclick="selectCollection(${i})"><span>${c.name}</span>${i===currentColIdx?'<i data-lucide="check" class="check-icon"></i>':''}</div>`).join('');
+            cContainer.innerHTML = colHtml;
+            lucide.createIcons();
+        }
+        function updateLabels() { document.getElementById('label-project').textContent = PROJECTS[currentProjIdx].name; document.getElementById('label-collection').textContent = currentColIdx === -1 ? "All Collections" : PROJECTS[currentProjIdx].collections[currentColIdx].name; }
+        function toggleMenu(id) { const el = document.getElementById(id); const isActive = el.classList.contains('active'); closeAllMenus(); if (!isActive) el.classList.add('active'); }
+        function toggleUserMenu() { const el = document.getElementById('user-menu'); const isActive = el.classList.contains('active'); closeAllMenus(); if (!isActive) el.classList.add('active'); }
+        function closeAllMenus() { document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(e => e.classList.remove('active')); }
+        document.addEventListener('click', (e) => { 
+            if (!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) closeAllMenus();
+            if (!e.target.closest('.custom-select-wrapper')) closeSelects();
+        });
+        function selectProject(idx) { currentProjIdx = idx; currentColIdx = -1; renderNavDropdowns(); updateLabels(); closeAllMenus(); loadDataAndRender(); closeSidebar(); }
+        function selectCollection(idx) { currentColIdx = idx; renderNavDropdowns(); updateLabels(); closeAllMenus(); loadDataAndRender(); closeSidebar(); }
+
+        function initMap() {
+            map = L.map('full-map', { zoomControl: false }).setView([-3.465, -62.215], 6);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            polyLayer = L.layerGroup().addTo(map);
+            clusterGroup = L.markerClusterGroup({
+                showCoverageOnHover: false, zoomToBoundsOnClick: true, spiderfyOnMaxZoom: true, maxClusterRadius: 60,
+                iconCreateFunction: function(cluster) {
+                    const markers = cluster.getAllChildMarkers();
+                    const n = markers.length;
+                    const realmCounts = {};
+                    let totalMedia = 0; 
+                    markers.forEach(m => { 
+                        const r = m.options.customData.realm; 
+                        realmCounts[r] = (realmCounts[r] || 0) + 1; 
+                        totalMedia += m.options.customData.mediaCount;
+                    });
+                    
+                    let gradientParts = []; let currentPercentage = 0; 
+                    Object.keys(realmCounts).sort((a,b) => realmCounts[b] - realmCounts[a]).forEach(r => {
+                        const pct = (realmCounts[r] / n) * 100; 
+                        gradientParts.push(`${getRealmColor(r)} ${currentPercentage}% ${currentPercentage + pct}%`); currentPercentage += pct;
+                    });
+                    
+                    return L.divIcon({ html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`, className: 'custom-cluster-icon', iconSize: L.point(50, 50), iconAnchor: [25, 25] });
+                }
+            });
+            map.addLayer(clusterGroup);
+        }
+
+        function loadDataAndRender() {
+            const projId = PROJECTS[currentProjIdx].id; const colId = currentColIdx === -1 ? null : PROJECTS[currentProjIdx].collections[currentColIdx].id;
+            if (currentColIdx === -1) { currentSites = []; PROJECTS[currentProjIdx].collections.forEach(c => { currentSites = [...currentSites, ...generateSitesForContext(projId, c.id)]; }); } 
+            else { currentSites = generateSitesForContext(projId, colId); }
+            resetFilters();
+        }
+
+        function renderMap(shouldZoom = false) {
+            polyLayer.clearLayers(); clusterGroup.clearLayers();
+            let visibleBounds = L.latLngBounds([]); let visibleCount = 0;
+            let isCurrentSiteVisible = false;
+
+            currentSites.forEach(site => {
+                if (filterState.realm && site.realm !== filterState.realm) return;
+                if (filterState.biome && site.biome !== filterState.biome) return;
+                if (filterState.group && site.group !== filterState.group) return;
+                
+                if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true;
+
+                visibleCount++;
+                const siteColor = getRealmColor(site.realm);
+                const poly = L.polygon(site.polygon, { color: siteColor, weight: 2, opacity: 0.8, fillColor: siteColor, fillOpacity: 0.15 }).addTo(polyLayer);
+                poly.on('click', (e) => { L.DomEvent.stopPropagation(e); openSidebar(site); });
+                const marker = L.marker(site.center, { customData: { realm: site.realm, mediaCount: site.mediaCount }, icon: L.divIcon({ html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28] }) });
+                marker.on('click', () => openSidebar(site));
+                clusterGroup.addLayer(marker); visibleBounds.extend(site.center);
+            });
+            
+            if (currentSelectedSiteId && !isCurrentSiteVisible) closeSidebar();
+
+            if (shouldZoom && visibleCount > 0) {
+                // SNAPPY BUT SMOOTH ANIMATION
+                if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, { duration: 0.8, easeLinearity: 0.5 });
+                else map.fitBounds(visibleBounds, { padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5 });
+            }
+        }
+
+        function openSidebar(site) {
+            currentSelectedSiteId = site.id; const color = getRealmColor(site.realm);
+            
+            document.documentElement.style.setProperty('--site-color', color);
+            document.documentElement.style.setProperty('--site-color-tint', color + '12'); 
+            
+            document.getElementById('sb-name').textContent = site.name;
+            document.getElementById('val-realm').textContent = site.realm;
+            document.getElementById('val-realm').style.color = color; 
+            document.getElementById('val-biome').textContent = site.biome; 
+            document.getElementById('val-group').textContent = site.group;
+            document.getElementById('val-topo').textContent = site.topography_m + " m"; 
+            document.getElementById('val-depth').textContent = site.freshwater_depth_m + (site.freshwater_depth_m !== "N/A" ? " m" : "");
+            
+            document.getElementById('media-container').innerHTML = site.media.map(m => `
+                <a href="#" class="media-item" onclick="return false;">
+                    <div class="media-icon"><i data-lucide="play" size="18"></i></div>
+                    <div class="media-meta"><span class="media-name">${m.name}</span><span class="media-dur">${m.date} • ${m.duration}</span></div>
+                </a>
+            `).join('');
+            
+            lucide.createIcons();
+            document.getElementById('sidebar').classList.add('active'); 
+            map.flyTo(site.center, 14, { duration: 0.8, easeLinearity: 0.5 });
+        }
+        function closeSidebar() { currentSelectedSiteId = null; document.getElementById('sidebar').classList.remove('active'); }
+
+        // --- FILTER DRAWER (SELECT LOGIC) ---
+        function openFilterDrawer() { document.getElementById('filter-drawer').classList.add('active'); document.getElementById('filter-btn-main').classList.add('active'); }
+        function closeFilterDrawer() { document.getElementById('filter-drawer').classList.remove('active'); document.getElementById('filter-btn-main').classList.remove('active'); }
+
+        function toggleSelect(id) {
+            const el = document.getElementById(id);
+            if (el.querySelector('.select-trigger').classList.contains('disabled')) return;
+            const isOpen = el.classList.contains('open'); closeSelects(); if(!isOpen) el.classList.add('open');
+        }
+        function closeSelects() { document.querySelectorAll('.custom-select-wrapper').forEach(d => d.classList.remove('open')); }
+
+        function getUniqueValues(data, key) { const set = new Set(); data.forEach(s => { if(s[key]) set.add(s[key]); }); return Array.from(set).sort(); }
+
+        function initFilters() { renderSelectOptions('realm'); updateSelectOptions('biome'); updateSelectOptions('group'); }
+        
+        function renderSelectOptions(targetType) {
+            const list = document.getElementById('opt-' + targetType); 
+            const options = getUniqueValues(currentSites, 'realm');
+            
+            let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')"><div class="opt-dot" style="background:#ccc"></div>All Realms</div>`;
+            options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')"><div class="opt-dot" style="background:${getRealmColor(opt)}"></div>${opt}</div>`);
+            list.innerHTML = html;
+        }
+
+        function applyFilter(type, value) {
+            closeSidebar(); // FORCE CLOSE
+            if(type === 'realm') {
+                filterState.realm = value; filterState.biome = ""; filterState.group = "";
+                updateSelectUI('realm', value);
+                updateSelectOptions('biome'); updateSelectUI('biome', '');
+                updateSelectOptions('group'); updateSelectUI('group', '');
+            } else if (type === 'biome') {
+                filterState.biome = value; filterState.group = "";
+                updateSelectUI('biome', value);
+                updateSelectOptions('group'); updateSelectUI('group', '');
+            } else if (type === 'group') {
+                filterState.group = value;
+                updateSelectUI('group', value);
+            }
+            closeSelects();
+            renderMap(true);
+        }
+
+        function updateSelectUI(type, value) {
+            const textEl = document.getElementById('text-' + type);
+            const trigger = type === 'realm' ? document.getElementById('sel-realm').querySelector('.select-trigger') : document.getElementById('trig-' + type);
+            const labelMap = { realm: "All Realms", biome: "All Biomes", group: "All Groups" };
+            
+            if (!value) {
+                textEl.innerText = labelMap[type];
+                trigger.classList.remove('active');
+            } else {
+                textEl.innerText = value;
+                trigger.classList.add('active');
+            }
+        }
+
+        function updateSelectOptions(targetType) {
+            const list = document.getElementById('opt-' + targetType);
+            const trigger = document.getElementById('trig-' + targetType);
+            
+            let filteredData = currentSites;
+            if (targetType === 'biome') { 
+                if(!filterState.realm) { trigger.classList.add('disabled'); return; }
+                filteredData = currentSites.filter(s => s.realm === filterState.realm);
+            } else if (targetType === 'group') { 
+                if(!filterState.biome) { trigger.classList.add('disabled'); return; }
+                filteredData = currentSites.filter(s => s.realm === filterState.realm && s.biome === filterState.biome);
+            }
+            trigger.classList.remove('disabled');
+
+            const options = getUniqueValues(filteredData, targetType);
+            const labelMap = { biome: "All Biomes", group: "All Groups" };
+            
+            let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')">${labelMap[targetType]}</div>`;
+            if (options.length === 0) html = `<div style="padding:10px;color:#999;font-size:0.85rem">No options</div>`;
+            else options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')">${opt}</div>`);
+            
+            list.innerHTML = html;
+        }
+
+        function resetFilters() { 
+            closeSidebar(); // FORCE CLOSE
+            filterState = { realm: "", biome: "", group: "" }; 
+            updateSelectUI('realm', ''); 
+            initFilters();
+            renderMap(true); 
+        }
+
+        window.onload = () => { initNav(); initMap(); loadDataAndRender(); };
+        window.addEventListener('resize', () => { const active = document.querySelector('.nav-item.active'); if(active) movePill(active); });
+    </script>
+</body>
+</html>
