@@ -143,8 +143,8 @@
         }
 
         /* =========================================
-           NAVIGATION
-           ========================================= */
+   NAVIGATION
+   ========================================= */
         .project-nav-bar {
             position: absolute;
             top: 0;
@@ -568,8 +568,8 @@
         }
 
         /* =========================================
-           GLOBAL LAYOUT
-           ========================================= */
+   GLOBAL LAYOUT
+   ========================================= */
         .content-wrapper {
             position: absolute;
             top: var(--nav-height);
@@ -637,8 +637,8 @@
         }
 
         /* =========================================
-           PAGE STYLES
-           ========================================= */
+   PAGE STYLES
+   ========================================= */
         .desc-layout {
             position: relative;
             width: 100%;
@@ -1305,7 +1305,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            /* margin-bottom: 24px; */
+            /* Removed per request */
             flex-shrink: 0;
         }
 
@@ -1426,16 +1427,23 @@
         .media-scroll-area {
             flex: 1;
             overflow-y: auto;
-            padding-right: 6px;
+            padding: 30px 6px 0 0;
+            /* Updated padding */
             min-height: 0;
         }
 
-        /* [修改] Media List 增加边距防止内容贴边 */
+        /* Gallery View Styles */
         .media-container.view-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(5, 1fr);
+            /* Fixed 5 columns */
+            gap: 32px;
+            /* Increased gap */
             padding-bottom: 20px;
+            padding-top: 10px;
+            padding-left: 20px;
+            /* Padding adjustment */
+            padding-right: 10px;
         }
 
         .media-container.view-list {
@@ -1443,8 +1451,10 @@
             flex-direction: column;
             gap: 12px;
             padding-bottom: 20px;
-            padding-right: 12px;
-            padding-left: 4px;
+            padding-top: 10px;
+            padding-left: 20px;
+            /* Aligned with gallery */
+            padding-right: 10px;
         }
 
         .media-item-card {
@@ -1454,10 +1464,11 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border-color);
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s;
-            cursor: pointer;
             display: flex;
             flex-direction: column;
             position: relative;
+            cursor: default;
+            /* Changed from pointer */
         }
 
         .media-item-card:hover {
@@ -1479,37 +1490,14 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.85;
             mix-blend-mode: screen;
             filter: sepia(1) hue-rotate(60deg) saturate(3) contrast(1.2);
             transition: transform 0.5s ease;
         }
 
         .media-item-card:hover .spectrogram-img {
-            transform: scale(1.05);
+            /* No zoom transform */
             opacity: 1;
-        }
-
-        .play-overlay {
-            display: none;
-        }
-
-        .play-circle {
-            width: 56px;
-            height: 56px;
-            background: var(--brand);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            transform: scale(0.8);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .media-item-card:hover .play-circle {
-            transform: scale(1);
         }
 
         .duration-badge {
@@ -1532,7 +1520,7 @@
             flex-direction: column;
             gap: 10px;
             flex: 1;
-            /* [新增] 让内容区域填满卡片高度 */
+            /* Fill remaining height */
         }
 
         .media-name {
@@ -1544,10 +1532,8 @@
             text-overflow: ellipsis;
             line-height: 1.2;
             text-decoration: none;
-            /* 去掉默认下划线 */
             transition: color 0.2s;
             display: block;
-            /* 保持块级特性以便截断 */
         }
 
         .media-name:hover {
@@ -1575,35 +1561,55 @@
             box-shadow: 0 2px 5px rgba(131, 205, 32, 0.25);
         }
 
+        /* Updated Footer Style */
         .media-meta-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
+
             margin-top: auto;
-            /* [修改] 原为 4px，改为 auto 以实现底部对齐 */
-            padding-top: 10px;
+            /* Bottom align */
+            margin-left: -16px;
+            /* Pull to edges */
+            margin-right: -16px;
+            margin-bottom: -16px;
+
+            padding: 10px 16px;
+            /* Inner spacing */
+            background: var(--bg-surface-secondary);
+            /* Footer bg */
             border-top: 1px solid var(--border-color);
-            font-size: 0.8rem;
-            color: var(--text-muted);
+
+            color: var(--text-secondary);
+            font-size: 0.75rem;
             font-family: var(--font-mono);
+            font-weight: 600;
+            letter-spacing: -0.2px;
         }
 
         .meta-icon-text {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            opacity: 0.8;
+            transition: all 0.2s;
         }
 
-        /* [修改] Media Item Row padding adjustment */
+        .media-item-card:hover .meta-icon-text {
+            opacity: 1;
+            color: var(--text-main);
+        }
+
+        /* List View Row - Updated Grid & Style */
         .media-item-row {
             background: var(--bg-surface);
             border-radius: 12px;
             display: grid;
-            grid-template-columns: 36px 100px minmax(180px, 3fr) 110px 60px 80px 120px 100px 70px;
+            /* Adjusted grid: larger image column (260px) */
+            grid-template-columns: 260px minmax(200px, 4fr) 120px 80px 100px 140px 120px 80px;
             align-items: center;
-            gap: 16px;
-            padding: 12px 24px;
-            /* Increased padding */
+            gap: 24px;
+            padding: 16px;
             border: 1px solid var(--border-color);
             transition: all 0.2s;
             overflow: hidden;
@@ -1611,18 +1617,21 @@
 
         .media-item-row:hover {
             background: var(--bg-surface-hover);
-            border-color: var(--brand);
+            /* Light gray hover */
+            /* No green border */
             transform: translateX(4px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
         .media-item-row .row-spec-bar {
             width: 100%;
-            height: 60px;
+            height: auto;
+            aspect-ratio: 2 / 1;
             overflow: hidden;
-            border-radius: 6px;
+            border-radius: 8px;
             position: relative;
             background: #0f172a;
+            border: 1px solid var(--border-color);
         }
 
         .row-spec-img {
@@ -1634,32 +1643,38 @@
             filter: sepia(1) hue-rotate(60deg) saturate(3);
         }
 
-        .row-play-btn {
-            width: 36px;
-            height: 36px;
-            background: var(--bg-capsule);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            transition: 0.2s;
-            cursor: pointer;
+        /* List view file name styled as link */
+        a.row-name {
+            font-weight: 800;
+            font-size: 1.15rem;
+            line-height: 1.4;
+            color: var(--text-main);
+
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            text-decoration: none;
+            transition: color 0.2s;
+            margin-bottom: 12px;
         }
 
-        .media-item-row:hover .row-play-btn {
-            background: var(--brand);
-            color: white;
+        a.row-name:hover {
+            color: var(--brand);
+            text-decoration: underline;
         }
 
         .media-item-row .tags-row {
-            margin-top: 4px;
-            margin-bottom: 2px;
+            margin: 0;
+            gap: 8px;
         }
 
         .media-item-row .media-tag {
-            padding: 2px 8px;
-            font-size: 0.7rem;
+            padding: 4px 10px;
+            font-size: 0.75rem;
         }
 
         .row-info {
@@ -1669,32 +1684,26 @@
             justify-content: center;
         }
 
-        .row-name {
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: var(--text-main);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
+        /* List Data Columns */
         .row-data-col {
             display: flex;
             flex-direction: column;
             justify-content: center;
             overflow: hidden;
+            gap: 6px;
         }
 
         .row-label {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
             font-weight: 700;
             text-transform: uppercase;
-            margin-bottom: 2px;
+            letter-spacing: 0.5px;
+            margin: 0;
         }
 
         .row-val {
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             color: var(--text-secondary);
             font-weight: 600;
             white-space: nowrap;
@@ -1703,9 +1712,10 @@
         }
 
         .row-val-small {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
             font-family: var(--font-mono);
+            margin-top: 2px;
         }
 
         .license-badge {
@@ -2027,8 +2037,8 @@
         }
 
         /* =========================================
-           MAP & FILTER & SIDEBAR STYLES (Merged from Project 2)
-           ========================================= */
+   MAP & FILTER & SIDEBAR STYLES (Merged from Project 2)
+   ========================================= */
         .map-wrapper {
             position: relative;
             width: 100%;
@@ -2545,7 +2555,7 @@
                                 <div class="meta-divider"></div>
                                 <div class="meta-item-btn" title="DOI">
                                     <div class="meta-item-icon"><i data-lucide="bookmark" size="14"></i></div>
-                                    <span id="meta-doi-text" class="meta-text-mono">...</span>
+                                    <span id="meta-doi-text">...</span>
                                 </div>
                             </div>
                         </div>
@@ -2971,7 +2981,35 @@
 
         function updateMediaContext() { const proj = rawProjects[currProjIdx]; const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null; mediaItems = generateMediaForContext(proj, col); mediaSearchQuery = ""; const searchInput = document.querySelector('.media-search-input'); if (searchInput) searchInput.value = ""; const container = document.getElementById('media-grid-container'); animateBlockSwap(container, () => { renderMedia(); }); }
         function handleSearchMedia(val) { mediaSearchQuery = val.toLowerCase(); renderMedia(); }
-        function renderMedia() { const container = document.getElementById('media-grid-container'); const badge = document.getElementById('media-count-badge'); const isGallery = container.classList.contains('view-gallery'); const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery)); badge.textContent = `${filteredItems.length} Items`; if (filteredItems.length === 0) { container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`; lucide.createIcons(); return; } let html = ''; filteredItems.forEach(item => { const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join(''); if (isGallery) { html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="12"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="12"></i> ${item.time}</div></div></div></div>`; } else { html += `<div class="media-item-row"><div class="row-play-btn"><i data-lucide="play" size="16" fill="currentColor"></i></div><div class="row-spec-bar"><img src="${item.spectrogram}" class="row-spec-img" alt="Spec"></div><div class="row-info"><div class="row-name" title="${item.name}">${item.name}</div><div class="tags-row">${tagsHtml}</div></div><div class="row-data-col"><span class="row-val" style="color:var(--text-main); font-weight:700;">${item.date}</span><span class="row-val-small">${item.time}</span></div><div class="row-data-col"><span class="row-label">Dur</span><span class="row-val" style="font-family:var(--font-mono);">${item.duration}</span></div><div class="row-data-col"><span class="row-label">Site</span><span class="row-val" title="${item.site}">${item.site}</span></div><div class="row-data-col"><span class="row-label">Sensor</span><span class="row-val" title="${item.sensor}">${item.sensor}</span></div><div class="row-data-col"><span class="row-label">Creator</span><span class="row-val" title="${item.creator}">${item.creator}</span></div><div class="row-data-col" style="align-items: center;"><span class="license-badge">${item.license}</span></div></div>`; } }); container.innerHTML = html; lucide.createIcons(); }
+        function renderMedia() {
+            const container = document.getElementById('media-grid-container');
+            const badge = document.getElementById('media-count-badge');
+            const isGallery = container.classList.contains('view-gallery');
+            const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
+            badge.textContent = `${filteredItems.length} Items`;
+            if (filteredItems.length === 0) {
+                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
+                lucide.createIcons();
+                return;
+            }
+            let html = '';
+            filteredItems.forEach(item => {
+                const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
+                if (isGallery) {
+                    // [Gallery 视图修改]
+                    // 1. 将图标 size 从 12 改为 14，配合加粗字体
+                    // 2. 文件名已确认为 a 标签
+                    html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div></div></div></div>`;
+                } else {
+                    // [List 视图修改] 
+                    // 1. 移除了 <div class="row-play-btn">...</div>
+                    // 2. 将 <div class="row-name"> 改为 <a class="row-name">
+                    html += `<div class="media-item-row"><div class="row-spec-bar"><img src="${item.spectrogram}" class="row-spec-img" alt="Spec"></div><div class="row-info"><a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div></div><div class="row-data-col"><span class="row-val" style="color:var(--text-main); font-weight:700;">${item.date}</span><span class="row-val-small">${item.time}</span></div><div class="row-data-col"><span class="row-label">Dur</span><span class="row-val" style="font-family:var(--font-mono);">${item.duration}</span></div><div class="row-data-col"><span class="row-label">Site</span><span class="row-val" title="${item.site}">${item.site}</span></div><div class="row-data-col"><span class="row-label">Sensor</span><span class="row-val" title="${item.sensor}">${item.sensor}</span></div><div class="row-data-col"><span class="row-label">Creator</span><span class="row-val" title="${item.creator}">${item.creator}</span></div><div class="row-data-col" style="align-items: center;"><span class="license-badge">${item.license}</span></div></div>`;
+                }
+            });
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
         function switchMediaView(mode, btn) { const container = document.getElementById('media-grid-container'); const btns = document.querySelectorAll('.view-btn'); const pill = document.getElementById('view-pill'); if (mode === 'gallery') { container.classList.remove('view-list'); container.classList.add('view-gallery'); } else { container.classList.remove('view-gallery'); container.classList.add('view-list'); } btns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); pill.style.width = btn.offsetWidth + 'px'; pill.style.left = btn.offsetLeft + 'px'; renderMedia(); }
 
         // --- TIMELINE MATRIX LOGIC ---
@@ -3299,7 +3337,7 @@
                                             <div class="meta-divider"></div>
                                             <div class="meta-item-btn"><div class="meta-item-icon"><i data-lucide="calendar" size="14"></i></div>${colData.date}</div>
                                             <div class="meta-divider"></div>
-                                            <div class="meta-item-btn"><div class="meta-item-icon"><i data-lucide="bookmark" size="14"></i></div><span class="meta-text-mono">${colDoiShort}</span></div>
+                                            <div class="meta-item-btn"><div class="meta-item-icon"><i data-lucide="bookmark" size="14"></i></div>${colDoiShort}</span></div>
                                         </div>
                                     </div>
                                 </div>
