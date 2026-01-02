@@ -464,7 +464,11 @@
         .view-btn.active { color: var(--brand); }
         .view-btn:hover { color: var(--text-main); }
         .media-scroll-area { flex: 1; overflow-y: auto; padding-right: 6px; min-height: 0; }
+        
+        /* [修改] Media List 增加边距防止内容贴边 */
         .media-container.view-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding-bottom: 20px; }
+        .media-container.view-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px; padding-right: 12px; padding-left: 4px; }
+        
         .media-item-card { background: var(--bg-surface); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-color); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s; cursor: pointer; display: flex; flex-direction: column; position: relative; }
         .media-item-card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.1); border-color: rgba(131, 205, 32, 0.4); }
         .spectrogram-cover { width: 100%; aspect-ratio: 2 / 1; background: #0f172a; position: relative; overflow: hidden; border-bottom: 1px solid var(--border-color); }
@@ -481,8 +485,19 @@
         .media-tag { display: inline-flex; align-items: center; background: var(--brand); color: white; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.2px; box-shadow: 0 2px 5px rgba(131, 205, 32, 0.25); }
         .media-meta-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono); }
         .meta-icon-text { display: flex; align-items: center; gap: 5px; }
-        .media-container.view-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px; }
-        .media-item-row { background: var(--bg-surface); border-radius: 12px; display: grid; grid-template-columns: 36px 100px minmax(180px, 3fr) 110px 60px 80px 120px 100px 70px; align-items: center; gap: 16px; padding: 10px 20px; border: 1px solid var(--border-color); transition: all 0.2s; overflow: hidden; }
+        
+        /* [修改] Media Item Row padding adjustment */
+        .media-item-row { 
+            background: var(--bg-surface); 
+            border-radius: 12px; 
+            display: grid; 
+            grid-template-columns: 36px 100px minmax(180px, 3fr) 110px 60px 80px 120px 100px 70px; 
+            align-items: center; 
+            gap: 16px; 
+            padding: 12px 24px; /* Increased padding */
+            border: 1px solid var(--border-color); 
+            transition: all 0.2s; overflow: hidden; 
+        }
         .media-item-row:hover { background: var(--bg-surface-hover); border-color: var(--brand); transform: translateX(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .media-item-row .row-spec-bar { width: 100%; height: 60px; overflow: hidden; border-radius: 6px; position: relative; background: #0f172a; }
         .row-spec-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; mix-blend-mode: screen; filter: sepia(1) hue-rotate(60deg) saturate(3); }
@@ -498,29 +513,100 @@
         .row-val-small { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
         .license-badge { display: inline-block; padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-align: center; }
 
-        /* Timeline */
-        .timeline-layout { display: flex; flex-direction: column; height: 100%; overflow: hidden; background: var(--bg-surface-secondary); position: relative; }
-        .timeline-header { padding: 20px 32px; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        .timeline-viewport { flex: 1; overflow: hidden; position: relative; cursor: grab; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; touch-action: none; }
-        .timeline-viewport:active { cursor: grabbing; }
-        .timeline-world { position: absolute; top: 0; left: 0; height: 100%; display: flex; gap: 40px; padding: 40px; transform-origin: 0 0; will-change: transform; }
-        .tl-column { width: 320px; min-width: 320px; display: flex; flex-direction: column; background: var(--bg-surface); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.04); height: 100%; overflow: hidden; transition: border-color 0.2s; }
-        .tl-column:hover { border-color: var(--brand); }
-        .tl-col-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-capsule); flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
-        .tl-date-day { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-        .tl-date-meta { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
-        .tl-col-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-        .tl-col-body::-webkit-scrollbar { width: 4px; }
-        .tl-col-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
-        .tl-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); position: relative; }
-        .tl-card-img-box { width: 100%; height: 100px; background: #0f172a; position: relative; }
-        .tl-card-img { width: 100%; height: 100%; object-fit: cover; filter: sepia(1) hue-rotate(60deg) saturate(3); opacity: 0.8; }
-        .tl-card-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
-        .tl-card-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .tl-card-meta { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); display: flex; justify-content: space-between; }
-        .tl-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
-        .tl-ctrl-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-surface); border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; }
-        .tl-ctrl-btn:hover { background: var(--brand); color: white; transform: translateY(-2px); }
+        /* --- Timeline Matrix Styles --- */
+        
+        /* [修改] New Dropdown Styles to Match Navigation */
+        .custom-select-wrapper { position: relative; font-family: var(--font-sans); }
+        .select-label { display: none; } /* Hide label to match nav style */
+        
+        .select-trigger {
+            width: auto; min-width: 160px; height: 40px; padding: 0 16px;
+            background: var(--bg-capsule); border: 1px solid transparent; border-radius: 40px;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);
+            transition: all 0.2s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .select-trigger:hover:not(.disabled) { background: var(--bg-surface); border-color: var(--border-color); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .select-trigger.active { background: var(--bg-surface); color: var(--brand); border-color: var(--brand); }
+        
+        /* [修改] Disabled Style */
+        .select-trigger.disabled { 
+            opacity: 0.5; cursor: not-allowed; background: var(--bg-capsule); 
+            color: var(--text-muted); border-color: transparent; box-shadow: none; pointer-events: none;
+        }
+        
+        .select-options {
+            position: absolute; top: calc(100% + 8px); left: 0; width: 100%;
+            background: var(--bg-surface); border-radius: 16px; border: var(--card-border);
+            box-shadow: var(--card-shadow); max-height: 280px; overflow-y: auto; z-index: 100;
+            padding: 6px; box-sizing: border-box;
+            opacity: 0; visibility: hidden; transform: translateY(-5px); transition: 0.2s;
+        }
+        .custom-select-wrapper.open .select-options { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        .select-option {
+            padding: 10px 12px; border-radius: 8px; cursor: pointer;
+            font-size: 0.9rem; color: var(--text-main); font-weight: 500;
+            display: flex; align-items: center; gap: 8px; transition: 0.1s;
+        }
+        .select-option:hover { background: var(--bg-capsule); color: var(--brand); }
+        .select-option.selected { background: rgba(131, 205, 32, 0.1); color: var(--brand); font-weight: 700; }
+
+        /* Timeline Layout & Card Adaptation */
+        .timeline-header-styled { padding: 24px 32px; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); z-index: 100; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+        .timeline-matrix-viewport { flex: 1; overflow: auto; background: var(--bg-surface-secondary); position: relative; display: flex; }
+        .tl-matrix-table { display: grid; width: max-content; min-width: 100%; min-height: 100%; }
+        
+        /* Sticky Headers */
+        .tl-matrix-corner { 
+            position: sticky; top: 0; left: 0; z-index: 30; 
+            background: var(--bg-surface); 
+            border-bottom: 1px solid var(--brand); 
+            border-right: 1px solid var(--border-color); 
+            padding: 12px 16px; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-weight: 800; color: var(--brand); 
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.05); 
+            font-size: 0.9rem; line-height: 1.4; text-align: center;
+        }
+
+        .tl-col-header-cell { 
+            position: sticky; top: 0; z-index: 20; 
+            background: var(--bg-surface); /* Solid background to prevent see-through */
+            border-bottom: 1px solid var(--brand); 
+            border-right: 1px solid var(--border-color); 
+            padding: 12px 16px; 
+            font-size: 0.9rem; font-weight: 700; color: var(--text-main); 
+            text-align: center; min-width: 280px; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
+        }
+        
+        .tl-row-header-cell { 
+            position: sticky; left: 0; z-index: 10; 
+            background: var(--bg-surface); /* Solid background */
+            border-bottom: 1px solid var(--border-color); 
+            border-right: 1px solid var(--brand); 
+            padding: 16px; 
+            font-size: 0.95rem; font-weight: 700; color: var(--text-main); 
+            display: flex; flex-direction: column; justify-content: center; align-items: flex-start; 
+            min-width: 180px; max-width: 240px; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.02); 
+            line-height: 1.3;
+        }
+        
+        .tl-row-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+        .tl-data-cell { border-bottom: 1px solid var(--border-color); border-right: 1px dashed var(--border-color); padding: 16px; background: transparent; vertical-align: top; }
+        .tl-data-cell:hover { background: rgba(131, 205, 32, 0.03); }
+        .tl-cell-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .tl-media-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .tl-media-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-color: var(--brand); z-index: 5; }
+        .tl-media-card .spectrogram-cover { height: 80px; position: relative; overflow: hidden; border-bottom: 1px solid var(--border-color); }
+        .tl-media-card .spectrogram-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; mix-blend-mode: screen; filter: sepia(1) hue-rotate(60deg) saturate(3) contrast(1.2); }
+        .tl-media-card .play-circle { width: 40px; height: 40px; }
+        .tl-media-card .media-card-info { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .tl-media-card .media-name { font-weight: 700; font-size: 0.85rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tl-media-card .media-tag { padding: 2px 8px; font-size: 0.65rem; }
 
         .placeholder-card {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -601,39 +687,6 @@
         }
         .fd-close:hover { background: var(--text-main); color: var(--bg-surface); }
         .fd-content { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; flex: 1; }
-
-        .custom-select-wrapper { position: relative; }
-        .select-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block; text-transform: uppercase; }
-        
-        .select-trigger {
-            width: 100%; padding: 12px 14px; background: var(--bg-surface-secondary);
-            border: 1px solid var(--border-light); border-radius: 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            cursor: pointer; font-size: 0.9rem; color: var(--text-main); font-weight: 500;
-            transition: all 0.2s; box-sizing: border-box;
-        }
-        .select-trigger:hover:not(.disabled) { background: var(--bg-surface); border-color: #cbd5e1; }
-        .select-trigger.active { background: var(--bg-surface); border-color: var(--brand); box-shadow: 0 0 0 2px rgba(131, 205, 32, 0.1); }
-        .select-trigger.disabled { opacity: 0.6; cursor: not-allowed; background: var(--bg-capsule); }
-        
-        .select-options {
-            position: absolute; top: calc(100% + 6px); left: 0; width: 100%;
-            background: var(--bg-surface); border-radius: 10px; border: 1px solid var(--border-light);
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-            max-height: 200px; overflow-y: auto; z-index: 100;
-            padding: 4px; box-sizing: border-box;
-            opacity: 0; visibility: hidden; transform: translateY(-5px); transition: 0.2s;
-        }
-        .custom-select-wrapper.open .select-options { opacity: 1; visibility: visible; transform: translateY(0); }
-        
-        .select-option {
-            padding: 10px; border-radius: 6px; cursor: pointer;
-            font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;
-            transition: 0.1s;
-        }
-        .select-option:hover { background: var(--bg-surface-secondary); color: var(--brand-hover); }
-        .select-option.selected { background: rgba(131, 205, 32, 0.1); color: var(--brand-hover); font-weight: 600; }
-        .opt-dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .btn-reset-filters {
             margin-top: 12px; width: 100%; padding: 14px;
@@ -836,8 +889,64 @@
                 <div class="card-body media-scroll-area"><div class="media-container view-gallery block-anim" id="media-grid-container"></div></div>
             </div>
         </div>
-        <div id="tab-map" class="tab-page"><div class="map-wrapper"><div id="full-map"></div><button class="filter-trigger-btn" id="filter-btn-main" onclick="openFilterDrawer()"><i data-lucide="sliders-horizontal" size="22"></i></button><div class="filter-drawer" id="filter-drawer"><div class="fd-header"><div class="fd-title"><i data-lucide="sliders-horizontal" size="20" color="var(--brand)"></i><span>Filters</span></div><button class="fd-close" onclick="closeFilterDrawer()"><i data-lucide="chevrons-left" size="20"></i></button></div><div class="fd-content"><div class="custom-select-wrapper" id="sel-realm"><span class="select-label">1. Eco Realm</span><div class="select-trigger" onclick="toggleSelect('sel-realm')"><span class="trigger-text" id="text-realm">All Realms</span><i data-lucide="chevron-down" size="16"></i></div><div class="select-options" id="opt-realm"></div></div><div class="custom-select-wrapper" id="sel-biome"><span class="select-label">2. Biome</span><div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')"><span class="trigger-text" id="text-biome">All Biomes</span><i data-lucide="chevron-down" size="16"></i></div><div class="select-options" id="opt-biome"></div></div><div class="custom-select-wrapper" id="sel-group"><span class="select-label">3. Group</span><div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')"><span class="trigger-text" id="text-group">All Groups</span><i data-lucide="chevron-down" size="16"></i></div><div class="select-options" id="opt-group"></div></div><button class="btn-reset-filters" onclick="resetFilters()"><i data-lucide="rotate-ccw" size="16"></i> Reset Filters</button></div></div><div id="sidebar" class="sidebar"><div class="sb-header" id="sb-header-bg"><h2 class="sb-title" id="sb-name">Site Name</h2><button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button></div><div class="sb-content"><div class="data-row"><span class="data-label">Realm</span><span class="data-val" id="val-realm">--</span></div><div class="data-row"><span class="data-label">Biome</span><span class="data-val" id="val-biome">--</span></div><div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span class="data-val" id="val-group">--</span></div><div class="stats-box-container"><div class="stat-box"><span class="stat-box-label">Topography</span><span class="stat-box-val" id="val-topo">--</span></div><div class="stat-box"><span class="stat-box-label">Water Depth</span><span class="stat-box-val" id="val-depth">--</span></div></div><div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div><div class="media-scroll-container" id="media-container"></div></div></div></div></div>
-        <div id="tab-timeline" class="tab-page"><div class="timeline-layout"><div class="timeline-header"><div class="card-title" style="font-size: 1.4rem;"><i data-lucide="kanban"></i> Timeline Analysis</div><div style="display: flex; gap: 12px;"><div class="meta-capsule"><div class="meta-icon-circle"><i data-lucide="move"></i></div><span>Pan: Drag</span></div><div class="meta-capsule"><div class="meta-icon-circle"><i data-lucide="zoom-in"></i></div><span>Zoom: Scroll</span></div></div></div><div class="timeline-viewport" id="tl-viewport"><div class="timeline-world" id="tl-world"><div style="margin: auto; color: var(--text-muted); font-size: 1.2rem;">Loading Data...</div></div><div class="tl-controls"><button class="tl-ctrl-btn" onclick="tlZoom(0.1)"><i data-lucide="plus"></i></button><button class="tl-ctrl-btn" onclick="tlReset()"><i data-lucide="maximize"></i></button><button class="tl-ctrl-btn" onclick="tlZoom(-0.1)"><i data-lucide="minus"></i></button></div></div></div></div>
+        <div id="tab-map" class="tab-page"><div class="map-wrapper"><div id="full-map"></div><button class="filter-trigger-btn" id="filter-btn-main" onclick="openFilterDrawer()"><i data-lucide="sliders-horizontal" size="22"></i></button><div class="filter-drawer" id="filter-drawer"><div class="fd-header"><div class="fd-title"><i data-lucide="sliders-horizontal" size="20" color="var(--brand)"></i><span>Filters</span></div><button class="fd-close" onclick="closeFilterDrawer()"><i data-lucide="chevrons-left" size="20"></i></button></div><div class="fd-content"><div class="custom-select-wrapper" id="sel-realm"><div class="select-trigger" onclick="toggleSelect('sel-realm')"><span class="trigger-text" id="text-realm">All Realms</span><i data-lucide="chevron-down" size="16"></i></div><div class="select-options" id="opt-realm"></div></div><div class="custom-select-wrapper" id="sel-biome"><div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')"><span class="trigger-text" id="text-biome">All Biomes</span><i data-lucide="chevron-down" size="16"></i></div><div class="select-options" id="opt-biome"></div></div><div class="custom-select-wrapper" id="sel-group"><div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')"><span class="trigger-text" id="text-group">All Groups</span><i data-lucide="chevron-down" size="16"></i></div><div class="select-options" id="opt-group"></div></div><button class="btn-reset-filters" onclick="resetFilters()"><i data-lucide="rotate-ccw" size="16"></i> Reset Filters</button></div></div><div id="sidebar" class="sidebar"><div class="sb-header" id="sb-header-bg"><h2 class="sb-title" id="sb-name">Site Name</h2><button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button></div><div class="sb-content"><div class="data-row"><span class="data-label">Realm</span><span class="data-val" id="val-realm">--</span></div><div class="data-row"><span class="data-label">Biome</span><span class="data-val" id="val-biome">--</span></div><div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span class="data-val" id="val-group">--</span></div><div class="stats-box-container"><div class="stat-box"><span class="stat-box-label">Topography</span><span class="stat-box-val" id="val-topo">--</span></div><div class="stat-box"><span class="stat-box-label">Water Depth</span><span class="stat-box-val" id="val-depth">--</span></div></div><div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div><div class="media-scroll-container" id="media-container"></div></div></div></div></div>
+        
+        <div id="tab-timeline" class="tab-page">
+            <div class="dashboard-card" style="height: 100%;">
+                <div class="card-header media-header timeline-header-styled" style="z-index: 100;">
+                    <div class="media-title">
+                        <i data-lucide="kanban"></i> Timeline Matrix 
+                        <span class="media-count-badge" id="tl-count-badge">Loading...</span>
+                    </div>
+                    
+                    <div class="media-controls" style="gap: 12px;">
+                        <div class="custom-select-wrapper" id="tl-sel-group" style="width: 200px;">
+                            <div class="select-trigger" onclick="toggleSelect('tl-sel-group')">
+                                <span class="trigger-text" id="tl-text-group">Eco Realm</span>
+                                <i data-lucide="chevron-down" size="16"></i>
+                            </div>
+                            <div class="select-options">
+                                <div class="select-option" onclick="setTimelineGrouping('all')">Overview (All Data)</div>
+                                <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
+                                <div class="select-option" onclick="setTimelineGrouping('realm')">Eco Realm</div>
+                                <div class="select-option" onclick="setTimelineGrouping('biome')">Biome</div>
+                                <div class="select-option" onclick="setTimelineGrouping('group')">Group</div>
+                                <div class="select-option" onclick="setTimelineGrouping('site')">Site</div>
+                            </div>
+                        </div>
+
+                        <div class="custom-select-wrapper" id="tl-sel-time" style="width: 200px;">
+                            <div class="select-trigger" onclick="toggleSelect('tl-sel-time')">
+                                <span class="trigger-text" id="tl-text-time">Year (YYYY)</span>
+                                <i data-lucide="chevron-down" size="16"></i>
+                            </div>
+                            <div class="select-options">
+                                <div class="select-option" onclick="setTimelineResolution('all')">All Time (Total)</div>
+                                <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
+                                <div style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">ABSOLUTE TIME</div>
+                                <div class="select-option" onclick="setTimelineResolution('y')">Year (YYYY)</div>
+                                <div class="select-option" onclick="setTimelineResolution('yq')">Year-Quarter (Y-Q)</div>
+                                <div class="select-option" onclick="setTimelineResolution('ym')">Month (YYYY-MM)</div>
+                                <div class="select-option" onclick="setTimelineResolution('ymd')">Date (Y-M-D)</div>
+                                <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
+                                <div style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">SEASONAL CYCLES</div>
+                                <div class="select-option" onclick="setTimelineResolution('q')">Quarter Only (Q1-Q4)</div>
+                                <div class="select-option" onclick="setTimelineResolution('m')">Month of Year</div>
+                                <div class="select-option" onclick="setTimelineResolution('md')">Day of Year</div>
+                                <div class="select-option" onclick="setTimelineResolution('d')">Day of Month</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
+                    <div class="timeline-matrix-viewport" id="tl-matrix-container">
+                        <div style="margin: auto; color: var(--text-muted);">Loading Matrix...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="tab-data" class="tab-page"><div class="placeholder-card"><i data-lucide="database-off" size="48" style="margin-bottom: 20px; opacity: 0.5;"></i><h2>Data Feature Disabled</h2><p>Please preview this feature from other files.</p></div></div>
     </div>
 
@@ -1026,7 +1135,7 @@
         const REALM_COLORS = { "Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316" };
         const TAXONOMY = { "Terrestrial": { "Tropical Forests": ["Lowland Rainforest", "Montane Rainforest"], "Savannas": ["Shrubland", "Grassland"] }, "Marine": { "Coastal": ["Coral Reefs", "Seagrass"], "Pelagic": ["Epipelagic", "Mesopelagic"] }, "Freshwater": { "Riverine": ["Permanent Rivers", "Seasonal Streams"], "Palustrine": ["Peatlands", "Marshes"] }, "Subterranean": { "Cave Systems": ["Limestone Caves", "Lava Tubes"], "Aquifers": ["Shallow", "Deep"] }, "Atmospheric": { "Aerial": ["Lower Troposphere", "Upper Canopy"], "Urban Air": ["City Center", "Industrial"] }, "Estuarine": { "Brackish Water": ["Mangroves", "Salt Marshes"], "Deltas": ["Active Delta", "Inactive Delta"] }, "Cryogenic": { "Ice Sheets": ["Polar", "Glacial"], "Tundra": ["Permafrost", "Alpine"] }, "Artificial": { "Urban": ["Parks", "Gardens"], "Agricultural": ["Farms", "Plantations"] }, "Introduced": { "Invasive Zones": ["Islands", "Mainland"], "Rehabilitation": ["Forest", "Wetland"] }, "Unknown": { "Unclassified": ["Region A", "Region B"], "Pending": ["Survey 1", "Survey 2"] } };
         function getRealmColor(r) { return REALM_COLORS[r] || "#0f172a"; }
-        function generateSitesForContext(projId, colId) { /* ... same as before ... */ let seed = projId.charCodeAt(1) + (colId ? colId.charCodeAt(1) * 10 : 0); const count = 50 + (seed % 20); let baseLat = -3.4, baseLng = -62.2; if (projId === "p2") { baseLat = -18.2; baseLng = 147.7; } if (projId === "p3") { baseLat = -2.3; baseLng = 34.8; } const realmKeys = Object.keys(TAXONOMY); return Array.from({length: count}, (_, i) => { let rIndex = Math.floor(Math.random() * realmKeys.length); if (projId === "p1" && Math.random() > 0.3) rIndex = 0; if (projId === "p2" && Math.random() > 0.3) rIndex = 1; const r = realmKeys[rIndex]; const bKeys = Object.keys(TAXONOMY[r]); const b = bKeys[Math.floor(Math.random() * bKeys.length)]; const gKeys = TAXONOMY[r][b]; const g = gKeys[Math.floor(Math.random() * gKeys.length)]; const lat = baseLat + (Math.random()-0.5) * 8; const lng = baseLng + (Math.random()-0.5) * 8; const vertices = 3 + Math.floor(Math.random() * 5); const baseRadius = 0.03; const poly = []; const rotation = Math.random() * Math.PI; for(let k=0; k<vertices; k++) { const angle = (k / vertices) * Math.PI * 2 + rotation; const r = baseRadius * (0.8 + Math.random() * 0.4); poly.push([lat + Math.sin(angle)*r, lng + Math.cos(angle)*r]); } return { id: `${projId}-${colId||'all'}-${i}`, name: `Site ${String.fromCharCode(65+(i%26))}-${100+i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, group: g, topography_m: Math.floor(Math.random()*800), freshwater_depth_m: r === 'Freshwater' ? (Math.random()*15).toFixed(1) : "N/A", mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => ({ name: `${r.slice(0,3).toUpperCase()}_REC_${202500+m}.wav`, date: "2025-01-15", duration: "01:00:00" })) }; }); }
+        function generateSitesForContext(projId, colId) { let seed = projId.charCodeAt(1) + (colId ? colId.charCodeAt(1) * 10 : 0); const count = 50 + (seed % 20); let baseLat = -3.4, baseLng = -62.2; if (projId === "p2") { baseLat = -18.2; baseLng = 147.7; } if (projId === "p3") { baseLat = -2.3; baseLng = 34.8; } const realmKeys = Object.keys(TAXONOMY); return Array.from({length: count}, (_, i) => { let rIndex = Math.floor(Math.random() * realmKeys.length); if (projId === "p1" && Math.random() > 0.3) rIndex = 0; if (projId === "p2" && Math.random() > 0.3) rIndex = 1; const r = realmKeys[rIndex]; const bKeys = Object.keys(TAXONOMY[r]); const b = bKeys[Math.floor(Math.random() * bKeys.length)]; const gKeys = TAXONOMY[r][b]; const g = gKeys[Math.floor(Math.random() * gKeys.length)]; const lat = baseLat + (Math.random()-0.5) * 8; const lng = baseLng + (Math.random()-0.5) * 8; const vertices = 3 + Math.floor(Math.random() * 5); const baseRadius = 0.03; const poly = []; const rotation = Math.random() * Math.PI; for(let k=0; k<vertices; k++) { const angle = (k / vertices) * Math.PI * 2 + rotation; const r = baseRadius * (0.8 + Math.random() * 0.4); poly.push([lat + Math.sin(angle)*r, lng + Math.cos(angle)*r]); } return { id: `${projId}-${colId||'all'}-${i}`, name: `Site ${String.fromCharCode(65+(i%26))}-${100+i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, group: g, topography_m: Math.floor(Math.random()*800), freshwater_depth_m: r === 'Freshwater' ? (Math.random()*15).toFixed(1) : "N/A", mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => ({ name: `${r.slice(0,3).toUpperCase()}_REC_${202500+m}.wav`, date: "2025-01-15", duration: "01:00:00" })) }; }); }
         function loadMapData() { if(!map) return; const projId = rawProjects[currProjIdx].id; const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null; if (!colId) { currentSites = []; rawProjects[currProjIdx].collections.forEach(c => { currentSites = [...currentSites, ...generateSitesForContext(projId, c.id)]; }); } else { currentSites = generateSitesForContext(projId, colId); } resetFilters(); }
         function initMap() { if(map) return; map = L.map('full-map', { zoomControl: false }).setView([-3.465, -62.215], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); L.control.zoom({ position: 'bottomright' }).addTo(map); polyLayer = L.layerGroup().addTo(map); clusterGroup = L.markerClusterGroup({ showCoverageOnHover: false, zoomToBoundsOnClick: true, spiderfyOnMaxZoom: true, maxClusterRadius: 60, iconCreateFunction: function(cluster) { const markers = cluster.getAllChildMarkers(); const n = markers.length; const realmCounts = {}; let totalMedia = 0; markers.forEach(m => { const r = m.options.customData.realm; realmCounts[r] = (realmCounts[r] || 0) + 1; totalMedia += m.options.customData.mediaCount; }); let gradientParts = []; let currentPercentage = 0; Object.keys(realmCounts).sort((a,b) => realmCounts[b] - realmCounts[a]).forEach(r => { const pct = (realmCounts[r] / n) * 100; gradientParts.push(`${getRealmColor(r)} ${currentPercentage}% ${currentPercentage + pct}%`); currentPercentage += pct; }); return L.divIcon({ html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`, className: 'custom-cluster-icon', iconSize: L.point(50, 50), iconAnchor: [25, 25] }); } }); map.addLayer(clusterGroup); loadMapData(); }
         function renderMap(shouldZoom = false) { if(!map) return; polyLayer.clearLayers(); clusterGroup.clearLayers(); let visibleBounds = L.latLngBounds([]); let visibleCount = 0; let isCurrentSiteVisible = false; currentSites.forEach(site => { if (filterState.realm && site.realm !== filterState.realm) return; if (filterState.biome && site.biome !== filterState.biome) return; if (filterState.group && site.group !== filterState.group) return; if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true; visibleCount++; const siteColor = getRealmColor(site.realm); const poly = L.polygon(site.polygon, { color: siteColor, weight: 2, opacity: 0.8, fillColor: siteColor, fillOpacity: 0.15 }).addTo(polyLayer); poly.on('click', (e) => { L.DomEvent.stopPropagation(e); openSidebar(site); }); const marker = L.marker(site.center, { customData: { realm: site.realm, mediaCount: site.mediaCount }, icon: L.divIcon({ html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28] }) }); marker.on('click', () => openSidebar(site)); clusterGroup.addLayer(marker); visibleBounds.extend(site.center); }); if (currentSelectedSiteId && !isCurrentSiteVisible) closeSidebar(); if ((shouldZoom || visibleCount > 0) && visibleCount > 0) { if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, { duration: 0.8, easeLinearity: 0.5 }); else map.fitBounds(visibleBounds, { padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5 }); } }
@@ -1048,18 +1157,277 @@
         let mediaItems = []; let mediaSearchQuery = "";
         const taxonTags = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
         const getRandomTags = () => { const count = rInt(1, 3); const shuffled = taxonTags.sort(() => 0.5 - Math.random()); return shuffled.slice(0, count); };
-        const generateMediaForContext = (proj, col) => { const prefix = col ? `COL_${col.id}` : `PROJ_${proj.id}`; const count = col ? rInt(8, 15) : rInt(24, 40); return Array.from({length: count}, (_, i) => { const h = Math.floor(Math.random() * 24).toString().padStart(2, '0'); const m = Math.floor(Math.random() * 60).toString().padStart(2, '0'); const s = Math.floor(Math.random() * 60).toString().padStart(2, '0'); return { id: i, name: `${prefix}_REC_${20250000 + i}.wav`, date: `2025-01-${(i % 28) + 1}`, time: `${h}:${m}:${s}`, fullDate: `2025-01-${(i % 28) + 1} ${h}:${m}`, duration: `00:${rInt(10, 59)}`, tags: getRandomTags(), size: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`, sr: "48kHz", spectrogram: "https://upload.wikimedia.org/wikipedia/commons/c/c5/Spectrogram-19thC.png", creator: ["Dr. Silva", "M. Lewis", "Field Team A", "Auto-Recorder"][rInt(0,3)], site: `Site-${rInt(1,12).toString().padStart(2,'0')}`, sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0,3)], license: ["CC BY 4.0", "CC BY-NC", "CC0"][rInt(0,2)] }; }); };
+        
+        // [修改] 年份随机化 (2021 - 2025)
+        const generateMediaForContext = (proj, col) => { 
+            const prefix = col ? `COL_${col.id}` : `PROJ_${proj.id}`; 
+            const count = col ? rInt(8, 15) : rInt(24, 40); 
+            return Array.from({length: count}, (_, i) => { 
+                const h = Math.floor(Math.random() * 24).toString().padStart(2, '0'); 
+                const m = Math.floor(Math.random() * 60).toString().padStart(2, '0'); 
+                const s = Math.floor(Math.random() * 60).toString().padStart(2, '0');
+                const year = 2021 + Math.floor(Math.random() * 5); // 2021-2025
+                const month = Math.floor(Math.random() * 12) + 1;
+                const day = Math.floor(Math.random() * 28) + 1;
+                const fullDate = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                
+                return { 
+                    id: i, 
+                    name: `${prefix}_REC_${20250000 + i}.wav`, 
+                    date: fullDate, 
+                    time: `${h}:${m}:${s}`, 
+                    fullDate: `${fullDate} ${h}:${m}`, 
+                    duration: `00:${rInt(10, 59)}`, 
+                    tags: getRandomTags(), 
+                    size: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`, 
+                    sr: "48kHz", 
+                    spectrogram: "https://upload.wikimedia.org/wikipedia/commons/c/c5/Spectrogram-19thC.png", 
+                    creator: ["Dr. Silva", "M. Lewis", "Field Team A", "Auto-Recorder"][rInt(0,3)], 
+                    site: `Site-${rInt(1,12).toString().padStart(2,'0')}`, 
+                    sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0,3)], 
+                    license: ["CC BY 4.0", "CC BY-NC", "CC0"][rInt(0,2)] 
+                }; 
+            }); 
+        };
+
         function updateMediaContext() { const proj = rawProjects[currProjIdx]; const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null; mediaItems = generateMediaForContext(proj, col); mediaSearchQuery = ""; const searchInput = document.querySelector('.media-search-input'); if(searchInput) searchInput.value = ""; const container = document.getElementById('media-grid-container'); animateBlockSwap(container, () => { renderMedia(); }); }
         function handleSearchMedia(val) { mediaSearchQuery = val.toLowerCase(); renderMedia(); }
         function renderMedia() { const container = document.getElementById('media-grid-container'); const badge = document.getElementById('media-count-badge'); const isGallery = container.classList.contains('view-gallery'); const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery) ); badge.textContent = `${filteredItems.length} Items`; if (filteredItems.length === 0) { container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`; lucide.createIcons(); return; } let html = ''; filteredItems.forEach(item => { const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join(''); if (isGallery) { html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><div class="media-name" title="${item.name}">${item.name}</div><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="12"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="12"></i> ${item.time}</div></div></div></div>`; } else { html += `<div class="media-item-row"><div class="row-play-btn"><i data-lucide="play" size="16" fill="currentColor"></i></div><div class="row-spec-bar"><img src="${item.spectrogram}" class="row-spec-img" alt="Spec"></div><div class="row-info"><div class="row-name" title="${item.name}">${item.name}</div><div class="tags-row">${tagsHtml}</div></div><div class="row-data-col"><span class="row-val" style="color:var(--text-main); font-weight:700;">${item.date}</span><span class="row-val-small">${item.time}</span></div><div class="row-data-col"><span class="row-label">Dur</span><span class="row-val" style="font-family:var(--font-mono);">${item.duration}</span></div><div class="row-data-col"><span class="row-label">Site</span><span class="row-val" title="${item.site}">${item.site}</span></div><div class="row-data-col"><span class="row-label">Sensor</span><span class="row-val" title="${item.sensor}">${item.sensor}</span></div><div class="row-data-col"><span class="row-label">Creator</span><span class="row-val" title="${item.creator}">${item.creator}</span></div><div class="row-data-col" style="align-items: center;"><span class="license-badge">${item.license}</span></div></div>`; } }); container.innerHTML = html; lucide.createIcons(); }
         function switchMediaView(mode, btn) { const container = document.getElementById('media-grid-container'); const btns = document.querySelectorAll('.view-btn'); const pill = document.getElementById('view-pill'); if (mode === 'gallery') { container.classList.remove('view-list'); container.classList.add('view-gallery'); } else { container.classList.remove('view-gallery'); container.classList.add('view-list'); } btns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); pill.style.width = btn.offsetWidth + 'px'; pill.style.left = btn.offsetLeft + 'px'; renderMedia(); }
         
-        let tlState = { scale: 1, panning: false, pointX: 0, pointY: 0, startX: 0, startY: 0, x: 0, y: 0 };
-        function initTimelineInteraction() { const viewport = document.getElementById('tl-viewport'); const world = document.getElementById('tl-world'); if(!viewport || !world) return; viewport.addEventListener('wheel', (e) => { if (e.target.closest('.tl-col-body')) { const col = e.target.closest('.tl-col-body'); if (col.scrollHeight > col.clientHeight && !e.ctrlKey) return; } e.preventDefault(); const xs = (e.clientX - tlState.x) / tlState.scale; const ys = (e.clientY - tlState.y) / tlState.scale; const delta = -e.deltaY; const factor = 1.1; if (delta > 0) tlState.scale *= factor; else tlState.scale /= factor; tlState.scale = Math.min(Math.max(0.2, tlState.scale), 4); tlState.x = e.clientX - xs * tlState.scale; tlState.y = e.clientY - ys * tlState.scale; updateTransform(); }, { passive: false }); viewport.addEventListener('mousedown', (e) => { if(e.target.closest('.tl-ctrl-btn')) return; tlState.panning = true; tlState.startX = e.clientX - tlState.x; tlState.startY = e.clientY - tlState.y; viewport.style.cursor = 'grabbing'; }); window.addEventListener('mousemove', (e) => { if (!tlState.panning) return; e.preventDefault(); tlState.x = e.clientX - tlState.startX; tlState.y = e.clientY - tlState.startY; updateTransform(); }); window.addEventListener('mouseup', () => { tlState.panning = false; viewport.style.cursor = 'grab'; }); }
-        function updateTransform() { const world = document.getElementById('tl-world'); if(world) world.style.transform = `translate(${tlState.x}px, ${tlState.y}px) scale(${tlState.scale})`; }
-        function tlReset() { tlState.scale = 1; tlState.x = 40; tlState.y = 40; updateTransform(); }
-        function tlZoom(delta) { const factor = delta > 0 ? 1.2 : 0.8; tlState.scale *= factor; tlState.scale = Math.min(Math.max(0.2, tlState.scale), 4); updateTransform(); }
-        function renderTimeline() { const container = document.getElementById('tl-world'); const grouped = mediaItems.reduce((acc, item) => { if (!acc[item.date]) acc[item.date] = []; acc[item.date].push(item); return acc; }, {}); const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)); if (sortedDates.length === 0) { container.innerHTML = `<div style="padding:40px; color:var(--text-muted);">No data available</div>`; return; } let html = ''; sortedDates.forEach(date => { const dayItems = grouped[date]; dayItems.sort((a, b) => a.time.localeCompare(b.time)); let cardsHtml = ''; dayItems.forEach(item => { cardsHtml += `<div class="tl-card"><div class="tl-card-img-box"><img src="${item.spectrogram}" class="tl-card-img" loading="lazy"></div><div class="tl-card-info"><div class="tl-card-title">${item.name}</div><div class="tl-card-meta"><span>${item.time}</span><span>${item.duration}</span></div></div></div>`; }); const dateObj = new Date(date); html += `<div class="tl-column"><div class="tl-col-header"><div><span class="tl-date-day">${dateObj.getDate()} ${dateObj.toLocaleDateString('en-US', { month: 'short' })}</span><span class="tl-date-meta">${dateObj.toLocaleDateString('en-US', { weekday: 'short' })}</span></div><div class="tl-badge-count">${dayItems.length}</div></div><div class="tl-col-body">${cardsHtml}</div></div>`; }); container.innerHTML = html; tlReset(); lucide.createIcons(); }
+        // --- TIMELINE MATRIX LOGIC ---
+        
+        let tlConfig = {
+            grouping: 'realm', 
+            resolution: 'y',   
+            groupLabels: {
+                'all': 'Overview',
+                'realm': 'Eco Realm', 
+                'biome': 'Biome', 
+                'group': 'Group', 
+                'site': 'Site'
+            },
+            resLabels: {
+                'all': 'All Time (Total)',
+                'y': 'Year (YYYY)', 
+                'yq': 'Quarter (YYYY-Q)', // New
+                'ym': 'Month (YYYY-MM)', 
+                'm': 'Month Only (MM)',
+                'q': 'Quarter Only (Q1-Q4)', // New
+                'ymd': 'Date (Y-M-D)', 
+                'md': 'Day of Year (M-D)', 
+                'd': 'Day Only (DD)'
+            }
+        };
+
+        function setTimelineGrouping(val) {
+            tlConfig.grouping = val;
+            const labelMap = { 
+                'all': 'Overview (All)', 
+                'realm': 'Eco Realm', 
+                'biome': 'Biome', 
+                'group': 'Group', 
+                'site': 'Site' 
+            };
+            document.getElementById('tl-text-group').textContent = labelMap[val] || tlConfig.groupLabels[val];
+            closeSelects();
+            renderTimeline();
+        }
+
+        function setTimelineResolution(val) {
+            tlConfig.resolution = val;
+            document.getElementById('tl-text-time').textContent = tlConfig.resLabels[val];
+            closeSelects();
+            renderTimeline();
+        }
+
+        function getTimeKey(item, res) {
+            const d = new Date(item.date); 
+            const y = d.getFullYear();
+            const m = d.getMonth(); // 0-11
+            const mStr = String(m + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const q = Math.ceil((m + 1) / 3);
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            switch(res) {
+                case 'all': return 'Total';
+                case 'y':   return `${y}`;
+                case 'yq':  return `${y}-Q${q}`; // New
+                case 'ym':  return `${y}-${mStr}`;
+                case 'm':   return monthNames[m]; 
+                case 'q':   return `Q${q}`; // New
+                case 'ymd': return `${y}-${mStr}-${day}`;
+                case 'md':  return `${monthNames[m]} ${day}`;
+                case 'd':   return `Day ${day}`; 
+                default:    return item.date;
+            }
+        }
+
+        // 强关联数据：确保 MediaItems 的 Realm/Biome/Group 与 currentSites 完全一致
+        function enrichMediaData() {
+            if (currentSites.length === 0) return;
+
+            // 1. 建立真实站点池
+            const realSites = currentSites;
+
+            mediaItems.forEach((item, index) => {
+                // 如果该 Item 还没有关联到真实地图数据，或者需要刷新
+                if (!item.enriched || !item.realSiteLinked) {
+                    const siteIndex = (item.id + index) % realSites.length;
+                    const linkedSite = realSites[siteIndex];
+
+                    // 覆写 Item 的属性，使其与 Map 数据一致
+                    item.site = linkedSite.name; // 显示名称
+                    item.realm = linkedSite.realm;
+                    item.biome = linkedSite.biome;
+                    item.group = linkedSite.group;
+                    
+                    item.realSiteLinked = true; 
+                    item.enriched = true;
+                }
+            });
+        }
+
+        function getRowInfo(item, grouping) {
+            // 返回: { key, label, sub, color }
+            // 颜色优先使用 Realm 颜色
+            const color = getRealmColor(item.realm);
+
+            if (grouping === 'all') {
+                return { key: 'all', label: 'All Data', sub: null, color: '#666' };
+            }
+            if (grouping === 'realm') {
+                return { key: item.realm, label: item.realm, sub: null, color: color };
+            } 
+            else if (grouping === 'biome') {
+                return { key: item.biome, label: item.biome, sub: item.realm, color: color };
+            } 
+            else if (grouping === 'group') {
+                return { key: item.group, label: item.group, sub: `${item.realm}<br>${item.biome}`, color: color };
+            } 
+            else if (grouping === 'site') {
+                return { key: item.site, label: item.site, sub: `${item.realm}<br>${item.biome}<br>${item.group}`, color: color };
+            }
+            return { key: 'Unknown', label: 'Unknown', sub: '', color: '#333' };
+        }
+
+        function renderTimeline() {
+            enrichMediaData(); // 确保数据对齐
+
+            const container = document.getElementById('tl-matrix-container');
+            const badge = document.getElementById('tl-count-badge');
+            const grouping = tlConfig.grouping;
+            const resolution = tlConfig.resolution;
+            
+            // 更新 Badge
+            if (badge) badge.textContent = `${mediaItems.length} Items`;
+
+            // 1. 构建矩阵数据
+            const matrix = {}; 
+            const colKeys = new Set();
+            const rowKeys = new Set();
+            const rowMetaMap = {}; 
+
+            mediaItems.forEach(item => {
+                const rowInfo = getRowInfo(item, grouping);
+                const cKey = getTimeKey(item, resolution);
+                const rKey = rowInfo.key;
+                
+                rowKeys.add(rKey);
+                colKeys.add(cKey);
+                
+                if (!rowMetaMap[rKey]) rowMetaMap[rKey] = rowInfo;
+
+                if (!matrix[rKey]) matrix[rKey] = {};
+                if (!matrix[rKey][cKey]) matrix[rKey][cKey] = [];
+                matrix[rKey][cKey].push(item);
+            });
+
+            // 2. 排序
+            const sortedColKeys = Array.from(colKeys).sort(); 
+            const sortedRowKeys = Array.from(rowKeys).sort(); 
+
+            if (sortedColKeys.length === 0) {
+                container.innerHTML = `<div style="margin: auto; display:flex; flex-direction:column; align-items:center; color:var(--text-muted); gap:10px;"><i data-lucide="calendar-x" size="32"></i><span>No timeline data available</span></div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            // 3. 构建 Grid
+            // 第一列宽度设为 240px 以容纳层级信息
+            const gridStyle = `grid-template-columns: 240px repeat(${sortedColKeys.length}, minmax(280px, 1fr));`;
+            
+            let html = `<div class="tl-matrix-table" style="${gridStyle}">`;
+
+            // Corner Cell (使用 Flexbox 对齐)
+            // 获取显示的 Y 和 X 轴 Label
+            const yLabel = tlConfig.groupLabels[grouping];
+            const xLabel = tlConfig.resLabels[resolution].split(' ')[0];
+
+            html += `<div class="tl-matrix-corner">
+                <span>${yLabel}</span>
+                <span style="font-size:0.7rem; opacity:0.5; margin:2px 0;">\\</span>
+                <span>${xLabel}</span>
+            </div>`;
+            
+            // Column Headers (Time)
+            sortedColKeys.forEach(dateKey => {
+                html += `<div class="tl-col-header-cell">${dateKey}</div>`;
+            });
+
+            // Data Rows
+            sortedRowKeys.forEach(rowKey => {
+                const meta = rowMetaMap[rowKey];
+                
+                // 行头显示逻辑：大标题 + 换行的子标题
+                // 应用颜色到大标题
+                let headerHtml = `<span style="font-size:0.95rem; color:${meta.color};">${meta.label}</span>`;
+                if (meta.sub) {
+                    headerHtml += `<span class="tl-row-meta" style="display:block; margin-top:4px; font-weight:500; opacity:0.7; font-size:0.7rem; line-height:1.4;">${meta.sub}</span>`;
+                }
+                
+                // 加上统计数字
+                const totalInRow = sortedColKeys.reduce((acc, cKey) => acc + (matrix[rowKey][cKey] ? matrix[rowKey][cKey].length : 0), 0);
+                headerHtml += `<span class="tl-row-meta" style="margin-top:6px; color:var(--text-muted); font-weight:700;">${totalInRow} recordings</span>`;
+
+                html += `<div class="tl-row-header-cell">${headerHtml}</div>`;
+
+                // Cells
+                sortedColKeys.forEach(colKey => {
+                    const items = matrix[rowKey][colKey] || [];
+                    html += `<div class="tl-data-cell">`;
+                    
+                    if (items.length > 0) {
+                        html += `<div class="tl-cell-grid">`;
+                        items.forEach(item => {
+                            const tagsHtml = item.tags.slice(0, 2).map(t => `<span class="media-tag">${t}</span>`).join('');
+                            html += `
+                                <div class="tl-media-card">
+                                    <div class="spectrogram-cover">
+                                        <img src="${item.spectrogram}" class="spectrogram-img" loading="lazy" alt="Spec">
+                                        <div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor" size="14"></i></div></div>
+                                        <div class="duration-badge">${item.duration}</div>
+                                    </div>
+                                    <div class="media-card-info">
+                                        <div class="media-name" title="${item.name}">${item.name}</div>
+                                        <div class="tags-row">${tagsHtml}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`; 
+                    } else {
+                        html += `<div style="opacity:0.1; text-align:center; font-size:2rem; font-weight:100; margin-top:10px;">·</div>`;
+                    }
+                    html += `</div>`; 
+                });
+            });
+
+            html += `</div>`; 
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
 
         // --- GENERAL LOGIC ---
         function getIconForStat(key) { const map = { 'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban' }; return map[key] || 'activity'; }
@@ -1193,7 +1561,7 @@
         window.addEventListener('resize', () => { const active = document.querySelector('.nav-item.active'); if(active) movePill(active); });
         function toggleTheme() { const current = document.documentElement.getAttribute('data-theme'); const target = current === 'dark' ? 'light' : 'dark'; setTheme(target); }
         function setTheme(theme) { document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); const iconEl = document.getElementById('theme-icon-el'); if(iconEl) { iconEl.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon'); lucide.createIcons(); } if (currentSelectedSiteId) { const site = currentSites.find(s => s.id === currentSelectedSiteId); if (site) { const color = getRealmColor(site.realm); document.documentElement.style.setProperty('--site-color', color); document.documentElement.style.setProperty('--site-color-tint', color + '12'); } } }
-        function init() { const saved = localStorage.getItem('theme'); const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches; const defaultTheme = saved || (systemDark ? 'dark' : 'light'); setTheme(defaultTheme); renderProjectList(); renderCollectionList(); updateContent(rawProjects[0], true); const activeView = document.querySelector('.view-btn.active'); if(activeView) { const p = document.getElementById('view-pill'); p.style.width = activeView.offsetWidth + 'px'; p.style.left = activeView.offsetLeft + 'px'; } const active = document.querySelector('.nav-item.active'); if(active) movePill(active); initTimelineInteraction(); }
+        function init() { const saved = localStorage.getItem('theme'); const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches; const defaultTheme = saved || (systemDark ? 'dark' : 'light'); setTheme(defaultTheme); renderProjectList(); renderCollectionList(); updateContent(rawProjects[0], true); const activeView = document.querySelector('.view-btn.active'); if(activeView) { const p = document.getElementById('view-pill'); p.style.width = activeView.offsetWidth + 'px'; p.style.left = activeView.offsetLeft + 'px'; } const active = document.querySelector('.nav-item.active'); if(active) movePill(active); }
         init();
     </script>
 </body>
