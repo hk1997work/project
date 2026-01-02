@@ -479,11 +479,27 @@
         .play-circle { width: 56px; height: 56px; background: var(--brand); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .media-item-card:hover .play-circle { transform: scale(1); }
         .duration-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; font-family: var(--font-mono); pointer-events: none; }
-        .media-card-info { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .media-card-info { 
+            padding: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            flex: 1;  /* [新增] 让内容区域填满卡片高度 */
+        }
         .media-name { font-weight: 700; font-size: 1rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
         .tags-row { display: flex; gap: 6px; flex-wrap: wrap; min-height: 24px; }
         .media-tag { display: inline-flex; align-items: center; background: var(--brand); color: white; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.2px; box-shadow: 0 2px 5px rgba(131, 205, 32, 0.25); }
-        .media-meta-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono); }
+        .media-meta-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-top: auto; /* [修改] 原为 4px，改为 auto 以实现底部对齐 */
+            padding-top: 10px; 
+            border-top: 1px solid var(--border-color); 
+            font-size: 0.8rem; 
+            color: var(--text-muted); 
+            font-family: var(--font-mono); 
+        }
         .meta-icon-text { display: flex; align-items: center; gap: 5px; }
         
         /* [修改] Media Item Row padding adjustment */
