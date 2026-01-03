@@ -1107,7 +1107,7 @@
             right: 0;
             width: 150px;
             height: 150px;
-            opacity: 0.15;
+            opacity: 1;
             color: var(--brand);
             transform: rotate(0deg);
         }
@@ -1144,7 +1144,7 @@
             right: 0;
             width: 280px;
             height: 280px;
-            opacity: 0.08;
+            opacity: 1;
             color: var(--brand);
             transform: rotate(0deg);
         }
@@ -1717,6 +1717,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap; /* 允许小屏幕换行 */
         }
 
         .rd-site-name {
@@ -1726,6 +1727,26 @@
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        /* [新增] 站点指标样式 */
+        .rd-site-metrics {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 8px;
+            padding-left: 12px;
+            border-left: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        .rd-site-metrics span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .rd-hierarchy {
@@ -1740,8 +1761,18 @@
 
         .rd-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            /* [修改] 强制 4 列，以便 7 个项目排成 2 行 (4 + 3) */
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px 16px;
+        }
+
+        /* [新增] License 图片样式 */
+        .license-img {
+            height: 20px; /* 调整高度与文字协调 */
+            width: auto;
+            vertical-align: middle;
+            opacity: 0.9;
+            margin-top: -2px;
         }
 
         .rd-item {
@@ -3057,12 +3088,17 @@
                 const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
                 
                 if (isGallery) {
-                    // [Gallery View] 保持不变 (带时间+大小)
+                    // [Gallery View] 保持不变
                     html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div><div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div></div></div></div>`;
                 } else {
-                    // [List View] 完全重构布局
+                    // [List View] 调整布局：Topography 和 Water Depth 移至 Site Header
                     const realmColor = getRealmColor(item.realm);
                     
+                    // 构建水深显示逻辑 (如果是 N/A 则不显示图标，保持整洁，或者您可以选择显示灰色)
+                    const depthHtml = item.freshwater_depth_m !== 'N/A' 
+                        ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` 
+                        : '';
+
                     html += `
                     <div class="media-item-row">
                         <div class="list-spec-container">
@@ -3084,6 +3120,10 @@
                             <div class="rd-header-row">
                                 <div class="rd-site-group">
                                     <div class="rd-site-name"><i data-lucide="map-pin" size="14" style="color:var(--brand);"></i>${item.site}</div>
+                                    <div class="rd-site-metrics">
+                                        <span title="Topography"><i data-lucide="mountain" size="12"></i> ${item.topography_m}m</span>
+                                        ${depthHtml}
+                                    </div>
                                 </div>
                                 <div class="rd-hierarchy">
                                     <span style="color:${realmColor}">${item.realm}</span>
@@ -3101,9 +3141,7 @@
                                 <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
                                 <div class="rd-item"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
                                 <div class="rd-item"><span class="rd-label">DOI</span><span class="rd-val" title="${item.doi}">${item.doi}</span></div>
-                                <div class="rd-item"><span class="rd-label">Topography</span><span class="rd-val">${item.topography_m} m</span></div>
-                                <div class="rd-item"><span class="rd-label">Water Depth</span><span class="rd-val">${item.freshwater_depth_m === 'N/A' ? 'N/A' : item.freshwater_depth_m + ' m'}</span></div>
-                            </div>
+                                </div>
                         </div>
                     </div>`;
                 }
