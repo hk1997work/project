@@ -2457,9 +2457,10 @@
 
         .sb-content {
             flex: 1;
-            overflow-y: auto;
+            overflow: hidden; /* [修改] 禁止侧边栏整体滚动，让内部元素自己滚 */
             background: var(--bg-surface);
-            padding: 24px;
+            /* [修改] 底部 padding 设为 0，交给内部容器处理，避免滚动条不到底 */
+            padding: 24px 24px 0 24px; 
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -2499,25 +2500,25 @@
             gap: 8px;
         }
 
-        /* [修改] 样式调整：单列 Grid 布局 (一行一个)，且图片比例优化 */
+        /* [修改] 样式调整：Media 列表独立滚动 */
         .media-scroll-container {
             display: grid;
-            grid-template-columns: 1fr; /* 改为 1fr，强制单列 */
+            grid-template-columns: 1fr;
             gap: 16px;
-            max-height: none; 
-            overflow-y: visible;
-            padding-right: 0;
-            padding-bottom: 20px;
+            /* 关键修改：占据剩余高度并允许滚动 */
+            flex: 1;          
+            min-height: 0;    /* 修复 Flex 嵌套滚动问题 */
+            overflow-y: auto; 
+            
+            /* 视觉微调 */
+            padding-right: 4px; /* 防止滚动条紧贴卡片 */
+            padding-bottom: 24px; /* 底部留白 */
         }
 
-        /* 侧边栏卡片样式微调 */
-        .sidebar .media-item-card .spectrogram-cover {
-            aspect-ratio: 2.2 / 1; /* 图片稍微宽一点，避免单列时过高 */
-        }
-
-        /* [新增] 侧边栏内的卡片样式微调 (可选，防止在小屏幕上过于拥挤) */
+        /* 侧边栏布局微调：保持单列，去除对卡片内部样式的特殊干预，以保证一致性 */
         .sidebar .media-item-card .media-name {
-            font-size: 0.85rem; /* 稍微调小字号 */
+            /* 稍微调整标题大小以适应侧边栏宽度，但保留其他元素 */
+            font-size: 0.9rem; 
         }
 
         .media-item {
@@ -3093,11 +3094,16 @@
             // 确保容器存在后再写入
             const metaContainer = document.getElementById('sb-meta-container');
             if(metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
-
-            // 3. 渲染 Media (Gallery 样式卡片)
+            
+            // 3. 渲染 Media (Gallery 样式卡片 - 保持与 Media 页面完全一致的结构)
             const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
             
             const mediaHtml = site.media.map((m) => {
+                // 为了保持视觉一致性，这里模拟一些标签和数据
+                const mockTagsHtml = `<span class="media-tag">Bio</span><span class="media-tag">Aves</span>`;
+                const mockTime = "14:30:00";
+                const mockSize = "2.4 MB";
+
                 return `
                 <div class="media-item-card" style="cursor: pointer;" onclick="event.stopPropagation();">
                     <div class="spectrogram-cover">
@@ -3105,10 +3111,15 @@
                         <div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div>
                         <div class="duration-badge">${m.duration}</div>
                     </div>
-                    <div class="media-card-info" style="padding: 12px;">
+                    <div class="media-card-info">
                         <a href="#" class="media-name" title="${m.name}" onclick="return false;">${m.name}</a>
-                        <div class="media-meta-row" style="margin-top: 8px; padding: 0; background: transparent; border: none; font-size: 0.75rem;">
-                            <div class="meta-icon-text"><i data-lucide="calendar" size="12"></i> ${m.date}</div>
+                        
+                        <div class="tags-row">${mockTagsHtml}</div>
+                        
+                        <div class="media-meta-row">
+                            <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
+                            <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${mockTime}</div>
+                            <div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${mockSize}</div>
                         </div>
                     </div>
                 </div>`;
