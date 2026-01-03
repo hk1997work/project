@@ -1605,128 +1605,177 @@
             background: var(--bg-surface);
             border-radius: 12px;
             display: grid;
-            /* Adjusted grid: larger image column (260px) */
-            grid-template-columns: 260px minmax(200px, 4fr) 120px 80px 100px 140px 120px 80px;
-            align-items: center;
+            /* New Layout: Spec (220px) | Info (280px) | Details (Flex/Grid) */
+            grid-template-columns: 220px 280px 1fr;
+            align-items: start;
             gap: 24px;
-            padding: 16px;
+            padding: 20px;
             border: 1px solid var(--border-color);
             transition: all 0.2s;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .media-item-row:hover {
             background: var(--bg-surface-hover);
-            /* Light gray hover */
-            /* No green border */
-            transform: translateX(4px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            border-color: rgba(131, 205, 32, 0.3);
         }
 
-        .media-item-row .row-spec-bar {
+        /* List View Spectrogram Container */
+        .media-item-row .list-spec-container {
             width: 100%;
-            height: auto;
-            aspect-ratio: 2 / 1;
-            overflow: hidden;
+            height: 140px; /* 稍微增高以适应左侧布局 */
             border-radius: 8px;
             position: relative;
             background: #0f172a;
             border: 1px solid var(--border-color);
+            overflow: hidden;
         }
 
-        .row-spec-img {
+        .media-item-row .list-spec-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.7;
+            opacity: 0.8;
             mix-blend-mode: screen;
             filter: sepia(1) hue-rotate(60deg) saturate(3);
+            transition: 0.3s;
+        }
+        .media-item-row:hover .list-spec-img { opacity: 1; }
+
+        .media-item-row .duration-badge {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            pointer-events: none;
+            z-index: 2;
         }
 
-        /* List view file name styled as link */
+        /* Middle Column: Basic Info */
+        .row-basic-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: flex-start;
+            padding-top: 4px;
+        }
+
         a.row-name {
             font-weight: 800;
             font-size: 1.15rem;
             line-height: 1.4;
             color: var(--text-main);
-
-            white-space: normal;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-
             text-decoration: none;
             transition: color 0.2s;
-            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        a.row-name:hover {
-            color: var(--brand);
-            text-decoration: underline;
-        }
+        a.row-name:hover { color: var(--brand); text-decoration: underline; }
 
-        .media-item-row .tags-row {
-            margin: 0;
+        .row-meta-list {
+            display: flex;
+            flex-direction: column;
             gap: 8px;
         }
 
-        .media-item-row .media-tag {
-            padding: 4px 10px;
-            font-size: 0.75rem;
+        .row-meta-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-weight: 500;
         }
 
-        .row-info {
+        .row-meta-item i { opacity: 0.7; }
+
+        /* Right Column: Details Grid */
+        .row-details-col {
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            justify-content: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            height: 100%;
+            box-sizing: border-box;
         }
 
-        /* List Data Columns */
-        .row-data-col {
+        .rd-header-row {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow: hidden;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .rd-site-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rd-site-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
             gap: 6px;
         }
 
-        .row-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0;
+        .rd-hierarchy {
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+        }
+        .rd-bread-sep { opacity: 0.4; font-size: 0.8em; }
+
+        .rd-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px 16px;
         }
 
-        .row-val {
-            font-size: 0.95rem;
+        .rd-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            overflow: hidden;
+        }
+
+        .rd-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .rd-val {
+            font-size: 0.85rem;
             color: var(--text-secondary);
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-
-        .row-val-small {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            margin-top: 2px;
-        }
-
-        .license-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 700;
-            text-align: center;
         }
 
         /* --- Timeline Matrix Styles --- */
@@ -2982,29 +3031,75 @@
         function updateMediaContext() { const proj = rawProjects[currProjIdx]; const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null; mediaItems = generateMediaForContext(proj, col); mediaSearchQuery = ""; const searchInput = document.querySelector('.media-search-input'); if (searchInput) searchInput.value = ""; const container = document.getElementById('media-grid-container'); animateBlockSwap(container, () => { renderMedia(); }); }
         function handleSearchMedia(val) { mediaSearchQuery = val.toLowerCase(); renderMedia(); }
         function renderMedia() {
+            // [新增] 渲染前确保数据字段完整
+            enrichMediaData();
+
             const container = document.getElementById('media-grid-container');
             const badge = document.getElementById('media-count-badge');
             const isGallery = container.classList.contains('view-gallery');
             const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
             badge.textContent = `${filteredItems.length} Items`;
+            
             if (filteredItems.length === 0) {
                 container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
                 lucide.createIcons();
                 return;
             }
+
             let html = '';
             filteredItems.forEach(item => {
                 const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
+                
                 if (isGallery) {
-                    // [Gallery 视图修改]
-                    // 1. 将图标 size 从 12 改为 14，配合加粗字体
-                    // 2. 文件名已确认为 a 标签
+                    // [Gallery View] 保持不变 (带时间+大小)
                     html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div><div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div></div></div></div>`;
                 } else {
-                    // [List 视图修改] 
-                    // 1. 移除了 <div class="row-play-btn">...</div>
-                    // 2. 将 <div class="row-name"> 改为 <a class="row-name">
-                    html += `<div class="media-item-row"><div class="row-spec-bar"><img src="${item.spectrogram}" class="row-spec-img" alt="Spec"></div><div class="row-info"><a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div></div><div class="row-data-col"><span class="row-val" style="color:var(--text-main); font-weight:700;">${item.date}</span><span class="row-val-small">${item.time}</span></div><div class="row-data-col"><span class="row-label">Dur</span><span class="row-val" style="font-family:var(--font-mono);">${item.duration}</span></div><div class="row-data-col"><span class="row-label">Site</span><span class="row-val" title="${item.site}">${item.site}</span></div><div class="row-data-col"><span class="row-label">Sensor</span><span class="row-val" title="${item.sensor}">${item.sensor}</span></div><div class="row-data-col"><span class="row-label">Creator</span><span class="row-val" title="${item.creator}">${item.creator}</span></div><div class="row-data-col" style="align-items: center;"><span class="license-badge">${item.license}</span></div></div>`;
+                    // [List View] 完全重构布局
+                    const realmColor = getRealmColor(item.realm);
+                    
+                    html += `
+                    <div class="media-item-row">
+                        <div class="list-spec-container">
+                            <img src="${item.spectrogram}" class="list-spec-img" alt="Spec">
+                            <div class="duration-badge">${item.duration}</div>
+                        </div>
+
+                        <div class="row-basic-info">
+                            <a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a>
+                            <div class="tags-row">${tagsHtml}</div>
+                            <div class="row-meta-list">
+                                <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
+                                <div class="row-meta-item"><i data-lucide="clock" size="14"></i> ${item.time}</div>
+                                <div class="row-meta-item"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div>
+                            </div>
+                        </div>
+
+                        <div class="row-details-col">
+                            <div class="rd-header-row">
+                                <div class="rd-site-group">
+                                    <div class="rd-site-name"><i data-lucide="map-pin" size="14" style="color:var(--brand);"></i>${item.site}</div>
+                                </div>
+                                <div class="rd-hierarchy">
+                                    <span style="color:${realmColor}">${item.realm}</span>
+                                    <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span>
+                                    <span>${item.biome}</span>
+                                    <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span>
+                                    <span>${item.group}</span>
+                                </div>
+                            </div>
+                            <div class="rd-grid">
+                                <div class="rd-item"><span class="rd-label">Uploader</span><span class="rd-val" title="${item.uploader}">${item.uploader}</span></div>
+                                <div class="rd-item"><span class="rd-label">Creator</span><span class="rd-val" title="${item.creator}">${item.creator}</span></div>
+                                <div class="rd-item"><span class="rd-label">Sensor</span><span class="rd-val" title="${item.sensor}">${item.sensor}</span></div>
+                                <div class="rd-item"><span class="rd-label">License</span><span class="rd-val" title="${item.license}">${item.license}</span></div>
+                                <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
+                                <div class="rd-item"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
+                                <div class="rd-item"><span class="rd-label">DOI</span><span class="rd-val" title="${item.doi}">${item.doi}</span></div>
+                                <div class="rd-item"><span class="rd-label">Topography</span><span class="rd-val">${item.topography_m} m</span></div>
+                                <div class="rd-item"><span class="rd-label">Water Depth</span><span class="rd-val">${item.freshwater_depth_m === 'N/A' ? 'N/A' : item.freshwater_depth_m + ' m'}</span></div>
+                            </div>
+                        </div>
+                    </div>`;
                 }
             });
             container.innerHTML = html;
@@ -3099,6 +3194,24 @@
                     item.realm = linkedSite.realm;
                     item.biome = linkedSite.biome;
                     item.group = linkedSite.group;
+                    
+                    // [New] 补充详细地理信息
+                    item.topography_m = linkedSite.topography_m;
+                    item.freshwater_depth_m = linkedSite.freshwater_depth_m;
+
+                    // [New] 补充其他模拟元数据
+                    if (!item.uploader) item.uploader = ["UserA", "LabAdmin", "J.Doe"][rInt(0, 2)];
+                    
+                    // Medium 逻辑: 如果 Realm 是水相关则为 Water，否则为 Air
+                    const waterRealms = ['Marine', 'Freshwater', 'Estuarine', 'Subterranean']; 
+                    // 注：Subterranean 可能是水也可能是空气，这里简化处理为 Water (或根据具体逻辑调整)
+                    if (!item.medium) item.medium = waterRealms.includes(item.realm) ? 'Water' : 'Air';
+                    
+                    if (!item.note) item.note = "Standard survey recording during peak activity.";
+                    if (!item.doi) item.doi = "10.5281/zenodo." + rInt(100000, 999999);
+                    
+                    // 确保 Creator 存在
+                    if (!item.creator) item.creator = ["Dr. Silva", "M. Lewis", "Field Team A"][rInt(0, 2)];
 
                     item.realSiteLinked = true;
                     item.enriched = true;
