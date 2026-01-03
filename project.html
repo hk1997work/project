@@ -2477,13 +2477,13 @@
 
         .sb-content {
             flex: 1;
-            overflow: hidden; /* [修改] 禁止侧边栏整体滚动，让内部元素自己滚 */
+            overflow: hidden; 
             background: var(--bg-surface);
-            /* [修改] 底部 padding 设为 0，交给内部容器处理，避免滚动条不到底 */
             padding: 24px 24px 0 24px; 
             display: flex;
             flex-direction: column;
             gap: 12px;
+            min-height: 0; /* [关键] 允许子元素滚动 */
         }
 
         .data-row {
@@ -2492,6 +2492,7 @@
             align-items: baseline;
             padding: 10px 0;
             border-bottom: 1px dashed var(--border-light);
+            flex-shrink: 0; /* 防止数据行被压缩 */
         }
 
         .data-label {
@@ -2507,8 +2508,6 @@
             text-align: right;
         }
 
-        /* 移除了 stats-box-container 相关的旧样式，因为不再使用 */
-
         .section-title {
             font-size: 0.8rem;
             font-weight: 800;
@@ -2518,26 +2517,28 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-shrink: 0;
         }
 
-        /* [修改] 样式调整：Media 列表独立滚动 */
+        /* [修改] 媒体滚动容器：使用 Flex Column 并允许滚动 */
         .media-scroll-container {
-            display: grid;
-            grid-template-columns: 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 16px;
-            /* 关键修改：占据剩余高度并允许滚动 */
             flex: 1;          
-            min-height: 0;    /* 修复 Flex 嵌套滚动问题 */
+            min-height: 0;    
             overflow-y: auto; 
             
-            /* 视觉微调 */
-            padding-right: 4px; /* 防止滚动条紧贴卡片 */
-            padding-bottom: 24px; /* 底部留白 */
+            padding-right: 4px; 
+            padding-bottom: 24px; 
         }
 
-        /* 侧边栏布局微调：保持单列，去除对卡片内部样式的特殊干预，以保证一致性 */
+        /* [修改] 侧边栏卡片：防止被压缩 */
+        .media-scroll-container .media-item-card {
+            flex-shrink: 0;
+        }
+
         .sidebar .media-item-card .media-name {
-            /* 稍微调整标题大小以适应侧边栏宽度，但保留其他元素 */
             font-size: 0.9rem; 
         }
 
