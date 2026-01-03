@@ -608,7 +608,8 @@
 
             to {
                 opacity: 1;
-                transform: none; /* [关键修复] 移除 transform 以修复 sticky 定位 */
+                transform: none;
+                /* [关键修复] 移除 transform 以修复 sticky 定位 */
             }
         }
 
@@ -1090,14 +1091,16 @@
 
         .summary-stat-card .bg-icon {
             position: absolute;
-            bottom: -20px; /* 稍微减少偏移量 */
+            bottom: -20px;
+            /* 稍微减少偏移量 */
             right: -20px;
-            width: 180px;  /* [修复] 宽高保持固定，不参与动画 */
-            height: 180px; 
+            width: 180px;
+            /* [修复] 宽高保持固定，不参与动画 */
+            height: 180px;
             opacity: 0.06;
             color: var(--text-main);
             /* [修复] 初始状态设为较小的 scale */
-            transform: rotate(-10deg) scale(0.8); 
+            transform: rotate(-10deg) scale(0.8);
             /* [修复] 明确 transition 属性，确保离开时平滑回归 */
             transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out, bottom 0.4s ease-in-out, right 0.4s ease-in-out, color 0.3s ease;
             pointer-events: none;
@@ -1108,7 +1111,7 @@
             bottom: 0;
             right: 0;
             /* [关键] 悬停时放大，离开时会顺着 scale 平滑缩小到 0.8，不会突变 */
-            transform: rotate(0deg) scale(0.9); 
+            transform: rotate(0deg) scale(0.9);
             opacity: 1;
             color: var(--brand);
         }
@@ -1330,7 +1333,8 @@
             display: flex;
             align-items: center;
             background: var(--bg-capsule);
-            border-radius: 60px; /* [修改] 统一圆角为 60px */
+            border-radius: 60px;
+            /* [修改] 统一圆角为 60px */
             padding: 4px 16px;
             height: 44px;
             /* [修改] 统一使用导航栏胶囊的内阴影 */
@@ -1355,8 +1359,10 @@
 
         .media-search-icon {
             color: var(--text-secondary);
-            width: 24px; /* [修改] 调整为 24px，与参考对象一致 */
-            height: 24px; /* [修改] 调整为 24px */
+            width: 24px;
+            /* [修改] 调整为 24px，与参考对象一致 */
+            height: 24px;
+            /* [修改] 调整为 24px */
             margin-right: 8px;
             transition: color 0.2s;
         }
@@ -1365,11 +1371,14 @@
             border: none;
             background: transparent;
             outline: none;
-            font-size: 0.85rem; /* 13.6px */
+            font-size: 0.85rem;
+            /* 13.6px */
             width: 100%;
-            color: var(--text-secondary); /* [修改] 颜色改为次级文本色，与按钮一致 */
+            color: var(--text-secondary);
+            /* [修改] 颜色改为次级文本色，与按钮一致 */
             font-family: var(--font-sans);
-            font-weight: 700; /* [新增] 加粗，与按钮字体风格一致 */
+            font-weight: 700;
+            /* [新增] 加粗，与按钮字体风格一致 */
         }
 
         .media-search-input::placeholder {
@@ -1383,7 +1392,8 @@
             background: var(--bg-capsule);
             /* 统一导航栏的内阴影 */
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
-            border-radius: 60px; /* 统一圆角 */
+            border-radius: 60px;
+            /* 统一圆角 */
             padding: 4px;
             height: 44px;
             box-sizing: border-box;
@@ -1399,9 +1409,11 @@
             bottom: 4px;
             left: 4px;
             width: 90px;
-            background: var(--brand); /* [关键修改] 绿色背景，同导航栏 */
+            background: var(--brand);
+            /* [关键修改] 绿色背景，同导航栏 */
             border-radius: 50px;
-            box-shadow: none; /* 去除卡片阴影 */
+            box-shadow: none;
+            /* 去除卡片阴影 */
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             z-index: 1;
             pointer-events: none;
@@ -1418,7 +1430,8 @@
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 700;
-            color: var(--text-secondary); /* 默认灰色，同导航栏 */
+            color: var(--text-secondary);
+            /* 默认灰色，同导航栏 */
             transition: color 0.25s ease;
             display: flex;
             align-items: center;
@@ -1427,17 +1440,18 @@
         }
 
         .view-btn.active {
-            color: white; /* [关键修改] 激活为白色 */
+            color: white;
+            /* [关键修改] 激活为白色 */
         }
 
         .view-btn:not(.active):hover {
-            color: var(--brand); /* 悬停变绿 */
+            color: var(--brand);
+            /* 悬停变绿 */
         }
 
         .media-scroll-area {
             flex: 1;
             overflow-y: auto;
-            padding: 30px 6px 0 0;
             /* Updated padding */
             min-height: 0;
         }
@@ -1449,22 +1463,14 @@
             /* Fixed 5 columns */
             gap: 32px;
             /* Increased gap */
-            padding-bottom: 20px;
-            padding-top: 10px;
-            padding-left: 20px;
-            /* Padding adjustment */
-            padding-right: 10px;
+            padding: 20px;
         }
 
         .media-container.view-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            padding-bottom: 20px;
-            padding-top: 10px;
-            padding-left: 20px;
-            /* Aligned with gallery */
-            padding-right: 10px;
+            padding: 20px;
         }
 
         .media-item-card {
@@ -1634,16 +1640,15 @@
         /* List View Spectrogram Container */
         .media-item-row .list-spec-container {
             /* [修改] 使用固定宽度，确保每一行图片大小一致 */
-            width:100%;
-            max-width: 320px;
+            width: 320px;
             /* 高度自动，由 aspect-ratio 决定 */
             height: auto;
             /* 锁定 2:1 比例 (结果高度为 120px) */
             aspect-ratio: 2 / 1;
-            
+
             /* [修改] 防止图片被行高拉伸，居中或顶部对齐 */
-            align-self: center; 
-            
+            align-self: center;
+
             border-radius: 8px;
             position: relative;
             background: #0f172a;
@@ -1988,7 +1993,8 @@
             overflow: auto;
             background: var(--bg-surface-secondary);
             position: relative;
-            display: block; /* [关键修复] 改为 block 避免 flex 布局干扰 */
+            display: block;
+            /* [关键修复] 改为 block 避免 flex 布局干扰 */
         }
 
         .tl-matrix-table {
@@ -2420,7 +2426,7 @@
         }
 
         .sb-header {
-            padding: 30px 24px 20px 24px;
+            padding: 20px;
             flex-shrink: 0;
             background: var(--site-color);
             display: flex;
@@ -2462,9 +2468,11 @@
             font-family: var(--font-mono);
             font-size: 0.8rem;
         }
-        
+
         .sb-meta-divider {
-             width: 1px; height: 12px; background: rgba(255,255,255,0.4);
+            width: 1px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.4);
         }
 
         .sb-close {
@@ -2492,22 +2500,23 @@
 
         .sb-content {
             flex: 1;
-            overflow: hidden; 
+            overflow: hidden;
             background: var(--bg-surface);
-            padding: 24px 24px 0 24px; 
+            padding: 24px 24px 0 24px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            min-height: 0; /* [关键] 允许子元素滚动 */
+            min-height: 0;
+            /* [关键] 允许子元素滚动 */
         }
 
         .data-row {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            padding: 10px 0;
             border-bottom: 1px dashed var(--border-light);
-            flex-shrink: 0; /* 防止数据行被压缩 */
+            flex-shrink: 0;
+            /* 防止数据行被压缩 */
         }
 
         .data-label {
@@ -2527,8 +2536,7 @@
             font-size: 0.8rem;
             font-weight: 800;
             color: var(--text-main);
-            margin-top: 20px;
-            margin-bottom: 12px;
+            margin: 10px 0;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -2540,12 +2548,12 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            flex: 1;           
-            min-height: 0;     
-            overflow-y: auto;  
-            
-            padding-right: 4px; 
-            padding-bottom: 24px; 
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 4px;
+            padding-top: 10px;
+            padding-bottom: 20px;
         }
 
         /* [修改] 侧边栏卡片：防止被压缩 */
@@ -2554,7 +2562,7 @@
         }
 
         .sidebar .media-item-card .media-name {
-            font-size: 0.9rem; 
+            font-size: 0.9rem;
         }
 
         .media-item {
@@ -2823,7 +2831,7 @@
                                 id="val-biome">--</span></div>
                         <div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span
                                 class="data-val" id="val-group">--</span></div>
-                        
+
                         <div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div>
                         <div class="media-scroll-container" id="media-container"></div>
                     </div>
@@ -2869,7 +2877,8 @@
                                 <div class="select-option" onclick="setTimelineResolution('y')">Year</div>
                                 <div class="select-option" onclick="setTimelineResolution('yq')">Year / Quarter</div>
                                 <div class="select-option" onclick="setTimelineResolution('ym')">Year / Month</div>
-                                <div class="select-option" onclick="setTimelineResolution('ymd')">Year / Month / Day</div>
+                                <div class="select-option" onclick="setTimelineResolution('ymd')">Year / Month / Day
+                                </div>
                                 <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
                                 <div
                                     style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
@@ -3120,17 +3129,17 @@
 
             // 2. 渲染头部元数据 (Topography / Water Depth)
             const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
-            const depthHtml = site.freshwater_depth_m !== "N/A" 
-                ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>` 
+            const depthHtml = site.freshwater_depth_m !== "N/A"
+                ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>`
                 : '';
-            
+
             // 确保容器存在后再写入
             const metaContainer = document.getElementById('sb-meta-container');
-            if(metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
-            
+            if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
+
             // 3. 渲染 Media (Gallery 样式卡片 - 保持与 Media 页面完全一致的结构)
             const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
-            
+
             const mediaHtml = site.media.map((m) => {
                 // 为了保持视觉一致性，这里模拟一些标签和数据
                 const mockTagsHtml = `<span class="media-tag">Bio</span><span class="media-tag">Aves</span>`;
@@ -3542,7 +3551,7 @@
 
             let html = `<div class="tl-matrix-table" style="${gridStyle}">`;
 
-          // Corner Cell (使用 Flexbox 对齐)
+            // Corner Cell (使用 Flexbox 对齐)
             // 获取显示的 Y 和 X 轴 Label
             const yLabel = tlConfig.groupLabels[grouping];
             const xLabel = tlConfig.resLabels[resolution].split(' ')[0];
