@@ -1900,6 +1900,7 @@
             color: var(--text-secondary);
             transition: all 0.2s;
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
         }
 
         .select-trigger:hover:not(.disabled) {
@@ -2536,7 +2537,7 @@
             font-size: 0.8rem;
             font-weight: 800;
             color: var(--text-main);
-            margin: 10px 0;
+            margin-top: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -2547,7 +2548,7 @@
         .media-scroll-container {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 10px;
             flex: 1;
             min-height: 0;
             overflow-y: auto;
@@ -3147,7 +3148,7 @@
                 const mockSize = "2.4 MB";
 
                 return `
-                <div class="media-item-card" style="cursor: pointer;" onclick="event.stopPropagation();">
+                <div class="media-item-card" onclick="event.stopPropagation();">
                     <div class="spectrogram-cover">
                         <img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec">
                         <div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div>
