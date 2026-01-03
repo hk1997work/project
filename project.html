@@ -1595,9 +1595,10 @@
             background: var(--bg-surface);
             border-radius: 12px;
             display: grid;
-            /* New Layout: Spec (220px) | Info (280px) | Details (Flex/Grid) */
-            grid-template-columns: 220px 280px 1fr;
-            align-items: start;
+            /* 中间列保持 360px */
+            grid-template-columns: 220px 360px 1fr;
+            /* [修改] 改为 stretch，使所有列高度一致 */
+            align-items: stretch;
             gap: 24px;
             padding: 20px;
             border: 1px solid var(--border-color);
@@ -1615,7 +1616,8 @@
         /* List View Spectrogram Container */
         .media-item-row .list-spec-container {
             width: 100%;
-            height: 140px; /* 稍微增高以适应左侧布局 */
+            /* [修改] 高度设为 100%，以填满拉伸后的行高 */
+            height: 100%;
             border-radius: 8px;
             position: relative;
             background: #0f172a;
@@ -1656,6 +1658,9 @@
             gap: 12px;
             justify-content: flex-start;
             padding-top: 4px;
+            /* [新增] 确保中间列占满高度，以便底部对齐生效 */
+            height: 100%; 
+            box-sizing: border-box;
         }
 
         a.row-name {
@@ -1675,14 +1680,17 @@
 
         .row-meta-list {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            flex-direction: row; 
+            flex-wrap: wrap;
+            gap: 16px;
+            /* [修改] 使用 auto 将其推到容器底部 */
+            margin-top: auto; 
         }
 
         .row-meta-item { 
             display: flex; 
             align-items: center; 
-            gap: 8px;
+            gap: 6px;
             font-size: 0.85rem;
             color: var(--text-secondary);
             font-family: var(--font-sans);
@@ -1717,7 +1725,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: wrap; /* 允许小屏幕换行 */
+            flex-wrap: wrap;
         }
 
         .rd-site-name {
@@ -1729,7 +1737,6 @@
             gap: 6px;
         }
 
-        /* [新增] 站点指标样式 */
         .rd-site-metrics {
             display: flex;
             align-items: center;
@@ -1761,14 +1768,15 @@
 
         .rd-grid {
             display: grid;
-            /* [修改] 强制 4 列，以便 7 个项目排成 2 行 (4 + 3) */
-            grid-template-columns: repeat(4, 1fr);
+            /* [修改] 定义4列，最后一列宽度稍大，留给 Note */
+            grid-template-columns: 1fr 1fr 1fr 1.5fr;
+            grid-template-rows: auto auto;
             gap: 12px 16px;
+            grid-auto-flow: dense;
         }
 
-        /* [新增] License 图片样式 */
         .license-img {
-            height: 20px; /* 调整高度与文字协调 */
+            height: 20px;
             width: auto;
             vertical-align: middle;
             opacity: 0.9;
@@ -1780,6 +1788,24 @@
             flex-direction: column;
             gap: 3px;
             overflow: hidden;
+        }
+
+        /* [新增] Note 专用样式：占据第4列的第1行到第2行 */
+        .rd-item.span-v {
+            grid-column: 4;
+            grid-row: 1 / span 2;
+            border-left: 1px solid var(--border-color);
+            padding-left: 12px;
+            height: 100%;
+        }
+
+        .rd-item.span-v .rd-val {
+             white-space: normal;
+             line-height: 1.5;
+             display: -webkit-box;
+             -webkit-line-clamp: 4;
+             -webkit-box-orient: vertical;
+             color: var(--text-secondary);
         }
 
         .rd-label {
@@ -3134,14 +3160,16 @@
                                 </div>
                             </div>
                             <div class="rd-grid">
-                                <div class="rd-item"><span class="rd-label">Uploader</span><span class="rd-val" title="${item.uploader}">${item.uploader}</span></div>
-                                <div class="rd-item"><span class="rd-label">Creator</span><span class="rd-val" title="${item.creator}">${item.creator}</span></div>
+                                <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
                                 <div class="rd-item"><span class="rd-label">Sensor</span><span class="rd-val" title="${item.sensor}">${item.sensor}</span></div>
                                 <div class="rd-item"><span class="rd-label">License</span><span class="rd-val" title="${item.license}">${item.license}</span></div>
-                                <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
-                                <div class="rd-item"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
+                                
+                                <div class="rd-item span-v"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
+
+                                <div class="rd-item"><span class="rd-label">Uploader</span><span class="rd-val" title="${item.uploader}">${item.uploader}</span></div>
+                                <div class="rd-item"><span class="rd-label">Creator</span><span class="rd-val" title="${item.creator}">${item.creator}</span></div>
                                 <div class="rd-item"><span class="rd-label">DOI</span><span class="rd-val" title="${item.doi}">${item.doi}</span></div>
-                                </div>
+                            </div>
                         </div>
                     </div>`;
                 }
