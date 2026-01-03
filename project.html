@@ -3095,7 +3095,21 @@
             });
         };
 
-        function updateMediaContext() { const proj = rawProjects[currProjIdx]; const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null; mediaItems = generateMediaForContext(proj, col); mediaSearchQuery = ""; const searchInput = document.querySelector('.media-search-input'); if (searchInput) searchInput.value = ""; const container = document.getElementById('media-grid-container'); animateBlockSwap(container, () => { renderMedia(); }); }
+        function updateMediaContext() { 
+            const proj = rawProjects[currProjIdx]; 
+            const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null; 
+            mediaItems = generateMediaForContext(proj, col); 
+            mediaSearchQuery = ""; 
+            const searchInput = document.querySelector('.media-search-input'); 
+            if (searchInput) searchInput.value = ""; 
+            
+            // [新增] 切换上下文时，强制滚动区域回到顶部
+            const scrollArea = document.querySelector('.media-scroll-area');
+            if (scrollArea) scrollArea.scrollTop = 0;
+
+            const container = document.getElementById('media-grid-container'); 
+            animateBlockSwap(container, () => { renderMedia(); }); 
+        }
         function handleSearchMedia(val) { mediaSearchQuery = val.toLowerCase(); renderMedia(); }
         function renderMedia() {
             // [新增] 渲染前确保数据字段完整
@@ -3181,7 +3195,29 @@
             container.innerHTML = html;
             lucide.createIcons();
         }
-        function switchMediaView(mode, btn) { const container = document.getElementById('media-grid-container'); const btns = document.querySelectorAll('.view-btn'); const pill = document.getElementById('view-pill'); if (mode === 'gallery') { container.classList.remove('view-list'); container.classList.add('view-gallery'); } else { container.classList.remove('view-gallery'); container.classList.add('view-list'); } btns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); pill.style.width = btn.offsetWidth + 'px'; pill.style.left = btn.offsetLeft + 'px'; renderMedia(); }
+        function switchMediaView(mode, btn) {
+            const container = document.getElementById('media-grid-container');
+            const btns = document.querySelectorAll('.view-btn');
+            const pill = document.getElementById('view-pill');
+
+            if (mode === 'gallery') {
+                container.classList.remove('view-list');
+                container.classList.add('view-gallery');
+            } else {
+                container.classList.remove('view-gallery');
+                container.classList.add('view-list');
+            }
+
+            // [新增] 切换视图时，让滚动区域回到顶部
+            const scrollArea = document.querySelector('.media-scroll-area');
+            if (scrollArea) scrollArea.scrollTop = 0;
+
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            pill.style.width = btn.offsetWidth + 'px';
+            pill.style.left = btn.offsetLeft + 'px';
+            renderMedia();
+        }
 
         // --- TIMELINE MATRIX LOGIC ---
 
