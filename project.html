@@ -2525,9 +2525,9 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            flex: 1;          
-            min-height: 0;    
-            overflow-y: auto; 
+            flex: 1;           
+            min-height: 0;     
+            overflow-y: auto;  
             
             padding-right: 4px; 
             padding-bottom: 24px; 
@@ -2827,14 +2827,13 @@
                     <div class="media-controls" style="gap: 12px;">
                         <div class="custom-select-wrapper" id="tl-sel-group" style="width: 200px;">
                             <div class="select-trigger" onclick="toggleSelect('tl-sel-group')">
-                                <span class="trigger-text" id="tl-text-group">Eco Realm</span>
+                                <span class="trigger-text" id="tl-text-group">Realm</span>
                                 <i data-lucide="chevron-down" size="16"></i>
                             </div>
                             <div class="select-options">
-                                <div class="select-option" onclick="setTimelineGrouping('all')">Overview (All Data)
-                                </div>
+                                <div class="select-option" onclick="setTimelineGrouping('all')">All Data</div>
                                 <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
-                                <div class="select-option" onclick="setTimelineGrouping('realm')">Eco Realm</div>
+                                <div class="select-option" onclick="setTimelineGrouping('realm')">Realm</div>
                                 <div class="select-option" onclick="setTimelineGrouping('biome')">Biome</div>
                                 <div class="select-option" onclick="setTimelineGrouping('group')">Group</div>
                                 <div class="select-option" onclick="setTimelineGrouping('site')">Site</div>
@@ -2843,29 +2842,27 @@
 
                         <div class="custom-select-wrapper" id="tl-sel-time" style="width: 200px;">
                             <div class="select-trigger" onclick="toggleSelect('tl-sel-time')">
-                                <span class="trigger-text" id="tl-text-time">Year (YYYY)</span>
+                                <span class="trigger-text" id="tl-text-time">Year</span>
                                 <i data-lucide="chevron-down" size="16"></i>
                             </div>
                             <div class="select-options">
-                                <div class="select-option" onclick="setTimelineResolution('all')">All Time (Total)</div>
+                                <div class="select-option" onclick="setTimelineResolution('all')">All Time</div>
                                 <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
                                 <div
                                     style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
                                     ABSOLUTE TIME</div>
-                                <div class="select-option" onclick="setTimelineResolution('y')">Year (YYYY)</div>
-                                <div class="select-option" onclick="setTimelineResolution('yq')">Year-Quarter (Y-Q)
-                                </div>
-                                <div class="select-option" onclick="setTimelineResolution('ym')">Month (YYYY-MM)</div>
-                                <div class="select-option" onclick="setTimelineResolution('ymd')">Date (Y-M-D)</div>
+                                <div class="select-option" onclick="setTimelineResolution('y')">Year</div>
+                                <div class="select-option" onclick="setTimelineResolution('yq')">Year / Quarter</div>
+                                <div class="select-option" onclick="setTimelineResolution('ym')">Year / Month</div>
+                                <div class="select-option" onclick="setTimelineResolution('ymd')">Year / Month / Day</div>
                                 <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
                                 <div
                                     style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
                                     SEASONAL CYCLES</div>
-                                <div class="select-option" onclick="setTimelineResolution('q')">Quarter Only (Q1-Q4)
-                                </div>
-                                <div class="select-option" onclick="setTimelineResolution('m')">Month of Year</div>
-                                <div class="select-option" onclick="setTimelineResolution('md')">Day of Year</div>
-                                <div class="select-option" onclick="setTimelineResolution('d')">Day of Month</div>
+                                <div class="select-option" onclick="setTimelineResolution('q')">Quarter</div>
+                                <div class="select-option" onclick="setTimelineResolution('m')">Month</div>
+                                <div class="select-option" onclick="setTimelineResolution('md')">Month / Day</div>
+                                <div class="select-option" onclick="setTimelineResolution('d')">Day</div>
                             </div>
                         </div>
                     </div>
@@ -3353,30 +3350,30 @@
             grouping: 'realm',
             resolution: 'y',
             groupLabels: {
-                'all': 'Overview',
-                'realm': 'Eco Realm',
+                'all': 'All Data',
+                'realm': 'Realm',
                 'biome': 'Biome',
                 'group': 'Group',
                 'site': 'Site'
             },
             resLabels: {
-                'all': 'All Time (Total)',
-                'y': 'Year (YYYY)',
-                'yq': 'Quarter (YYYY-Q)', // New
-                'ym': 'Month (YYYY-MM)',
-                'm': 'Month Only (MM)',
-                'q': 'Quarter Only (Q1-Q4)', // New
-                'ymd': 'Date (Y-M-D)',
-                'md': 'Day of Year (M-D)',
-                'd': 'Day Only (DD)'
+                'all': 'All Time',
+                'y': 'Year',
+                'yq': 'Year / Quarter',
+                'ym': 'Year / Month',
+                'm': 'Month',
+                'q': 'Quarter',
+                'ymd': 'Year / Month / Day',
+                'md': 'Month / Day',
+                'd': 'Day'
             }
         };
 
         function setTimelineGrouping(val) {
             tlConfig.grouping = val;
             const labelMap = {
-                'all': 'Overview (All)',
-                'realm': 'Eco Realm',
+                'all': 'All Data',
+                'realm': 'Realm',
                 'biome': 'Biome',
                 'group': 'Group',
                 'site': 'Site'
@@ -3530,7 +3527,7 @@
 
             let html = `<div class="tl-matrix-table" style="${gridStyle}">`;
 
-            // Corner Cell (使用 Flexbox 对齐)
+          // Corner Cell (使用 Flexbox 对齐)
             // 获取显示的 Y 和 X 轴 Label
             const yLabel = tlConfig.groupLabels[grouping];
             const xLabel = tlConfig.resLabels[resolution].split(' ')[0];
