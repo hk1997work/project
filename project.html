@@ -6,9 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ecoSignal | Dashboard</title>
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -63,7 +60,6 @@
 
             /* --- FONTS --- */
             --font-sans: 'Inter', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
 
             /* --- MAP DYNAMIC VARS --- */
             --site-color: #0f172a;
@@ -847,12 +843,6 @@
             margin: 0 2px;
         }
 
-        .meta-text-mono {
-            font-family: var(--font-mono);
-            letter-spacing: -0.3px;
-            font-size: 0.8rem;
-        }
-
         .collection-card {
             background: var(--card-bg);
             width: 100%;
@@ -1277,7 +1267,7 @@
         }
 
         .cid {
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
             letter-spacing: -0.3px;
             opacity: 0.9;
         }
@@ -1510,7 +1500,7 @@
             font-weight: 700;
             padding: 3px 8px;
             border-radius: 6px;
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
             pointer-events: none;
         }
 
@@ -1582,7 +1572,7 @@
 
             color: var(--text-secondary);
             font-size: 0.75rem;
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
             font-weight: 600;
             letter-spacing: -0.2px;
         }
@@ -1654,7 +1644,7 @@
             font-weight: 700;
             padding: 2px 6px;
             border-radius: 4px;
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
             pointer-events: none;
             z-index: 2;
         }
@@ -1695,7 +1685,7 @@
             gap: 8px;
             font-size: 0.85rem;
             color: var(--text-secondary);
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
             font-weight: 500;
         }
 
@@ -2493,7 +2483,7 @@
         .media-dur {
             font-size: 0.75rem;
             color: var(--text-muted);
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
         }
     </style>
 </head>
@@ -2974,7 +2964,23 @@
         const TAXONOMY = { "Terrestrial": { "Tropical Forests": ["Lowland Rainforest", "Montane Rainforest"], "Savannas": ["Shrubland", "Grassland"] }, "Marine": { "Coastal": ["Coral Reefs", "Seagrass"], "Pelagic": ["Epipelagic", "Mesopelagic"] }, "Freshwater": { "Riverine": ["Permanent Rivers", "Seasonal Streams"], "Palustrine": ["Peatlands", "Marshes"] }, "Subterranean": { "Cave Systems": ["Limestone Caves", "Lava Tubes"], "Aquifers": ["Shallow", "Deep"] }, "Atmospheric": { "Aerial": ["Lower Troposphere", "Upper Canopy"], "Urban Air": ["City Center", "Industrial"] }, "Estuarine": { "Brackish Water": ["Mangroves", "Salt Marshes"], "Deltas": ["Active Delta", "Inactive Delta"] }, "Cryogenic": { "Ice Sheets": ["Polar", "Glacial"], "Tundra": ["Permafrost", "Alpine"] }, "Artificial": { "Urban": ["Parks", "Gardens"], "Agricultural": ["Farms", "Plantations"] }, "Introduced": { "Invasive Zones": ["Islands", "Mainland"], "Rehabilitation": ["Forest", "Wetland"] }, "Unknown": { "Unclassified": ["Region A", "Region B"], "Pending": ["Survey 1", "Survey 2"] } };
         function getRealmColor(r) { return REALM_COLORS[r] || "#0f172a"; }
         function generateSitesForContext(projId, colId) { let seed = projId.charCodeAt(1) + (colId ? colId.charCodeAt(1) * 10 : 0); const count = 50 + (seed % 20); let baseLat = -3.4, baseLng = -62.2; if (projId === "p2") { baseLat = -18.2; baseLng = 147.7; } if (projId === "p3") { baseLat = -2.3; baseLng = 34.8; } const realmKeys = Object.keys(TAXONOMY); return Array.from({ length: count }, (_, i) => { let rIndex = Math.floor(Math.random() * realmKeys.length); if (projId === "p1" && Math.random() > 0.3) rIndex = 0; if (projId === "p2" && Math.random() > 0.3) rIndex = 1; const r = realmKeys[rIndex]; const bKeys = Object.keys(TAXONOMY[r]); const b = bKeys[Math.floor(Math.random() * bKeys.length)]; const gKeys = TAXONOMY[r][b]; const g = gKeys[Math.floor(Math.random() * gKeys.length)]; const lat = baseLat + (Math.random() - 0.5) * 8; const lng = baseLng + (Math.random() - 0.5) * 8; const vertices = 3 + Math.floor(Math.random() * 5); const baseRadius = 0.03; const poly = []; const rotation = Math.random() * Math.PI; for (let k = 0; k < vertices; k++) { const angle = (k / vertices) * Math.PI * 2 + rotation; const r = baseRadius * (0.8 + Math.random() * 0.4); poly.push([lat + Math.sin(angle) * r, lng + Math.cos(angle) * r]); } return { id: `${projId}-${colId || 'all'}-${i}`, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, group: g, topography_m: Math.floor(Math.random() * 800), freshwater_depth_m: r === 'Freshwater' ? (Math.random() * 15).toFixed(1) : "N/A", mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({ length: Math.floor(Math.random() * 10) + 2 }, (_, m) => ({ name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.wav`, date: "2025-01-15", duration: "01:00:00" })) }; }); }
-        function loadMapData() { if (!map) return; const projId = rawProjects[currProjIdx].id; const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null; if (!colId) { currentSites = []; rawProjects[currProjIdx].collections.forEach(c => { currentSites = [...currentSites, ...generateSitesForContext(projId, c.id)]; }); } else { currentSites = generateSitesForContext(projId, colId); } resetFilters(); }
+        function loadMapData() {
+            // [Fix] 移除了 if (!map) return; 以便在地图显示前也能生成 Site 数据供 Media 使用
+            const projId = rawProjects[currProjIdx].id;
+            const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null;
+            
+            if (!colId) {
+                currentSites = [];
+                rawProjects[currProjIdx].collections.forEach(c => {
+                    currentSites = [...currentSites, ...generateSitesForContext(projId, c.id)];
+                });
+            } else {
+                currentSites = generateSitesForContext(projId, colId);
+            }
+            
+            // 只有当过滤器 UI 存在时才重置过滤器 (通常一直存在)
+            resetFilters();
+        }
         function initMap() { if (map) return; map = L.map('full-map', { zoomControl: false }).setView([-3.465, -62.215], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); L.control.zoom({ position: 'bottomright' }).addTo(map); polyLayer = L.layerGroup().addTo(map); clusterGroup = L.markerClusterGroup({ showCoverageOnHover: false, zoomToBoundsOnClick: true, spiderfyOnMaxZoom: true, maxClusterRadius: 60, iconCreateFunction: function (cluster) { const markers = cluster.getAllChildMarkers(); const n = markers.length; const realmCounts = {}; let totalMedia = 0; markers.forEach(m => { const r = m.options.customData.realm; realmCounts[r] = (realmCounts[r] || 0) + 1; totalMedia += m.options.customData.mediaCount; }); let gradientParts = []; let currentPercentage = 0; Object.keys(realmCounts).sort((a, b) => realmCounts[b] - realmCounts[a]).forEach(r => { const pct = (realmCounts[r] / n) * 100; gradientParts.push(`${getRealmColor(r)} ${currentPercentage}% ${currentPercentage + pct}%`); currentPercentage += pct; }); return L.divIcon({ html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`, className: 'custom-cluster-icon', iconSize: L.point(50, 50), iconAnchor: [25, 25] }); } }); map.addLayer(clusterGroup); loadMapData(); }
         function renderMap(shouldZoom = false) { if (!map) return; polyLayer.clearLayers(); clusterGroup.clearLayers(); let visibleBounds = L.latLngBounds([]); let visibleCount = 0; let isCurrentSiteVisible = false; currentSites.forEach(site => { if (filterState.realm && site.realm !== filterState.realm) return; if (filterState.biome && site.biome !== filterState.biome) return; if (filterState.group && site.group !== filterState.group) return; if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true; visibleCount++; const siteColor = getRealmColor(site.realm); const poly = L.polygon(site.polygon, { color: siteColor, weight: 2, opacity: 0.8, fillColor: siteColor, fillOpacity: 0.15 }).addTo(polyLayer); poly.on('click', (e) => { L.DomEvent.stopPropagation(e); openSidebar(site); }); const marker = L.marker(site.center, { customData: { realm: site.realm, mediaCount: site.mediaCount }, icon: L.divIcon({ html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28] }) }); marker.on('click', () => openSidebar(site)); clusterGroup.addLayer(marker); visibleBounds.extend(site.center); }); if (currentSelectedSiteId && !isCurrentSiteVisible) closeSidebar(); if ((shouldZoom || visibleCount > 0) && visibleCount > 0) { if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, { duration: 0.8, easeLinearity: 0.5 }); else map.fitBounds(visibleBounds, { padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5 }); } }
         function openSidebar(site) { currentSelectedSiteId = site.id; const color = getRealmColor(site.realm); document.documentElement.style.setProperty('--site-color', color); document.documentElement.style.setProperty('--site-color-tint', color + '12'); document.getElementById('sb-name').textContent = site.name; document.getElementById('val-realm').textContent = site.realm; document.getElementById('val-realm').style.color = color; document.getElementById('val-biome').textContent = site.biome; document.getElementById('val-group').textContent = site.group; document.getElementById('val-topo').textContent = site.topography_m + " m"; document.getElementById('val-depth').textContent = site.freshwater_depth_m + (site.freshwater_depth_m !== "N/A" ? " m" : ""); document.getElementById('media-container').innerHTML = site.media.map(m => `<a href="#" class="media-item" onclick="return false;"><div class="media-icon"><i data-lucide="play" size="18"></i></div><div class="media-meta"><span class="media-name">${m.name}</span><span class="media-dur">${m.date} • ${m.duration}</span></div></a>`).join(''); lucide.createIcons(); document.getElementById('sidebar').classList.add('active'); map.flyTo(site.center, 14, { duration: 0.8, easeLinearity: 0.5 }); }
