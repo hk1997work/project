@@ -3146,7 +3146,10 @@
                 </div>`;
             }).join('');
 
-            document.getElementById('media-container').innerHTML = mediaHtml;
+            // [修改] 获取容器并重置滚动条位置
+            const mediaListContainer = document.getElementById('media-container');
+            mediaListContainer.innerHTML = mediaHtml;
+            mediaListContainer.scrollTop = 0;
 
             lucide.createIcons();
             document.getElementById('sidebar').classList.add('active');
