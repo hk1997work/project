@@ -2394,6 +2394,13 @@
             transition: background-color 0.3s;
         }
 
+        .sb-header-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-right: 12px;
+        }
+
         .sb-title {
             font-size: 1.6rem;
             font-weight: 800;
@@ -2401,6 +2408,28 @@
             line-height: 1.2;
             color: white;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sb-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            flex-wrap: wrap;
+        }
+
+        .sb-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        
+        .sb-meta-divider {
+             width: 1px; height: 12px; background: rgba(255,255,255,0.4);
         }
 
         .sb-close {
@@ -2416,7 +2445,7 @@
             cursor: pointer;
             color: white;
             transition: 0.2s;
-            margin-left: 12px;
+            margin-left: 0;
             backdrop-filter: blur(4px);
         }
 
@@ -2457,39 +2486,7 @@
             text-align: right;
         }
 
-        .stats-box-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
-
-        .stat-box {
-            background: var(--bg-surface-secondary);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .stat-box-label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-
-        .stat-box-val {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--text-main);
-        }
+        /* 移除了 stats-box-container 相关的旧样式，因为不再使用 */
 
         .section-title {
             font-size: 0.8rem;
@@ -2502,13 +2499,25 @@
             gap: 8px;
         }
 
+        /* [修改] 样式调整：单列 Grid 布局 (一行一个)，且图片比例优化 */
         .media-scroll-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 280px;
-            overflow-y: auto;
-            padding-right: 4px;
+            display: grid;
+            grid-template-columns: 1fr; /* 改为 1fr，强制单列 */
+            gap: 16px;
+            max-height: none; 
+            overflow-y: visible;
+            padding-right: 0;
+            padding-bottom: 20px;
+        }
+
+        /* 侧边栏卡片样式微调 */
+        .sidebar .media-item-card .spectrogram-cover {
+            aspect-ratio: 2.2 / 1; /* 图片稍微宽一点，避免单列时过高 */
+        }
+
+        /* [新增] 侧边栏内的卡片样式微调 (可选，防止在小屏幕上过于拥挤) */
+        .sidebar .media-item-card .media-name {
+            font-size: 0.85rem; /* 稍微调小字号 */
         }
 
         .media-item {
@@ -2764,8 +2773,11 @@
                 </div>
                 <div id="sidebar" class="sidebar">
                     <div class="sb-header" id="sb-header-bg">
-                        <h2 class="sb-title" id="sb-name">Site Name</h2><button class="sb-close"
-                            onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
+                        <div class="sb-header-content">
+                            <h2 class="sb-title" id="sb-name">Site Name</h2>
+                            <div class="sb-meta-row" id="sb-meta-container"></div>
+                        </div>
+                        <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
                     </div>
                     <div class="sb-content">
                         <div class="data-row"><span class="data-label">Realm</span><span class="data-val"
@@ -2774,12 +2786,7 @@
                                 id="val-biome">--</span></div>
                         <div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span
                                 class="data-val" id="val-group">--</span></div>
-                        <div class="stats-box-container">
-                            <div class="stat-box"><span class="stat-box-label">Topography</span><span
-                                    class="stat-box-val" id="val-topo">--</span></div>
-                            <div class="stat-box"><span class="stat-box-label">Water Depth</span><span
-                                    class="stat-box-val" id="val-depth">--</span></div>
-                        </div>
+                        
                         <div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div>
                         <div class="media-scroll-container" id="media-container"></div>
                     </div>
@@ -3064,7 +3071,55 @@
         }
         function initMap() { if (map) return; map = L.map('full-map', { zoomControl: false }).setView([-3.465, -62.215], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); L.control.zoom({ position: 'bottomright' }).addTo(map); polyLayer = L.layerGroup().addTo(map); clusterGroup = L.markerClusterGroup({ showCoverageOnHover: false, zoomToBoundsOnClick: true, spiderfyOnMaxZoom: true, maxClusterRadius: 60, iconCreateFunction: function (cluster) { const markers = cluster.getAllChildMarkers(); const n = markers.length; const realmCounts = {}; let totalMedia = 0; markers.forEach(m => { const r = m.options.customData.realm; realmCounts[r] = (realmCounts[r] || 0) + 1; totalMedia += m.options.customData.mediaCount; }); let gradientParts = []; let currentPercentage = 0; Object.keys(realmCounts).sort((a, b) => realmCounts[b] - realmCounts[a]).forEach(r => { const pct = (realmCounts[r] / n) * 100; gradientParts.push(`${getRealmColor(r)} ${currentPercentage}% ${currentPercentage + pct}%`); currentPercentage += pct; }); return L.divIcon({ html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`, className: 'custom-cluster-icon', iconSize: L.point(50, 50), iconAnchor: [25, 25] }); } }); map.addLayer(clusterGroup); loadMapData(); }
         function renderMap(shouldZoom = false) { if (!map) return; polyLayer.clearLayers(); clusterGroup.clearLayers(); let visibleBounds = L.latLngBounds([]); let visibleCount = 0; let isCurrentSiteVisible = false; currentSites.forEach(site => { if (filterState.realm && site.realm !== filterState.realm) return; if (filterState.biome && site.biome !== filterState.biome) return; if (filterState.group && site.group !== filterState.group) return; if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true; visibleCount++; const siteColor = getRealmColor(site.realm); const poly = L.polygon(site.polygon, { color: siteColor, weight: 2, opacity: 0.8, fillColor: siteColor, fillOpacity: 0.15 }).addTo(polyLayer); poly.on('click', (e) => { L.DomEvent.stopPropagation(e); openSidebar(site); }); const marker = L.marker(site.center, { customData: { realm: site.realm, mediaCount: site.mediaCount }, icon: L.divIcon({ html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28] }) }); marker.on('click', () => openSidebar(site)); clusterGroup.addLayer(marker); visibleBounds.extend(site.center); }); if (currentSelectedSiteId && !isCurrentSiteVisible) closeSidebar(); if ((shouldZoom || visibleCount > 0) && visibleCount > 0) { if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, { duration: 0.8, easeLinearity: 0.5 }); else map.fitBounds(visibleBounds, { padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5 }); } }
-        function openSidebar(site) { currentSelectedSiteId = site.id; const color = getRealmColor(site.realm); document.documentElement.style.setProperty('--site-color', color); document.documentElement.style.setProperty('--site-color-tint', color + '12'); document.getElementById('sb-name').textContent = site.name; document.getElementById('val-realm').textContent = site.realm; document.getElementById('val-realm').style.color = color; document.getElementById('val-biome').textContent = site.biome; document.getElementById('val-group').textContent = site.group; document.getElementById('val-topo').textContent = site.topography_m + " m"; document.getElementById('val-depth').textContent = site.freshwater_depth_m + (site.freshwater_depth_m !== "N/A" ? " m" : ""); document.getElementById('media-container').innerHTML = site.media.map(m => `<a href="#" class="media-item" onclick="return false;"><div class="media-icon"><i data-lucide="play" size="18"></i></div><div class="media-meta"><span class="media-name">${m.name}</span><span class="media-dur">${m.date} • ${m.duration}</span></div></a>`).join(''); lucide.createIcons(); document.getElementById('sidebar').classList.add('active'); map.flyTo(site.center, 14, { duration: 0.8, easeLinearity: 0.5 }); }
+        function openSidebar(site) {
+            currentSelectedSiteId = site.id;
+            const color = getRealmColor(site.realm);
+            document.documentElement.style.setProperty('--site-color', color);
+            document.documentElement.style.setProperty('--site-color-tint', color + '12');
+
+            // 1. 填充文本信息
+            document.getElementById('sb-name').textContent = site.name;
+            document.getElementById('val-realm').textContent = site.realm;
+            document.getElementById('val-realm').style.color = color;
+            document.getElementById('val-biome').textContent = site.biome;
+            document.getElementById('val-group').textContent = site.group;
+
+            // 2. 渲染头部元数据 (Topography / Water Depth)
+            const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
+            const depthHtml = site.freshwater_depth_m !== "N/A" 
+                ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>` 
+                : '';
+            
+            // 确保容器存在后再写入
+            const metaContainer = document.getElementById('sb-meta-container');
+            if(metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
+
+            // 3. 渲染 Media (Gallery 样式卡片)
+            const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
+            
+            const mediaHtml = site.media.map((m) => {
+                return `
+                <div class="media-item-card" style="cursor: pointer;" onclick="event.stopPropagation();">
+                    <div class="spectrogram-cover">
+                        <img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec">
+                        <div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div>
+                        <div class="duration-badge">${m.duration}</div>
+                    </div>
+                    <div class="media-card-info" style="padding: 12px;">
+                        <a href="#" class="media-name" title="${m.name}" onclick="return false;">${m.name}</a>
+                        <div class="media-meta-row" style="margin-top: 8px; padding: 0; background: transparent; border: none; font-size: 0.75rem;">
+                            <div class="meta-icon-text"><i data-lucide="calendar" size="12"></i> ${m.date}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('media-container').innerHTML = mediaHtml;
+
+            lucide.createIcons();
+            document.getElementById('sidebar').classList.add('active');
+            map.flyTo(site.center, 14, { duration: 0.8, easeLinearity: 0.5 });
+        }
         function closeSidebar() { currentSelectedSiteId = null; document.getElementById('sidebar').classList.remove('active'); }
         function openFilterDrawer() { document.getElementById('filter-drawer').classList.add('active'); document.getElementById('filter-btn-main').classList.add('active'); }
         function closeFilterDrawer() { document.getElementById('filter-drawer').classList.remove('active'); document.getElementById('filter-btn-main').classList.remove('active'); }
