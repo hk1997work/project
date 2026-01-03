@@ -1595,9 +1595,8 @@
             background: var(--bg-surface);
             border-radius: 12px;
             display: grid;
-            /* 中间列保持 360px */
-            grid-template-columns: 220px 360px 1fr;
-            /* [修改] 改为 stretch，使所有列高度一致 */
+            /* [修改] 第一列 auto (由图片容器决定)，中间 360px */
+            grid-template-columns: auto 360px 1fr;
             align-items: stretch;
             gap: 24px;
             padding: 20px;
@@ -1615,9 +1614,14 @@
 
         /* List View Spectrogram Container */
         .media-item-row .list-spec-container {
-            width: 100%;
-            /* [修改] 高度设为 100%，以填满拉伸后的行高 */
+            /* 宽度自动，高度 100% */
+            width: auto;
             height: 100%;
+            /* [关键] 强制 2:1 宽高比 */
+            aspect-ratio: 2 / 1;
+            /* 限制最大宽度防止过大 */
+            max-width: 300px;
+            min-width: 140px;
             border-radius: 8px;
             position: relative;
             background: #0f172a;
@@ -3082,7 +3086,7 @@
                     tags: getRandomTags(),
                     size: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`,
                     sr: "48kHz",
-                    spectrogram: "https://upload.wikimedia.org/wikipedia/commons/c/c5/Spectrogram-19thC.png",
+                    spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
                     creator: ["Dr. Silva", "M. Lewis", "Field Team A", "Auto-Recorder"][rInt(0, 3)],
                     site: `Site-${rInt(1, 12).toString().padStart(2, '0')}`,
                     sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0, 3)],
