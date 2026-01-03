@@ -2099,7 +2099,8 @@
         }
 
         .tl-media-card .spectrogram-cover {
-            height: 80px;
+            width: 100%;
+            aspect-ratio: 2 / 1;
             position: relative;
             overflow: hidden;
             border-bottom: 1px solid var(--border-color);
@@ -2138,6 +2139,15 @@
         .tl-media-card .media-tag {
             padding: 2px 8px;
             font-size: 0.65rem;
+        }
+
+        /* [新增] Timeline Card Meta Row 适配 */
+        .tl-media-card .media-meta-row {
+            margin-left: -10px;
+            margin-right: -10px;
+            margin-bottom: -10px;
+            padding: 8px 10px;
+            margin-top: auto;
         }
 
         .placeholder-card {
@@ -3579,6 +3589,11 @@
                                     <div class="media-card-info">
                                         <div class="media-name" title="${item.name}">${item.name}</div>
                                         <div class="tags-row">${tagsHtml}</div>
+                                        <div class="media-meta-row">
+                                            <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
+                                            <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div>
+                                            <div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div>
+                                        </div>
                                     </div>
                                 </div>
                             `;
