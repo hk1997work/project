@@ -1637,7 +1637,10 @@
             filter: sepia(1) hue-rotate(60deg) saturate(3);
             transition: 0.3s;
         }
-        .media-item-row:hover .list-spec-img { opacity: 1; }
+
+        .media-item-row:hover .list-spec-img {
+            opacity: 1;
+        }
 
         .media-item-row .duration-badge {
             position: absolute;
@@ -1662,7 +1665,7 @@
             justify-content: flex-start;
             padding-top: 4px;
             /* [新增] 确保中间列占满高度，以便底部对齐生效 */
-            height: 100%; 
+            height: 100%;
             box-sizing: border-box;
         }
 
@@ -1679,20 +1682,23 @@
             overflow: hidden;
         }
 
-        a.row-name:hover { color: var(--brand); text-decoration: underline; }
+        a.row-name:hover {
+            color: var(--brand);
+            text-decoration: underline;
+        }
 
         .row-meta-list {
             display: flex;
-            flex-direction: row; 
+            flex-direction: row;
             flex-wrap: wrap;
             gap: 16px;
             /* [修改] 使用 auto 将其推到容器底部 */
-            margin-top: auto; 
+            margin-top: auto;
         }
 
-        .row-meta-item { 
-            display: flex; 
-            align-items: center; 
+        .row-meta-item {
+            display: flex;
+            align-items: center;
             gap: 6px;
             font-size: 0.85rem;
             color: var(--text-secondary);
@@ -1700,14 +1706,16 @@
             font-weight: 500;
         }
 
-        .row-meta-item i { opacity: 0.7; }
+        .row-meta-item i {
+            opacity: 0.7;
+        }
 
         /* Right Column: Details Grid */
         .row-details-col {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            background: rgba(0,0,0,0.02);
+            background: rgba(0, 0, 0, 0.02);
             border-radius: 8px;
             padding: 12px;
             border: 1px solid var(--border-light);
@@ -1767,7 +1775,11 @@
             gap: 4px;
             color: var(--text-secondary);
         }
-        .rd-bread-sep { opacity: 0.4; font-size: 0.8em; }
+
+        .rd-bread-sep {
+            opacity: 0.4;
+            font-size: 0.8em;
+        }
 
         .rd-grid {
             display: grid;
@@ -1803,12 +1815,12 @@
         }
 
         .rd-item.span-v .rd-val {
-             white-space: normal;
-             line-height: 1.5;
-             display: -webkit-box;
-             -webkit-line-clamp: 4;
-             -webkit-box-orient: vertical;
-             color: var(--text-secondary);
+            white-space: normal;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            color: var(--text-secondary);
         }
 
         .rd-label {
@@ -2310,8 +2322,8 @@
         }
 
         .fd-close:hover {
-            background: var(--text-main);
-            color: var(--bg-surface);
+            background: var(--brand);
+            color: white;
         }
 
         .fd-content {
@@ -2326,10 +2338,11 @@
         .btn-reset-filters {
             margin-top: 12px;
             width: 100%;
-            padding: 14px;
-            border: 1px dashed #cbd5e1;
+            height: 40px;
+            padding: 0;
+            border: 1px solid var(--border-light);
             background: transparent;
-            border-radius: 12px;
+            border-radius: 50px;
             color: var(--text-secondary);
             font-size: 0.9rem;
             font-weight: 600;
@@ -2343,8 +2356,9 @@
 
         .btn-reset-filters:hover {
             border-color: var(--brand);
-            color: var(--brand-hover);
-            background: rgba(131, 205, 32, 0.05);
+            background: var(--brand);
+            color: white;
+            box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
         }
 
         /* Sidebar */
@@ -2544,6 +2558,13 @@
             font-size: 0.75rem;
             color: var(--text-muted);
             font-family: var(--font-sans);
+        }
+
+        .opt-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -3028,7 +3049,7 @@
             // [Fix] 移除了 if (!map) return; 以便在地图显示前也能生成 Site 数据供 Media 使用
             const projId = rawProjects[currProjIdx].id;
             const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null;
-            
+
             if (!colId) {
                 currentSites = [];
                 rawProjects[currProjIdx].collections.forEach(c => {
@@ -3037,7 +3058,7 @@
             } else {
                 currentSites = generateSitesForContext(projId, colId);
             }
-            
+
             // 只有当过滤器 UI 存在时才重置过滤器 (通常一直存在)
             resetFilters();
         }
@@ -3053,7 +3074,25 @@
         function initFilters() { renderSelectOptions('realm'); updateSelectOptions('biome'); updateSelectOptions('group'); }
         function renderSelectOptions(targetType) { const list = document.getElementById('opt-' + targetType); const options = getUniqueValues(currentSites, 'realm'); let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')"><div class="opt-dot" style="background:#ccc"></div>All Realms</div>`; options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')"><div class="opt-dot" style="background:${getRealmColor(opt)}"></div>${opt}</div>`); list.innerHTML = html; }
         function applyFilter(type, value) { closeSidebar(); if (type === 'realm') { filterState.realm = value; filterState.biome = ""; filterState.group = ""; updateSelectUI('realm', value); updateSelectOptions('biome'); updateSelectUI('biome', ''); updateSelectOptions('group'); updateSelectUI('group', ''); } else if (type === 'biome') { filterState.biome = value; filterState.group = ""; updateSelectUI('biome', value); updateSelectOptions('group'); updateSelectUI('group', ''); } else if (type === 'group') { filterState.group = value; updateSelectUI('group', value); } closeSelects(); renderMap(true); }
-        function updateSelectUI(type, value) { const textEl = document.getElementById('text-' + type); const trigger = type === 'realm' ? document.getElementById('sel-realm').querySelector('.select-trigger') : document.getElementById('trig-' + type); const labelMap = { realm: "All Realms", biome: "All Biomes", group: "All Groups" }; if (!value) { textEl.innerText = labelMap[type]; trigger.classList.remove('active'); } else { textEl.innerText = value; trigger.classList.add('active'); } }
+        function updateSelectUI(type, value) {
+            const textEl = document.getElementById('text-' + type);
+            const trigger = type === 'realm' ? document.getElementById('sel-realm').querySelector('.select-trigger') : document.getElementById('trig-' + type);
+            const labelMap = { realm: "All Realms", biome: "All Biomes", group: "All Groups" };
+
+            if (!value) {
+                textEl.innerHTML = labelMap[type]; // 使用 innerHTML 以防万一
+                trigger.classList.remove('active');
+            } else {
+                if (type === 'realm') {
+                    // 获取对应颜色并添加圆点
+                    const color = getRealmColor(value);
+                    textEl.innerHTML = `<span class="opt-dot" style="background:${color}; display:inline-block; margin-right:8px;"></span>${value}`;
+                } else {
+                    textEl.innerText = value;
+                }
+                trigger.classList.add('active');
+            }
+        }
         function updateSelectOptions(targetType) { const list = document.getElementById('opt-' + targetType); const trigger = document.getElementById('trig-' + targetType); let filteredData = currentSites; if (targetType === 'biome') { if (!filterState.realm) { trigger.classList.add('disabled'); return; } filteredData = currentSites.filter(s => s.realm === filterState.realm); } else if (targetType === 'group') { if (!filterState.biome) { trigger.classList.add('disabled'); return; } filteredData = currentSites.filter(s => s.realm === filterState.realm && s.biome === filterState.biome); } trigger.classList.remove('disabled'); const options = getUniqueValues(filteredData, targetType); const labelMap = { biome: "All Biomes", group: "All Groups" }; let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')">${labelMap[targetType]}</div>`; if (options.length === 0) html = `<div style="padding:10px;color:#999;font-size:0.85rem">No options</div>`; else options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')">${opt}</div>`); list.innerHTML = html; }
         function resetFilters() { closeSidebar(); filterState = { realm: "", biome: "", group: "" }; updateSelectUI('realm', ''); initFilters(); renderMap(true); }
 
@@ -3094,20 +3133,20 @@
             });
         };
 
-        function updateMediaContext() { 
-            const proj = rawProjects[currProjIdx]; 
-            const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null; 
-            mediaItems = generateMediaForContext(proj, col); 
-            mediaSearchQuery = ""; 
-            const searchInput = document.querySelector('.media-search-input'); 
-            if (searchInput) searchInput.value = ""; 
-            
+        function updateMediaContext() {
+            const proj = rawProjects[currProjIdx];
+            const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null;
+            mediaItems = generateMediaForContext(proj, col);
+            mediaSearchQuery = "";
+            const searchInput = document.querySelector('.media-search-input');
+            if (searchInput) searchInput.value = "";
+
             // [新增] 切换上下文时，强制滚动区域回到顶部
             const scrollArea = document.querySelector('.media-scroll-area');
             if (scrollArea) scrollArea.scrollTop = 0;
 
-            const container = document.getElementById('media-grid-container'); 
-            animateBlockSwap(container, () => { renderMedia(); }); 
+            const container = document.getElementById('media-grid-container');
+            animateBlockSwap(container, () => { renderMedia(); });
         }
         function handleSearchMedia(val) { mediaSearchQuery = val.toLowerCase(); renderMedia(); }
         function renderMedia() {
@@ -3119,7 +3158,7 @@
             const isGallery = container.classList.contains('view-gallery');
             const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
             badge.textContent = `${filteredItems.length} Items`;
-            
+
             if (filteredItems.length === 0) {
                 container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
                 lucide.createIcons();
@@ -3129,17 +3168,17 @@
             let html = '';
             filteredItems.forEach(item => {
                 const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
-                
+
                 if (isGallery) {
                     // [Gallery View] 保持不变
                     html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div><div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div></div></div></div>`;
                 } else {
                     // [List View] 调整布局：Topography 和 Water Depth 移至 Site Header
                     const realmColor = getRealmColor(item.realm);
-                    
+
                     // 构建水深显示逻辑 (如果是 N/A 则不显示图标，保持整洁，或者您可以选择显示灰色)
-                    const depthHtml = item.freshwater_depth_m !== 'N/A' 
-                        ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` 
+                    const depthHtml = item.freshwater_depth_m !== 'N/A'
+                        ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>`
                         : '';
 
                     html += `
@@ -3305,22 +3344,22 @@
                     item.realm = linkedSite.realm;
                     item.biome = linkedSite.biome;
                     item.group = linkedSite.group;
-                    
+
                     // [New] 补充详细地理信息
                     item.topography_m = linkedSite.topography_m;
                     item.freshwater_depth_m = linkedSite.freshwater_depth_m;
 
                     // [New] 补充其他模拟元数据
                     if (!item.uploader) item.uploader = ["UserA", "LabAdmin", "J.Doe"][rInt(0, 2)];
-                    
+
                     // Medium 逻辑: 如果 Realm 是水相关则为 Water，否则为 Air
-                    const waterRealms = ['Marine', 'Freshwater', 'Estuarine', 'Subterranean']; 
+                    const waterRealms = ['Marine', 'Freshwater', 'Estuarine', 'Subterranean'];
                     // 注：Subterranean 可能是水也可能是空气，这里简化处理为 Water (或根据具体逻辑调整)
                     if (!item.medium) item.medium = waterRealms.includes(item.realm) ? 'Water' : 'Air';
-                    
+
                     if (!item.note) item.note = "Standard survey recording during peak activity.";
                     if (!item.doi) item.doi = "10.5281/zenodo." + rInt(100000, 999999);
-                    
+
                     // 确保 Creator 存在
                     if (!item.creator) item.creator = ["Dr. Silva", "M. Lewis", "Field Team A"][rInt(0, 2)];
 
