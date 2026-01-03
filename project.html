@@ -608,7 +608,7 @@
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: none; /* [关键修复] 移除 transform 以修复 sticky 定位 */
             }
         }
 
@@ -1983,7 +1983,7 @@
             overflow: auto;
             background: var(--bg-surface-secondary);
             position: relative;
-            display: flex;
+            display: block; /* [关键修复] 改为 block 避免 flex 布局干扰 */
         }
 
         .tl-matrix-table {
