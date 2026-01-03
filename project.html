@@ -1633,19 +1633,24 @@
 
         /* List View Spectrogram Container */
         .media-item-row .list-spec-container {
-            /* 宽度自动，高度 100% */
-            width: auto;
-            height: 100%;
-            /* [关键] 强制 2:1 宽高比 */
+            /* [修改] 使用固定宽度，确保每一行图片大小一致 */
+            width:100%;
+            max-width: 320px;
+            /* 高度自动，由 aspect-ratio 决定 */
+            height: auto;
+            /* 锁定 2:1 比例 (结果高度为 120px) */
             aspect-ratio: 2 / 1;
-            /* 限制最大宽度防止过大 */
-            max-width: 300px;
-            min-width: 140px;
+            
+            /* [修改] 防止图片被行高拉伸，居中或顶部对齐 */
+            align-self: center; 
+            
             border-radius: 8px;
             position: relative;
             background: #0f172a;
             border: 1px solid var(--border-color);
             overflow: hidden;
+            /* 防止在极端情况下被压缩 */
+            flex-shrink: 0;
         }
 
         .media-item-row .list-spec-img {
