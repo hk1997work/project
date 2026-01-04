@@ -1160,7 +1160,7 @@
         }
 
         .card-header {
-            padding: 28px 32px;
+            padding: 20px 20px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -1979,14 +1979,8 @@
 
         /* Timeline Layout & Card Adaptation */
         .timeline-header-styled {
-            padding: 24px 32px;
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--border-color);
+            /* [修改] 移除自定义背景和Padding，与 Media 标题保持完全一致 */
             z-index: 100;
-            flex-shrink: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .timeline-matrix-viewport {
@@ -2147,11 +2141,9 @@
             background: rgba(131, 205, 32, 0.03);
         }
 
+        /* [修改] 布局改由 JS 动态生成 Grid 控制，以支持多列自动扩展 */
         .tl-cell-grid {
-            display: flex; /* 使用 Flexbox */
-            flex-direction: column; /* 垂直方向排列 */
-            gap: calc(12px * var(--tl-scale, 1)); /* [修改] 间距也跟随缩放 */
-            width: 100%; /* 占满单元格宽度 */
+            width: 100%;
         }
 
         /* [新增] 禁止时间轴卡片内的图片交互，防止拖拽 bug */
@@ -2970,7 +2962,7 @@
         <div class="dashboard-card" style="height: 100%;">
             <div class="card-header media-header timeline-header-styled" style="z-index: 100;">
                 <div class="media-title">
-                    <i data-lucide="kanban"></i> Timeline
+                    <i data-lucide="kanban" size="24"></i> Timeline
                     <span class="media-count-badge" id="tl-count-badge">Loading...</span>
                 </div>
 
@@ -3890,17 +3882,16 @@
     }
 
     function renderTimeline() {
-        enrichMediaData(); // 确保数据对齐
+        enrichMediaData();
 
         const container = document.getElementById('tl-matrix-container');
         const badge = document.getElementById('tl-count-badge');
         const grouping = tlConfig.grouping;
         const resolution = tlConfig.resolution;
 
-        // 更新 Badge
         if (badge) badge.textContent = `${mediaItems.length} Items`;
 
-        // 1. 构建矩阵数据
+        // 1. 构建矩阵
         const matrix = {};
         const colKeys = new Set();
         const rowKeys = new Set();
@@ -3921,7 +3912,6 @@
             matrix[rKey][cKey].push(item);
         });
 
-        // 2. 排序
         const sortedColKeys = Array.from(colKeys).sort();
         const sortedRowKeys = Array.from(rowKeys).sort();
 
@@ -3931,14 +3921,26 @@
             return;
         }
 
-        // 3. 构建 Grid
-        // [修改] 去除 1fr，使用纯计算宽度，防止只有几列时被过度拉伸。基准宽度设为 240px 以容纳信息。
-        const gridStyle = `grid-template-columns: 160px repeat(${sortedColKeys.length}, calc(240px * var(--tl-scale, 1))); --tl-scale: ${tlScale};`;
+        // --- [核心逻辑] 动态计算列宽倍数 ---
+        // 遍历每一列，找出该列中最大的行数据量
+        const colWidthMultipliers = sortedColKeys.map(cKey => {
+            let maxItemsInCol = 0;
+            sortedRowKeys.forEach(rKey => {
+                const count = matrix[rKey][cKey] ? matrix[rKey][cKey].length : 0;
+                if (count > maxItemsInCol) maxItemsInCol = count;
+            });
+            // 规则：最多5个一列。例如 7个 => ceil(7/5) = 2列宽
+            return Math.max(1, Math.ceil(maxItemsInCol / 5));
+        });
+
+        // 生成 Grid 定义：第一列固定160px，其余动态计算
+        const trackDefinitions = colWidthMultipliers.map(m => `calc(${m} * 240px * var(--tl-scale, 1))`).join(" ");
+        // [关键] 在这里注入 --tl-scale 变量
+        const gridStyle = `grid-template-columns: 160px ${trackDefinitions}; --tl-scale: ${tlScale};`;
 
         let html = `<div class="tl-matrix-table" style="${gridStyle}">`;
 
-        // Corner Cell (使用 Flexbox 对齐)
-        // 获取显示的 Y 和 X 轴 Label
+        // Corner Cell
         const yLabel = tlConfig.groupLabels[grouping];
         const xLabel = tlConfig.resLabels[resolution].split(' ')[0];
 
@@ -3948,7 +3950,7 @@
                 <span>${xLabel}</span>
             </div>`;
 
-        // Column Headers (Time)
+        // Column Headers
         sortedColKeys.forEach(dateKey => {
             html += `<div class="tl-col-header-cell">${dateKey}</div>`;
         });
@@ -3956,27 +3958,34 @@
         // Data Rows
         sortedRowKeys.forEach(rowKey => {
             const meta = rowMetaMap[rowKey];
-
-            // 行头显示逻辑：大标题 + 换行的子标题
-            // 应用颜色到大标题
             let headerHtml = `<span style="font-size:0.95rem; color:${meta.color};">${meta.label}</span>`;
             if (meta.sub) {
                 headerHtml += `<span class="tl-row-meta" style="display:block; margin-top:4px; font-weight:500; opacity:0.7; font-size:0.7rem; line-height:1.4;">${meta.sub}</span>`;
             }
-
-            // 加上统计数字
             const totalInRow = sortedColKeys.reduce((acc, cKey) => acc + (matrix[rowKey][cKey] ? matrix[rowKey][cKey].length : 0), 0);
-            headerHtml += `<span class="tl-row-meta" style="margin-top:6px; color:var(--text-muted); font-weight:700;">${totalInRow} items</span>`;
+            headerHtml += `<span class="tl-row-meta" style="margin-top:6px; color:var(--text-muted); font-weight:700;">${totalInRow} recordings</span>`;
 
             html += `<div class="tl-row-header-cell">${headerHtml}</div>`;
 
             // Cells
-            sortedColKeys.forEach(colKey => {
+            sortedColKeys.forEach((colKey, colIndex) => {
                 const items = matrix[rowKey][colKey] || [];
+                const multiplier = colWidthMultipliers[colIndex];
+
                 html += `<div class="tl-data-cell">`;
 
                 if (items.length > 0) {
-                    html += `<div class="tl-cell-grid">`;
+                    // [关键 CSS] 先填满垂直5个，再向右扩展
+                    const cellInnerStyle = `
+                        display: grid;
+                        grid-template-rows: repeat(5, min-content);
+                        grid-auto-flow: column;
+                        grid-template-columns: repeat(${multiplier}, 1fr);
+                        gap: calc(12px * var(--tl-scale, 1));
+                        width: 100%;
+                    `;
+
+                    html += `<div class="tl-cell-grid" style="${cellInnerStyle}">`;
                     items.forEach(item => {
                         const tagsHtml = item.tags.slice(0, 2).map(t => `<span class="media-tag">${t}</span>`).join('');
                         html += `
@@ -3990,9 +3999,9 @@
                                         <div class="media-name" title="${item.name}">${item.name}</div>
                                         <div class="tags-row">${tagsHtml}</div>
                                         <div class="media-meta-row">
-                                            <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
-                                            <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div>
-                                            <div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div>
+                                            <div class="meta-icon-text"><i data-lucide="calendar"></i> ${item.date}</div>
+                                            <div class="meta-icon-text"><i data-lucide="clock"></i> ${item.time}</div>
+                                            <div class="meta-icon-text"><i data-lucide="hard-drive"></i> ${item.size}</div>
                                         </div>
                                     </div>
                                 </div>
