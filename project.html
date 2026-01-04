@@ -8,9 +8,9 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
     <style>
         :root {
@@ -39,9 +39,8 @@
             --glass-bg: rgba(255, 255, 255, 0.9);
             --card-bg: #ffffff;
             --card-border: 1px solid rgba(0, 0, 0, 0.06);
-            --card-shadow:
-                0 20px 40px -10px rgba(0, 0, 0, 0.08),
-                0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+            --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08),
+            0 0 0 1px rgba(255, 255, 255, 0.8) inset;
 
             /* --- DIMENSIONS --- */
             --nav-height: 80px;
@@ -64,6 +63,8 @@
             /* --- MAP DYNAMIC VARS --- */
             --site-color: #0f172a;
             --site-color-tint: rgba(15, 23, 42, 0.05);
+
+            --tl-scale: 1;
         }
 
         /* --- DARK THEME OVERRIDES (暗色主题覆盖) --- */
@@ -87,9 +88,8 @@
             --glass-bg: rgba(30, 41, 59, 0.85);
             --card-bg: #1e293b;
             --card-border: 1px solid rgba(255, 255, 255, 0.08);
-            --card-shadow:
-                0 20px 40px -10px rgba(0, 0, 0, 0.4),
-                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 
             --site-color: #f8fafc;
         }
@@ -1991,11 +1991,42 @@
 
         .timeline-matrix-viewport {
             flex: 1;
+
+            /* [修改] 开启原生滚动条，sticky 定位依赖于此 */
             overflow: auto;
+
             background: var(--bg-surface-secondary);
             position: relative;
             display: block;
-            /* [关键修复] 改为 block 避免 flex 布局干扰 */
+            cursor: grab;
+
+            /* [新增] 优化滚动条体验，防止内容抖动 */
+            scrollbar-gutter: stable;
+        }
+
+        /* [新增] 单独定制时间轴的滚动条样式，使其更易点击但保持美观 */
+        .timeline-matrix-viewport::-webkit-scrollbar {
+            width: 10px;  /* 纵向滚动条宽度 */
+            height: 10px; /* 横向滚动条高度 */
+        }
+
+        .timeline-matrix-viewport::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15); /*稍微加深颜色，提高可见度*/
+            border: 2px solid transparent;
+            background-clip: content-box;
+            border-radius: 10px;
+        }
+
+        .timeline-matrix-viewport::-webkit-scrollbar-thumb:hover {
+            background-color: var(--brand); /* 悬停变色 */
+        }
+
+        .timeline-matrix-viewport::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        .timeline-matrix-viewport.active {
+            cursor: grabbing;
         }
 
         .tl-matrix-table {
@@ -2013,8 +2044,16 @@
             z-index: 30;
             background: var(--bg-surface);
             border-bottom: 1px solid var(--brand);
-            border-right: 1px solid var(--border-color);
-            padding: 12px 16px;
+            border-right: 1px solid var(--brand);
+
+            width: 160px;
+            min-width: 160px;
+            box-sizing: border-box;
+
+            /* [修改] 改回固定大小，与 .tl-col-header-cell 保持一致 */
+            padding: 6px 10px;
+            font-size: 0.85rem;
+
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -2022,8 +2061,7 @@
             font-weight: 800;
             color: var(--brand);
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
-            font-size: 0.9rem;
-            line-height: 1.4;
+            line-height: 1.3;
             text-align: center;
         }
 
@@ -2032,19 +2070,26 @@
             top: 0;
             z-index: 20;
             background: var(--bg-surface);
-            /* Solid background to prevent see-through */
             border-bottom: 1px solid var(--brand);
             border-right: 1px solid var(--border-color);
-            padding: 12px 16px;
-            font-size: 0.9rem;
+
+            /* [修改] 改回固定大小，不再随缩放变化 */
+            padding: 6px 10px;
+            font-size: 0.85rem;
+
             font-weight: 700;
             color: var(--text-main);
             text-align: center;
-            min-width: 280px;
+
+            box-sizing: border-box;
+            width: 100%;
+
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            white-space: nowrap;
         }
 
         .tl-row-header-cell {
@@ -2052,21 +2097,30 @@
             left: 0;
             z-index: 10;
             background: var(--bg-surface);
-            /* Solid background */
             border-bottom: 1px solid var(--border-color);
             border-right: 1px solid var(--brand);
-            padding: 16px;
-            font-size: 0.95rem;
+
+            /* [修复] 强制锁定宽度为 160px，严丝合缝对齐 Corner 和 Grid */
+            width: 160px;
+            min-width: 160px;
+            max-width: 160px;
+            box-sizing: border-box;
+
+            /* 内容样式 */
+            padding: 10px 12px;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--text-main);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: center; /* 垂直居中 */
             align-items: flex-start;
-            min-width: 180px;
-            max-width: 240px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.02);
             line-height: 1.3;
+
+            /* 允许长文本换行，防止撑开 */
+            overflow: hidden;
+            word-wrap: break-word;
         }
 
         .tl-row-meta {
@@ -2079,6 +2133,11 @@
         .tl-data-cell {
             border-bottom: 1px solid var(--border-color);
             border-right: 1px dashed var(--border-color);
+
+            /* [关键修复] 统一盒模型，确保边框位置与表头严格对齐 */
+            box-sizing: border-box;
+
+            /* 建议：让内边距也随缩放微调，或者保持固定均可，这里保持固定 */
             padding: 16px;
             background: transparent;
             vertical-align: top;
@@ -2089,25 +2148,39 @@
         }
 
         .tl-cell-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 12px;
+            display: flex;          /* 使用 Flexbox */
+            flex-direction: column; /* 垂直方向排列 */
+            gap: calc(12px * var(--tl-scale, 1)); /* [修改] 间距也跟随缩放 */
+            width: 100%;            /* 占满单元格宽度 */
+        }
+
+        /* [新增] 禁止时间轴卡片内的图片交互，防止拖拽 bug */
+        .tl-media-card img {
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-select: none;
         }
 
         .tl-media-card {
             background: var(--bg-surface);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: calc(12px * var(--tl-scale, 1)); /* 动态圆角 */
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
         }
 
         .tl-media-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(calc(-3px * var(--tl-scale, 1)));
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             border-color: var(--brand);
             z-index: 5;
+        }
+
+        /* [新增] 强制图标缩放 */
+        .tl-media-card svg {
+            width: calc(14px * var(--tl-scale, 1));
+            height: calc(14px * var(--tl-scale, 1));
         }
 
         .tl-media-card .spectrogram-cover {
@@ -2128,20 +2201,26 @@
         }
 
         .tl-media-card .play-circle {
-            width: 40px;
-            height: 40px;
+            width: calc(40px * var(--tl-scale, 1));
+            height: calc(40px * var(--tl-scale, 1));
+        }
+
+        /* 播放图标单独处理 */
+        .tl-media-card .play-circle svg {
+            width: calc(20px * var(--tl-scale, 1));
+            height: calc(20px * var(--tl-scale, 1));
         }
 
         .tl-media-card .media-card-info {
-            padding: 10px;
+            padding: calc(10px * var(--tl-scale, 1)); /* 动态内边距 */
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: calc(6px * var(--tl-scale, 1));      /* 动态间距 */
         }
 
         .tl-media-card .media-name {
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: calc(0.85rem * var(--tl-scale, 1)); /* 动态字体 */
             color: var(--text-main);
             white-space: nowrap;
             overflow: hidden;
@@ -2149,17 +2228,45 @@
         }
 
         .tl-media-card .media-tag {
-            padding: 2px 8px;
-            font-size: 0.65rem;
+            padding: calc(2px * var(--tl-scale, 1)) calc(8px * var(--tl-scale, 1));
+            font-size: calc(0.65rem * var(--tl-scale, 1));
+            border-radius: calc(20px * var(--tl-scale, 1));
         }
 
-        /* [新增] Timeline Card Meta Row 适配 */
+        .tl-media-card .tags-row {
+             gap: calc(6px * var(--tl-scale, 1));
+             min-height: calc(20px * var(--tl-scale, 1));
+        }
+
+        /* [新增] Timeline Card Meta Row 适配 - 全部动态计算 */
         .tl-media-card .media-meta-row {
-            margin-left: -10px;
-            margin-right: -10px;
-            margin-bottom: -10px;
-            padding: 8px 10px;
+            margin-left: calc(-10px * var(--tl-scale, 1));
+            margin-right: calc(-10px * var(--tl-scale, 1));
+            margin-bottom: calc(-10px * var(--tl-scale, 1));
+
+            /* [修改] 稍微减小内边距，让底部更紧凑 */
+            padding: calc(6px * var(--tl-scale, 1)) calc(10px * var(--tl-scale, 1));
+
             margin-top: auto;
+
+            /* [修改] 字体减小：从 0.75rem -> 0.65rem */
+            font-size: calc(0.5rem * var(--tl-scale, 1));
+
+            /* [新增] 稍微调淡颜色，增加层次感 */
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* [新增] 专门缩小底部栏的图标，使其与小字体匹配 (从全局14px -> 11px) */
+        .tl-media-card .media-meta-row svg {
+            width: calc(11px * var(--tl-scale, 1));
+            height: calc(11px * var(--tl-scale, 1));
+            opacity: 0.8;
+        }
+
+        .tl-media-card .meta-icon-text {
+            /* [修改] 间距稍微收紧 */
+            gap: calc(3px * var(--tl-scale, 1));
         }
 
         .placeholder-card {
@@ -2626,300 +2733,310 @@
 
 <body>
 
-    <nav class="project-nav-bar">
-        <div class="nav-left">
-            <div class="nav-capsule-box">
-                <a href="index.html" class="nav-logo">
-                    <div class="logo-icon-box"><i data-lucide="activity"></i></div>
-                    <span>ecoSignal</span>
-                </a>
-                <div class="nav-divider"></div>
-                <div class="breadcrumb-group">
-                    <div class="crumb-wrapper" id="project-wrap">
-                        <button class="crumb-btn" onclick="toggleMenu('project-wrap')">
-                            <span id="label-project" class="block-anim">Loading...</span><i data-lucide="chevron-down"
-                                size="14"></i>
-                        </button>
-                        <div class="crumb-dropdown" id="dropdown-project">
-                            <div class="dropdown-search-box">
-                                <div class="search-input-wrapper"><i data-lucide="search"
-                                        class="search-icon-small"></i><input type="text" class="dropdown-input"
-                                        placeholder="Search..." oninput="handleSearchProject(this.value)"
-                                        onclick="event.stopPropagation()"></div>
-                            </div>
-                            <div id="project-list-container" class="dropdown-list-scroll"></div>
+<nav class="project-nav-bar">
+    <div class="nav-left">
+        <div class="nav-capsule-box">
+            <a href="index.html" class="nav-logo">
+                <div class="logo-icon-box"><i data-lucide="activity"></i></div>
+                <span>ecoSignal</span>
+            </a>
+            <div class="nav-divider"></div>
+            <div class="breadcrumb-group">
+                <div class="crumb-wrapper" id="project-wrap">
+                    <button class="crumb-btn" onclick="toggleMenu('project-wrap')">
+                        <span id="label-project" class="block-anim">Loading...</span><i data-lucide="chevron-down"
+                                                                                        size="14"></i>
+                    </button>
+                    <div class="crumb-dropdown" id="dropdown-project">
+                        <div class="dropdown-search-box">
+                            <div class="search-input-wrapper"><i data-lucide="search"
+                                                                 class="search-icon-small"></i><input type="text" class="dropdown-input"
+                                                                                                      placeholder="Search..." oninput="handleSearchProject(this.value)"
+                                                                                                      onclick="event.stopPropagation()"></div>
                         </div>
+                        <div id="project-list-container" class="dropdown-list-scroll"></div>
                     </div>
-                    <span class="crumb-separator">/</span>
-                    <div class="crumb-wrapper" id="collection-wrap">
-                        <button class="crumb-btn" onclick="toggleMenu('collection-wrap')">
-                            <span id="label-collection" class="block-anim">Loading...</span><i
-                                data-lucide="chevron-down" size="14"></i>
-                        </button>
-                        <div class="crumb-dropdown" id="dropdown-collection">
-                            <div class="dropdown-search-box">
-                                <div class="search-input-wrapper"><i data-lucide="search"
-                                        class="search-icon-small"></i><input type="text" class="dropdown-input"
-                                        placeholder="Search..." oninput="handleSearchCollection(this.value)"
-                                        onclick="event.stopPropagation()"></div>
-                            </div>
-                            <div id="collection-list-container" class="dropdown-list-scroll"></div>
+                </div>
+                <span class="crumb-separator">/</span>
+                <div class="crumb-wrapper" id="collection-wrap">
+                    <button class="crumb-btn" onclick="toggleMenu('collection-wrap')">
+                        <span id="label-collection" class="block-anim">Loading...</span><i
+                            data-lucide="chevron-down" size="14"></i>
+                    </button>
+                    <div class="crumb-dropdown" id="dropdown-collection">
+                        <div class="dropdown-search-box">
+                            <div class="search-input-wrapper"><i data-lucide="search"
+                                                                 class="search-icon-small"></i><input type="text" class="dropdown-input"
+                                                                                                      placeholder="Search..." oninput="handleSearchCollection(this.value)"
+                                                                                                      onclick="event.stopPropagation()"></div>
                         </div>
+                        <div id="collection-list-container" class="dropdown-list-scroll"></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="nav-center">
-            <div class="nav-capsule-box">
-                <div class="sliding-pill" id="nav-sliding-pill"></div>
-                <button class="nav-item active" onclick="switchTab(this, 'desc')">Description</button>
-                <button class="nav-item" onclick="switchTab(this, 'summary')">Summary</button>
-                <button class="nav-item" onclick="switchTab(this, 'media')">Media</button>
-                <button class="nav-item" onclick="switchTab(this, 'map')">Map</button>
-                <button class="nav-item" onclick="switchTab(this, 'timeline')">Timeline</button>
-                <button class="nav-item" onclick="switchTab(this, 'data')">Data</button>
-            </div>
+    </div>
+    <div class="nav-center">
+        <div class="nav-capsule-box">
+            <div class="sliding-pill" id="nav-sliding-pill"></div>
+            <button class="nav-item active" onclick="switchTab(this, 'desc')">Description</button>
+            <button class="nav-item" onclick="switchTab(this, 'summary')">Summary</button>
+            <button class="nav-item" onclick="switchTab(this, 'media')">Media</button>
+            <button class="nav-item" onclick="switchTab(this, 'map')">Map</button>
+            <button class="nav-item" onclick="switchTab(this, 'timeline')">Timeline</button>
+            <button class="nav-item" onclick="switchTab(this, 'data')">Data</button>
         </div>
-        <div class="nav-right">
-            <div class="nav-capsule-box">
-                <button class="nav-btn-simple" onclick="toggleTheme()" title="Switch Theme">
-                    <i data-lucide="moon" id="theme-icon-el" size="20"></i>
-                </button>
-                <div class="nav-divider"></div>
+    </div>
+    <div class="nav-right">
+        <div class="nav-capsule-box">
+            <button class="nav-btn-simple" onclick="toggleTheme()" title="Switch Theme">
+                <i data-lucide="moon" id="theme-icon-el" size="20"></i>
+            </button>
+            <div class="nav-divider"></div>
 
-                <button class="nav-btn-simple" title="Information"><i data-lucide="info" size="20"></i></button>
-                <div class="nav-divider"></div>
-                <div class="user-wrapper" id="user-menu">
-                    <div class="user-capsule-btn" onclick="toggleUserMenu()">
-                        <div class="user-avatar-icon"><i data-lucide="user" size="16"></i></div>
-                        <span class="user-name-text">Liudilong</span>
-                        <i data-lucide="chevron-down" class="chevron-icon" size="14"></i>
-                    </div>
-                    <div class="dropdown-menu">
-                        <a href="#" class="dropdown-item"><i data-lucide="settings" size="18"></i> Settings</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="index.html" class="dropdown-item danger"><i data-lucide="log-out" size="18"></i>
-                            Logout</a>
-                    </div>
+            <button class="nav-btn-simple" title="Information"><i data-lucide="info" size="20"></i></button>
+            <div class="nav-divider"></div>
+            <div class="user-wrapper" id="user-menu">
+                <div class="user-capsule-btn" onclick="toggleUserMenu()">
+                    <div class="user-avatar-icon"><i data-lucide="user" size="16"></i></div>
+                    <span class="user-name-text">Liudilong</span>
+                    <i data-lucide="chevron-down" class="chevron-icon" size="14"></i>
+                </div>
+                <div class="dropdown-menu">
+                    <a href="#" class="dropdown-item"><i data-lucide="settings" size="18"></i> Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="index.html" class="dropdown-item danger"><i data-lucide="log-out" size="18"></i>
+                        Logout</a>
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <div class="content-wrapper">
-        <div id="tab-desc" class="tab-page active">
-            <div class="desc-layout" id="desc-layout-container">
-                <div id="panel-proj-desc" class="panel-anim">
-                    <div class="desc-header-section block-anim">
-                        <div class="title-row">
-                            <h1 class="desc-title-text" id="desc-project-title">Loading...</h1>
-                            <a href="#" target="_blank" class="title-link-icon" id="meta-link"
-                                title="Visit Project Website"><i data-lucide="link"></i></a>
-                        </div>
-                        <div class="meta-row">
-                            <div class="meta-capsule-box">
-                                <div class="meta-item-btn" title="Creator">
-                                    <div class="meta-item-icon"><i data-lucide="user" size="14"></i></div>
-                                    <span id="meta-creator-name">...</span>
-                                </div>
-                                <div class="meta-divider"></div>
-                                <div class="meta-item-btn" title="Creation Date">
-                                    <div class="meta-item-icon"><i data-lucide="calendar" size="14"></i></div>
-                                    <span id="meta-date">...</span>
-                                </div>
-                                <div class="meta-divider"></div>
-                                <div class="meta-item-btn" title="DOI">
-                                    <div class="meta-item-icon"><i data-lucide="bookmark" size="14"></i></div>
-                                    <span id="meta-doi-text">...</span>
-                                </div>
+<div class="content-wrapper">
+    <div id="tab-desc" class="tab-page active">
+        <div class="desc-layout" id="desc-layout-container">
+            <div id="panel-proj-desc" class="panel-anim">
+                <div class="desc-header-section block-anim">
+                    <div class="title-row">
+                        <h1 class="desc-title-text" id="desc-project-title">Loading...</h1>
+                        <a href="#" target="_blank" class="title-link-icon" id="meta-link"
+                           title="Visit Project Website"><i data-lucide="link"></i></a>
+                    </div>
+                    <div class="meta-row">
+                        <div class="meta-capsule-box">
+                            <div class="meta-item-btn" title="Creator">
+                                <div class="meta-item-icon"><i data-lucide="user" size="14"></i></div>
+                                <span id="meta-creator-name">...</span>
+                            </div>
+                            <div class="meta-divider"></div>
+                            <div class="meta-item-btn" title="Creation Date">
+                                <div class="meta-item-icon"><i data-lucide="calendar" size="14"></i></div>
+                                <span id="meta-date">...</span>
+                            </div>
+                            <div class="meta-divider"></div>
+                            <div class="meta-item-btn" title="DOI">
+                                <div class="meta-item-icon"><i data-lucide="bookmark" size="14"></i></div>
+                                <span id="meta-doi-text">...</span>
                             </div>
                         </div>
                     </div>
-                    <div class="desc-content-area block-anim">
-                        <div id="rich-text-container">Loading...</div>
-                    </div>
                 </div>
-                <div id="panel-visual" class="panel-anim">
-                    <div class="desc-image-container">
-                        <img src="" alt="Project Visual" class="desc-project-img" id="main-project-image">
-                    </div>
+                <div class="desc-content-area block-anim">
+                    <div id="rich-text-container">Loading...</div>
                 </div>
-                <div id="panel-col-desc" class="panel-anim"></div>
             </div>
+            <div id="panel-visual" class="panel-anim">
+                <div class="desc-image-container">
+                    <img src="" alt="Project Visual" class="desc-project-img" id="main-project-image">
+                </div>
+            </div>
+            <div id="panel-col-desc" class="panel-anim"></div>
         </div>
+    </div>
 
-        <div id="tab-summary" class="tab-page">
-            <div class="summary-layout">
-                <div class="summary-stats-container block-anim" id="summary-stats-grid"></div>
-                <div class="summary-contributors-card block-anim">
-                    <div class="card-header">
-                        <div class="card-title" id="contrib-title"><i data-lucide="users"></i> Project Contributors
-                        </div>
+    <div id="tab-summary" class="tab-page">
+        <div class="summary-layout">
+            <div class="summary-stats-container block-anim" id="summary-stats-grid"></div>
+            <div class="summary-contributors-card block-anim">
+                <div class="card-header">
+                    <div class="card-title" id="contrib-title"><i data-lucide="users"></i> Project Contributors
                     </div>
-                    <div class="card-body">
-                        <div class="contributors-list" id="summary-contributors-list"></div>
-                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="contributors-list" id="summary-contributors-list"></div>
                 </div>
             </div>
         </div>
-        <div id="tab-media" class="tab-page">
-            <div class="dashboard-card" style="height: 100%;">
-                <div class="card-header media-header">
-                    <div class="media-title"><i data-lucide="music" size="24"></i> Media <span class="media-count-badge"
-                            id="media-count-badge">Loading...</span></div>
-                    <div class="media-controls">
-                        <div class="media-search-box"><i data-lucide="search" class="media-search-icon"></i><input
-                                type="text" class="media-search-input" placeholder="Search media or tags..."
-                                oninput="handleSearchMedia(this.value)"></div>
-                        <div class="view-switcher-container">
-                            <div class="view-pill" id="view-pill"></div><button class="view-btn active"
+    </div>
+    <div id="tab-media" class="tab-page">
+        <div class="dashboard-card" style="height: 100%;">
+            <div class="card-header media-header">
+                <div class="media-title"><i data-lucide="music" size="24"></i> Media <span class="media-count-badge"
+                                                                                           id="media-count-badge">Loading...</span></div>
+                <div class="media-controls">
+                    <div class="media-search-box"><i data-lucide="search" class="media-search-icon"></i><input
+                            type="text" class="media-search-input" placeholder="Search media or tags..."
+                            oninput="handleSearchMedia(this.value)"></div>
+                    <div class="view-switcher-container">
+                        <div class="view-pill" id="view-pill"></div>
+                        <button class="view-btn active"
                                 onclick="switchMediaView('gallery', this)"><i data-lucide="grid" size="14"></i>
-                                Gallery</button><button class="view-btn" onclick="switchMediaView('list', this)"><i
-                                    data-lucide="list" size="14"></i> List</button>
-                        </div>
+                            Gallery
+                        </button>
+                        <button class="view-btn" onclick="switchMediaView('list', this)"><i
+                                data-lucide="list" size="14"></i> List
+                        </button>
                     </div>
                 </div>
-                <div class="card-body media-scroll-area">
-                    <div class="media-container view-gallery block-anim" id="media-grid-container"></div>
-                </div>
+            </div>
+            <div class="card-body media-scroll-area">
+                <div class="media-container view-gallery block-anim" id="media-grid-container"></div>
             </div>
         </div>
-        <div id="tab-map" class="tab-page">
-            <div class="map-wrapper">
-                <div id="full-map"></div><button class="filter-trigger-btn" id="filter-btn-main"
+    </div>
+    <div id="tab-map" class="tab-page">
+        <div class="map-wrapper">
+            <div id="full-map"></div>
+            <button class="filter-trigger-btn" id="filter-btn-main"
                     onclick="openFilterDrawer()"><i data-lucide="sliders-horizontal" size="22"></i></button>
-                <div class="filter-drawer" id="filter-drawer">
-                    <div class="fd-header">
-                        <div class="fd-title"><i data-lucide="sliders-horizontal" size="20"
-                                color="var(--brand)"></i><span>Filters</span></div><button class="fd-close"
+            <div class="filter-drawer" id="filter-drawer">
+                <div class="fd-header">
+                    <div class="fd-title"><i data-lucide="sliders-horizontal" size="20"
+                                             color="var(--brand)"></i><span>Filters</span></div>
+                    <button class="fd-close"
                             onclick="closeFilterDrawer()"><i data-lucide="chevrons-left" size="20"></i></button>
-                    </div>
-                    <div class="fd-content">
-                        <div class="custom-select-wrapper" id="sel-realm">
-                            <div class="select-trigger" onclick="toggleSelect('sel-realm')"><span class="trigger-text"
-                                    id="text-realm">All Realms</span><i data-lucide="chevron-down" size="16"></i></div>
-                            <div class="select-options" id="opt-realm"></div>
-                        </div>
-                        <div class="custom-select-wrapper" id="sel-biome">
-                            <div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')">
-                                <span class="trigger-text" id="text-biome">All Biomes</span><i
-                                    data-lucide="chevron-down" size="16"></i>
-                            </div>
-                            <div class="select-options" id="opt-biome"></div>
-                        </div>
-                        <div class="custom-select-wrapper" id="sel-group">
-                            <div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')">
-                                <span class="trigger-text" id="text-group">All Groups</span><i
-                                    data-lucide="chevron-down" size="16"></i>
-                            </div>
-                            <div class="select-options" id="opt-group"></div>
-                        </div><button class="btn-reset-filters" onclick="resetFilters()"><i data-lucide="rotate-ccw"
-                                size="16"></i> Reset Filters</button>
-                    </div>
                 </div>
-                <div id="sidebar" class="sidebar">
-                    <div class="sb-header" id="sb-header-bg">
-                        <div class="sb-header-content">
-                            <h2 class="sb-title" id="sb-name">Site Name</h2>
-                            <div class="sb-meta-row" id="sb-meta-container"></div>
+                <div class="fd-content">
+                    <div class="custom-select-wrapper" id="sel-realm">
+                        <div class="select-trigger" onclick="toggleSelect('sel-realm')"><span class="trigger-text"
+                                                                                              id="text-realm">All Realms</span><i data-lucide="chevron-down" size="16"></i></div>
+                        <div class="select-options" id="opt-realm"></div>
+                    </div>
+                    <div class="custom-select-wrapper" id="sel-biome">
+                        <div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')">
+                            <span class="trigger-text" id="text-biome">All Biomes</span><i
+                                data-lucide="chevron-down" size="16"></i>
                         </div>
-                        <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
+                        <div class="select-options" id="opt-biome"></div>
                     </div>
-                    <div class="sb-content">
-                        <div class="data-row"><span class="data-label">Realm</span><span class="data-val"
-                                id="val-realm">--</span></div>
-                        <div class="data-row"><span class="data-label">Biome</span><span class="data-val"
-                                id="val-biome">--</span></div>
-                        <div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span
-                                class="data-val" id="val-group">--</span></div>
-
-                        <div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div>
-                        <div class="media-scroll-container" id="media-container"></div>
+                    <div class="custom-select-wrapper" id="sel-group">
+                        <div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')">
+                            <span class="trigger-text" id="text-group">All Groups</span><i
+                                data-lucide="chevron-down" size="16"></i>
+                        </div>
+                        <div class="select-options" id="opt-group"></div>
                     </div>
+                    <button class="btn-reset-filters" onclick="resetFilters()"><i data-lucide="rotate-ccw"
+                                                                                  size="16"></i> Reset Filters
+                    </button>
                 </div>
             </div>
-        </div>
-
-        <div id="tab-timeline" class="tab-page">
-            <div class="dashboard-card" style="height: 100%;">
-                <div class="card-header media-header timeline-header-styled" style="z-index: 100;">
-                    <div class="media-title">
-                        <i data-lucide="kanban"></i> Timeline
-                        <span class="media-count-badge" id="tl-count-badge">Loading...</span>
+            <div id="sidebar" class="sidebar">
+                <div class="sb-header" id="sb-header-bg">
+                    <div class="sb-header-content">
+                        <h2 class="sb-title" id="sb-name">Site Name</h2>
+                        <div class="sb-meta-row" id="sb-meta-container"></div>
                     </div>
-
-                    <div class="media-controls" style="gap: 12px;">
-                        <div class="custom-select-wrapper" id="tl-sel-group" style="width: 200px;">
-                            <div class="select-trigger" onclick="toggleSelect('tl-sel-group')">
-                                <span class="trigger-text" id="tl-text-group">Realm</span>
-                                <i data-lucide="chevron-down" size="16"></i>
-                            </div>
-                            <div class="select-options">
-                                <div class="select-option" onclick="setTimelineGrouping('all')">All Data</div>
-                                <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
-                                <div class="select-option" onclick="setTimelineGrouping('realm')">Realm</div>
-                                <div class="select-option" onclick="setTimelineGrouping('biome')">Biome</div>
-                                <div class="select-option" onclick="setTimelineGrouping('group')">Group</div>
-                                <div class="select-option" onclick="setTimelineGrouping('site')">Site</div>
-                            </div>
-                        </div>
-
-                        <div class="custom-select-wrapper" id="tl-sel-time" style="width: 200px;">
-                            <div class="select-trigger" onclick="toggleSelect('tl-sel-time')">
-                                <span class="trigger-text" id="tl-text-time">Year</span>
-                                <i data-lucide="chevron-down" size="16"></i>
-                            </div>
-                            <div class="select-options">
-                                <div class="select-option" onclick="setTimelineResolution('all')">All Time</div>
-                                <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
-                                <div
-                                    style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
-                                    ABSOLUTE TIME</div>
-                                <div class="select-option" onclick="setTimelineResolution('y')">Year</div>
-                                <div class="select-option" onclick="setTimelineResolution('yq')">Year / Quarter</div>
-                                <div class="select-option" onclick="setTimelineResolution('ym')">Year / Month</div>
-                                <div class="select-option" onclick="setTimelineResolution('ymd')">Year / Month / Day
-                                </div>
-                                <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
-                                <div
-                                    style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
-                                    SEASONAL CYCLES</div>
-                                <div class="select-option" onclick="setTimelineResolution('q')">Quarter</div>
-                                <div class="select-option" onclick="setTimelineResolution('m')">Month</div>
-                                <div class="select-option" onclick="setTimelineResolution('md')">Month / Day</div>
-                                <div class="select-option" onclick="setTimelineResolution('d')">Day</div>
-                            </div>
-                        </div>
-                    </div>
+                    <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
                 </div>
+                <div class="sb-content">
+                    <div class="data-row"><span class="data-label">Realm</span><span class="data-val"
+                                                                                     id="val-realm">--</span></div>
+                    <div class="data-row"><span class="data-label">Biome</span><span class="data-val"
+                                                                                     id="val-biome">--</span></div>
+                    <div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span
+                            class="data-val" id="val-group">--</span></div>
 
-                <div class="card-body" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
-                    <div class="timeline-matrix-viewport" id="tl-matrix-container">
-                        <div style="margin: auto; color: var(--text-muted);">Loading Matrix...</div>
-                    </div>
+                    <div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div>
+                    <div class="media-scroll-container" id="media-container"></div>
                 </div>
-            </div>
-        </div>
-
-        <div id="tab-data" class="tab-page">
-            <div class="placeholder-card"><i data-lucide="database-off" size="48"
-                    style="margin-bottom: 20px; opacity: 0.5;"></i>
-                <h2>Data Feature Disabled</h2>
-                <p>Please preview this feature from other files.</p>
             </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <div id="tab-timeline" class="tab-page">
+        <div class="dashboard-card" style="height: 100%;">
+            <div class="card-header media-header timeline-header-styled" style="z-index: 100;">
+                <div class="media-title">
+                    <i data-lucide="kanban"></i> Timeline
+                    <span class="media-count-badge" id="tl-count-badge">Loading...</span>
+                </div>
 
-    <script>
-        lucide.createIcons();
+                <div class="media-controls" style="gap: 12px;">
+                    <div class="custom-select-wrapper" id="tl-sel-group" style="width: 200px;">
+                        <div class="select-trigger" onclick="toggleSelect('tl-sel-group')">
+                            <span class="trigger-text" id="tl-text-group">Realm</span>
+                            <i data-lucide="chevron-down" size="16"></i>
+                        </div>
+                        <div class="select-options">
+                            <div class="select-option" onclick="setTimelineGrouping('all')">All Data</div>
+                            <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
+                            <div class="select-option" onclick="setTimelineGrouping('realm')">Realm</div>
+                            <div class="select-option" onclick="setTimelineGrouping('biome')">Biome</div>
+                            <div class="select-option" onclick="setTimelineGrouping('group')">Group</div>
+                            <div class="select-option" onclick="setTimelineGrouping('site')">Site</div>
+                        </div>
+                    </div>
 
-        // --- [新增] 富文本内容生成器 ---
-        const generateRichText = (type, title, location, latinName) => {
-            if (type === 'modern') {
-                return `
+                    <div class="custom-select-wrapper" id="tl-sel-time" style="width: 200px;">
+                        <div class="select-trigger" onclick="toggleSelect('tl-sel-time')">
+                            <span class="trigger-text" id="tl-text-time">Year</span>
+                            <i data-lucide="chevron-down" size="16"></i>
+                        </div>
+                        <div class="select-options">
+                            <div class="select-option" onclick="setTimelineResolution('all')">All Time</div>
+                            <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
+                            <div
+                                    style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
+                                ABSOLUTE TIME
+                            </div>
+                            <div class="select-option" onclick="setTimelineResolution('y')">Year</div>
+                            <div class="select-option" onclick="setTimelineResolution('yq')">Year / Quarter</div>
+                            <div class="select-option" onclick="setTimelineResolution('ym')">Year / Month</div>
+                            <div class="select-option" onclick="setTimelineResolution('ymd')">Year / Month / Day
+                            </div>
+                            <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
+                            <div
+                                    style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
+                                SEASONAL CYCLES
+                            </div>
+                            <div class="select-option" onclick="setTimelineResolution('q')">Quarter</div>
+                            <div class="select-option" onclick="setTimelineResolution('m')">Month</div>
+                            <div class="select-option" onclick="setTimelineResolution('md')">Month / Day</div>
+                            <div class="select-option" onclick="setTimelineResolution('d')">Day</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
+                <div class="timeline-matrix-viewport" id="tl-matrix-container">
+                    <div style="margin: auto; color: var(--text-muted);">Loading Matrix...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-data" class="tab-page">
+        <div class="placeholder-card"><i data-lucide="database-off" size="48"
+                                         style="margin-bottom: 20px; opacity: 0.5;"></i>
+            <h2>Data Feature Disabled</h2>
+            <p>Please preview this feature from other files.</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<script>
+    lucide.createIcons();
+
+    // --- [新增] 富文本内容生成器 ---
+    const generateRichText = (type, title, location, latinName) => {
+        if (type === 'modern') {
+            return `
                     <div class="style-modern">
                         <span class="tag-label" style="display:inline-block;padding:4px 8px;background:var(--brand);color:white;border-radius:4px;font-size:0.7rem;font-weight:700;margin-bottom:10px;text-transform:uppercase;">Live Monitoring</span>
                         <h1>${title} Digital Overview</h1>
@@ -2939,8 +3056,8 @@
                         </ul>
                     </div>
                 `;
-            } else if (type === 'academic') {
-                return `
+        } else if (type === 'academic') {
+            return `
                     <div class="style-modern">
                         <div style="background:var(--bg-surface-secondary);padding:20px;border-left:4px solid var(--text-main);margin-bottom:24px;">
                             <h4 style="margin:0 0 8px 0;font-size:0.9rem;text-transform:uppercase;color:var(--text-muted);">Abstract</h4>
@@ -2961,8 +3078,8 @@
                         <blockquote>"The results suggest a significant correlation between rainfall patterns and biological acoustic activity."</blockquote>
                     </div>
                 `;
-            } else { // Editorial / Blog
-                return `
+        } else { // Editorial / Blog
+            return `
                     <div class="style-modern">
                         <p style="font-family:serif;font-size:1.2rem;line-height:1.8;color:var(--text-main);">
                             The jungle was alive. Not with the roar of engines, but with the <strong>symphony of life</strong>.
@@ -2983,171 +3100,310 @@
                         </ul>
                     </div>
                 `;
-            }
-        };
-
-        const colGenerators = [
-            (n) => `<div class="col-rt-modern"><h3><i data-lucide="activity"></i> Spectral Analysis</h3><p>${n} exhibits high-frequency harmonics typical of neotropical avian species. The spectrogram reveals distinct banding patterns.</p><ul><li>Bandwidth: 2kHz - 8kHz</li><li>Duration: 1.5s pulses</li></ul></div>`,
-            (n) => `<div class="col-rt-modern"><h3><i data-lucide="clock"></i> Temporal Patterns</h3><p>${n} activity peaks during the dawn chorus (05:00 - 06:30) with a secondary, lower intensity peak at dusk.</p></div>`,
-            (n) => `<div class="col-rt-modern"><h3><i data-lucide="map-pin"></i> Spatial Distribution</h3><p>Recorded primarily in the riparian zones of the transect. ${n} density decreases significantly >500m from water sources.</p></div>`
-        ];
-
-        const projectImages = [
-            'https://ecosound-web.de/ecosound_web/sounds/projects/108.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/117.jpeg',
-            'https://ecosound-web.de/ecosound_web/sounds/projects/121.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/105.jpeg',
-            'https://ecosound-web.de/ecosound_web/sounds/projects/114.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/123.jpeg'
-        ];
-        const getImg = (idx) => projectImages[idx % projectImages.length];
-        const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
-
-        // --- 贡献者生成逻辑 (Mock Data) ---
-        const mockNames = ["A. Schmidt", "B. Cohen", "C. Kim", "D. Mwangi", "E. Rossi", "F. Yamamoto", "G. Dubois", "H. Petrov", "I. Al-Fayed", "J. Smith", "K. Gupta", "L. Wei"];
-        // 项目角色池
-        const projRoles = ["Principal Investigator", "Lead Researcher", "Field Technician", "Data Analyst", "Project Manager", "Ecologist"];
-        // 集合角色池
-        const colRoles = ["Field Recorder", "Annotator", "Reviewer", "Data Curator", "Metadata Specialist", "Logistics"];
-
-        // [修改] getContributors 接受一个可选的 leadName
-        const getContributors = (count, type, leadName = null) => {
-            const list = [];
-            const rolePool = type === 'project' ? projRoles : colRoles;
-
-            for (let i = 0; i < count; i++) {
-                let name, role;
-
-                // 第一位如果是 leadName，则使用该名字和最高级别角色
-                if (i === 0 && leadName) {
-                    name = leadName;
-                    role = rolePool[0]; // PI or Field Recorder
-                } else {
-                    // 其他随机
-                    name = mockNames[Math.floor(Math.random() * mockNames.length)];
-                    role = rolePool[Math.floor(Math.random() * (rolePool.length - 1)) + 1];
-                }
-
-                list.push({
-                    name: name,
-                    role: role,
-                    email: name.toLowerCase().replace('. ', '.').replace(' ', '.') + "@lab.edu",
-                    uid: `0000-000${Math.floor(Math.random() * 9)}-${Math.floor(Math.random() * 9999)}-${Math.floor(Math.random() * 9999)}`
-                });
-            }
-            return list;
-        };
-
-        const createCollections = (baseName, count, startImgIdx, creatorName) => {
-            return Array.from({ length: count }, (_, i) => {
-                const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`; // 生成集合特定的创建者
-                return {
-                    id: `c${i}`,
-                    name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
-                    active: false,
-                    creator: collectionCreator, // 绑定到 metadata
-                    date: `2025-0${(i % 9) + 1}-15`,
-                    doi: `10.ECO/col.${i + 1}`,
-                    sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
-                    external_media_url: "#",
-                    project_url: "#",
-                    description: colGenerators[i % 3](`${baseName}`),
-                    image: getImg(startImgIdx + i + 1),
-                    stats: { users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), tags: rInt(50, 300), sites: rInt(1, 5) },
-                    // [修改] 传递集合创建者给生成函数
-                    contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
-                };
-            });
-        };
-
-        const initialProjects = [
-            {
-                id: "p1", name: "Amazon Rainforest Survey", creator: "Dr. Silva", date: "2025-01-10", doi: "10.1234/amz.01", externalUrl: "#",
-                description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"),
-                styleClass: "style-modern", image: getImg(0),
-                collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
-                stats: { users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", tags: 4500, sites: 12 },
-                // [修改] 使用 Dr. Silva 作为项目 PI
-                contributors: getContributors(4, 'project', "Dr. Silva")
-            },
-            {
-                id: "p2", name: "Marine Ecosystems Study", creator: "Prof. Ocean", date: "2024-11-05", doi: "10.5678/mar.02", externalUrl: "#",
-                description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"),
-                styleClass: "style-academic", image: getImg(1),
-                collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
-                stats: { users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", tags: 2100, sites: 5 },
-                // [修改] 使用 Prof. Ocean 作为 PI
-                contributors: getContributors(3, 'project', "Prof. Ocean")
-            },
-            {
-                id: "p3", name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15", doi: "10.9999/sav.03", externalUrl: "#",
-                description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"),
-                styleClass: "style-editorial", image: getImg(2),
-                collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
-                stats: { users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", tags: 1200, sites: 8 },
-                // [修改] 使用 K. Mbeki 作为 PI
-                contributors: getContributors(5, 'project', "K. Mbeki")
-            }
-        ];
-        const rawProjects = [...initialProjects];
-
-        let currProjIdx = 0; let currColIdx = 0; let projSearchQuery = ""; let colSearchQuery = "";
-
-        // --- MAP VARIABLES & LOGIC (省略部分未变代码以节省空间) ---
-        let map = null; let clusterGroup = null; let polyLayer = null; let currentSites = []; let currentSelectedSiteId = null; let filterState = { realm: "", biome: "", group: "" };
-        const REALM_COLORS = { "Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316" };
-        const TAXONOMY = { "Terrestrial": { "Tropical Forests": ["Lowland Rainforest", "Montane Rainforest"], "Savannas": ["Shrubland", "Grassland"] }, "Marine": { "Coastal": ["Coral Reefs", "Seagrass"], "Pelagic": ["Epipelagic", "Mesopelagic"] }, "Freshwater": { "Riverine": ["Permanent Rivers", "Seasonal Streams"], "Palustrine": ["Peatlands", "Marshes"] }, "Subterranean": { "Cave Systems": ["Limestone Caves", "Lava Tubes"], "Aquifers": ["Shallow", "Deep"] }, "Atmospheric": { "Aerial": ["Lower Troposphere", "Upper Canopy"], "Urban Air": ["City Center", "Industrial"] }, "Estuarine": { "Brackish Water": ["Mangroves", "Salt Marshes"], "Deltas": ["Active Delta", "Inactive Delta"] }, "Cryogenic": { "Ice Sheets": ["Polar", "Glacial"], "Tundra": ["Permafrost", "Alpine"] }, "Artificial": { "Urban": ["Parks", "Gardens"], "Agricultural": ["Farms", "Plantations"] }, "Introduced": { "Invasive Zones": ["Islands", "Mainland"], "Rehabilitation": ["Forest", "Wetland"] }, "Unknown": { "Unclassified": ["Region A", "Region B"], "Pending": ["Survey 1", "Survey 2"] } };
-        function getRealmColor(r) { return REALM_COLORS[r] || "#0f172a"; }
-        function generateSitesForContext(projId, colId) { let seed = projId.charCodeAt(1) + (colId ? colId.charCodeAt(1) * 10 : 0); const count = 50 + (seed % 20); let baseLat = -3.4, baseLng = -62.2; if (projId === "p2") { baseLat = -18.2; baseLng = 147.7; } if (projId === "p3") { baseLat = -2.3; baseLng = 34.8; } const realmKeys = Object.keys(TAXONOMY); return Array.from({ length: count }, (_, i) => { let rIndex = Math.floor(Math.random() * realmKeys.length); if (projId === "p1" && Math.random() > 0.3) rIndex = 0; if (projId === "p2" && Math.random() > 0.3) rIndex = 1; const r = realmKeys[rIndex]; const bKeys = Object.keys(TAXONOMY[r]); const b = bKeys[Math.floor(Math.random() * bKeys.length)]; const gKeys = TAXONOMY[r][b]; const g = gKeys[Math.floor(Math.random() * gKeys.length)]; const lat = baseLat + (Math.random() - 0.5) * 8; const lng = baseLng + (Math.random() - 0.5) * 8; const vertices = 3 + Math.floor(Math.random() * 5); const baseRadius = 0.03; const poly = []; const rotation = Math.random() * Math.PI; for (let k = 0; k < vertices; k++) { const angle = (k / vertices) * Math.PI * 2 + rotation; const r = baseRadius * (0.8 + Math.random() * 0.4); poly.push([lat + Math.sin(angle) * r, lng + Math.cos(angle) * r]); } return { id: `${projId}-${colId || 'all'}-${i}`, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, group: g, topography_m: Math.floor(Math.random() * 800), freshwater_depth_m: r === 'Freshwater' ? (Math.random() * 15).toFixed(1) : "N/A", mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({ length: Math.floor(Math.random() * 10) + 2 }, (_, m) => ({ name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.wav`, date: "2025-01-15", duration: "01:00:00" })) }; }); }
-        function loadMapData() {
-            // [Fix] 移除了 if (!map) return; 以便在地图显示前也能生成 Site 数据供 Media 使用
-            const projId = rawProjects[currProjIdx].id;
-            const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null;
-
-            if (!colId) {
-                currentSites = [];
-                rawProjects[currProjIdx].collections.forEach(c => {
-                    currentSites = [...currentSites, ...generateSitesForContext(projId, c.id)];
-                });
-            } else {
-                currentSites = generateSitesForContext(projId, colId);
-            }
-
-            // 只有当过滤器 UI 存在时才重置过滤器 (通常一直存在)
-            resetFilters();
         }
-        function initMap() { if (map) return; map = L.map('full-map', { zoomControl: false }).setView([-3.465, -62.215], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); L.control.zoom({ position: 'bottomright' }).addTo(map); polyLayer = L.layerGroup().addTo(map); clusterGroup = L.markerClusterGroup({ showCoverageOnHover: false, zoomToBoundsOnClick: true, spiderfyOnMaxZoom: true, maxClusterRadius: 60, iconCreateFunction: function (cluster) { const markers = cluster.getAllChildMarkers(); const n = markers.length; const realmCounts = {}; let totalMedia = 0; markers.forEach(m => { const r = m.options.customData.realm; realmCounts[r] = (realmCounts[r] || 0) + 1; totalMedia += m.options.customData.mediaCount; }); let gradientParts = []; let currentPercentage = 0; Object.keys(realmCounts).sort((a, b) => realmCounts[b] - realmCounts[a]).forEach(r => { const pct = (realmCounts[r] / n) * 100; gradientParts.push(`${getRealmColor(r)} ${currentPercentage}% ${currentPercentage + pct}%`); currentPercentage += pct; }); return L.divIcon({ html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`, className: 'custom-cluster-icon', iconSize: L.point(50, 50), iconAnchor: [25, 25] }); } }); map.addLayer(clusterGroup); loadMapData(); }
-        function renderMap(shouldZoom = false) { if (!map) return; polyLayer.clearLayers(); clusterGroup.clearLayers(); let visibleBounds = L.latLngBounds([]); let visibleCount = 0; let isCurrentSiteVisible = false; currentSites.forEach(site => { if (filterState.realm && site.realm !== filterState.realm) return; if (filterState.biome && site.biome !== filterState.biome) return; if (filterState.group && site.group !== filterState.group) return; if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true; visibleCount++; const siteColor = getRealmColor(site.realm); const poly = L.polygon(site.polygon, { color: siteColor, weight: 2, opacity: 0.8, fillColor: siteColor, fillOpacity: 0.15 }).addTo(polyLayer); poly.on('click', (e) => { L.DomEvent.stopPropagation(e); openSidebar(site); }); const marker = L.marker(site.center, { customData: { realm: site.realm, mediaCount: site.mediaCount }, icon: L.divIcon({ html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28] }) }); marker.on('click', () => openSidebar(site)); clusterGroup.addLayer(marker); visibleBounds.extend(site.center); }); if (currentSelectedSiteId && !isCurrentSiteVisible) closeSidebar(); if ((shouldZoom || visibleCount > 0) && visibleCount > 0) { if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, { duration: 0.8, easeLinearity: 0.5 }); else map.fitBounds(visibleBounds, { padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5 }); } }
-        function openSidebar(site) {
-            currentSelectedSiteId = site.id;
-            const color = getRealmColor(site.realm);
-            document.documentElement.style.setProperty('--site-color', color);
-            document.documentElement.style.setProperty('--site-color-tint', color + '12');
+    };
 
-            // 1. 填充文本信息
-            document.getElementById('sb-name').textContent = site.name;
-            document.getElementById('val-realm').textContent = site.realm;
-            document.getElementById('val-realm').style.color = color;
-            document.getElementById('val-biome').textContent = site.biome;
-            document.getElementById('val-group').textContent = site.group;
+    const colGenerators = [
+        (n) => `<div class="col-rt-modern"><h3><i data-lucide="activity"></i> Spectral Analysis</h3><p>${n} exhibits high-frequency harmonics typical of neotropical avian species. The spectrogram reveals distinct banding patterns.</p><ul><li>Bandwidth: 2kHz - 8kHz</li><li>Duration: 1.5s pulses</li></ul></div>`,
+        (n) => `<div class="col-rt-modern"><h3><i data-lucide="clock"></i> Temporal Patterns</h3><p>${n} activity peaks during the dawn chorus (05:00 - 06:30) with a secondary, lower intensity peak at dusk.</p></div>`,
+        (n) => `<div class="col-rt-modern"><h3><i data-lucide="map-pin"></i> Spatial Distribution</h3><p>Recorded primarily in the riparian zones of the transect. ${n} density decreases significantly >500m from water sources.</p></div>`
+    ];
 
-            // 2. 渲染头部元数据 (Topography / Water Depth)
-            const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
-            const depthHtml = site.freshwater_depth_m !== "N/A"
-                ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>`
-                : '';
+    const projectImages = [
+        'https://ecosound-web.de/ecosound_web/sounds/projects/108.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/117.jpeg',
+        'https://ecosound-web.de/ecosound_web/sounds/projects/121.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/105.jpeg',
+        'https://ecosound-web.de/ecosound_web/sounds/projects/114.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/123.jpeg'
+    ];
+    const getImg = (idx) => projectImages[idx % projectImages.length];
+    const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
-            // 确保容器存在后再写入
-            const metaContainer = document.getElementById('sb-meta-container');
-            if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
+    // --- 贡献者生成逻辑 (Mock Data) ---
+    const mockNames = ["A. Schmidt", "B. Cohen", "C. Kim", "D. Mwangi", "E. Rossi", "F. Yamamoto", "G. Dubois", "H. Petrov", "I. Al-Fayed", "J. Smith", "K. Gupta", "L. Wei"];
+    // 项目角色池
+    const projRoles = ["Principal Investigator", "Lead Researcher", "Field Technician", "Data Analyst", "Project Manager", "Ecologist"];
+    // 集合角色池
+    const colRoles = ["Field Recorder", "Annotator", "Reviewer", "Data Curator", "Metadata Specialist", "Logistics"];
 
-            // 3. 渲染 Media (Gallery 样式卡片 - 保持与 Media 页面完全一致的结构)
-            const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
+    // [修改] getContributors 接受一个可选的 leadName
+    const getContributors = (count, type, leadName = null) => {
+        const list = [];
+        const rolePool = type === 'project' ? projRoles : colRoles;
 
-            const mediaHtml = site.media.map((m) => {
-                // 为了保持视觉一致性，这里模拟一些标签和数据
-                const mockTagsHtml = `<span class="media-tag">Bio</span><span class="media-tag">Aves</span>`;
-                const mockTime = "14:30:00";
-                const mockSize = "2.4 MB";
+        for (let i = 0; i < count; i++) {
+            let name, role;
 
-                return `
+            // 第一位如果是 leadName，则使用该名字和最高级别角色
+            if (i === 0 && leadName) {
+                name = leadName;
+                role = rolePool[0]; // PI or Field Recorder
+            } else {
+                // 其他随机
+                name = mockNames[Math.floor(Math.random() * mockNames.length)];
+                role = rolePool[Math.floor(Math.random() * (rolePool.length - 1)) + 1];
+            }
+
+            list.push({
+                name: name,
+                role: role,
+                email: name.toLowerCase().replace('. ', '.').replace(' ', '.') + "@lab.edu",
+                uid: `0000-000${Math.floor(Math.random() * 9)}-${Math.floor(Math.random() * 9999)}-${Math.floor(Math.random() * 9999)}`
+            });
+        }
+        return list;
+    };
+
+    const createCollections = (baseName, count, startImgIdx, creatorName) => {
+        return Array.from({length: count}, (_, i) => {
+            const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`; // 生成集合特定的创建者
+            return {
+                id: `c${i}`,
+                name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
+                active: false,
+                creator: collectionCreator, // 绑定到 metadata
+                date: `2025-0${(i % 9) + 1}-15`,
+                doi: `10.ECO/col.${i + 1}`,
+                sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
+                external_media_url: "#",
+                project_url: "#",
+                description: colGenerators[i % 3](`${baseName}`),
+                image: getImg(startImgIdx + i + 1),
+                stats: {users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), tags: rInt(50, 300), sites: rInt(1, 5)},
+                // [修改] 传递集合创建者给生成函数
+                contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
+            };
+        });
+    };
+
+    const initialProjects = [
+        {
+            id: "p1", name: "Amazon Rainforest Survey", creator: "Dr. Silva", date: "2025-01-10", doi: "10.1234/amz.01", externalUrl: "#",
+            description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"),
+            styleClass: "style-modern", image: getImg(0),
+            collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
+            stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", tags: 4500, sites: 12},
+            // [修改] 使用 Dr. Silva 作为项目 PI
+            contributors: getContributors(4, 'project', "Dr. Silva")
+        },
+        {
+            id: "p2", name: "Marine Ecosystems Study", creator: "Prof. Ocean", date: "2024-11-05", doi: "10.5678/mar.02", externalUrl: "#",
+            description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"),
+            styleClass: "style-academic", image: getImg(1),
+            collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
+            stats: {users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", tags: 2100, sites: 5},
+            // [修改] 使用 Prof. Ocean 作为 PI
+            contributors: getContributors(3, 'project', "Prof. Ocean")
+        },
+        {
+            id: "p3", name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15", doi: "10.9999/sav.03", externalUrl: "#",
+            description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"),
+            styleClass: "style-editorial", image: getImg(2),
+            collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
+            stats: {users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", tags: 1200, sites: 8},
+            // [修改] 使用 K. Mbeki 作为 PI
+            contributors: getContributors(5, 'project', "K. Mbeki")
+        }
+    ];
+    const rawProjects = [...initialProjects];
+
+    let currProjIdx = 0;
+    let currColIdx = 0;
+    let projSearchQuery = "";
+    let colSearchQuery = "";
+
+    // --- MAP VARIABLES & LOGIC (省略部分未变代码以节省空间) ---
+    let map = null;
+    let clusterGroup = null;
+    let polyLayer = null;
+    let currentSites = [];
+    let currentSelectedSiteId = null;
+    let filterState = {realm: "", biome: "", group: ""};
+    const REALM_COLORS = {"Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316"};
+    const TAXONOMY = {
+        "Terrestrial": {"Tropical Forests": ["Lowland Rainforest", "Montane Rainforest"], "Savannas": ["Shrubland", "Grassland"]},
+        "Marine": {"Coastal": ["Coral Reefs", "Seagrass"], "Pelagic": ["Epipelagic", "Mesopelagic"]},
+        "Freshwater": {"Riverine": ["Permanent Rivers", "Seasonal Streams"], "Palustrine": ["Peatlands", "Marshes"]},
+        "Subterranean": {"Cave Systems": ["Limestone Caves", "Lava Tubes"], "Aquifers": ["Shallow", "Deep"]},
+        "Atmospheric": {"Aerial": ["Lower Troposphere", "Upper Canopy"], "Urban Air": ["City Center", "Industrial"]},
+        "Estuarine": {"Brackish Water": ["Mangroves", "Salt Marshes"], "Deltas": ["Active Delta", "Inactive Delta"]},
+        "Cryogenic": {"Ice Sheets": ["Polar", "Glacial"], "Tundra": ["Permafrost", "Alpine"]},
+        "Artificial": {"Urban": ["Parks", "Gardens"], "Agricultural": ["Farms", "Plantations"]},
+        "Introduced": {"Invasive Zones": ["Islands", "Mainland"], "Rehabilitation": ["Forest", "Wetland"]},
+        "Unknown": {"Unclassified": ["Region A", "Region B"], "Pending": ["Survey 1", "Survey 2"]}
+    };
+
+    function getRealmColor(r) {
+        return REALM_COLORS[r] || "#0f172a";
+    }
+
+    function generateSitesForContext(projId, colId) {
+        let seed = projId.charCodeAt(1) + (colId ? colId.charCodeAt(1) * 10 : 0);
+        const count = 50 + (seed % 20);
+        let baseLat = -3.4, baseLng = -62.2;
+        if (projId === "p2") {
+            baseLat = -18.2;
+            baseLng = 147.7;
+        }
+        if (projId === "p3") {
+            baseLat = -2.3;
+            baseLng = 34.8;
+        }
+        const realmKeys = Object.keys(TAXONOMY);
+        return Array.from({length: count}, (_, i) => {
+            let rIndex = Math.floor(Math.random() * realmKeys.length);
+            if (projId === "p1" && Math.random() > 0.3) rIndex = 0;
+            if (projId === "p2" && Math.random() > 0.3) rIndex = 1;
+            const r = realmKeys[rIndex];
+            const bKeys = Object.keys(TAXONOMY[r]);
+            const b = bKeys[Math.floor(Math.random() * bKeys.length)];
+            const gKeys = TAXONOMY[r][b];
+            const g = gKeys[Math.floor(Math.random() * gKeys.length)];
+            const lat = baseLat + (Math.random() - 0.5) * 8;
+            const lng = baseLng + (Math.random() - 0.5) * 8;
+            const vertices = 3 + Math.floor(Math.random() * 5);
+            const baseRadius = 0.03;
+            const poly = [];
+            const rotation = Math.random() * Math.PI;
+            for (let k = 0; k < vertices; k++) {
+                const angle = (k / vertices) * Math.PI * 2 + rotation;
+                const r = baseRadius * (0.8 + Math.random() * 0.4);
+                poly.push([lat + Math.sin(angle) * r, lng + Math.cos(angle) * r]);
+            }
+            return {
+                id: `${projId}-${colId || 'all'}-${i}`,
+                name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`,
+                center: [lat, lng],
+                polygon: poly,
+                realm: r,
+                biome: b,
+                group: g,
+                topography_m: Math.floor(Math.random() * 800),
+                freshwater_depth_m: r === 'Freshwater' ? (Math.random() * 15).toFixed(1) : "N/A",
+                mediaCount: Math.floor(Math.random() * 10) + 2,
+                media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => ({name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.wav`, date: "2025-01-15", duration: "01:00:00"}))
+            };
+        });
+    }
+
+    function loadMapData() {
+        // [Fix] 移除了 if (!map) return; 以便在地图显示前也能生成 Site 数据供 Media 使用
+        const projId = rawProjects[currProjIdx].id;
+        const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null;
+
+        if (!colId) {
+            currentSites = [];
+            rawProjects[currProjIdx].collections.forEach(c => {
+                currentSites = [...currentSites, ...generateSitesForContext(projId, c.id)];
+            });
+        } else {
+            currentSites = generateSitesForContext(projId, colId);
+        }
+
+        // 只有当过滤器 UI 存在时才重置过滤器 (通常一直存在)
+        resetFilters();
+    }
+
+    function initMap() {
+        if (map) return;
+        map = L.map('full-map', {zoomControl: false}).setView([-3.465, -62.215], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+        L.control.zoom({position: 'bottomright'}).addTo(map);
+        polyLayer = L.layerGroup().addTo(map);
+        clusterGroup = L.markerClusterGroup({
+            showCoverageOnHover: false, zoomToBoundsOnClick: true, spiderfyOnMaxZoom: true, maxClusterRadius: 60, iconCreateFunction: function (cluster) {
+                const markers = cluster.getAllChildMarkers();
+                const n = markers.length;
+                const realmCounts = {};
+                let totalMedia = 0;
+                markers.forEach(m => {
+                    const r = m.options.customData.realm;
+                    realmCounts[r] = (realmCounts[r] || 0) + 1;
+                    totalMedia += m.options.customData.mediaCount;
+                });
+                let gradientParts = [];
+                let currentPercentage = 0;
+                Object.keys(realmCounts).sort((a, b) => realmCounts[b] - realmCounts[a]).forEach(r => {
+                    const pct = (realmCounts[r] / n) * 100;
+                    gradientParts.push(`${getRealmColor(r)} ${currentPercentage}% ${currentPercentage + pct}%`);
+                    currentPercentage += pct;
+                });
+                return L.divIcon({
+                    html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`,
+                    className: 'custom-cluster-icon',
+                    iconSize: L.point(50, 50),
+                    iconAnchor: [25, 25]
+                });
+            }
+        });
+        map.addLayer(clusterGroup);
+        loadMapData();
+    }
+
+    function renderMap(shouldZoom = false) {
+        if (!map) return;
+        polyLayer.clearLayers();
+        clusterGroup.clearLayers();
+        let visibleBounds = L.latLngBounds([]);
+        let visibleCount = 0;
+        let isCurrentSiteVisible = false;
+        currentSites.forEach(site => {
+            if (filterState.realm && site.realm !== filterState.realm) return;
+            if (filterState.biome && site.biome !== filterState.biome) return;
+            if (filterState.group && site.group !== filterState.group) return;
+            if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true;
+            visibleCount++;
+            const siteColor = getRealmColor(site.realm);
+            const poly = L.polygon(site.polygon, {color: siteColor, weight: 2, opacity: 0.8, fillColor: siteColor, fillOpacity: 0.15}).addTo(polyLayer);
+            poly.on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                openSidebar(site);
+            });
+            const marker = L.marker(site.center, {
+                customData: {realm: site.realm, mediaCount: site.mediaCount},
+                icon: L.divIcon({html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28]})
+            });
+            marker.on('click', () => openSidebar(site));
+            clusterGroup.addLayer(marker);
+            visibleBounds.extend(site.center);
+        });
+        if (currentSelectedSiteId && !isCurrentSiteVisible) closeSidebar();
+        if ((shouldZoom || visibleCount > 0) && visibleCount > 0) {
+            if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, {duration: 0.8, easeLinearity: 0.5}); else map.fitBounds(visibleBounds, {padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5});
+        }
+    }
+
+    function openSidebar(site) {
+        currentSelectedSiteId = site.id;
+        const color = getRealmColor(site.realm);
+        document.documentElement.style.setProperty('--site-color', color);
+        document.documentElement.style.setProperty('--site-color-tint', color + '12');
+
+        // 1. 填充文本信息
+        document.getElementById('sb-name').textContent = site.name;
+        document.getElementById('val-realm').textContent = site.realm;
+        document.getElementById('val-realm').style.color = color;
+        document.getElementById('val-biome').textContent = site.biome;
+        document.getElementById('val-group').textContent = site.group;
+
+        // 2. 渲染头部元数据 (Topography / Water Depth)
+        const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
+        const depthHtml = site.freshwater_depth_m !== "N/A"
+            ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>`
+            : '';
+
+        // 确保容器存在后再写入
+        const metaContainer = document.getElementById('sb-meta-container');
+        if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
+
+        // 3. 渲染 Media (Gallery 样式卡片 - 保持与 Media 页面完全一致的结构)
+        const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
+
+        const mediaHtml = site.media.map((m) => {
+            // 为了保持视觉一致性，这里模拟一些标签和数据
+            const mockTagsHtml = `<span class="media-tag">Bio</span><span class="media-tag">Aves</span>`;
+            const mockTime = "14:30:00";
+            const mockSize = "2.4 MB";
+
+            return `
                 <div class="media-item-card" onclick="event.stopPropagation();">
                     <div class="spectrogram-cover">
                         <img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec">
@@ -3166,134 +3422,243 @@
                         </div>
                     </div>
                 </div>`;
-            }).join('');
+        }).join('');
 
-            // [修改] 获取容器并重置滚动条位置
-            const mediaListContainer = document.getElementById('media-container');
-            mediaListContainer.innerHTML = mediaHtml;
-            mediaListContainer.scrollTop = 0;
+        // [修改] 获取容器并重置滚动条位置
+        const mediaListContainer = document.getElementById('media-container');
+        mediaListContainer.innerHTML = mediaHtml;
+        mediaListContainer.scrollTop = 0;
 
-            lucide.createIcons();
-            document.getElementById('sidebar').classList.add('active');
-            map.flyTo(site.center, 14, { duration: 0.8, easeLinearity: 0.5 });
+        lucide.createIcons();
+        document.getElementById('sidebar').classList.add('active');
+        map.flyTo(site.center, 14, {duration: 0.8, easeLinearity: 0.5});
+    }
+
+    function closeSidebar() {
+        currentSelectedSiteId = null;
+        document.getElementById('sidebar').classList.remove('active');
+    }
+
+    function openFilterDrawer() {
+        document.getElementById('filter-drawer').classList.add('active');
+        document.getElementById('filter-btn-main').classList.add('active');
+    }
+
+    function closeFilterDrawer() {
+        document.getElementById('filter-drawer').classList.remove('active');
+        document.getElementById('filter-btn-main').classList.remove('active');
+    }
+
+    function toggleSelect(id) {
+        const el = document.getElementById(id);
+        if (el.querySelector('.select-trigger').classList.contains('disabled')) return;
+        const isOpen = el.classList.contains('open');
+        closeSelects();
+        if (!isOpen) el.classList.add('open');
+    }
+
+    function closeSelects() {
+        document.querySelectorAll('.custom-select-wrapper').forEach(d => d.classList.remove('open'));
+    }
+
+    function getUniqueValues(data, key) {
+        const set = new Set();
+        data.forEach(s => {
+            if (s[key]) set.add(s[key]);
+        });
+        return Array.from(set).sort();
+    }
+
+    function initFilters() {
+        renderSelectOptions('realm');
+        updateSelectOptions('biome');
+        updateSelectOptions('group');
+    }
+
+    function renderSelectOptions(targetType) {
+        const list = document.getElementById('opt-' + targetType);
+        const options = getUniqueValues(currentSites, 'realm');
+        let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')"><div class="opt-dot" style="background:#ccc"></div>All Realms</div>`;
+        options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')"><div class="opt-dot" style="background:${getRealmColor(opt)}"></div>${opt}</div>`);
+        list.innerHTML = html;
+    }
+
+    function applyFilter(type, value) {
+        closeSidebar();
+        if (type === 'realm') {
+            filterState.realm = value;
+            filterState.biome = "";
+            filterState.group = "";
+            updateSelectUI('realm', value);
+            updateSelectOptions('biome');
+            updateSelectUI('biome', '');
+            updateSelectOptions('group');
+            updateSelectUI('group', '');
+        } else if (type === 'biome') {
+            filterState.biome = value;
+            filterState.group = "";
+            updateSelectUI('biome', value);
+            updateSelectOptions('group');
+            updateSelectUI('group', '');
+        } else if (type === 'group') {
+            filterState.group = value;
+            updateSelectUI('group', value);
         }
-        function closeSidebar() { currentSelectedSiteId = null; document.getElementById('sidebar').classList.remove('active'); }
-        function openFilterDrawer() { document.getElementById('filter-drawer').classList.add('active'); document.getElementById('filter-btn-main').classList.add('active'); }
-        function closeFilterDrawer() { document.getElementById('filter-drawer').classList.remove('active'); document.getElementById('filter-btn-main').classList.remove('active'); }
-        function toggleSelect(id) { const el = document.getElementById(id); if (el.querySelector('.select-trigger').classList.contains('disabled')) return; const isOpen = el.classList.contains('open'); closeSelects(); if (!isOpen) el.classList.add('open'); }
-        function closeSelects() { document.querySelectorAll('.custom-select-wrapper').forEach(d => d.classList.remove('open')); }
-        function getUniqueValues(data, key) { const set = new Set(); data.forEach(s => { if (s[key]) set.add(s[key]); }); return Array.from(set).sort(); }
-        function initFilters() { renderSelectOptions('realm'); updateSelectOptions('biome'); updateSelectOptions('group'); }
-        function renderSelectOptions(targetType) { const list = document.getElementById('opt-' + targetType); const options = getUniqueValues(currentSites, 'realm'); let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')"><div class="opt-dot" style="background:#ccc"></div>All Realms</div>`; options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')"><div class="opt-dot" style="background:${getRealmColor(opt)}"></div>${opt}</div>`); list.innerHTML = html; }
-        function applyFilter(type, value) { closeSidebar(); if (type === 'realm') { filterState.realm = value; filterState.biome = ""; filterState.group = ""; updateSelectUI('realm', value); updateSelectOptions('biome'); updateSelectUI('biome', ''); updateSelectOptions('group'); updateSelectUI('group', ''); } else if (type === 'biome') { filterState.biome = value; filterState.group = ""; updateSelectUI('biome', value); updateSelectOptions('group'); updateSelectUI('group', ''); } else if (type === 'group') { filterState.group = value; updateSelectUI('group', value); } closeSelects(); renderMap(true); }
-        function updateSelectUI(type, value) {
-            const textEl = document.getElementById('text-' + type);
-            const trigger = type === 'realm' ? document.getElementById('sel-realm').querySelector('.select-trigger') : document.getElementById('trig-' + type);
-            const labelMap = { realm: "All Realms", biome: "All Biomes", group: "All Groups" };
+        closeSelects();
+        renderMap(true);
+    }
 
-            if (!value) {
-                textEl.innerHTML = labelMap[type]; // 使用 innerHTML 以防万一
-                trigger.classList.remove('active');
+    function updateSelectUI(type, value) {
+        const textEl = document.getElementById('text-' + type);
+        const trigger = type === 'realm' ? document.getElementById('sel-realm').querySelector('.select-trigger') : document.getElementById('trig-' + type);
+        const labelMap = {realm: "All Realms", biome: "All Biomes", group: "All Groups"};
+
+        if (!value) {
+            textEl.innerHTML = labelMap[type]; // 使用 innerHTML 以防万一
+            trigger.classList.remove('active');
+        } else {
+            if (type === 'realm') {
+                // 获取对应颜色并添加圆点
+                const color = getRealmColor(value);
+                textEl.innerHTML = `<span class="opt-dot" style="background:${color}; display:inline-block; margin-right:8px;"></span>${value}`;
             } else {
-                if (type === 'realm') {
-                    // 获取对应颜色并添加圆点
-                    const color = getRealmColor(value);
-                    textEl.innerHTML = `<span class="opt-dot" style="background:${color}; display:inline-block; margin-right:8px;"></span>${value}`;
-                } else {
-                    textEl.innerText = value;
-                }
-                trigger.classList.add('active');
+                textEl.innerText = value;
             }
+            trigger.classList.add('active');
         }
-        function updateSelectOptions(targetType) { const list = document.getElementById('opt-' + targetType); const trigger = document.getElementById('trig-' + targetType); let filteredData = currentSites; if (targetType === 'biome') { if (!filterState.realm) { trigger.classList.add('disabled'); return; } filteredData = currentSites.filter(s => s.realm === filterState.realm); } else if (targetType === 'group') { if (!filterState.biome) { trigger.classList.add('disabled'); return; } filteredData = currentSites.filter(s => s.realm === filterState.realm && s.biome === filterState.biome); } trigger.classList.remove('disabled'); const options = getUniqueValues(filteredData, targetType); const labelMap = { biome: "All Biomes", group: "All Groups" }; let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')">${labelMap[targetType]}</div>`; if (options.length === 0) html = `<div style="padding:10px;color:#999;font-size:0.85rem">No options</div>`; else options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')">${opt}</div>`); list.innerHTML = html; }
-        function resetFilters() { closeSidebar(); filterState = { realm: "", biome: "", group: "" }; updateSelectUI('realm', ''); initFilters(); renderMap(true); }
+    }
 
-        // --- MEDIA PAGE LOGIC (DYNAMIC) ---
-        let mediaItems = []; let mediaSearchQuery = "";
-        const taxonTags = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
-        const getRandomTags = () => { const count = rInt(1, 3); const shuffled = taxonTags.sort(() => 0.5 - Math.random()); return shuffled.slice(0, count); };
-
-        // [修改] 年份随机化 (2021 - 2025)
-        const generateMediaForContext = (proj, col) => {
-            const prefix = col ? `COL_${col.id}` : `PROJ_${proj.id}`;
-            const count = col ? rInt(8, 15) : rInt(24, 40);
-            return Array.from({ length: count }, (_, i) => {
-                const h = Math.floor(Math.random() * 24).toString().padStart(2, '0');
-                const m = Math.floor(Math.random() * 60).toString().padStart(2, '0');
-                const s = Math.floor(Math.random() * 60).toString().padStart(2, '0');
-                const year = 2021 + Math.floor(Math.random() * 5); // 2021-2025
-                const month = Math.floor(Math.random() * 12) + 1;
-                const day = Math.floor(Math.random() * 28) + 1;
-                const fullDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-                return {
-                    id: i,
-                    name: `${prefix}_REC_${20250000 + i}.wav`,
-                    date: fullDate,
-                    time: `${h}:${m}:${s}`,
-                    fullDate: `${fullDate} ${h}:${m}`,
-                    duration: `00:${rInt(10, 59)}`,
-                    tags: getRandomTags(),
-                    size: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`,
-                    sr: "48kHz",
-                    spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
-                    creator: ["Dr. Silva", "M. Lewis", "Field Team A", "Auto-Recorder"][rInt(0, 3)],
-                    site: `Site-${rInt(1, 12).toString().padStart(2, '0')}`,
-                    sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0, 3)],
-                    license: ["CC BY 4.0", "CC BY-NC", "CC0"][rInt(0, 2)]
-                };
-            });
-        };
-
-        function updateMediaContext() {
-            const proj = rawProjects[currProjIdx];
-            const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null;
-            mediaItems = generateMediaForContext(proj, col);
-            mediaSearchQuery = "";
-            const searchInput = document.querySelector('.media-search-input');
-            if (searchInput) searchInput.value = "";
-
-            // [新增] 切换上下文时，强制滚动区域回到顶部
-            const scrollArea = document.querySelector('.media-scroll-area');
-            if (scrollArea) scrollArea.scrollTop = 0;
-
-            const container = document.getElementById('media-grid-container');
-            animateBlockSwap(container, () => { renderMedia(); });
-        }
-        function handleSearchMedia(val) { mediaSearchQuery = val.toLowerCase(); renderMedia(); }
-        function renderMedia() {
-            // [新增] 渲染前确保数据字段完整
-            enrichMediaData();
-
-            const container = document.getElementById('media-grid-container');
-            const badge = document.getElementById('media-count-badge');
-            const isGallery = container.classList.contains('view-gallery');
-            const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
-            badge.textContent = `${filteredItems.length} Items`;
-
-            if (filteredItems.length === 0) {
-                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
-                lucide.createIcons();
+    function updateSelectOptions(targetType) {
+        const list = document.getElementById('opt-' + targetType);
+        const trigger = document.getElementById('trig-' + targetType);
+        let filteredData = currentSites;
+        if (targetType === 'biome') {
+            if (!filterState.realm) {
+                trigger.classList.add('disabled');
                 return;
             }
+            filteredData = currentSites.filter(s => s.realm === filterState.realm);
+        } else if (targetType === 'group') {
+            if (!filterState.biome) {
+                trigger.classList.add('disabled');
+                return;
+            }
+            filteredData = currentSites.filter(s => s.realm === filterState.realm && s.biome === filterState.biome);
+        }
+        trigger.classList.remove('disabled');
+        const options = getUniqueValues(filteredData, targetType);
+        const labelMap = {biome: "All Biomes", group: "All Groups"};
+        let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')">${labelMap[targetType]}</div>`;
+        if (options.length === 0) html = `<div style="padding:10px;color:#999;font-size:0.85rem">No options</div>`; else options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')">${opt}</div>`);
+        list.innerHTML = html;
+    }
 
-            let html = '';
-            filteredItems.forEach(item => {
-                const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
+    function resetFilters() {
+        closeSidebar();
+        filterState = {realm: "", biome: "", group: ""};
+        updateSelectUI('realm', '');
+        initFilters();
+        renderMap(true);
+    }
 
-                if (isGallery) {
-                    // [Gallery View] 保持不变
-                    html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div><div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div></div></div></div>`;
-                } else {
-                    // [List View] 调整布局：Topography 和 Water Depth 移至 Site Header
-                    const realmColor = getRealmColor(item.realm);
+    // --- MEDIA PAGE LOGIC (DYNAMIC) ---
+    let mediaItems = [];
+    let mediaSearchQuery = "";
+    const taxonTags = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
+    const getRandomTags = () => {
+        const count = rInt(1, 3);
+        const shuffled = taxonTags.sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+    };
 
-                    // 构建水深显示逻辑 (如果是 N/A 则不显示图标，保持整洁，或者您可以选择显示灰色)
-                    const depthHtml = item.freshwater_depth_m !== 'N/A'
-                        ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>`
-                        : '';
+    // [修改] 年份随机化 (2021 - 2025)
+    const generateMediaForContext = (proj, col) => {
+        const prefix = col ? `COL_${col.id}` : `PROJ_${proj.id}`;
+        const count = col ? rInt(8, 15) : rInt(24, 40);
+        return Array.from({length: count}, (_, i) => {
+            const h = Math.floor(Math.random() * 24).toString().padStart(2, '0');
+            const m = Math.floor(Math.random() * 60).toString().padStart(2, '0');
+            const s = Math.floor(Math.random() * 60).toString().padStart(2, '0');
+            const year = 2021 + Math.floor(Math.random() * 5); // 2021-2025
+            const month = Math.floor(Math.random() * 12) + 1;
+            const day = Math.floor(Math.random() * 28) + 1;
+            const fullDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-                    html += `
+            return {
+                id: i,
+                name: `${prefix}_REC_${20250000 + i}.wav`,
+                date: fullDate,
+                time: `${h}:${m}:${s}`,
+                fullDate: `${fullDate} ${h}:${m}`,
+                duration: `00:${rInt(10, 59)}`,
+                tags: getRandomTags(),
+                size: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`,
+                sr: "48kHz",
+                spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
+                creator: ["Dr. Silva", "M. Lewis", "Field Team A", "Auto-Recorder"][rInt(0, 3)],
+                site: `Site-${rInt(1, 12).toString().padStart(2, '0')}`,
+                sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0, 3)],
+                license: ["CC BY 4.0", "CC BY-NC", "CC0"][rInt(0, 2)]
+            };
+        });
+    };
+
+    function updateMediaContext() {
+        const proj = rawProjects[currProjIdx];
+        const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null;
+        mediaItems = generateMediaForContext(proj, col);
+        mediaSearchQuery = "";
+        const searchInput = document.querySelector('.media-search-input');
+        if (searchInput) searchInput.value = "";
+
+        // [新增] 切换上下文时，强制滚动区域回到顶部
+        const scrollArea = document.querySelector('.media-scroll-area');
+        if (scrollArea) scrollArea.scrollTop = 0;
+
+        const container = document.getElementById('media-grid-container');
+        animateBlockSwap(container, () => {
+            renderMedia();
+        });
+    }
+
+    function handleSearchMedia(val) {
+        mediaSearchQuery = val.toLowerCase();
+        renderMedia();
+    }
+
+    function renderMedia() {
+        // [新增] 渲染前确保数据字段完整
+        enrichMediaData();
+
+        const container = document.getElementById('media-grid-container');
+        const badge = document.getElementById('media-count-badge');
+        const isGallery = container.classList.contains('view-gallery');
+        const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
+        badge.textContent = `${filteredItems.length} Items`;
+
+        if (filteredItems.length === 0) {
+            container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
+            lucide.createIcons();
+            return;
+        }
+
+        let html = '';
+        filteredItems.forEach(item => {
+            const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
+
+            if (isGallery) {
+                // [Gallery View] 保持不变
+                html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div><div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div></div></div></div>`;
+            } else {
+                // [List View] 调整布局：Topography 和 Water Depth 移至 Site Header
+                const realmColor = getRealmColor(item.realm);
+
+                // 构建水深显示逻辑 (如果是 N/A 则不显示图标，保持整洁，或者您可以选择显示灰色)
+                const depthHtml = item.freshwater_depth_m !== 'N/A'
+                    ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>`
+                    : '';
+
+                html += `
                     <div class="media-item-row">
                         <div class="list-spec-container">
                             <img src="${item.spectrogram}" class="list-spec-img" alt="Spec">
@@ -3340,261 +3705,270 @@
                             </div>
                         </div>
                     </div>`;
-                }
-            });
-            container.innerHTML = html;
-            lucide.createIcons();
-        }
-        function switchMediaView(mode, btn) {
-            const container = document.getElementById('media-grid-container');
-            const btns = document.querySelectorAll('.view-btn');
-            const pill = document.getElementById('view-pill');
-
-            if (mode === 'gallery') {
-                container.classList.remove('view-list');
-                container.classList.add('view-gallery');
-            } else {
-                container.classList.remove('view-gallery');
-                container.classList.add('view-list');
             }
+        });
+        container.innerHTML = html;
+        lucide.createIcons();
+    }
 
-            // [新增] 切换视图时，让滚动区域回到顶部
-            const scrollArea = document.querySelector('.media-scroll-area');
-            if (scrollArea) scrollArea.scrollTop = 0;
+    function switchMediaView(mode, btn) {
+        const container = document.getElementById('media-grid-container');
+        const btns = document.querySelectorAll('.view-btn');
+        const pill = document.getElementById('view-pill');
 
-            btns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            pill.style.width = btn.offsetWidth + 'px';
-            pill.style.left = btn.offsetLeft + 'px';
-            renderMedia();
+        if (mode === 'gallery') {
+            container.classList.remove('view-list');
+            container.classList.add('view-gallery');
+        } else {
+            container.classList.remove('view-gallery');
+            container.classList.add('view-list');
         }
 
-        // --- TIMELINE MATRIX LOGIC ---
+        // [新增] 切换视图时，让滚动区域回到顶部
+        const scrollArea = document.querySelector('.media-scroll-area');
+        if (scrollArea) scrollArea.scrollTop = 0;
 
-        let tlConfig = {
-            grouping: 'realm',
-            resolution: 'y',
-            groupLabels: {
-                'all': 'All Data',
-                'realm': 'Realm',
-                'biome': 'Biome',
-                'group': 'Group',
-                'site': 'Site'
-            },
-            resLabels: {
-                'all': 'All Time',
-                'y': 'Year',
-                'yq': 'Year / Quarter',
-                'ym': 'Year / Month',
-                'm': 'Month',
-                'q': 'Quarter',
-                'ymd': 'Year / Month / Day',
-                'md': 'Month / Day',
-                'd': 'Day'
-            }
+        btns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        pill.style.width = btn.offsetWidth + 'px';
+        pill.style.left = btn.offsetLeft + 'px';
+        renderMedia();
+    }
+
+    // --- TIMELINE MATRIX LOGIC ---
+
+    let tlScale = 1; // [新增] 全局缩放比例
+    let tlConfig = {
+        grouping: 'realm',
+        resolution: 'y',
+        groupLabels: {
+            'all': 'All Data',
+            'realm': 'Realm',
+            'biome': 'Biome',
+            'group': 'Group',
+            'site': 'Site'
+        },
+        resLabels: {
+            'all': 'All Time',
+            'y': 'Year',
+            'yq': 'Year / Quarter',
+            'ym': 'Year / Month',
+            'm': 'Month',
+            'q': 'Quarter',
+            'ymd': 'Year / Month / Day',
+            'md': 'Month / Day',
+            'd': 'Day'
+        }
+    };
+
+    function setTimelineGrouping(val) {
+        tlConfig.grouping = val;
+        const labelMap = {
+            'all': 'All Data',
+            'realm': 'Realm',
+            'biome': 'Biome',
+            'group': 'Group',
+            'site': 'Site'
         };
+        document.getElementById('tl-text-group').textContent = labelMap[val] || tlConfig.groupLabels[val];
+        closeSelects();
+        renderTimeline();
+    }
 
-        function setTimelineGrouping(val) {
-            tlConfig.grouping = val;
-            const labelMap = {
-                'all': 'All Data',
-                'realm': 'Realm',
-                'biome': 'Biome',
-                'group': 'Group',
-                'site': 'Site'
-            };
-            document.getElementById('tl-text-group').textContent = labelMap[val] || tlConfig.groupLabels[val];
-            closeSelects();
-            renderTimeline();
+    function setTimelineResolution(val) {
+        tlConfig.resolution = val;
+        document.getElementById('tl-text-time').textContent = tlConfig.resLabels[val];
+        closeSelects();
+        renderTimeline();
+    }
+
+    function getTimeKey(item, res) {
+        const d = new Date(item.date);
+        const y = d.getFullYear();
+        const m = d.getMonth(); // 0-11
+        const mStr = String(m + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const q = Math.ceil((m + 1) / 3);
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        switch (res) {
+            case 'all':
+                return 'Total';
+            case 'y':
+                return `${y}`;
+            case 'yq':
+                return `${y}-Q${q}`; // New
+            case 'ym':
+                return `${y}-${mStr}`;
+            case 'm':
+                return monthNames[m];
+            case 'q':
+                return `Q${q}`; // New
+            case 'ymd':
+                return `${y}-${mStr}-${day}`;
+            case 'md':
+                return `${monthNames[m]} ${day}`;
+            case 'd':
+                return `Day ${day}`;
+            default:
+                return item.date;
+        }
+    }
+
+    // 强关联数据：确保 MediaItems 的 Realm/Biome/Group 与 currentSites 完全一致
+    function enrichMediaData() {
+        if (currentSites.length === 0) return;
+
+        // 1. 建立真实站点池
+        const realSites = currentSites;
+
+        mediaItems.forEach((item, index) => {
+            // 如果该 Item 还没有关联到真实地图数据，或者需要刷新
+            if (!item.enriched || !item.realSiteLinked) {
+                const siteIndex = (item.id + index) % realSites.length;
+                const linkedSite = realSites[siteIndex];
+
+                // 覆写 Item 的属性，使其与 Map 数据一致
+                item.site = linkedSite.name; // 显示名称
+                item.realm = linkedSite.realm;
+                item.biome = linkedSite.biome;
+                item.group = linkedSite.group;
+
+                // [New] 补充详细地理信息
+                item.topography_m = linkedSite.topography_m;
+                item.freshwater_depth_m = linkedSite.freshwater_depth_m;
+
+                // [New] 补充其他模拟元数据
+                if (!item.uploader) item.uploader = ["UserA", "LabAdmin", "J.Doe"][rInt(0, 2)];
+
+                // Medium 逻辑: 如果 Realm 是水相关则为 Water，否则为 Air
+                const waterRealms = ['Marine', 'Freshwater', 'Estuarine', 'Subterranean'];
+                // 注：Subterranean 可能是水也可能是空气，这里简化处理为 Water (或根据具体逻辑调整)
+                if (!item.medium) item.medium = waterRealms.includes(item.realm) ? 'Water' : 'Air';
+
+                if (!item.note) item.note = "Standard survey recording during peak activity.";
+                if (!item.doi) item.doi = "10.5281/zenodo." + rInt(100000, 999999);
+
+                // 确保 Creator 存在
+                if (!item.creator) item.creator = ["Dr. Silva", "M. Lewis", "Field Team A"][rInt(0, 2)];
+
+                item.realSiteLinked = true;
+                item.enriched = true;
+            }
+        });
+    }
+
+    function getRowInfo(item, grouping) {
+        // 返回: { key, label, sub, color }
+        // 颜色优先使用 Realm 颜色
+        const color = getRealmColor(item.realm);
+
+        if (grouping === 'all') {
+            return {key: 'all', label: 'All Data', sub: null, color: '#666'};
+        }
+        if (grouping === 'realm') {
+            return {key: item.realm, label: item.realm, sub: null, color: color};
+        } else if (grouping === 'biome') {
+            return {key: item.biome, label: item.biome, sub: item.realm, color: color};
+        } else if (grouping === 'group') {
+            return {key: item.group, label: item.group, sub: `${item.realm}<br>${item.biome}`, color: color};
+        } else if (grouping === 'site') {
+            return {key: item.site, label: item.site, sub: `${item.realm}<br>${item.biome}<br>${item.group}`, color: color};
+        }
+        return {key: 'Unknown', label: 'Unknown', sub: '', color: '#333'};
+    }
+
+    function renderTimeline() {
+        enrichMediaData(); // 确保数据对齐
+
+        const container = document.getElementById('tl-matrix-container');
+        const badge = document.getElementById('tl-count-badge');
+        const grouping = tlConfig.grouping;
+        const resolution = tlConfig.resolution;
+
+        // 更新 Badge
+        if (badge) badge.textContent = `${mediaItems.length} Items`;
+
+        // 1. 构建矩阵数据
+        const matrix = {};
+        const colKeys = new Set();
+        const rowKeys = new Set();
+        const rowMetaMap = {};
+
+        mediaItems.forEach(item => {
+            const rowInfo = getRowInfo(item, grouping);
+            const cKey = getTimeKey(item, resolution);
+            const rKey = rowInfo.key;
+
+            rowKeys.add(rKey);
+            colKeys.add(cKey);
+
+            if (!rowMetaMap[rKey]) rowMetaMap[rKey] = rowInfo;
+
+            if (!matrix[rKey]) matrix[rKey] = {};
+            if (!matrix[rKey][cKey]) matrix[rKey][cKey] = [];
+            matrix[rKey][cKey].push(item);
+        });
+
+        // 2. 排序
+        const sortedColKeys = Array.from(colKeys).sort();
+        const sortedRowKeys = Array.from(rowKeys).sort();
+
+        if (sortedColKeys.length === 0) {
+            container.innerHTML = `<div style="margin: auto; display:flex; flex-direction:column; align-items:center; color:var(--text-muted); gap:10px;"><i data-lucide="calendar-x" size="32"></i><span>No timeline data available</span></div>`;
+            lucide.createIcons();
+            return;
         }
 
-        function setTimelineResolution(val) {
-            tlConfig.resolution = val;
-            document.getElementById('tl-text-time').textContent = tlConfig.resLabels[val];
-            closeSelects();
-            renderTimeline();
-        }
+        // 3. 构建 Grid
+        // [修改] 去除 1fr，使用纯计算宽度，防止只有几列时被过度拉伸。基准宽度设为 240px 以容纳信息。
+        const gridStyle = `grid-template-columns: 160px repeat(${sortedColKeys.length}, calc(240px * var(--tl-scale, 1))); --tl-scale: ${tlScale};`;
 
-        function getTimeKey(item, res) {
-            const d = new Date(item.date);
-            const y = d.getFullYear();
-            const m = d.getMonth(); // 0-11
-            const mStr = String(m + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const q = Math.ceil((m + 1) / 3);
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        let html = `<div class="tl-matrix-table" style="${gridStyle}">`;
 
-            switch (res) {
-                case 'all': return 'Total';
-                case 'y': return `${y}`;
-                case 'yq': return `${y}-Q${q}`; // New
-                case 'ym': return `${y}-${mStr}`;
-                case 'm': return monthNames[m];
-                case 'q': return `Q${q}`; // New
-                case 'ymd': return `${y}-${mStr}-${day}`;
-                case 'md': return `${monthNames[m]} ${day}`;
-                case 'd': return `Day ${day}`;
-                default: return item.date;
-            }
-        }
+        // Corner Cell (使用 Flexbox 对齐)
+        // 获取显示的 Y 和 X 轴 Label
+        const yLabel = tlConfig.groupLabels[grouping];
+        const xLabel = tlConfig.resLabels[resolution].split(' ')[0];
 
-        // 强关联数据：确保 MediaItems 的 Realm/Biome/Group 与 currentSites 完全一致
-        function enrichMediaData() {
-            if (currentSites.length === 0) return;
-
-            // 1. 建立真实站点池
-            const realSites = currentSites;
-
-            mediaItems.forEach((item, index) => {
-                // 如果该 Item 还没有关联到真实地图数据，或者需要刷新
-                if (!item.enriched || !item.realSiteLinked) {
-                    const siteIndex = (item.id + index) % realSites.length;
-                    const linkedSite = realSites[siteIndex];
-
-                    // 覆写 Item 的属性，使其与 Map 数据一致
-                    item.site = linkedSite.name; // 显示名称
-                    item.realm = linkedSite.realm;
-                    item.biome = linkedSite.biome;
-                    item.group = linkedSite.group;
-
-                    // [New] 补充详细地理信息
-                    item.topography_m = linkedSite.topography_m;
-                    item.freshwater_depth_m = linkedSite.freshwater_depth_m;
-
-                    // [New] 补充其他模拟元数据
-                    if (!item.uploader) item.uploader = ["UserA", "LabAdmin", "J.Doe"][rInt(0, 2)];
-
-                    // Medium 逻辑: 如果 Realm 是水相关则为 Water，否则为 Air
-                    const waterRealms = ['Marine', 'Freshwater', 'Estuarine', 'Subterranean'];
-                    // 注：Subterranean 可能是水也可能是空气，这里简化处理为 Water (或根据具体逻辑调整)
-                    if (!item.medium) item.medium = waterRealms.includes(item.realm) ? 'Water' : 'Air';
-
-                    if (!item.note) item.note = "Standard survey recording during peak activity.";
-                    if (!item.doi) item.doi = "10.5281/zenodo." + rInt(100000, 999999);
-
-                    // 确保 Creator 存在
-                    if (!item.creator) item.creator = ["Dr. Silva", "M. Lewis", "Field Team A"][rInt(0, 2)];
-
-                    item.realSiteLinked = true;
-                    item.enriched = true;
-                }
-            });
-        }
-
-        function getRowInfo(item, grouping) {
-            // 返回: { key, label, sub, color }
-            // 颜色优先使用 Realm 颜色
-            const color = getRealmColor(item.realm);
-
-            if (grouping === 'all') {
-                return { key: 'all', label: 'All Data', sub: null, color: '#666' };
-            }
-            if (grouping === 'realm') {
-                return { key: item.realm, label: item.realm, sub: null, color: color };
-            }
-            else if (grouping === 'biome') {
-                return { key: item.biome, label: item.biome, sub: item.realm, color: color };
-            }
-            else if (grouping === 'group') {
-                return { key: item.group, label: item.group, sub: `${item.realm}<br>${item.biome}`, color: color };
-            }
-            else if (grouping === 'site') {
-                return { key: item.site, label: item.site, sub: `${item.realm}<br>${item.biome}<br>${item.group}`, color: color };
-            }
-            return { key: 'Unknown', label: 'Unknown', sub: '', color: '#333' };
-        }
-
-        function renderTimeline() {
-            enrichMediaData(); // 确保数据对齐
-
-            const container = document.getElementById('tl-matrix-container');
-            const badge = document.getElementById('tl-count-badge');
-            const grouping = tlConfig.grouping;
-            const resolution = tlConfig.resolution;
-
-            // 更新 Badge
-            if (badge) badge.textContent = `${mediaItems.length} Items`;
-
-            // 1. 构建矩阵数据
-            const matrix = {};
-            const colKeys = new Set();
-            const rowKeys = new Set();
-            const rowMetaMap = {};
-
-            mediaItems.forEach(item => {
-                const rowInfo = getRowInfo(item, grouping);
-                const cKey = getTimeKey(item, resolution);
-                const rKey = rowInfo.key;
-
-                rowKeys.add(rKey);
-                colKeys.add(cKey);
-
-                if (!rowMetaMap[rKey]) rowMetaMap[rKey] = rowInfo;
-
-                if (!matrix[rKey]) matrix[rKey] = {};
-                if (!matrix[rKey][cKey]) matrix[rKey][cKey] = [];
-                matrix[rKey][cKey].push(item);
-            });
-
-            // 2. 排序
-            const sortedColKeys = Array.from(colKeys).sort();
-            const sortedRowKeys = Array.from(rowKeys).sort();
-
-            if (sortedColKeys.length === 0) {
-                container.innerHTML = `<div style="margin: auto; display:flex; flex-direction:column; align-items:center; color:var(--text-muted); gap:10px;"><i data-lucide="calendar-x" size="32"></i><span>No timeline data available</span></div>`;
-                lucide.createIcons();
-                return;
-            }
-
-            // 3. 构建 Grid
-            // 第一列宽度设为 240px 以容纳层级信息
-            const gridStyle = `grid-template-columns: 240px repeat(${sortedColKeys.length}, minmax(280px, 1fr));`;
-
-            let html = `<div class="tl-matrix-table" style="${gridStyle}">`;
-
-            // Corner Cell (使用 Flexbox 对齐)
-            // 获取显示的 Y 和 X 轴 Label
-            const yLabel = tlConfig.groupLabels[grouping];
-            const xLabel = tlConfig.resLabels[resolution].split(' ')[0];
-
-            html += `<div class="tl-matrix-corner">
+        html += `<div class="tl-matrix-corner">
                 <span>${yLabel}</span>
                 <span style="font-size:0.7rem; opacity:0.5; margin:2px 0;">\\</span>
                 <span>${xLabel}</span>
             </div>`;
 
-            // Column Headers (Time)
-            sortedColKeys.forEach(dateKey => {
-                html += `<div class="tl-col-header-cell">${dateKey}</div>`;
-            });
+        // Column Headers (Time)
+        sortedColKeys.forEach(dateKey => {
+            html += `<div class="tl-col-header-cell">${dateKey}</div>`;
+        });
 
-            // Data Rows
-            sortedRowKeys.forEach(rowKey => {
-                const meta = rowMetaMap[rowKey];
+        // Data Rows
+        sortedRowKeys.forEach(rowKey => {
+            const meta = rowMetaMap[rowKey];
 
-                // 行头显示逻辑：大标题 + 换行的子标题
-                // 应用颜色到大标题
-                let headerHtml = `<span style="font-size:0.95rem; color:${meta.color};">${meta.label}</span>`;
-                if (meta.sub) {
-                    headerHtml += `<span class="tl-row-meta" style="display:block; margin-top:4px; font-weight:500; opacity:0.7; font-size:0.7rem; line-height:1.4;">${meta.sub}</span>`;
-                }
+            // 行头显示逻辑：大标题 + 换行的子标题
+            // 应用颜色到大标题
+            let headerHtml = `<span style="font-size:0.95rem; color:${meta.color};">${meta.label}</span>`;
+            if (meta.sub) {
+                headerHtml += `<span class="tl-row-meta" style="display:block; margin-top:4px; font-weight:500; opacity:0.7; font-size:0.7rem; line-height:1.4;">${meta.sub}</span>`;
+            }
 
-                // 加上统计数字
-                const totalInRow = sortedColKeys.reduce((acc, cKey) => acc + (matrix[rowKey][cKey] ? matrix[rowKey][cKey].length : 0), 0);
-                headerHtml += `<span class="tl-row-meta" style="margin-top:6px; color:var(--text-muted); font-weight:700;">${totalInRow} recordings</span>`;
+            // 加上统计数字
+            const totalInRow = sortedColKeys.reduce((acc, cKey) => acc + (matrix[rowKey][cKey] ? matrix[rowKey][cKey].length : 0), 0);
+            headerHtml += `<span class="tl-row-meta" style="margin-top:6px; color:var(--text-muted); font-weight:700;">${totalInRow} recordings</span>`;
 
-                html += `<div class="tl-row-header-cell">${headerHtml}</div>`;
+            html += `<div class="tl-row-header-cell">${headerHtml}</div>`;
 
-                // Cells
-                sortedColKeys.forEach(colKey => {
-                    const items = matrix[rowKey][colKey] || [];
-                    html += `<div class="tl-data-cell">`;
+            // Cells
+            sortedColKeys.forEach(colKey => {
+                const items = matrix[rowKey][colKey] || [];
+                html += `<div class="tl-data-cell">`;
 
-                    if (items.length > 0) {
-                        html += `<div class="tl-cell-grid">`;
-                        items.forEach(item => {
-                            const tagsHtml = item.tags.slice(0, 2).map(t => `<span class="media-tag">${t}</span>`).join('');
-                            html += `
+                if (items.length > 0) {
+                    html += `<div class="tl-cell-grid">`;
+                    items.forEach(item => {
+                        const tagsHtml = item.tags.slice(0, 2).map(t => `<span class="media-tag">${t}</span>`).join('');
+                        html += `
                                 <div class="tl-media-card">
                                     <div class="spectrogram-cover">
                                         <img src="${item.spectrogram}" class="spectrogram-img" loading="lazy" alt="Spec">
@@ -3612,98 +3986,272 @@
                                     </div>
                                 </div>
                             `;
-                        });
-                        html += `</div>`;
-                    } else {
-                        html += `<div style="opacity:0.1; text-align:center; font-size:2rem; font-weight:100; margin-top:10px;">·</div>`;
-                    }
+                    });
                     html += `</div>`;
-                });
-            });
-
-            html += `</div>`;
-            container.innerHTML = html;
-            lucide.createIcons();
-        }
-
-        // --- GENERAL LOGIC ---
-        function getIconForStat(key) { const map = { 'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban' }; return map[key] || 'activity'; }
-        function renderSummary() { /* ... same ... */ const statsContainer = document.getElementById('summary-stats-grid'); const contribCard = document.querySelector('.summary-contributors-card'); const contribList = document.getElementById('summary-contributors-list'); const contribTitle = document.getElementById('contrib-title'); let statsObj = {}; let contributorsArr = []; let type = "Project"; let contribBgIconName = 'users'; if (currColIdx === 0) { const proj = rawProjects[currProjIdx]; type = "Project"; statsObj = proj.stats; order = ['Users', 'Collections', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites']; contributorsArr = proj.contributors; contribBgIconName = 'folder-kanban'; } else { const col = rawProjects[currProjIdx].collections[currColIdx - 1]; type = "Collection"; statsObj = col.stats; order = ['Users', 'Projects', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites']; contributorsArr = col.contributors; contribBgIconName = 'library'; } let statsHTML = ''; order.forEach((key) => { let val = statsObj[key.toLowerCase()] || 0; const icon = getIconForStat(key); statsHTML += `<div class="summary-stat-card"><div class="stat-content-left"><div class="summary-stat-val ${key === 'Users' ? 'highlight' : ''}">${val}</div><div class="summary-stat-label">${key}</div></div><i data-lucide="${icon}" class="bg-icon"></i></div>`; }); animateBlockSwap(statsContainer, () => { statsContainer.innerHTML = statsHTML; lucide.createIcons(); }); animateBlockSwap(contribCard, () => { contribTitle.innerHTML = `<i data-lucide="${type === 'Project' ? 'folder-kanban' : 'library'}"></i> ${type} Contributors`; let contribHTML = ''; contributorsArr.forEach((p, index) => { const isCreator = index === 0; contribHTML += `<div class="contrib-item"><div class="contrib-info-block"><span class="contrib-name">${p.name}</span><div class="contrib-sub"><a href="mailto:${p.email}" class="contrib-email"><i data-lucide="mail"></i>${p.email}</a><span class="contrib-divider">•</span><a href="https://orcid.org/${p.uid}" target="_blank" class="orcid-link" title="ORCID: ${p.uid}"><i data-lucide="id-card"></i><span class="cid">${p.uid}</span></a></div></div><span class="contrib-role-text ${isCreator ? 'creator-role' : ''}">${p.role}</span></div>`; }); contribList.innerHTML = contribHTML; const existingIcon = contribCard.querySelector('.bg-icon-contrib'); if (existingIcon) existingIcon.remove(); const bgIcon = document.createElement('i'); bgIcon.setAttribute('data-lucide', contribBgIconName); bgIcon.className = 'bg-icon-contrib'; contribCard.appendChild(bgIcon); lucide.createIcons(); }); }
-        function renderProjectList() { /* ... same ... */ const container = document.getElementById('project-list-container'); const filteredProjs = rawProjects.map((p, i) => ({ ...p, originalIndex: i })).filter(p => p.name.toLowerCase().includes(projSearchQuery.toLowerCase())); if (filteredProjs.length === 0) { container.innerHTML = `<div class="empty-state"><i data-lucide="search-x" size="20"></i>No projects found</div>`; lucide.createIcons(); return; } let html = ''; filteredProjs.forEach(proj => { const isSel = proj.originalIndex === currProjIdx; html += `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectProject(${proj.originalIndex})"><span>${proj.name}</span><i data-lucide="check" class="check-icon"></i></div>`; }); container.innerHTML = html; lucide.createIcons(); }
-        function renderCollectionList() { /* ... same ... */ const container = document.getElementById('collection-list-container'); const rawCols = rawProjects[currProjIdx].collections; const displayList = [{ name: "All Collections" }, ...rawCols]; const filteredCols = displayList.map((c, i) => ({ ...c, originalIndex: i })).filter(c => c.name.toLowerCase().includes(colSearchQuery.toLowerCase())); if (filteredCols.length === 0) { container.innerHTML = `<div class="empty-state"><i data-lucide="search-x" size="20"></i>No collections found</div>`; lucide.createIcons(); return; } let html = ''; filteredCols.forEach(col => { const isSel = col.originalIndex === currColIdx; html += `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectCollection(${col.originalIndex})"><span>${col.name}</span><i data-lucide="check" class="check-icon"></i></div>`; }); container.innerHTML = html; lucide.createIcons(); }
-
-        const animateBlockSwap = async (containerOrId, updateCallback) => { const el = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId; if (!el) { if (updateCallback) updateCallback(); return; } el.classList.add('fading-out'); await new Promise(r => setTimeout(r, 300)); if (updateCallback) updateCallback(); el.classList.remove('fading-out'); };
-        const animateImageSwap = async (img, newSrc) => { if (img.getAttribute('data-current-src') === newSrc) return; img.style.opacity = 0; await new Promise(r => setTimeout(r, 300)); img.src = newSrc; img.setAttribute('data-current-src', newSrc); const handleLoad = () => { img.style.opacity = 1; img.removeEventListener('load', handleLoad); }; img.addEventListener('load', handleLoad); if (img.complete && img.naturalWidth > 0) { handleLoad(); } };
-        const animateTextSwap = async (elementOrId, newContent) => { const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId; if (!el) return; if (el.textContent === newContent) return; el.classList.add('fading-out'); await new Promise(r => setTimeout(r, 300)); el.textContent = newContent; el.classList.remove('fading-out'); };
-
-        function updateContent(project, immediate = false) {
-            const updateLogic = () => {
-                document.getElementById('desc-project-title').textContent = project.name;
-                document.getElementById('meta-creator-name').textContent = project.creator;
-                document.getElementById('meta-date').textContent = project.date;
-                const doiDisplay = project.doi.includes('/') ? project.doi.split('/')[1] : project.doi;
-                document.getElementById('meta-doi-text').textContent = doiDisplay;
-                document.getElementById('meta-link').href = project.externalUrl || "#";
-                const projContainer = document.getElementById('rich-text-container');
-                projContainer.innerHTML = project.description; projContainer.className = "";
-                if (project.styleClass) projContainer.classList.add(project.styleClass);
-            };
-            /* ... same animation logic ... */
-            if (immediate) { updateLogic(); const img = document.getElementById('main-project-image'); img.src = project.image; img.setAttribute('data-current-src', project.image); img.onload = () => { img.style.opacity = 1; }; }
-            else { const headerSection = document.querySelector('.desc-header-section'); const contentArea = document.querySelector('.desc-content-area'); animateBlockSwap(headerSection, null); animateBlockSwap(contentArea, updateLogic); const img = document.getElementById('main-project-image'); animateImageSwap(img, project.image); }
-            const projLabel = document.getElementById('label-project'); if (immediate) projLabel.textContent = project.name; else animateTextSwap(projLabel, project.name);
-            const fullList = [{ name: "All Collections" }, ...project.collections]; const colName = fullList[0] ? fullList[0].name : "Select..."; if (immediate) document.getElementById('label-collection').textContent = colName; else animateTextSwap('label-collection', colName);
-            const refreshAllViews = () => { renderSummary(); updateMediaContext(); if (document.getElementById('tab-timeline').classList.contains('active')) renderTimeline(); loadMapData(); if (document.getElementById('tab-map').classList.contains('active')) renderMap(true); };
-            if (immediate) setTimeout(refreshAllViews, 50); else refreshAllViews(); lucide.createIcons();
-        }
-
-        function selectProject(idx) {
-            // [Bug 修复] 立即隐藏菜单，防止闪烁
-            const dropdown = document.getElementById('dropdown-project');
-            dropdown.style.display = 'none';
-
-            const container = document.getElementById('desc-layout-container');
-            const isCollectionMode = container.classList.contains('mode-collection');
-            if (currProjIdx !== idx) {
-                currProjIdx = idx; currColIdx = 0;
-                projSearchQuery = ""; document.querySelector('#dropdown-project input').value = "";
-                colSearchQuery = ""; document.querySelector('#dropdown-collection input').value = "";
-                if (isCollectionMode) {
-                    const colPanel = document.getElementById('panel-col-desc');
-                    colPanel.style.opacity = 0;
-                    updateContent(rawProjects[currProjIdx], false);
-                    setTimeout(() => { container.classList.remove('mode-collection'); setTimeout(() => { colPanel.style.opacity = 1; }, 800); }, 300);
                 } else {
-                    updateContent(rawProjects[currProjIdx], false);
+                    html += `<div style="opacity:0.1; text-align:center; font-size:2rem; font-weight:100; margin-top:10px;">·</div>`;
                 }
-                renderCollectionList(); renderProjectList();
-            }
-            // 稍后恢复显示属性（此时 opacity 已经是 0，所以用户看不见）
-            setTimeout(() => {
-                dropdown.style.display = '';
-                closeAllMenus();
-            }, 50);
+                html += `</div>`;
+            });
+        });
+
+        html += `</div>`;
+        container.innerHTML = html;
+        lucide.createIcons();
+    }
+
+    // --- GENERAL LOGIC ---
+    function getIconForStat(key) {
+        const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
+        return map[key] || 'activity';
+    }
+
+    function renderSummary() { /* ... same ... */
+        const statsContainer = document.getElementById('summary-stats-grid');
+        const contribCard = document.querySelector('.summary-contributors-card');
+        const contribList = document.getElementById('summary-contributors-list');
+        const contribTitle = document.getElementById('contrib-title');
+        let statsObj = {};
+        let contributorsArr = [];
+        let type = "Project";
+        let contribBgIconName = 'users';
+        if (currColIdx === 0) {
+            const proj = rawProjects[currProjIdx];
+            type = "Project";
+            statsObj = proj.stats;
+            order = ['Users', 'Collections', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites'];
+            contributorsArr = proj.contributors;
+            contribBgIconName = 'folder-kanban';
+        } else {
+            const col = rawProjects[currProjIdx].collections[currColIdx - 1];
+            type = "Collection";
+            statsObj = col.stats;
+            order = ['Users', 'Projects', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites'];
+            contributorsArr = col.contributors;
+            contribBgIconName = 'library';
         }
+        let statsHTML = '';
+        order.forEach((key) => {
+            let val = statsObj[key.toLowerCase()] || 0;
+            const icon = getIconForStat(key);
+            statsHTML += `<div class="summary-stat-card"><div class="stat-content-left"><div class="summary-stat-val ${key === 'Users' ? 'highlight' : ''}">${val}</div><div class="summary-stat-label">${key}</div></div><i data-lucide="${icon}" class="bg-icon"></i></div>`;
+        });
+        animateBlockSwap(statsContainer, () => {
+            statsContainer.innerHTML = statsHTML;
+            lucide.createIcons();
+        });
+        animateBlockSwap(contribCard, () => {
+            contribTitle.innerHTML = `<i data-lucide="${type === 'Project' ? 'folder-kanban' : 'library'}"></i> ${type} Contributors`;
+            let contribHTML = '';
+            contributorsArr.forEach((p, index) => {
+                const isCreator = index === 0;
+                contribHTML += `<div class="contrib-item"><div class="contrib-info-block"><span class="contrib-name">${p.name}</span><div class="contrib-sub"><a href="mailto:${p.email}" class="contrib-email"><i data-lucide="mail"></i>${p.email}</a><span class="contrib-divider">•</span><a href="https://orcid.org/${p.uid}" target="_blank" class="orcid-link" title="ORCID: ${p.uid}"><i data-lucide="id-card"></i><span class="cid">${p.uid}</span></a></div></div><span class="contrib-role-text ${isCreator ? 'creator-role' : ''}">${p.role}</span></div>`;
+            });
+            contribList.innerHTML = contribHTML;
+            const existingIcon = contribCard.querySelector('.bg-icon-contrib');
+            if (existingIcon) existingIcon.remove();
+            const bgIcon = document.createElement('i');
+            bgIcon.setAttribute('data-lucide', contribBgIconName);
+            bgIcon.className = 'bg-icon-contrib';
+            contribCard.appendChild(bgIcon);
+            lucide.createIcons();
+        });
+    }
 
-        function selectCollection(idx) {
-            // [Bug 修复] 立即隐藏菜单
-            const dropdown = document.getElementById('dropdown-collection');
-            dropdown.style.display = 'none';
+    function renderProjectList() { /* ... same ... */
+        const container = document.getElementById('project-list-container');
+        const filteredProjs = rawProjects.map((p, i) => ({...p, originalIndex: i})).filter(p => p.name.toLowerCase().includes(projSearchQuery.toLowerCase()));
+        if (filteredProjs.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i data-lucide="search-x" size="20"></i>No projects found</div>`;
+            lucide.createIcons();
+            return;
+        }
+        let html = '';
+        filteredProjs.forEach(proj => {
+            const isSel = proj.originalIndex === currProjIdx;
+            html += `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectProject(${proj.originalIndex})"><span>${proj.name}</span><i data-lucide="check" class="check-icon"></i></div>`;
+        });
+        container.innerHTML = html;
+        lucide.createIcons();
+    }
 
-            if (currColIdx !== idx) {
-                currColIdx = idx; colSearchQuery = ""; document.querySelector('#dropdown-collection input').value = "";
-                const container = document.getElementById('desc-layout-container');
-                const project = rawProjects[currProjIdx];
-                if (currColIdx === 0) {
+    function renderCollectionList() { /* ... same ... */
+        const container = document.getElementById('collection-list-container');
+        const rawCols = rawProjects[currProjIdx].collections;
+        const displayList = [{name: "All Collections"}, ...rawCols];
+        const filteredCols = displayList.map((c, i) => ({...c, originalIndex: i})).filter(c => c.name.toLowerCase().includes(colSearchQuery.toLowerCase()));
+        if (filteredCols.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i data-lucide="search-x" size="20"></i>No collections found</div>`;
+            lucide.createIcons();
+            return;
+        }
+        let html = '';
+        filteredCols.forEach(col => {
+            const isSel = col.originalIndex === currColIdx;
+            html += `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectCollection(${col.originalIndex})"><span>${col.name}</span><i data-lucide="check" class="check-icon"></i></div>`;
+        });
+        container.innerHTML = html;
+        lucide.createIcons();
+    }
+
+    const animateBlockSwap = async (containerOrId, updateCallback) => {
+        const el = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
+        if (!el) {
+            if (updateCallback) updateCallback();
+            return;
+        }
+        el.classList.add('fading-out');
+        await new Promise(r => setTimeout(r, 300));
+        if (updateCallback) updateCallback();
+        el.classList.remove('fading-out');
+    };
+    const animateImageSwap = async (img, newSrc) => {
+        if (img.getAttribute('data-current-src') === newSrc) return;
+        img.style.opacity = 0;
+        await new Promise(r => setTimeout(r, 300));
+        img.src = newSrc;
+        img.setAttribute('data-current-src', newSrc);
+        const handleLoad = () => {
+            img.style.opacity = 1;
+            img.removeEventListener('load', handleLoad);
+        };
+        img.addEventListener('load', handleLoad);
+        if (img.complete && img.naturalWidth > 0) {
+            handleLoad();
+        }
+    };
+    const animateTextSwap = async (elementOrId, newContent) => {
+        const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
+        if (!el) return;
+        if (el.textContent === newContent) return;
+        el.classList.add('fading-out');
+        await new Promise(r => setTimeout(r, 300));
+        el.textContent = newContent;
+        el.classList.remove('fading-out');
+    };
+
+    function updateContent(project, immediate = false) {
+        const updateLogic = () => {
+            document.getElementById('desc-project-title').textContent = project.name;
+            document.getElementById('meta-creator-name').textContent = project.creator;
+            document.getElementById('meta-date').textContent = project.date;
+            const doiDisplay = project.doi.includes('/') ? project.doi.split('/')[1] : project.doi;
+            document.getElementById('meta-doi-text').textContent = doiDisplay;
+            document.getElementById('meta-link').href = project.externalUrl || "#";
+            const projContainer = document.getElementById('rich-text-container');
+            projContainer.innerHTML = project.description;
+            projContainer.className = "";
+            if (project.styleClass) projContainer.classList.add(project.styleClass);
+        };
+        /* ... same animation logic ... */
+        if (immediate) {
+            updateLogic();
+            const img = document.getElementById('main-project-image');
+            img.src = project.image;
+            img.setAttribute('data-current-src', project.image);
+            img.onload = () => {
+                img.style.opacity = 1;
+            };
+        } else {
+            const headerSection = document.querySelector('.desc-header-section');
+            const contentArea = document.querySelector('.desc-content-area');
+            animateBlockSwap(headerSection, null);
+            animateBlockSwap(contentArea, updateLogic);
+            const img = document.getElementById('main-project-image');
+            animateImageSwap(img, project.image);
+        }
+        const projLabel = document.getElementById('label-project');
+        if (immediate) projLabel.textContent = project.name; else animateTextSwap(projLabel, project.name);
+        const fullList = [{name: "All Collections"}, ...project.collections];
+        const colName = fullList[0] ? fullList[0].name : "Select...";
+        if (immediate) document.getElementById('label-collection').textContent = colName; else animateTextSwap('label-collection', colName);
+        const refreshAllViews = () => {
+            renderSummary();
+            updateMediaContext();
+            if (document.getElementById('tab-timeline').classList.contains('active')) renderTimeline();
+            loadMapData();
+            if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
+        };
+        if (immediate) setTimeout(refreshAllViews, 50); else refreshAllViews();
+        lucide.createIcons();
+    }
+
+    function selectProject(idx) {
+        // [Bug 修复] 立即隐藏菜单，防止闪烁
+        const dropdown = document.getElementById('dropdown-project');
+        dropdown.style.display = 'none';
+
+        const container = document.getElementById('desc-layout-container');
+        const isCollectionMode = container.classList.contains('mode-collection');
+        if (currProjIdx !== idx) {
+            currProjIdx = idx;
+            currColIdx = 0;
+
+            // --- [修改] 仅重置滚动位置，保留当前缩放倍数 ---
+            const tlContainer = document.getElementById('tl-matrix-container');
+            if (tlContainer) {
+                tlContainer.scrollTop = 0;
+                tlContainer.scrollLeft = 0;
+            }
+            // ------------------------------------
+
+            projSearchQuery = "";
+            document.querySelector('#dropdown-project input').value = "";
+            colSearchQuery = "";
+            document.querySelector('#dropdown-collection input').value = "";
+            if (isCollectionMode) {
+                const colPanel = document.getElementById('panel-col-desc');
+                colPanel.style.opacity = 0;
+                updateContent(rawProjects[currProjIdx], false);
+                setTimeout(() => {
                     container.classList.remove('mode-collection');
-                    animateTextSwap('label-collection', "All Collections");
-                } else {
-                    const colData = project.collections[currColIdx - 1];
-                    const colContainer = document.getElementById('panel-col-desc');
-                    const colDoiShort = colData.doi.split('/')[1];
-                    const updateCollectionHTML = () => {
-                        // [优化] 集合视图也使用新的胶囊风格
-                        colContainer.innerHTML = `
+                    setTimeout(() => {
+                        colPanel.style.opacity = 1;
+                    }, 800);
+                }, 300);
+            } else {
+                updateContent(rawProjects[currProjIdx], false);
+            }
+            renderCollectionList();
+            renderProjectList();
+        }
+        // 稍后恢复显示属性（此时 opacity 已经是 0，所以用户看不见）
+        setTimeout(() => {
+            dropdown.style.display = '';
+            closeAllMenus();
+        }, 50);
+    }
+
+    function selectCollection(idx) {
+        // [Bug 修复] 立即隐藏菜单
+        const dropdown = document.getElementById('dropdown-collection');
+        dropdown.style.display = 'none';
+
+        if (currColIdx !== idx) {
+            currColIdx = idx;
+
+            // --- [修改] 仅重置滚动位置，保留当前缩放倍数 ---
+            const tlContainer = document.getElementById('tl-matrix-container');
+            if (tlContainer) {
+                tlContainer.scrollTop = 0;
+                tlContainer.scrollLeft = 0;
+            }
+            // ------------------------------------
+
+            colSearchQuery = "";
+            document.querySelector('#dropdown-collection input').value = "";
+            const container = document.getElementById('desc-layout-container');
+            const project = rawProjects[currProjIdx];
+            if (currColIdx === 0) {
+                container.classList.remove('mode-collection');
+                animateTextSwap('label-collection', "All Collections");
+            } else {
+                const colData = project.collections[currColIdx - 1];
+                const colContainer = document.getElementById('panel-col-desc');
+                const colDoiShort = colData.doi.split('/')[1];
+                const updateCollectionHTML = () => {
+                    // [优化] 集合视图也使用新的胶囊风格
+                    colContainer.innerHTML = `
                             <div class="collection-card block-anim">
                                 <div class="col-header-group">
                                     <div class="col-badge"><i data-lucide="globe-2" size="14"></i> ${colData.sphere}</div>
@@ -3723,44 +4271,214 @@
                                 </div>
                                 <div class="col-rich-text smooth-text">${colData.description}</div>
                             </div>`;
-                        lucide.createIcons();
-                    };
-                    if (!container.classList.contains('mode-collection')) {
-                        updateCollectionHTML();
-                        requestAnimationFrame(() => container.classList.add('mode-collection'));
-                    } else {
-                        const card = colContainer.querySelector('.collection-card');
-                        if (card) animateBlockSwap(card, updateCollectionHTML); else updateCollectionHTML();
-                    }
-                    const newLabel = project.collections[currColIdx - 1].name;
-                    animateTextSwap('label-collection', newLabel);
+                    lucide.createIcons();
+                };
+                if (!container.classList.contains('mode-collection')) {
+                    updateCollectionHTML();
+                    requestAnimationFrame(() => container.classList.add('mode-collection'));
+                } else {
+                    const card = colContainer.querySelector('.collection-card');
+                    if (card) animateBlockSwap(card, updateCollectionHTML); else updateCollectionHTML();
                 }
+                const newLabel = project.collections[currColIdx - 1].name;
+                animateTextSwap('label-collection', newLabel);
+            }
 
-                renderSummary(); updateMediaContext();
-                if (document.getElementById('tab-timeline').classList.contains('active')) renderTimeline();
-                loadMapData(); if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
+            renderSummary();
+            updateMediaContext();
+            if (document.getElementById('tab-timeline').classList.contains('active')) renderTimeline();
+            loadMapData();
+            if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
+            renderCollectionList();
+        }
+        setTimeout(() => {
+            dropdown.style.display = '';
+            closeAllMenus();
+        }, 50);
+    }
+
+    function handleSearchProject(val) {
+        projSearchQuery = val;
+        renderProjectList();
+    }
+
+    function handleSearchCollection(val) {
+        colSearchQuery = val;
+        renderCollectionList();
+    }
+
+    function toggleMenu(id) {
+        const el = document.getElementById(id);
+        const isActive = el.classList.contains('active');
+        closeAllMenus();
+        if (!isActive) {
+            el.classList.add('active');
+            const input = el.querySelector('input');
+            if (input) {
+                input.value = '';
+                setTimeout(() => input.focus(), 50);
+            }
+            if (id === 'project-wrap') {
+                projSearchQuery = "";
+                renderProjectList();
+            } else if (id === 'collection-wrap') {
+                colSearchQuery = "";
                 renderCollectionList();
             }
-            setTimeout(() => {
-                dropdown.style.display = '';
-                closeAllMenus();
-            }, 50);
         }
+    }
 
-        function handleSearchProject(val) { projSearchQuery = val; renderProjectList(); }
-        function handleSearchCollection(val) { colSearchQuery = val; renderCollectionList(); }
-        function toggleMenu(id) { const el = document.getElementById(id); const isActive = el.classList.contains('active'); closeAllMenus(); if (!isActive) { el.classList.add('active'); const input = el.querySelector('input'); if (input) { input.value = ''; setTimeout(() => input.focus(), 50); } if (id === 'project-wrap') { projSearchQuery = ""; renderProjectList(); } else if (id === 'collection-wrap') { colSearchQuery = ""; renderCollectionList(); } } }
-        function closeAllMenus() { document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active')); document.querySelectorAll('.custom-select-wrapper').forEach(d => d.classList.remove('open')); }
-        function toggleUserMenu() { const el = document.getElementById('user-menu'); const isActive = el.classList.contains('active'); closeAllMenus(); if (!isActive) el.classList.add('active'); }
-        document.addEventListener('click', e => { if (e.target.closest('.dropdown-search-box')) return; if (!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) { document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active')); } if (!e.target.closest('.custom-select-wrapper')) closeSelects(); });
-        function movePill(el) { const pill = document.getElementById('nav-sliding-pill'); if (pill && el) { pill.style.width = el.offsetWidth + 'px'; pill.style.left = el.offsetLeft + 'px'; } }
-        function switchTab(btn, tabName) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); btn.classList.add('active'); movePill(btn); document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active')); document.getElementById('tab-' + tabName).classList.add('active'); if (tabName === 'media') { requestAnimationFrame(() => { const activeView = document.querySelector('.view-btn.active'); const pill = document.getElementById('view-pill'); if (activeView && pill) { pill.style.width = activeView.offsetWidth + 'px'; pill.style.left = activeView.offsetLeft + 'px'; } }); } if (tabName === 'timeline') renderTimeline(); if (tabName === 'map') { if (!map) initMap(); setTimeout(() => { map.invalidateSize(); renderMap(false); }, 100); } }
-        window.addEventListener('resize', () => { const active = document.querySelector('.nav-item.active'); if (active) movePill(active); });
-        function toggleTheme() { const current = document.documentElement.getAttribute('data-theme'); const target = current === 'dark' ? 'light' : 'dark'; setTheme(target); }
-        function setTheme(theme) { document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); const iconEl = document.getElementById('theme-icon-el'); if (iconEl) { iconEl.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon'); lucide.createIcons(); } if (currentSelectedSiteId) { const site = currentSites.find(s => s.id === currentSelectedSiteId); if (site) { const color = getRealmColor(site.realm); document.documentElement.style.setProperty('--site-color', color); document.documentElement.style.setProperty('--site-color-tint', color + '12'); } } }
-        function init() { const saved = localStorage.getItem('theme'); const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches; const defaultTheme = saved || (systemDark ? 'dark' : 'light'); setTheme(defaultTheme); renderProjectList(); renderCollectionList(); updateContent(rawProjects[0], true); const activeView = document.querySelector('.view-btn.active'); if (activeView) { const p = document.getElementById('view-pill'); p.style.width = activeView.offsetWidth + 'px'; p.style.left = activeView.offsetLeft + 'px'; } const active = document.querySelector('.nav-item.active'); if (active) movePill(active); }
-        init();
-    </script>
+    function closeAllMenus() {
+        document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.custom-select-wrapper').forEach(d => d.classList.remove('open'));
+    }
+
+    function toggleUserMenu() {
+        const el = document.getElementById('user-menu');
+        const isActive = el.classList.contains('active');
+        closeAllMenus();
+        if (!isActive) el.classList.add('active');
+    }
+
+    document.addEventListener('click', e => {
+        if (e.target.closest('.dropdown-search-box')) return;
+        if (!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) {
+            document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active'));
+        }
+        if (!e.target.closest('.custom-select-wrapper')) closeSelects();
+    });
+
+    function movePill(el) {
+        const pill = document.getElementById('nav-sliding-pill');
+        if (pill && el) {
+            pill.style.width = el.offsetWidth + 'px';
+            pill.style.left = el.offsetLeft + 'px';
+        }
+    }
+
+    function switchTab(btn, tabName) {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        movePill(btn);
+        document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        if (tabName === 'media') {
+            requestAnimationFrame(() => {
+                const activeView = document.querySelector('.view-btn.active');
+                const pill = document.getElementById('view-pill');
+                if (activeView && pill) {
+                    pill.style.width = activeView.offsetWidth + 'px';
+                    pill.style.left = activeView.offsetLeft + 'px';
+                }
+            });
+        }
+        if (tabName === 'timeline') renderTimeline();
+        if (tabName === 'map') {
+            if (!map) initMap();
+            setTimeout(() => {
+                map.invalidateSize();
+                renderMap(false);
+            }, 100);
+        }
+    }
+
+    window.addEventListener('resize', () => {
+        const active = document.querySelector('.nav-item.active');
+        if (active) movePill(active);
+    });
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const target = current === 'dark' ? 'light' : 'dark';
+        setTheme(target);
+    }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        const iconEl = document.getElementById('theme-icon-el');
+        if (iconEl) {
+            iconEl.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+        if (currentSelectedSiteId) {
+            const site = currentSites.find(s => s.id === currentSelectedSiteId);
+            if (site) {
+                const color = getRealmColor(site.realm);
+                document.documentElement.style.setProperty('--site-color', color);
+                document.documentElement.style.setProperty('--site-color-tint', color + '12');
+            }
+        }
+    }
+
+    function init() {
+        const saved = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const defaultTheme = saved || (systemDark ? 'dark' : 'light');
+        setTheme(defaultTheme);
+        renderProjectList();
+        renderCollectionList();
+        updateContent(rawProjects[0], true);
+        const activeView = document.querySelector('.view-btn.active');
+        if (activeView) {
+            const p = document.getElementById('view-pill');
+            p.style.width = activeView.offsetWidth + 'px';
+            p.style.left = activeView.offsetLeft + 'px';
+        }
+        const active = document.querySelector('.nav-item.active');
+        if (active) movePill(active);
+    }
+
+    // --- TIMELINE INTERACTION (DRAG & ZOOM) ---
+    const tlContainer = document.getElementById('tl-matrix-container');
+    let isPanning = false;
+    let startX = 0, startY = 0, initialScrollLeft = 0, initialScrollTop = 0;
+
+    // 鼠标按下：开始拖拽
+    tlContainer.addEventListener('mousedown', (e) => {
+        // [修复] 阻止默认行为（防止选中图片导致拖拽卡顿）
+        e.preventDefault();
+
+        isPanning = true;
+        tlContainer.classList.add('active');
+        startX = e.pageX - tlContainer.offsetLeft;
+        startY = e.pageY - tlContainer.offsetTop;
+        initialScrollLeft = tlContainer.scrollLeft;
+        initialScrollTop = tlContainer.scrollTop;
+    });
+
+    // 鼠标松开/离开：停止拖拽
+    window.addEventListener('mouseup', () => {
+        if (isPanning) {
+            isPanning = false;
+            tlContainer.classList.remove('active');
+        }
+    });
+
+    // 鼠标移动：执行滚动
+    tlContainer.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        e.preventDefault();
+        const x = e.pageX - tlContainer.offsetLeft;
+        const y = e.pageY - tlContainer.offsetTop;
+        tlContainer.scrollLeft = initialScrollLeft - (x - startX);
+        tlContainer.scrollTop = initialScrollTop - (y - startY);
+    });
+
+    // 鼠标滚轮：缩放
+    tlContainer.addEventListener('wheel', (e) => {
+        if (document.getElementById('tab-timeline').classList.contains('active')) {
+            e.preventDefault();
+            const delta = -Math.sign(e.deltaY) * 0.1;
+            tlScale = Math.min(Math.max(0.5, tlScale + delta), 2.0); // 范围 0.5x - 2.0x
+
+            const table = tlContainer.querySelector('.tl-matrix-table');
+            // [修复] 更新 CSS 变量而非 transform，确保 sticky 表头不消失
+            if (table) table.style.setProperty('--tl-scale', tlScale);
+        }
+    }, {passive: false});
+    init();
+</script>
 </body>
 
 </html>
