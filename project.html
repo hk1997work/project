@@ -2006,7 +2006,7 @@
 
         /* [新增] 单独定制时间轴的滚动条样式，使其更易点击但保持美观 */
         .timeline-matrix-viewport::-webkit-scrollbar {
-            width: 10px;  /* 纵向滚动条宽度 */
+            width: 10px; /* 纵向滚动条宽度 */
             height: 10px; /* 横向滚动条高度 */
         }
 
@@ -2148,10 +2148,10 @@
         }
 
         .tl-cell-grid {
-            display: flex;          /* 使用 Flexbox */
+            display: flex; /* 使用 Flexbox */
             flex-direction: column; /* 垂直方向排列 */
             gap: calc(12px * var(--tl-scale, 1)); /* [修改] 间距也跟随缩放 */
-            width: 100%;            /* 占满单元格宽度 */
+            width: 100%; /* 占满单元格宽度 */
         }
 
         /* [新增] 禁止时间轴卡片内的图片交互，防止拖拽 bug */
@@ -2200,6 +2200,17 @@
             filter: sepia(1) hue-rotate(60deg) saturate(3) contrast(1.2);
         }
 
+        /* [新增] 让频谱图上的时间标签跟随缩放 */
+        .tl-media-card .duration-badge {
+            font-size: calc(0.7rem * var(--tl-scale, 1));
+            padding: calc(3px * var(--tl-scale, 1)) calc(8px * var(--tl-scale, 1));
+            border-radius: calc(6px * var(--tl-scale, 1));
+
+            /* 位置偏移也需要缩放，否则缩小后会离边缘太远 */
+            bottom: calc(8px * var(--tl-scale, 1));
+            right: calc(8px * var(--tl-scale, 1));
+        }
+
         .tl-media-card .play-circle {
             width: calc(40px * var(--tl-scale, 1));
             height: calc(40px * var(--tl-scale, 1));
@@ -2215,7 +2226,7 @@
             padding: calc(10px * var(--tl-scale, 1)); /* 动态内边距 */
             display: flex;
             flex-direction: column;
-            gap: calc(6px * var(--tl-scale, 1));      /* 动态间距 */
+            gap: calc(6px * var(--tl-scale, 1)); /* 动态间距 */
         }
 
         .tl-media-card .media-name {
@@ -2234,8 +2245,8 @@
         }
 
         .tl-media-card .tags-row {
-             gap: calc(6px * var(--tl-scale, 1));
-             min-height: calc(20px * var(--tl-scale, 1));
+            gap: calc(6px * var(--tl-scale, 1));
+            min-height: calc(20px * var(--tl-scale, 1));
         }
 
         /* [新增] Timeline Card Meta Row 适配 - 全部动态计算 */
@@ -3955,7 +3966,7 @@
 
             // 加上统计数字
             const totalInRow = sortedColKeys.reduce((acc, cKey) => acc + (matrix[rowKey][cKey] ? matrix[rowKey][cKey].length : 0), 0);
-            headerHtml += `<span class="tl-row-meta" style="margin-top:6px; color:var(--text-muted); font-weight:700;">${totalInRow} recordings</span>`;
+            headerHtml += `<span class="tl-row-meta" style="margin-top:6px; color:var(--text-muted); font-weight:700;">${totalInRow} items</span>`;
 
             html += `<div class="tl-row-header-cell">${headerHtml}</div>`;
 
