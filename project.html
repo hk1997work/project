@@ -2343,15 +2343,16 @@
             transform: translate(-50%, -50%);
             width: 40px;
             height: 40px;
-            background: white;
+            background: var(--bg-surface); /* 修复：改为变量 */
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #1e293b;
+            color: var(--text-main); /* 修复：改为变量 */
             line-height: 1;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: background 0.3s, color 0.3s; /* 新增过渡动画 */
         }
 
         .dc-num {
@@ -2363,7 +2364,7 @@
         .dc-label {
             font-size: 0.5rem;
             font-weight: 700;
-            color: #94a3b8;
+            color: var(--text-muted); /* 修复：改为变量 */
             margin-top: 1px;
         }
 
@@ -2371,16 +2372,16 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: white;
-            border: 4px solid #ccc;
+            background: var(--bg-surface); /* 修复：改为变量 */
+            border: 4px solid var(--border-light); /* 修复：边框颜色也适配暗色 */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
             font-size: 0.75rem;
-            color: #1e293b;
-            transition: transform 0.2s;
+            color: var(--text-main); /* 修复：改为变量 */
+            transition: transform 0.2s, background 0.3s, border-color 0.3s;
         }
 
         .site-marker-pin:hover {
