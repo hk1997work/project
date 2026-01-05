@@ -1247,13 +1247,16 @@
 
         /* Page 5: Footer */
         #page-footer {
-            /* [修改] 跟随主题背景色，亮色为浅灰，暗色为深黑 */
-            background: var(--bg-surface-secondary);
+            /* [修改] 使用 Glass 风格背景，确保在明暗模式下与页面其他元素视觉一致 */
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             color: var(--text-main);
             display: flex;
             align-items: center;
             justify-content: center;
-            border-top: 1px solid var(--border-color); /* 可选：增加顶部分割线 */
+            border-top: 1px solid var(--border-color);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05); /* [新增] 增加向上阴影增加层次感 */
         }
 
         /* [新增] 用于替代 HTML 中被移除的内联布局样式 */
