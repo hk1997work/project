@@ -10,16 +10,11 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        /* =========================================
-           1. CORE STYLES (COPIED FROM PROJECT.HTML)
-           ========================================= */
         :root {
-            /* --- COLOR PALETTE (基础色) --- */
             --brand: #83CD20;
             --brand-tint: rgba(131, 205, 32, 0.08);
             --brand-hover: #72b51b;
 
-            /* --- LIGHT THEME (默认亮色变量) --- */
             --bg-page: radial-gradient(circle at top left, #ffffff, #f8fafc);
             --bg-nav: rgba(255, 255, 255, 0.85);
             --bg-capsule: #f1f5f9;
@@ -36,27 +31,22 @@
             --border-light: #e2e8f0;
             --border-color: rgba(0, 0, 0, 0.06);
 
-            /* --- CARD STYLES --- */
             --glass-bg: rgba(255, 255, 255, 0.9);
             --card-bg: #ffffff;
             --card-border: 1px solid rgba(0, 0, 0, 0.06);
             --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08),
             0 0 0 1px rgba(255, 255, 255, 0.8) inset;
 
-            /* --- DIMENSIONS --- */
             --nav-height: 80px;
             --capsule-height: 48px;
             --radius: 24px;
 
-            /* --- ANIMATION --- */
             --anim-fade-duration: 0.3s;
             --anim-fade-ease: ease-out;
 
-            /* --- FONTS --- */
             --font-sans: 'Inter', sans-serif;
         }
 
-        /* --- DARK THEME OVERRIDES (暗色主题覆盖) --- */
         [data-theme="dark"] {
             --bg-page: radial-gradient(circle at top left, #0f172a, #020617);
             --bg-nav: rgba(15, 23, 42, 0.85);
@@ -81,7 +71,6 @@
             0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         }
 
-        /* --- Leaflet Map Dark Mode (地图暗色滤镜) --- */
         [data-theme="dark"] .leaflet-layer,
         [data-theme="dark"] .leaflet-control-zoom-in,
         [data-theme="dark"] .leaflet-control-zoom-out,
@@ -104,11 +93,6 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        /* =========================================
-           2. NAVIGATION COMPONENTS (COPIED FROM PROJECT.HTML)
-           ========================================= */
-
-        /* 导航栏容器 - Index 专用透明样式 */
         .project-nav-bar {
             position: absolute;
             top: 0;
@@ -116,18 +100,15 @@
             width: 100%;
             height: var(--nav-height);
             z-index: 5000;
-            background: transparent; /* 背景透明 */
-            /* backdrop-filter: blur(25px); */ /* 移除模糊 */
-            /* border-bottom: 1px solid var(--border-color); */ /* 移除边框 */
+            background: transparent;
             display: flex;
             align-items: center;
             padding: 0 30px;
             box-sizing: border-box;
             gap: 16px;
-            pointer-events: none; /* 让鼠标穿透透明区域，不阻挡下方背景交互 */
+            pointer-events: none;
         }
 
-        /* 胶囊样式 (保持 Project 风格) */
         .nav-capsule-box {
             position: relative;
             display: flex;
@@ -144,7 +125,6 @@
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
         }
 
-        /* 恢复左右两侧按钮的可点击性 */
         .nav-left {
             display: flex;
             align-items: center;
@@ -166,7 +146,6 @@
             flex-shrink: 0;
         }
 
-        /* Logo 样式 */
         .nav-logo {
             display: flex;
             align-items: center;
@@ -186,7 +165,6 @@
             box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
         }
 
-        /* [修改] 统一字体样式，与 project.html 保持一致 */
         .nav-logo span,
         .user-name-text {
             font-family: var(--font-sans);
@@ -213,7 +191,6 @@
             color: var(--brand);
         }
 
-        /* 按钮样式 */
         .nav-btn-simple {
             background: transparent;
             border: none;
@@ -235,7 +212,6 @@
             box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
         }
 
-        /* 用户菜单样式 */
         .user-wrapper {
             position: relative;
             height: 100%;
@@ -277,12 +253,10 @@
             box-shadow: none;
         }
 
-        /* .user-name-text 样式已合并到上方与 Logo 统一管理 */
         .user-capsule-btn:hover .user-name-text {
             color: white;
         }
 
-        /* 下拉菜单 */
         .dropdown-menu {
             position: absolute;
             top: calc(100% + 14px);
@@ -344,11 +318,6 @@
             opacity: 0.6;
         }
 
-        /* =========================================
-           3. INDEX PAGE SPECIFIC LAYOUTS
-           ========================================= */
-
-        /* Swiper & Backgrounds */
         .swiper {
             width: 100%;
             height: 100%;
@@ -376,7 +345,6 @@
             transform: scale(1.05);
         }
 
-        /* Page 1: Home */
         #page-home .bg-image {
             background-image: url('https://images.pexels.com/photos/733090/pexels-photo-733090.jpeg?auto=compress&cs=tinysrgb&w=1600');
         }
@@ -438,7 +406,6 @@
             justify-content: center;
         }
 
-        /* Pill Button (Consistent with Project) */
         .pill-btn {
             background: var(--brand);
             color: white;
@@ -461,7 +428,6 @@
             filter: brightness(1.1);
         }
 
-        /* Page 2: Projects */
         .thumbs-container {
             position: absolute;
             bottom: 30px !important;
@@ -513,7 +479,7 @@
         }
 
         .thumbs-button-next, .thumbs-button-prev {
-            color: var(--text-secondary); /* [修改] 适配主题文本色 */
+            color: var(--text-secondary);
             width: 40px;
             height: 40px;
             margin-top: -20px;
@@ -524,19 +490,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--glass-bg); /* [修改] 适配主题背景色 (磨砂玻璃) */
+            background: var(--glass-bg);
             border-radius: 50%;
             transition: 0.3s;
-            border: var(--card-border); /* [修改] 适配主题边框 */
+            border: var(--card-border);
             backdrop-filter: blur(5px);
-            box-shadow: var(--card-shadow); /* [新增] 添加阴影以适应亮色背景 */
+            box-shadow: var(--card-shadow);
         }
 
         .thumbs-button-next:hover, .thumbs-button-prev:hover {
             background: var(--brand);
-            color: white; /* [修改] 悬停统一为白色，与导航栏按钮一致 */
+            color: white;
             border-color: var(--brand);
-            box-shadow: 0 4px 12px rgba(131, 205, 32, 0.4); /* [新增] 悬停光晕 */
+            box-shadow: 0 4px 12px rgba(131, 205, 32, 0.4);
         }
 
         .thumbs-button-next {
@@ -562,7 +528,6 @@
             align-items: flex-start;
         }
 
-        /* Search Bar (Updated to match Project Media Search) */
         .search-bar {
             position: absolute;
             top: 16px;
@@ -570,14 +535,12 @@
             transform: translateX(-50%);
             width: 340px;
             pointer-events: auto;
-
-            /* Visual Style from .media-search-box */
             display: flex;
             align-items: center;
             background: var(--bg-capsule);
             border-radius: 60px;
             padding: 4px 16px;
-            height: 48px; /* Consistent height */
+            height: 48px;
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
             box-sizing: border-box;
             border: 1px solid transparent;
@@ -610,7 +573,7 @@
             width: 100%;
             color: var(--text-secondary);
             font-family: var(--font-sans);
-            font-weight: 700; /* Bold font consistent with project page */
+            font-weight: 700;
         }
 
         .search-bar input::placeholder {
@@ -618,7 +581,6 @@
             font-weight: 500;
         }
 
-        /* --- [新增] 搜索结果下拉框样式 --- */
         .search-results-dropdown {
             position: absolute;
             top: 100%;
@@ -637,7 +599,6 @@
             overflow-y: auto;
         }
 
-        /* 激活状态显示 */
         .search-results-dropdown.active {
             display: block;
         }
@@ -650,7 +611,7 @@
             display: flex;
             flex-direction: column;
             gap: 2px;
-            text-align: left; /* 确保文字左对齐 */
+            text-align: left;
         }
 
         .search-result-item:hover {
@@ -667,7 +628,6 @@
             font-size: 0.75rem;
             color: var(--text-muted);
         }
-        /* -------------------------------- */
 
         .info-card {
             background: var(--glass-bg);
@@ -814,7 +774,6 @@
             box-shadow: 0 4px 10px rgba(131, 205, 32, 0.3);
         }
 
-        /* Page 3: Map */
         #page-map {
             background: var(--bg-page);
             position: relative;
@@ -896,7 +855,6 @@
             transform: translateX(0);
         }
 
-        /* Stagger */
         .stats-container.active .stat-card:nth-child(2) {
             transition-delay: 0.1s;
         }
@@ -961,7 +919,6 @@
             letter-spacing: -1px;
         }
 
-        /* Markers (Restored Original Styles) */
         .premium-marker {
             display: flex;
             align-items: center;
@@ -1008,7 +965,6 @@
             transition: transform 0.18s ease, opacity 0.18s ease;
         }
 
-        /* Only change text color in Dark Mode for visibility */
         [data-theme="dark"] .marker-label {
             color: #f8fafc;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
@@ -1064,7 +1020,6 @@
             }
         }
 
-        /* Page 4: Sponsors */
         #page-sponsors {
             background: var(--bg-page);
             position: relative;
@@ -1200,18 +1155,12 @@
         }
 
         [data-theme="dark"] .sponsor-card img {
-            /* [修改] 移除 brightness(0) 以保留 Logo 细节，不再是纯白剪影 */
-            /* [修改] 提高 opacity 到 0.9，让 Logo 更清晰可见，不再是灰暗的 */
             filter: grayscale(100%) invert(1) opacity(0.9);
         }
 
         [data-theme="dark"] .sponsor-card:hover img {
-            /* 悬停时恢复原色 (注意：如果 Logo 本身是深色的，在深色背景下可能对比度较低，建议保持上面的反色滤镜，或者添加白色背景) */
-            /* 如果您希望悬停时显示彩色原图，请保持 filter: none; */
             filter: none;
             opacity: 1;
-            /* 可选：悬停时稍微增加亮度以适应暗黑背景 */
-            /* filter: brightness(1.2); */
         }
 
         .sponsors-footer-action {
@@ -1223,67 +1172,42 @@
         .join-btn {
             background: var(--brand);
             color: white;
-            padding: 12px 36px; /* [修改] 减小内边距，与第一页按钮一致 */
+            padding: 12px 36px;
             border-radius: 50px;
             font-weight: 700;
-            font-size: 1rem; /* [新增] 明确字体大小 */
+            font-size: 1rem;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 10px; /* [修改] 间距从 12px 调整为 10px */
+            gap: 10px;
             transition: all 0.3s ease;
-            /* [修改] 使用与 pill-btn 完全相同的双层阴影和颜色值 */
             box-shadow: 0 8px 20px rgba(106, 176, 26, 0.3), 0 2px 5px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .join-btn:hover {
-            /* [修改] 增加 scale(1.02) 缩放效果，与第一页按钮一致 */
             transform: translateY(-3px) scale(1.02);
-            /* [修改] 调整悬停阴影颜色以匹配 */
             box-shadow: 0 12px 30px rgba(106, 176, 26, 0.5);
             filter: brightness(1.1);
         }
 
-        /* Page 5: Footer */
         #page-footer {
-            /* [修改] 使用 Glass 风格背景，确保在明暗模式下与页面其他元素视觉一致 */
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            color: var(--text-main);
+            background: #050505;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-top: 1px solid var(--border-color);
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05); /* [新增] 增加向上阴影增加层次感 */
-        }
-
-        /* [新增] 用于替代 HTML 中被移除的内联布局样式 */
-        .footer-inner {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            width: 100%;
         }
 
         .footer-logo {
             font-size: 2rem;
-            color: var(--text-main); /* [修改] 字体颜色自动适配 */
+            color: white;
             margin-bottom: 20px;
             font-weight: 900;
         }
 
         .footer-logo span {
             color: var(--brand);
-        }
-
-        /* [新增] 版权文字样式 */
-        .footer-copyright {
-            color: var(--text-muted);
-            font-size: 0.9rem;
         }
 
         .footer-links {
@@ -1294,7 +1218,7 @@
         }
 
         .footer-links a {
-            color: var(--text-secondary); /* [修改] 链接颜色适配 */
+            color: white;
             text-decoration: none;
             font-weight: 600;
             transition: 0.3s;
@@ -1304,7 +1228,6 @@
             color: var(--brand);
         }
 
-        /* Cookie & Login */
         .cookie-banner {
             position: fixed;
             bottom: 30px;
@@ -1372,15 +1295,15 @@
         }
 
         .cookie-btn-secondary {
-            background: transparent; /* [修改] 改为透明背景，避免色块突兀 */
-            color: var(--text-secondary); /* [修改] 使用次级文本颜色 */
-            border: 1px solid var(--border-color); /* 保持细边框 */
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
         }
 
         .cookie-btn-secondary:hover {
-            background: var(--bg-surface-hover); /* [修改] 悬停时才显示轻微背景 */
-            color: var(--text-main); /* 悬停时文字变亮 */
-            border-color: var(--text-secondary); /* 悬停时边框加深 */
+            background: var(--bg-surface-hover);
+            color: var(--text-main);
+            border-color: var(--text-secondary);
         }
 
         .modal-overlay {
@@ -1482,198 +1405,6 @@
         .leaflet-container, .leaflet-interactive, .leaflet-marker-icon, .leaflet-marker-shadow {
             outline: none !important;
             -webkit-tap-highlight-color: transparent;
-        }
-
-        /* =========================================
-           Page: News & Updates
-           ========================================= */
-        #page-news {
-            position: relative;
-            /* 使用与 Sponsors 类似的背景逻辑，或者自定义背景 */
-            background: var(--bg-page);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        /* 复用 Sponsors 的极光背景动画，或者新建 */
-        #page-news .aurora-blob {
-            background: rgba(131, 205, 32, 0.1);
-            width: 800px;
-            height: 800px;
-        }
-
-        .news-wrapper {
-            width: 100%;
-            max-width: 1200px;
-            padding: 0 40px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100%;
-            z-index: 10;
-        }
-
-        .news-header {
-            margin-bottom: 40px;
-            text-align: left;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .news-header .main-title {
-            font-size: 3rem;
-            font-weight: 900;
-            margin: 0;
-            color: var(--text-main);
-            line-height: 1.1;
-        }
-
-        .news-header .main-title span {
-            color: var(--brand);
-        }
-
-        .view-all-link {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-            padding-bottom: 5px;
-        }
-
-        .view-all-link:hover {
-            color: var(--brand);
-            gap: 12px;
-        }
-
-        /* News Grid */
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-        }
-
-        .news-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: var(--card-border);
-            border-radius: 24px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: var(--card-shadow);
-            height: 420px; /* 固定高度确保整齐 */
-            cursor: pointer;
-            position: relative;
-        }
-
-        .news-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15);
-            border-color: var(--brand);
-        }
-
-        [data-theme="dark"] .news-card:hover {
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
-        }
-
-        .news-img-box {
-            width: 100%;
-            height: 200px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .news-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s ease;
-        }
-
-        .news-card:hover .news-img {
-            transform: scale(1.1);
-        }
-
-        .news-date-badge {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .news-content {
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-
-        .news-tag {
-            color: var(--brand);
-            font-size: 0.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .news-title {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--text-main);
-            margin: 0 0 12px 0;
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .news-excerpt {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            margin-bottom: auto; /* Push footer down */
-        }
-
-        .news-footer {
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-main);
-            gap: 6px;
-            opacity: 0.6;
-            transition: 0.3s;
-        }
-
-        .news-card:hover .news-footer {
-            opacity: 1;
-            color: var(--brand);
-            gap: 10px;
         }
     </style>
 </head>
@@ -1874,9 +1605,9 @@
         </div>
 
         <div class="swiper-slide" id="page-footer" style="height: 36vh !important;">
-            <div class="footer-inner">
-                <div class="footer-logo"><span>ecoSignal</span></div>
-                <p class="footer-copyright">&copy; 2025 ecoSignal. All rights reserved.</p>
+            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; background:#050505; color:rgba(255,255,255,0.5);">
+                <div style="font-size:2rem; font-weight:900; color:white; margin-bottom:20px;"><span style="color: var(--brand);">ecoSignal</span></div>
+                <p>&copy; 2025 ecoSignal. All rights reserved.</p>
             </div>
         </div>
     </div>
@@ -1888,7 +1619,6 @@
 <script>
     lucide.createIcons();
 
-    // --- 1. THEME LOGIC ---
     function toggleTheme() {
         const current = document.documentElement.getAttribute('data-theme');
         const target = current === 'dark' ? 'light' : 'dark';
@@ -1906,16 +1636,13 @@
         }
     }
 
-    // Initialize Theme (Default to Dark for original look, unless Light saved)
     (function initTheme() {
         const saved = localStorage.getItem('theme');
         const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        // PREFER DARK IF NO PREFERENCE
         const defaultTheme = saved || (systemDark ? 'dark' : 'dark');
         setTheme(defaultTheme);
     })();
 
-    // --- 2. AUTH LOGIC ---
     const loginModal = document.getElementById('login-modal');
     const closeBtn = document.getElementById('close-modal-btn');
     const loginForm = document.getElementById('login-form-el');
@@ -1935,26 +1662,21 @@
         if (e.target === loginModal) closeModal();
     });
 
-    // Handle Login Submit
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const username = document.getElementById('username-input').value;
 
-            // 1. Close Modal
             closeModal();
 
-            // 2. Switch UI
             if (guestNavBtn) guestNavBtn.style.display = 'none';
             if (userMenuWrapper) userMenuWrapper.style.display = 'block';
 
-            // 3. Update Name
             const displayUser = document.getElementById('display-username');
             if (displayUser) displayUser.textContent = username || "Liudilong";
         });
     }
 
-    // Toggle User Dropdown
     function toggleUserMenu() {
         if (!userMenuWrapper) return;
         const isActive = userMenuWrapper.classList.contains('active');
@@ -1962,14 +1684,12 @@
         if (!isActive) userMenuWrapper.classList.add('active');
     }
 
-    // Click outside to close menu
     document.addEventListener('click', (e) => {
         if (userMenuWrapper && !e.target.closest('.user-wrapper')) {
             userMenuWrapper.classList.remove('active');
         }
     });
 
-    // Handle Logout
     function handleLogout(e) {
         e.preventDefault();
         if (userMenuWrapper) {
@@ -1979,7 +1699,6 @@
         if (guestNavBtn) guestNavBtn.style.display = 'flex';
     }
 
-    // --- EXISTING LOGIC ---
     const cookieBanner = document.getElementById('cookie-banner');
     const acceptBtn = document.getElementById('cookie-accept');
     const rejectBtn = document.getElementById('cookie-reject');
@@ -1993,14 +1712,6 @@
     }
 
     function checkCookieConsent() {
-        // [修改] 强制每次刷新页面都显示 Cookie 弹窗，忽略之前的选择
-        // let hasConsent = false;
-        // try {
-        //     if (localStorage.getItem('cookieConsent')) hasConsent = true;
-        // } catch (e) {
-        // }
-
-        // 移除判断，直接显示
         setTimeout(() => {
             cookieBanner.classList.add('active');
         }, 1500);
@@ -2217,28 +1928,23 @@
     });
     setSelectedMarker(currentSelectedNode);
 
-    // --- [新增] 项目搜索与跳转逻辑 ---
     const searchInput = document.getElementById('project-search-input');
     const searchDropdown = document.getElementById('search-results');
 
     if (searchInput && searchDropdown) {
-        // 监听输入
         searchInput.addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase().trim();
 
-            // 如果输入为空，隐藏下拉框
             if (!val) {
                 searchDropdown.classList.remove('active');
                 return;
             }
 
-            // 根据 projectData 过滤 (匹配标题或作者)
             const matches = projectData.filter(p =>
                 p.title.toLowerCase().includes(val) ||
                 p.author.toLowerCase().includes(val)
             );
 
-            // 渲染结果
             if (matches.length > 0) {
                 searchDropdown.innerHTML = matches.map(p => `
                     <div class="search-result-item" onclick="window.location.href='project.html'">
@@ -2253,21 +1959,18 @@
             }
         });
 
-        // 点击外部关闭下拉框
         document.addEventListener('click', (e) => {
             if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
                 searchDropdown.classList.remove('active');
             }
         });
 
-        // 聚焦输入框时如果已有内容则显示
         searchInput.addEventListener('focus', () => {
-             if (searchInput.value.trim() && searchDropdown.children.length > 0) {
-                 searchDropdown.classList.add('active');
-             }
+            if (searchInput.value.trim() && searchDropdown.children.length > 0) {
+                searchDropdown.classList.add('active');
+            }
         });
     }
-    // --------------------------------
 </script>
 </body>
 </html>
