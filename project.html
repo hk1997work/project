@@ -2612,35 +2612,34 @@
 
         /* 1. 基础容器：必须允许溢出 */
         .vis-item {
-            border: none; /* 边框由内部盒子处理 */
-            background: transparent; /* 背景透明 */
+            border: none;
+            background: transparent;
             box-shadow: none;
-            overflow: visible; /* [关键] 允许内容超出格子 */
+            overflow: visible; /* 关键：允许溢出 */
             z-index: 10;
         }
 
         .vis-item.vis-selected {
-            z-index: 200 !important; /* 选中时层级最高 */
+            z-index: 200 !important;
         }
 
         .vis-item:hover {
-            z-index: 100 !important; /* 悬停时层级较高 */
+            z-index: 100 !important;
         }
 
         .vis-item .vis-item-content {
             padding: 0;
-            overflow: visible; /* 必须允许溢出 */
+            overflow: visible;
             width: 100%;
         }
 
-        /* 2. 实际的内容盒子 */
+        /* 2. 内容盒子：默认截断 */
         .timeline-item-box {
             display: block;
             width: 100%;
             padding: 4px 8px;
             border-radius: 6px;
 
-            /* 默认样式：浅色背景，截断文字 */
             background-color: rgba(131, 205, 32, 0.15);
             border: 1px solid var(--brand);
             color: var(--text-main);
@@ -2652,21 +2651,20 @@
             text-overflow: ellipsis;
 
             transition: min-width 0.2s, background-color 0.2s, color 0.2s, box-shadow 0.2s;
-            position: relative; /* 相对定位 */
+            position: relative;
         }
 
-        /* 3. 悬停或选中状态：展开显示 */
+        /* 3. 悬停/选中：绝对定位展开 */
         .vis-item:hover .timeline-item-box,
         .vis-item.vis-selected .timeline-item-box {
-            position: absolute; /* 脱离文档流，向右展开 */
+            position: absolute;
             top: 0;
             left: 0;
 
-            width: auto;        /* 宽度自动适应内容 */
-            min-width: 100%;    /* 至少和原来一样宽 */
-            max-width: 300px;   /* 防止太长，可设上限 */
+            width: auto;
+            min-width: 100%;
+            max-width: 300px;
 
-            /* 样式变化：实心高亮 */
             background-color: var(--brand);
             border-color: var(--brand-hover);
             color: white;
@@ -2675,33 +2673,23 @@
         }
 
         /* 暗色模式适配 */
+        [data-theme="dark"] .vis-timeline {
+            border-color: var(--border-color);
+        }
+        [data-theme="dark"] .vis-time-axis .vis-text {
+            color: var(--text-muted);
+        }
+
         [data-theme="dark"] .timeline-item-box {
             background-color: rgba(131, 205, 32, 0.15);
             border-color: var(--brand);
             color: #e2e8f0;
         }
 
-        /* 暗色模式下的悬停/选中 */
         [data-theme="dark"] .vis-item:hover .timeline-item-box,
         [data-theme="dark"] .vis-item.vis-selected .timeline-item-box {
             background-color: var(--brand);
             color: white;
-        }
-
-        /* Dark Mode Overrides for Vis */
-        [data-theme="dark"] .vis-timeline {
-            border-color: var(--border-color);
-        }
-        [data-theme="dark"] .vis-item {
-            background-color: #1e293b; /* surface color */
-            border-color: rgba(255,255,255,0.1);
-        }
-        [data-theme="dark"] .vis-item.vis-selected {
-            background-color: #334155;
-            border-color: var(--brand);
-        }
-        [data-theme="dark"] .vis-time-axis .vis-text {
-            color: var(--text-muted);
         }
 
         /* --- DATA TAB STYLES --- */
@@ -3366,22 +3354,7 @@
         </div>
     </div>
 </div>
-<div class="crud-modal-overlay" id="media-detail-overlay">
-    <div class="crud-modal" style="max-width: 400px;">
-        <div class="card-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-            <div class="card-title" id="md-title" style="font-size:1.1rem;"><i data-lucide="file-audio"></i> Details</div>
-            <button class="nav-btn-simple" onclick="closeMediaModal()" style="width:32px; height:32px;"><i data-lucide="x" size="18"></i></button>
-        </div>
-        <div class="card-body" style="padding: 24px; display:flex; flex-direction:column; gap:16px;" id="md-content">
-        </div>
-        <div class="modal-footer" style="padding: 16px 24px; background: var(--bg-surface-secondary);">
-            <a href="#" class="btn-secondary" style="text-decoration:none; font-size:0.85rem; padding:8px 16px;" onclick="closeMediaModal()">Close</a>
-            <a href="#" id="md-download-btn" class="btn-primary" style="text-decoration:none; font-size:0.85rem; padding:8px 20px; display:flex; align-items:center; gap:6px;">
-                <i data-lucide="download" size="14"></i> Download
-            </a>
-        </div>
-    </div>
-</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
@@ -4154,46 +4127,23 @@
         const container = document.getElementById('visualization');
         if (!container) return;
 
-        // 1. 准备 Groups (分组)
-        // 收集所有唯一的分组值
+        // 1. 准备 Groups
         const groupsSet = new Set();
         mediaItems.forEach(item => {
             if (item[tlGrouping]) groupsSet.add(item[tlGrouping]);
         });
 
-        const groupsData = Array.from(groupsSet).sort().map((gName, index) => {
-            return {
-                id: gName,
-                content: gName,
-                // 可选：给不同组加不同的背景色样式
-                // className: 'vis-group-' + index
-            };
-        });
+        const groupsData = Array.from(groupsSet).sort().map((gName) => ({
+            id: gName,
+            content: gName
+        }));
         const groups = new vis.DataSet(groupsData);
 
-        // 2. 准备 Items (数据项)
+        // 2. 准备 Items (仅文本)
         const itemsData = mediaItems.map(item => {
-            const icon = item.medium === 'Water' ? 'waves' : 'wind';
+            // 纯文本，放入 div 供 CSS 控制溢出
             const contentHtml = `
-                <div class="timeline-item-box">
-                    <span class="timeline-item-icon"><i data-lucide="play-circle" width="14" height="14"></i></span>
-                    <span style="font-weight:600;">${item.name.split('_').pop()}</span>
-                </div>
-            `;
-
-            // [修改] 构建更漂亮的 HTML Tooltip
-            // 注意：这里的 HTML 只用于悬停展示，不可交互（因为跟随鼠标）。
-            // 点击交互由 select 事件触发模态框处理。
-            const tooltipHtml = `
-                <div style="padding:12px; min-width:200px;">
-                    <div style="font-weight:800; margin-bottom:4px; color:var(--brand);">${item.name}</div>
-                    <div style="font-size:0.8rem; display:grid; gap:4px; color:var(--text-secondary);">
-                        <div><strong>Date:</strong> ${item.date} ${item.time}</div>
-                        <div><strong>Site:</strong> ${item.site}</div>
-                        <div><strong>Sensor:</strong> ${item.sensor}</div>
-                        <div style="margin-top:6px; font-size:0.75rem; color:var(--text-muted);">Click for details & links</div>
-                    </div>
-                </div>
+                <div class="timeline-item-box">${item.name}</div>
             `;
 
             return {
@@ -4202,13 +4152,13 @@
                 start: item.start,
                 end: item.end,
                 content: contentHtml,
-                title: tooltipHtml, // 使用 HTML Tooltip
+                // 移除了 title 和 type: 'range'
                 type: 'range'
             };
         });
         const items = new vis.DataSet(itemsData);
 
-// 3. 配置项
+        // 3. 配置项
         const options = {
             groupOrder: 'content',
             orientation: 'top',
@@ -4222,12 +4172,7 @@
             zoomKey: 'ctrlKey',
             horizontalScroll: true,
 
-            // [新增] Tooltip 配置：允许 HTML，稍微延迟让用户体验更平滑
-            tooltip: {
-                followMouse: true,
-                overflowMethod: 'cap',
-                delay: 200
-            },
+            // 移除了 Tooltip 配置
 
             cluster: {
                 maxItems: 1,
@@ -4241,33 +4186,21 @@
             }
         };
 
-        // 4. 销毁旧实例并创建新实例
+        // 4. 创建实例
         if (timelineInstance) {
             timelineInstance.destroy();
         }
 
         timelineInstance = new vis.Timeline(container, items, groups, options);
 
-        // [新增] 点击事件监听：弹出详情页
-        timelineInstance.on('select', function (props) {
-            if (props.items.length > 0) {
-                const itemId = props.items[0];
-                const itemData = mediaItems.find(i => i.id === itemId);
-                if (itemData) {
-                    openMediaDetailModal(itemData);
-                }
-            }
-        });
+        // 移除了 select 事件监听 (不再弹窗)
 
         timelineInstance.on('changed', () => {
             lucide.createIcons();
         });
 
-        // 初始适配
         setTimeout(() => {
             lucide.createIcons();
-            // 如果数据跨度大，初始显示所有
-            // timelineInstance.fit();
         }, 100);
     }
 
@@ -4680,47 +4613,7 @@
             }
         }
     }
-    // --- Media Detail Modal Logic ---
-    function openMediaDetailModal(item) {
-        const overlay = document.getElementById('media-detail-overlay');
-        const content = document.getElementById('md-content');
-        const title = document.getElementById('md-title');
 
-        // 设置标题
-        title.innerHTML = `<i data-lucide="file-audio" style="color:var(--brand);"></i> ${item.name}`;
-
-        // [关键] 构建详情内容，包含可点击的链接
-        content.innerHTML = `
-            <div class="spectrogram-cover" style="border-radius:12px; border:1px solid var(--border-color);">
-                <img src="${item.spectrogram}" class="spectrogram-img" style="height:120px; width:100%; object-fit:cover; opacity:0.8;">
-            </div>
-
-            <div class="data-grid" style="grid-template-columns: 1fr 1fr; display:grid; gap:12px;">
-                <div class="rd-item"><span class="rd-label">Date</span><span class="rd-val">${item.date}</span></div>
-                <div class="rd-item"><span class="rd-label">Time</span><span class="rd-val">${item.time}</span></div>
-                <div class="rd-item"><span class="rd-label">Duration</span><span class="rd-val">${item.duration}</span></div>
-                <div class="rd-item"><span class="rd-label">Size</span><span class="rd-val">${item.size}</span></div>
-            </div>
-
-            <div style="padding-top:12px; border-top:1px dashed var(--border-color);">
-                <div class="rd-label" style="margin-bottom:8px;">External Links</div>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <a href="#" class="contrib-email" onclick="alert('Open Project Page')"><i data-lucide="external-link" size="14"></i> View Project Source</a>
-                    <a href="#" class="contrib-email" onclick="alert('Open DOI')"><i data-lucide="bookmark" size="14"></i> View DOI Record</a>
-                </div>
-            </div>
-        `;
-
-        // 更新下载按钮链接（模拟）
-        document.getElementById('md-download-btn').href = "#download-" + item.id;
-
-        lucide.createIcons();
-        overlay.classList.add('active');
-    }
-
-    function closeMediaModal() {
-        document.getElementById('media-detail-overlay').classList.remove('active');
-    }
     function init() {
         const saved = localStorage.getItem('theme');
         const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
