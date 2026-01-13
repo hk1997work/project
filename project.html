@@ -12,6 +12,11 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-data/7.1.9/vis-data.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.css">
+
     <style>
         :root {
             /* --- COLOR PALETTE (基础色) --- */
@@ -1983,169 +1988,6 @@
             z-index: 100;
         }
 
-        .timeline-matrix-viewport {
-            flex: 1;
-
-            /* [修改] 开启原生滚动条，sticky 定位依赖于此 */
-            overflow: auto;
-
-            background: var(--bg-surface-secondary);
-            position: relative;
-            display: block;
-            cursor: grab;
-
-            /* [新增] 优化滚动条体验，防止内容抖动 */
-            scrollbar-gutter: stable;
-        }
-
-        /* [新增] 单独定制时间轴的滚动条样式，使其更易点击但保持美观 */
-        .timeline-matrix-viewport::-webkit-scrollbar {
-            width: 10px; /* 纵向滚动条宽度 */
-            height: 10px; /* 横向滚动条高度 */
-        }
-
-        .timeline-matrix-viewport::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.15); /*稍微加深颜色，提高可见度*/
-            border: 2px solid transparent;
-            background-clip: content-box;
-            border-radius: 10px;
-        }
-
-        .timeline-matrix-viewport::-webkit-scrollbar-thumb:hover {
-            background-color: var(--brand); /* 悬停变色 */
-        }
-
-        .timeline-matrix-viewport::-webkit-scrollbar-corner {
-            background: transparent;
-        }
-
-        .timeline-matrix-viewport.active {
-            cursor: grabbing;
-        }
-
-        .tl-matrix-table {
-            display: grid;
-            width: max-content;
-            min-width: 100%;
-            min-height: 100%;
-        }
-
-        /* Sticky Headers */
-        .tl-matrix-corner {
-            position: sticky;
-            top: 0;
-            left: 0;
-            z-index: 30;
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--brand);
-            border-right: 1px solid var(--brand);
-
-            width: 160px;
-            min-width: 160px;
-            box-sizing: border-box;
-
-            /* [修改] 改回固定大小，与 .tl-col-header-cell 保持一致 */
-            padding: 6px 10px;
-            font-size: 0.85rem;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-weight: 800;
-            color: var(--brand);
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
-            line-height: 1.3;
-            text-align: center;
-        }
-
-        .tl-col-header-cell {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--brand);
-            border-right: 1px solid var(--border-color);
-
-            /* [修改] 改回固定大小，不再随缩放变化 */
-            padding: 6px 10px;
-            font-size: 0.85rem;
-
-            font-weight: 700;
-            color: var(--text-main);
-            text-align: center;
-
-            box-sizing: border-box;
-            width: 100%;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        .tl-row-header-cell {
-            position: sticky;
-            left: 0;
-            z-index: 10;
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--border-color);
-            border-right: 1px solid var(--brand);
-
-            /* [修复] 强制锁定宽度为 160px，严丝合缝对齐 Corner 和 Grid */
-            width: 160px;
-            min-width: 160px;
-            max-width: 160px;
-            box-sizing: border-box;
-
-            /* 内容样式 */
-            padding: 10px 12px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* 垂直居中 */
-            align-items: flex-start;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.02);
-            line-height: 1.3;
-
-            /* 允许长文本换行，防止撑开 */
-            overflow: hidden;
-            word-wrap: break-word;
-        }
-
-        .tl-row-meta {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        .tl-data-cell {
-            border-bottom: 1px solid var(--border-color);
-            border-right: 1px dashed var(--border-color);
-
-            /* [关键修复] 统一盒模型，确保边框位置与表头严格对齐 */
-            box-sizing: border-box;
-
-            /* 建议：让内边距也随缩放微调，或者保持固定均可，这里保持固定 */
-            padding: 16px;
-            background: transparent;
-            vertical-align: top;
-        }
-
-        .tl-data-cell:hover {
-            background: rgba(131, 205, 32, 0.03);
-        }
-
-        /* [修改] 布局改由 JS 动态生成 Grid 控制，以支持多列自动扩展 */
-        .tl-cell-grid {
-            width: 100%;
-        }
-
         /* [新增] 禁止时间轴卡片内的图片交互，防止拖拽 bug */
         .tl-media-card img {
             pointer-events: none;
@@ -2731,6 +2573,135 @@
             height: 10px;
             border-radius: 50%;
             flex-shrink: 0;
+        }
+
+        /* --- VIS TIMELINE CUSTOM STYLES --- */
+        .vis-timeline {
+            border: none;
+            font-family: var(--font-sans);
+            background: transparent;
+        }
+
+        /* Time Axis */
+        .vis-time-axis .vis-text {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            padding-top: 4px;
+        }
+        .vis-time-axis .vis-grid.vis-minor {
+            border-color: var(--border-color);
+        }
+        .vis-time-axis .vis-grid.vis-major {
+            border-color: var(--border-color);
+        }
+
+        /* Groups (Left Column) */
+        .vis-labelset .vis-label {
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            background: var(--bg-surface);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* --- VIS ITEM STYLES (Overflow Logic) --- */
+
+        /* 1. 基础容器：必须允许溢出 */
+        .vis-item {
+            border: none; /* 边框由内部盒子处理 */
+            background: transparent; /* 背景透明 */
+            box-shadow: none;
+            overflow: visible; /* [关键] 允许内容超出格子 */
+            z-index: 10;
+        }
+
+        .vis-item.vis-selected {
+            z-index: 200 !important; /* 选中时层级最高 */
+        }
+
+        .vis-item:hover {
+            z-index: 100 !important; /* 悬停时层级较高 */
+        }
+
+        .vis-item .vis-item-content {
+            padding: 0;
+            overflow: visible; /* 必须允许溢出 */
+            width: 100%;
+        }
+
+        /* 2. 实际的内容盒子 */
+        .timeline-item-box {
+            display: block;
+            width: 100%;
+            padding: 4px 8px;
+            border-radius: 6px;
+
+            /* 默认样式：浅色背景，截断文字 */
+            background-color: rgba(131, 205, 32, 0.15);
+            border: 1px solid var(--brand);
+            color: var(--text-main);
+
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            transition: min-width 0.2s, background-color 0.2s, color 0.2s, box-shadow 0.2s;
+            position: relative; /* 相对定位 */
+        }
+
+        /* 3. 悬停或选中状态：展开显示 */
+        .vis-item:hover .timeline-item-box,
+        .vis-item.vis-selected .timeline-item-box {
+            position: absolute; /* 脱离文档流，向右展开 */
+            top: 0;
+            left: 0;
+
+            width: auto;        /* 宽度自动适应内容 */
+            min-width: 100%;    /* 至少和原来一样宽 */
+            max-width: 300px;   /* 防止太长，可设上限 */
+
+            /* 样式变化：实心高亮 */
+            background-color: var(--brand);
+            border-color: var(--brand-hover);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        /* 暗色模式适配 */
+        [data-theme="dark"] .timeline-item-box {
+            background-color: rgba(131, 205, 32, 0.15);
+            border-color: var(--brand);
+            color: #e2e8f0;
+        }
+
+        /* 暗色模式下的悬停/选中 */
+        [data-theme="dark"] .vis-item:hover .timeline-item-box,
+        [data-theme="dark"] .vis-item.vis-selected .timeline-item-box {
+            background-color: var(--brand);
+            color: white;
+        }
+
+        /* Dark Mode Overrides for Vis */
+        [data-theme="dark"] .vis-timeline {
+            border-color: var(--border-color);
+        }
+        [data-theme="dark"] .vis-item {
+            background-color: #1e293b; /* surface color */
+            border-color: rgba(255,255,255,0.1);
+        }
+        [data-theme="dark"] .vis-item.vis-selected {
+            background-color: #334155;
+            border-color: var(--brand);
+        }
+        [data-theme="dark"] .vis-time-axis .vis-text {
+            color: var(--text-muted);
         }
 
         /* --- DATA TAB STYLES --- */
@@ -3324,12 +3295,10 @@
                 <div class="media-controls" style="gap: 12px;">
                     <div class="custom-select-wrapper" id="tl-sel-group" style="width: 200px;">
                         <div class="select-trigger" onclick="toggleSelect('tl-sel-group')">
-                            <span class="trigger-text" id="tl-text-group">Realm</span>
+                            <span class="trigger-text" id="tl-text-group">Group by: Realm</span>
                             <i data-lucide="chevron-down" size="16"></i>
                         </div>
                         <div class="select-options">
-                            <div class="select-option" onclick="setTimelineGrouping('all')">All Data</div>
-                            <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
                             <div class="select-option" onclick="setTimelineGrouping('realm')">Realm</div>
                             <div class="select-option" onclick="setTimelineGrouping('biome')">Biome</div>
                             <div class="select-option" onclick="setTimelineGrouping('group')">Group</div>
@@ -3337,41 +3306,14 @@
                         </div>
                     </div>
 
-                    <div class="custom-select-wrapper" id="tl-sel-time" style="width: 200px;">
-                        <div class="select-trigger" onclick="toggleSelect('tl-sel-time')">
-                            <span class="trigger-text" id="tl-text-time">Year</span>
-                            <i data-lucide="chevron-down" size="16"></i>
-                        </div>
-                        <div class="select-options">
-                            <div class="select-option" onclick="setTimelineResolution('all')">All Time</div>
-                            <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
-                            <div
-                                    style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
-                                ABSOLUTE TIME
-                            </div>
-                            <div class="select-option" onclick="setTimelineResolution('y')">Year</div>
-                            <div class="select-option" onclick="setTimelineResolution('yq')">Year / Quarter</div>
-                            <div class="select-option" onclick="setTimelineResolution('ym')">Year / Month</div>
-                            <div class="select-option" onclick="setTimelineResolution('ymd')">Year / Month / Day
-                            </div>
-                            <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
-                            <div
-                                    style="padding:4px 8px; font-size:0.7rem; color:var(--text-muted); font-weight:700;">
-                                SEASONAL CYCLES
-                            </div>
-                            <div class="select-option" onclick="setTimelineResolution('q')">Quarter</div>
-                            <div class="select-option" onclick="setTimelineResolution('m')">Month</div>
-                            <div class="select-option" onclick="setTimelineResolution('md')">Month / Day</div>
-                            <div class="select-option" onclick="setTimelineResolution('d')">Day</div>
-                        </div>
-                    </div>
+                    <button class="nav-btn-simple" onclick="fitTimeline()" title="Fit All Items" style="width:auto; padding:0 12px; font-weight:600; gap:6px;">
+                        <i data-lucide="maximize" size="16"></i> Fit
+                    </button>
                 </div>
             </div>
 
-            <div class="card-body" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
-                <div class="timeline-matrix-viewport" id="tl-matrix-container">
-                    <div style="margin: auto; color: var(--text-muted);">Loading Matrix...</div>
-                </div>
+            <div class="card-body" style="padding:0; overflow:hidden; position:relative;">
+                <div id="visualization" style="width: 100%; height: 100%;"></div>
             </div>
         </div>
     </div>
@@ -3424,7 +3366,22 @@
         </div>
     </div>
 </div>
-
+<div class="crud-modal-overlay" id="media-detail-overlay">
+    <div class="crud-modal" style="max-width: 400px;">
+        <div class="card-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card-title" id="md-title" style="font-size:1.1rem;"><i data-lucide="file-audio"></i> Details</div>
+            <button class="nav-btn-simple" onclick="closeMediaModal()" style="width:32px; height:32px;"><i data-lucide="x" size="18"></i></button>
+        </div>
+        <div class="card-body" style="padding: 24px; display:flex; flex-direction:column; gap:16px;" id="md-content">
+        </div>
+        <div class="modal-footer" style="padding: 16px 24px; background: var(--bg-surface-secondary);">
+            <a href="#" class="btn-secondary" style="text-decoration:none; font-size:0.85rem; padding:8px 16px;" onclick="closeMediaModal()">Close</a>
+            <a href="#" id="md-download-btn" class="btn-primary" style="text-decoration:none; font-size:0.85rem; padding:8px 20px; display:flex; align-items:center; gap:6px;">
+                <i data-lucide="download" size="14"></i> Download
+            </a>
+        </div>
+    </div>
+</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
@@ -3439,7 +3396,7 @@
                         <span class="tag-label" style="display:inline-block;padding:4px 8px;background:var(--brand);color:white;border-radius:4px;font-size:0.7rem;font-weight:700;margin-bottom:10px;text-transform:uppercase;">Live Monitoring</span>
                         <h1>${title} Digital Overview</h1>
                         <p style="font-size:1.1rem;color:var(--text-secondary);">Deploying next-generation <strong>edge-computing nodes</strong> in ${location} to capture high-fidelity acoustic data.</p>
-                        
+
                         <div class="data-grid">
                             <div class="data-item"><span class="data-val">98.5%</span><span class="data-key">Uptime</span></div>
                             <div class="data-item"><span class="data-val">24/7</span><span class="data-key">Streaming</span></div>
@@ -3461,10 +3418,10 @@
                             <h4 style="margin:0 0 8px 0;font-size:0.9rem;text-transform:uppercase;color:var(--text-muted);">Abstract</h4>
                             <p style="margin:0;font-style:italic;">This study investigates the acoustic signature of <em>${latinName}</em> within the ${location} ecosystem, focusing on temporal variations in vocalization intensity.</p>
                         </div>
-                        
+
                         <h2>1. Introduction</h2>
                         <p>Passive Acoustic Monitoring (PAM) has emerged as a non-invasive method for assessing biodiversity.</p>
-                        
+
                         <h2>2. Methodology</h2>
                         <p>We deployed <strong>50 autonomous recording units (ARUs)</strong> across a stratified random grid.</p>
                         <ul>
@@ -3483,7 +3440,7 @@
                             The jungle was alive. Not with the roar of engines, but with the <strong>symphony of life</strong>.
                         </p>
                         <p>Our team trekked for three days into the heart of ${location}. The humidity was oppressive, but the soundscape was mesmerizing.</p>
-                        
+
                         <div style="margin:24px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border-color);">
                             <img src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=800&q=80" style="width:100%;height:200px;object-fit:cover;display:block;">
                             <div style="padding:12px;background:var(--bg-surface-secondary);font-size:0.8rem;color:var(--text-muted);">Figure 1: Field deployment site at sunrise.</div>
@@ -3810,9 +3767,9 @@
                     </div>
                     <div class="media-card-info">
                         <a href="#" class="media-name" title="${m.name}" onclick="return false;">${m.name}</a>
-                        
+
                         <div class="tags-row">${mockTagsHtml}</div>
-                        
+
                         <div class="media-meta-row">
                             <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
                             <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${mockTime}</div>
@@ -4094,7 +4051,7 @@
                                 <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
                                 <div class="rd-item"><span class="rd-label">Sensor</span><span class="rd-val" title="${item.sensor}">${item.sensor}</span></div>
                                 <div class="rd-item"><span class="rd-label">License</span><span class="rd-val" title="${item.license}">${item.license}</span></div>
-                                
+
                                 <div class="rd-item span-v"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
 
                                 <div class="rd-item"><span class="rd-label">Uploader</span><span class="rd-val" title="${item.uploader}">${item.uploader}</span></div>
@@ -4133,122 +4090,54 @@
         renderMedia();
     }
 
-    // --- TIMELINE MATRIX LOGIC ---
+    // --- TIMELINE LOGIC (VIS.JS) ---
 
-    let tlScale = 1; // [新增] 全局缩放比例
-    let tlConfig = {
-        grouping: 'realm',
-        resolution: 'y',
-        groupLabels: {
-            'all': 'All Data',
-            'realm': 'Realm',
-            'biome': 'Biome',
-            'group': 'Group',
-            'site': 'Site'
-        },
-        resLabels: {
-            'all': 'All Time',
-            'y': 'Year',
-            'yq': 'Year / Quarter',
-            'ym': 'Year / Month',
-            'm': 'Month',
-            'q': 'Quarter',
-            'ymd': 'Year / Month / Day',
-            'md': 'Month / Day',
-            'd': 'Day'
-        }
-    };
+    let timelineInstance = null;
+    let tlGrouping = 'realm'; // 默认分组
 
     function setTimelineGrouping(val) {
-        tlConfig.grouping = val;
+        tlGrouping = val;
         const labelMap = {
-            'all': 'All Data',
-            'realm': 'Realm',
-            'biome': 'Biome',
-            'group': 'Group',
-            'site': 'Site'
+            'realm': 'Group by: Realm',
+            'biome': 'Group by: Biome',
+            'group': 'Group by: Group',
+            'site': 'Group by: Site'
         };
-        document.getElementById('tl-text-group').textContent = labelMap[val] || tlConfig.groupLabels[val];
+        document.getElementById('tl-text-group').textContent = labelMap[val] || val;
         closeSelects();
         renderTimeline();
     }
 
-    function setTimelineResolution(val) {
-        tlConfig.resolution = val;
-        document.getElementById('tl-text-time').textContent = tlConfig.resLabels[val];
-        closeSelects();
-        renderTimeline();
-    }
-
-    function getTimeKey(item, res) {
-        const d = new Date(item.date);
-        const y = d.getFullYear();
-        const m = d.getMonth(); // 0-11
-        const mStr = String(m + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const q = Math.ceil((m + 1) / 3);
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-        switch (res) {
-            case 'all':
-                return 'Total';
-            case 'y':
-                return `${y}`;
-            case 'yq':
-                return `${y}-Q${q}`; // New
-            case 'ym':
-                return `${y}-${mStr}`;
-            case 'm':
-                return monthNames[m];
-            case 'q':
-                return `Q${q}`; // New
-            case 'ymd':
-                return `${y}-${mStr}-${day}`;
-            case 'md':
-                return `${monthNames[m]} ${day}`;
-            case 'd':
-                return `Day ${day}`;
-            default:
-                return item.date;
+    function fitTimeline() {
+        if (timelineInstance) {
+            timelineInstance.fit();
         }
     }
 
-    // 强关联数据：确保 MediaItems 的 Realm/Biome/Group 与 currentSites 完全一致
+    // 强关联数据：确保 MediaItems 的数据完整（保留你原有的逻辑，稍作精简）
     function enrichMediaData() {
         if (currentSites.length === 0) return;
-
-        // 1. 建立真实站点池
         const realSites = currentSites;
 
         mediaItems.forEach((item, index) => {
-            // 如果该 Item 还没有关联到真实地图数据，或者需要刷新
             if (!item.enriched || !item.realSiteLinked) {
                 const siteIndex = (item.id + index) % realSites.length;
                 const linkedSite = realSites[siteIndex];
 
-                // 覆写 Item 的属性，使其与 Map 数据一致
-                item.site = linkedSite.name; // 显示名称
+                item.site = linkedSite.name;
                 item.realm = linkedSite.realm;
                 item.biome = linkedSite.biome;
                 item.group = linkedSite.group;
 
-                // [New] 补充详细地理信息
-                item.topography_m = linkedSite.topography_m;
-                item.freshwater_depth_m = linkedSite.freshwater_depth_m;
+                // 确保有 ISO 格式的 start date 用于 Vis.js
+                // item.date 是 "YYYY-MM-DD", item.time 是 "HH:mm:ss"
+                item.start = moment(`${item.date} ${item.time}`, "YYYY-MM-DD HH:mm:ss").toDate();
+                // 模拟时长，结束时间 = 开始 + 随机分钟
+                item.end = moment(item.start).add(rInt(1, 10), 'minutes').toDate();
 
-                // [New] 补充其他模拟元数据
                 if (!item.uploader) item.uploader = ["UserA", "LabAdmin", "J.Doe"][rInt(0, 2)];
-
-                // Medium 逻辑: 如果 Realm 是水相关则为 Water，否则为 Air
-                const waterRealms = ['Marine', 'Freshwater', 'Estuarine', 'Subterranean'];
-                // 注：Subterranean 可能是水也可能是空气，这里简化处理为 Water (或根据具体逻辑调整)
-                if (!item.medium) item.medium = waterRealms.includes(item.realm) ? 'Water' : 'Air';
-
-                if (!item.note) item.note = "Standard survey recording during peak activity.";
-                if (!item.doi) item.doi = "10.5281/zenodo." + rInt(100000, 999999);
-
-                // 确保 Creator 存在
-                if (!item.creator) item.creator = ["Dr. Silva", "M. Lewis", "Field Team A"][rInt(0, 2)];
+                if (!item.medium) item.medium = ['Marine', 'Freshwater'].includes(item.realm) ? 'Water' : 'Air';
+                if (!item.sensor) item.sensor = ["AudioMoth", "Song Meter", "Audiomoth Dev"][rInt(0,2)];
 
                 item.realSiteLinked = true;
                 item.enriched = true;
@@ -4256,166 +4145,132 @@
         });
     }
 
-    function getRowInfo(item, grouping) {
-        // 返回: { key, label, sub, color }
-        // 颜色优先使用 Realm 颜色
-        const color = getRealmColor(item.realm);
-
-        if (grouping === 'all') {
-            return {key: 'all', label: 'All Data', sub: null, color: '#666'};
-        }
-        if (grouping === 'realm') {
-            return {key: item.realm, label: item.realm, sub: null, color: color};
-        } else if (grouping === 'biome') {
-            return {key: item.biome, label: item.biome, sub: item.realm, color: color};
-        } else if (grouping === 'group') {
-            return {key: item.group, label: item.group, sub: `${item.realm}<br>${item.biome}`, color: color};
-        } else if (grouping === 'site') {
-            return {key: item.site, label: item.site, sub: `${item.realm}<br>${item.biome}<br>${item.group}`, color: color};
-        }
-        return {key: 'Unknown', label: 'Unknown', sub: '', color: '#333'};
-    }
-
     function renderTimeline() {
         enrichMediaData();
 
-        const container = document.getElementById('tl-matrix-container');
         const badge = document.getElementById('tl-count-badge');
-        const grouping = tlConfig.grouping;
-        const resolution = tlConfig.resolution;
-
         if (badge) badge.textContent = `${mediaItems.length} Items`;
 
-        // 1. 构建矩阵
-        const matrix = {};
-        const colKeys = new Set();
-        const rowKeys = new Set();
-        const rowMetaMap = {};
+        const container = document.getElementById('visualization');
+        if (!container) return;
 
+        // 1. 准备 Groups (分组)
+        // 收集所有唯一的分组值
+        const groupsSet = new Set();
         mediaItems.forEach(item => {
-            const rowInfo = getRowInfo(item, grouping);
-            const cKey = getTimeKey(item, resolution);
-            const rKey = rowInfo.key;
-
-            rowKeys.add(rKey);
-            colKeys.add(cKey);
-
-            if (!rowMetaMap[rKey]) rowMetaMap[rKey] = rowInfo;
-
-            if (!matrix[rKey]) matrix[rKey] = {};
-            if (!matrix[rKey][cKey]) matrix[rKey][cKey] = [];
-            matrix[rKey][cKey].push(item);
+            if (item[tlGrouping]) groupsSet.add(item[tlGrouping]);
         });
 
-        const sortedColKeys = Array.from(colKeys).sort();
-        const sortedRowKeys = Array.from(rowKeys).sort();
+        const groupsData = Array.from(groupsSet).sort().map((gName, index) => {
+            return {
+                id: gName,
+                content: gName,
+                // 可选：给不同组加不同的背景色样式
+                // className: 'vis-group-' + index
+            };
+        });
+        const groups = new vis.DataSet(groupsData);
 
-        if (sortedColKeys.length === 0) {
-            container.innerHTML = `<div style="margin: auto; display:flex; flex-direction:column; align-items:center; color:var(--text-muted); gap:10px;"><i data-lucide="calendar-x" size="32"></i><span>No timeline data available</span></div>`;
-            lucide.createIcons();
-            return;
+        // 2. 准备 Items (数据项)
+        const itemsData = mediaItems.map(item => {
+            const icon = item.medium === 'Water' ? 'waves' : 'wind';
+            const contentHtml = `
+                <div class="timeline-item-box">
+                    <span class="timeline-item-icon"><i data-lucide="play-circle" width="14" height="14"></i></span>
+                    <span style="font-weight:600;">${item.name.split('_').pop()}</span>
+                </div>
+            `;
+
+            // [修改] 构建更漂亮的 HTML Tooltip
+            // 注意：这里的 HTML 只用于悬停展示，不可交互（因为跟随鼠标）。
+            // 点击交互由 select 事件触发模态框处理。
+            const tooltipHtml = `
+                <div style="padding:12px; min-width:200px;">
+                    <div style="font-weight:800; margin-bottom:4px; color:var(--brand);">${item.name}</div>
+                    <div style="font-size:0.8rem; display:grid; gap:4px; color:var(--text-secondary);">
+                        <div><strong>Date:</strong> ${item.date} ${item.time}</div>
+                        <div><strong>Site:</strong> ${item.site}</div>
+                        <div><strong>Sensor:</strong> ${item.sensor}</div>
+                        <div style="margin-top:6px; font-size:0.75rem; color:var(--text-muted);">Click for details & links</div>
+                    </div>
+                </div>
+            `;
+
+            return {
+                id: item.id,
+                group: item[tlGrouping] || 'Unknown',
+                start: item.start,
+                end: item.end,
+                content: contentHtml,
+                title: tooltipHtml, // 使用 HTML Tooltip
+                type: 'range'
+            };
+        });
+        const items = new vis.DataSet(itemsData);
+
+// 3. 配置项
+        const options = {
+            groupOrder: 'content',
+            orientation: 'top',
+            editable: false,
+            margin: { item: 10, axis: 5 },
+            stack: true,
+            zoomMin: 1000 * 60 * 60,
+            zoomMax: 1000 * 60 * 60 * 24 * 365 * 10,
+            height: '100%',
+            verticalScroll: true,
+            zoomKey: 'ctrlKey',
+            horizontalScroll: true,
+
+            // [新增] Tooltip 配置：允许 HTML，稍微延迟让用户体验更平滑
+            tooltip: {
+                followMouse: true,
+                overflowMethod: 'cap',
+                delay: 200
+            },
+
+            cluster: {
+                maxItems: 1,
+                titleTemplate: 'Cluster containing {count} events',
+                clusterCriteria: function(item1, item2) {
+                    return Math.abs(item1.start - item2.start) < 1000 * 60 * 60;
+                }
+            },
+            template: function (item, element, data) {
+                return item.content;
+            }
+        };
+
+        // 4. 销毁旧实例并创建新实例
+        if (timelineInstance) {
+            timelineInstance.destroy();
         }
 
-        // --- [核心逻辑] 动态计算列宽倍数 ---
-        // 遍历每一列，找出该列中最大的行数据量
-        const colWidthMultipliers = sortedColKeys.map(cKey => {
-            let maxItemsInCol = 0;
-            sortedRowKeys.forEach(rKey => {
-                const count = matrix[rKey][cKey] ? matrix[rKey][cKey].length : 0;
-                if (count > maxItemsInCol) maxItemsInCol = count;
-            });
-            // 规则：最多5个一列。例如 7个 => ceil(7/5) = 2列宽
-            return Math.max(1, Math.ceil(maxItemsInCol / 5));
-        });
+        timelineInstance = new vis.Timeline(container, items, groups, options);
 
-        // 生成 Grid 定义：第一列固定160px，其余动态计算
-        const trackDefinitions = colWidthMultipliers.map(m => `calc(${m} * 240px * var(--tl-scale, 1))`).join(" ");
-        // [关键] 在这里注入 --tl-scale 变量
-        const gridStyle = `grid-template-columns: 160px ${trackDefinitions}; --tl-scale: ${tlScale};`;
-
-        let html = `<div class="tl-matrix-table" style="${gridStyle}">`;
-
-        // Corner Cell
-        const yLabel = tlConfig.groupLabels[grouping];
-        const xLabel = tlConfig.resLabels[resolution].split(' ')[0];
-
-        html += `<div class="tl-matrix-corner">
-                <span>${yLabel}</span>
-                <span style="font-size:0.7rem; opacity:0.5; margin:2px 0;">\\</span>
-                <span>${xLabel}</span>
-            </div>`;
-
-        // Column Headers
-        sortedColKeys.forEach(dateKey => {
-            html += `<div class="tl-col-header-cell">${dateKey}</div>`;
-        });
-
-        // Data Rows
-        sortedRowKeys.forEach(rowKey => {
-            const meta = rowMetaMap[rowKey];
-            let headerHtml = `<span style="font-size:0.95rem; color:${meta.color};">${meta.label}</span>`;
-            if (meta.sub) {
-                headerHtml += `<span class="tl-row-meta" style="display:block; margin-top:4px; font-weight:500; opacity:0.7; font-size:0.7rem; line-height:1.4;">${meta.sub}</span>`;
-            }
-            const totalInRow = sortedColKeys.reduce((acc, cKey) => acc + (matrix[rowKey][cKey] ? matrix[rowKey][cKey].length : 0), 0);
-            headerHtml += `<span class="tl-row-meta" style="margin-top:6px; color:var(--text-muted); font-weight:700;">${totalInRow} recordings</span>`;
-
-            html += `<div class="tl-row-header-cell">${headerHtml}</div>`;
-
-            // Cells
-            sortedColKeys.forEach((colKey, colIndex) => {
-                const items = matrix[rowKey][colKey] || [];
-                const multiplier = colWidthMultipliers[colIndex];
-
-                html += `<div class="tl-data-cell">`;
-
-                if (items.length > 0) {
-                    // [关键 CSS] 先填满垂直5个，再向右扩展
-                    const cellInnerStyle = `
-                        display: grid;
-                        grid-template-rows: repeat(5, min-content);
-                        grid-auto-flow: column;
-                        grid-template-columns: repeat(${multiplier}, 1fr);
-                        gap: calc(12px * var(--tl-scale, 1));
-                        width: 100%;
-                    `;
-
-                    html += `<div class="tl-cell-grid" style="${cellInnerStyle}">`;
-                    items.forEach(item => {
-                        const tagsHtml = item.tags.slice(0, 2).map(t => `<span class="media-tag">${t}</span>`).join('');
-                        html += `
-                                <div class="tl-media-card">
-                                    <div class="spectrogram-cover">
-                                        <img src="${item.spectrogram}" class="spectrogram-img" loading="lazy" alt="Spec">
-                                        <div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor" size="14"></i></div></div>
-                                        <div class="duration-badge">${item.duration}</div>
-                                    </div>
-                                    <div class="media-card-info">
-                                        <div class="media-name" title="${item.name}">${item.name}</div>
-                                        <div class="tags-row">${tagsHtml}</div>
-                                        <div class="media-meta-row">
-                                            <div class="meta-icon-text"><i data-lucide="calendar"></i> ${item.date}</div>
-                                            <div class="meta-icon-text"><i data-lucide="clock"></i> ${item.time}</div>
-                                            <div class="meta-icon-text"><i data-lucide="hard-drive"></i> ${item.size}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                    });
-                    html += `</div>`;
-                } else {
-                    html += `<div style="opacity:0.1; text-align:center; font-size:2rem; font-weight:100; margin-top:10px;">·</div>`;
+        // [新增] 点击事件监听：弹出详情页
+        timelineInstance.on('select', function (props) {
+            if (props.items.length > 0) {
+                const itemId = props.items[0];
+                const itemData = mediaItems.find(i => i.id === itemId);
+                if (itemData) {
+                    openMediaDetailModal(itemData);
                 }
-                html += `</div>`;
-            });
+            }
         });
 
-        html += `</div>`;
-        container.innerHTML = html;
-        lucide.createIcons();
+        timelineInstance.on('changed', () => {
+            lucide.createIcons();
+        });
+
+        // 初始适配
+        setTimeout(() => {
+            lucide.createIcons();
+            // 如果数据跨度大，初始显示所有
+            // timelineInstance.fit();
+        }, 100);
     }
 
-    // --- GENERAL LOGIC ---
     function getIconForStat(key) {
         const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
         return map[key] || 'activity';
@@ -4825,7 +4680,47 @@
             }
         }
     }
+    // --- Media Detail Modal Logic ---
+    function openMediaDetailModal(item) {
+        const overlay = document.getElementById('media-detail-overlay');
+        const content = document.getElementById('md-content');
+        const title = document.getElementById('md-title');
 
+        // 设置标题
+        title.innerHTML = `<i data-lucide="file-audio" style="color:var(--brand);"></i> ${item.name}`;
+
+        // [关键] 构建详情内容，包含可点击的链接
+        content.innerHTML = `
+            <div class="spectrogram-cover" style="border-radius:12px; border:1px solid var(--border-color);">
+                <img src="${item.spectrogram}" class="spectrogram-img" style="height:120px; width:100%; object-fit:cover; opacity:0.8;">
+            </div>
+
+            <div class="data-grid" style="grid-template-columns: 1fr 1fr; display:grid; gap:12px;">
+                <div class="rd-item"><span class="rd-label">Date</span><span class="rd-val">${item.date}</span></div>
+                <div class="rd-item"><span class="rd-label">Time</span><span class="rd-val">${item.time}</span></div>
+                <div class="rd-item"><span class="rd-label">Duration</span><span class="rd-val">${item.duration}</span></div>
+                <div class="rd-item"><span class="rd-label">Size</span><span class="rd-val">${item.size}</span></div>
+            </div>
+
+            <div style="padding-top:12px; border-top:1px dashed var(--border-color);">
+                <div class="rd-label" style="margin-bottom:8px;">External Links</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <a href="#" class="contrib-email" onclick="alert('Open Project Page')"><i data-lucide="external-link" size="14"></i> View Project Source</a>
+                    <a href="#" class="contrib-email" onclick="alert('Open DOI')"><i data-lucide="bookmark" size="14"></i> View DOI Record</a>
+                </div>
+            </div>
+        `;
+
+        // 更新下载按钮链接（模拟）
+        document.getElementById('md-download-btn').href = "#download-" + item.id;
+
+        lucide.createIcons();
+        overlay.classList.add('active');
+    }
+
+    function closeMediaModal() {
+        document.getElementById('media-detail-overlay').classList.remove('active');
+    }
     function init() {
         const saved = localStorage.getItem('theme');
         const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -4844,54 +4739,7 @@
         if (active) movePill(active);
     }
 
-    // --- TIMELINE INTERACTION (DRAG & ZOOM) ---
-    const tlContainer = document.getElementById('tl-matrix-container');
-    let isPanning = false;
-    let startX = 0, startY = 0, initialScrollLeft = 0, initialScrollTop = 0;
 
-    // 鼠标按下：开始拖拽
-    tlContainer.addEventListener('mousedown', (e) => {
-        // [修复] 阻止默认行为（防止选中图片导致拖拽卡顿）
-        e.preventDefault();
-
-        isPanning = true;
-        tlContainer.classList.add('active');
-        startX = e.pageX - tlContainer.offsetLeft;
-        startY = e.pageY - tlContainer.offsetTop;
-        initialScrollLeft = tlContainer.scrollLeft;
-        initialScrollTop = tlContainer.scrollTop;
-    });
-
-    // 鼠标松开/离开：停止拖拽
-    window.addEventListener('mouseup', () => {
-        if (isPanning) {
-            isPanning = false;
-            tlContainer.classList.remove('active');
-        }
-    });
-
-    // 鼠标移动：执行滚动
-    tlContainer.addEventListener('mousemove', (e) => {
-        if (!isPanning) return;
-        e.preventDefault();
-        const x = e.pageX - tlContainer.offsetLeft;
-        const y = e.pageY - tlContainer.offsetTop;
-        tlContainer.scrollLeft = initialScrollLeft - (x - startX);
-        tlContainer.scrollTop = initialScrollTop - (y - startY);
-    });
-
-    // 鼠标滚轮：缩放
-    tlContainer.addEventListener('wheel', (e) => {
-        if (document.getElementById('tab-timeline').classList.contains('active')) {
-            e.preventDefault();
-            const delta = -Math.sign(e.deltaY) * 0.1;
-            tlScale = Math.min(Math.max(0.5, tlScale + delta), 2.0); // 范围 0.5x - 2.0x
-
-            const table = tlContainer.querySelector('.tl-matrix-table');
-            // [修复] 更新 CSS 变量而非 transform，确保 sticky 表头不消失
-            if (table) table.style.setProperty('--tl-scale', tlScale);
-        }
-    }, {passive: false});
     // --- CRUD / DATA TAB LOGIC ---
 
     // 1. Define Schema based on 'database_postgresql_clean(fixed).sql'
