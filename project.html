@@ -2198,11 +2198,10 @@
             flex: 1;
         }
 
-        .btn-reset-filters {
-            margin-top: 12px;
-            width: 100%;
-            height: var(--h-std); /* [修改] 统一高度 */
-            padding: 0;
+        /* 通用工具栏按钮样式 (复用 reset 样式) */
+        .btn-toolbar {
+            height: var(--h-std);
+            padding: 0 20px;
             border: 1px solid var(--border-light);
             background: transparent;
             border-radius: 50px;
@@ -2210,18 +2209,46 @@
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: 0.2s;
+            gap: 6px;
+            transition: all 0.2s;
         }
 
-        .btn-reset-filters:hover {
+        /* 默认悬停效果 (品牌色) */
+        .btn-toolbar:hover:not(:disabled) {
             border-color: var(--brand);
             background: var(--brand);
             color: white;
             box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+        }
+
+        /* 红色悬停效果 (用于 Delete) */
+        .btn-toolbar.danger:hover:not(:disabled) {
+            border-color: #ef4444;
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* 禁用状态 */
+        .btn-toolbar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--bg-capsule);
+            color: var(--text-muted);
+            border-color: transparent;
+        }
+
+        /* 表格 checkbox 样式微调 */
+        .crud-checkbox {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--brand);
+            vertical-align: middle; /* [新增] 垂直居中 */
+            margin: 0; /* [新增] 去除默认外边距 */
         }
 
         /* Sidebar */
@@ -2572,8 +2599,20 @@
             text-overflow: ellipsis;
         }
 
+        .crud-table tr {
+            cursor: pointer; /* [新增] 鼠标手型 */
+            transition: background 0.1s;
+        }
+
         .crud-table tr:hover {
             background: var(--bg-surface-hover);
+        }
+
+        /* [修改] 选中行高亮样式 (使用内阴影代替边框，防止文字抖动) */
+        .crud-table tr.selected {
+            background: var(--brand-tint) !important;
+            box-shadow: inset 3px 0 0 var(--brand) !important;
+            border-left: none;
         }
 
         .status-badge {
@@ -3051,7 +3090,7 @@
                 <div class="data-toolbar">
                     <div class="card-title" id="current-table-title"><i data-lucide="table"></i> Project</div>
                     <div class="media-controls">
-                        <button class="btn-reset-filters" onclick="resetDataTable()" title="Reset" style="width: auto; margin-top: 0; padding: 0 20px;">
+                        <button class="btn-toolbar" onclick="resetDataTable()" title="Reset">
                             <i data-lucide="rotate-ccw" size="16"></i> Reset
                         </button>
 
@@ -3060,8 +3099,16 @@
                             <input type="text" class="media-search-input" id="data-search-input" placeholder="Search" oninput="handleDataSearch(this.value)">
                         </div>
 
-                        <button class="btn-primary" id="data-add-btn" onclick="openCrudModal('add')" style="font-size:0.9rem;">
+                        <button class="btn-toolbar" onclick="openCrudModal('add')">
                             <i data-lucide="plus" size="16"></i> Add
+                        </button>
+
+                        <button class="btn-toolbar" id="btn-edit" onclick="handleToolbarEdit()" disabled>
+                            <i data-lucide="pencil" size="16"></i> Edit
+                        </button>
+
+                        <button class="btn-toolbar danger" id="btn-delete" onclick="handleToolbarDelete()" disabled>
+                            <i data-lucide="trash-2" size="16"></i> Delete
                         </button>
                     </div>
                 </div>
@@ -3084,7 +3131,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeCrudModal()">Cancel</button>
-                <button class="btn-primary" onclick="saveCrudData()">Save Changes</button>
+                <button class="btn-primary" id="modal-submit-btn" onclick="saveCrudData()">Save Changes</button>
             </div>
         </div>
     </div>
@@ -4383,20 +4430,22 @@
         ]
     };
 
+    // 3. State Variables
     let currentTable = "project";
     let crudSearchQuery = "";
     let editingId = null;
-
-    // [新增] 排序和筛选状态
+    let selectedCrudIds = []; // [多选] 存储选中行的 ID 数组
     let sortState = {key: null, direction: 'asc'};
-    let crudFilterState = {}; // [修改] 重命名为 crudFilterState 避免与地图 filterState 冲突
+    let crudFilterState = {};
 
-    // 3. Functions
+    // --- Helper Functions ---
+
+    // 初始化入口
     function initDataTab() {
-        // [修改] 直接调用 switchCrudTable 以初始化正确的 Placeholder 和按钮文案
         switchCrudTable('project');
     }
 
+    // 渲染左侧导航
     function renderTableNav() {
         const navList = document.getElementById('table-nav-list');
         let html = "";
@@ -4417,103 +4466,93 @@
         lucide.createIcons();
     }
 
+    // 切换表格
     function switchCrudTable(tableName) {
         currentTable = tableName;
         crudSearchQuery = "";
 
-        // 重置搜索框的值
+        // 重置选中状态
+        selectedCrudIds = [];
+        updateToolbarState();
+
+        // 重置搜索框
         const searchInput = document.getElementById('data-search-input');
         if (searchInput) {
             searchInput.value = "";
+            searchInput.placeholder = "Search";
         }
-
-        // [已删除] 旧的 Add 按钮逻辑已清理
 
         // 重置高级状态
         sortState = {key: null, direction: 'asc'};
         crudFilterState = {};
 
         renderTableNav();
-        renderCrudTable();
+        renderCrudHeader(); // 渲染一次表头
+        renderCrudTable();  // 渲染表体
     }
 
+    // 搜索处理
     function handleDataSearch(val) {
         crudSearchQuery = val.toLowerCase();
-        renderCrudTable();
+        renderCrudTable(); // 只更新表体
     }
 
-    // [新增] 排序处理函数
+    // 排序处理
     function handleSort(key) {
         if (sortState.key === key) {
-            if (sortState.direction === 'asc') {
-                sortState.direction = 'desc';
-            } else {
-                sortState.key = null;
-                sortState.direction = 'asc';
-            }
+            // 仅在升序和降序之间切换
+            sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
         } else {
+            // 新列默认升序
             sortState.key = key;
             sortState.direction = 'asc';
         }
-        renderCrudTable();
+        renderCrudHeader(); // 更新 Header 图标
+        renderCrudTable();  // 更新 Body 数据顺序
     }
 
-    // [新增] 筛选处理函数
+    // 筛选处理
     function handleColumnFilter(key, value) {
         if (value === "" || value === "all") {
-            delete crudFilterState[key]; // [修改] 使用新变量
+            delete crudFilterState[key];
         } else {
-            crudFilterState[key] = value; // [修改] 使用新变量
+            crudFilterState[key] = value;
         }
-        renderCrudTable();
+        renderCrudTable(); // 只更新表体，不更新表头
     }
 
-    function renderCrudTable() {
+    // [关键] 渲染表头 (独立函数，防止输入框重绘丢失焦点)
+    function renderCrudHeader() {
         const schema = dbSchema[currentTable];
-        const rawData = mockDB[currentTable] || [];
         const thead = document.getElementById('crud-thead');
-        const tbody = document.getElementById('crud-tbody');
-        const titleEl = document.getElementById('current-table-title');
 
-        // Update Header Title
-        titleEl.innerHTML = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
-
-        // --- Step A: 生成带排序和筛选的表头 ---
         let headHtml = "<tr>";
+
+        // 1. 全选 Checkbox 列
+        headHtml += `
+            <th style="width: 40px; text-align:center; vertical-align:top; padding-top:14px;">
+                <input type="checkbox" class="crud-checkbox" id="header-select-all"
+                onclick="handleSelectAll(this.checked)">
+            </th>`;
+
+        // 2. 数据列
         schema.columns.forEach(col => {
             const isSorted = sortState.key === col.key;
-            const sortIcon = isSorted
-                ? (sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down')
-                : 'arrow-up-down';
+            const sortIcon = isSorted ? (sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
             const activeClass = isSorted ? 'active-sort' : '';
             const iconOpacity = isSorted ? '1' : '0.3';
 
-            // 确定筛选输入框类型
             let filterInputHtml = '';
-            const currentFilterVal = crudFilterState[col.key] || ""; // [修改] 读取新变量
+            const currentFilterVal = crudFilterState[col.key] || "";
 
             if (col.type === 'boolean') {
-                filterInputHtml = `
-                    <select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">
-                        <option value="all">All</option>
-                        <option value="true" ${currentFilterVal === 'true' ? 'selected' : ''}>True</option>
-                        <option value="false" ${currentFilterVal === 'false' ? 'selected' : ''}>False</option>
-                    </select>`;
+                filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${currentFilterVal === 'true' ? 'selected' : ''}>True</option><option value="false" ${currentFilterVal === 'false' ? 'selected' : ''}>False</option></select>`;
             } else if (col.type === 'select') {
                 let opts = `<option value="all">All</option>`;
-                col.options.forEach(o => {
-                    opts += `<option value="${o}" ${currentFilterVal === o ? 'selected' : ''}>${o}</option>`;
-                });
-                filterInputHtml = `
-                    <select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">
-                        ${opts}
-                    </select>`;
+                col.options.forEach(o => { opts += `<option value="${o}" ${currentFilterVal === o ? 'selected' : ''}>${o}</option>`; });
+                filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">${opts}</select>`;
             } else {
-                filterInputHtml = `
-                    <input type="text" class="th-filter-input" placeholder="Filter..."
-                        value="${currentFilterVal}"
-                        oninput="handleColumnFilter('${col.key}', this.value)"
-                        onclick="event.stopPropagation()">`;
+                filterInputHtml = `<input type="text" class="th-filter-input" placeholder="Filter..." value="${currentFilterVal}" oninput="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">`;
             }
 
             headHtml += `
@@ -4522,98 +4561,240 @@
                         <span>${col.label}</span>
                         <i data-lucide="${sortIcon}" size="14" style="opacity:${iconOpacity}"></i>
                     </div>
-                    <div class="th-filter-box">
-                        ${filterInputHtml}
-                    </div>
+                    <div class="th-filter-box">${filterInputHtml}</div>
                 </th>`;
         });
-
-        // [还原] 恢复为普通的 Actions 表头
-        headHtml += `<th style="width: 80px; text-align:right; vertical-align:middle;">Actions</th></tr>`;
+        headHtml += `</tr>`;
         thead.innerHTML = headHtml;
+        lucide.createIcons();
+    }
 
-        // --- Step B: 筛选数据 ---
+    // [关键] 渲染表格体
+    function renderCrudTable() {
+        const schema = dbSchema[currentTable];
+        const rawData = mockDB[currentTable] || [];
+        const tbody = document.getElementById('crud-tbody');
+        const titleEl = document.getElementById('current-table-title');
+
+        titleEl.innerHTML = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
+
+        // --- 1. 筛选逻辑 ---
         let processedData = rawData.filter(row => {
-            // 1. 全局搜索
             const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
             if (!matchesGlobal) return false;
-
-            // 2. 列筛选
-            return Object.keys(crudFilterState).every(key => { // [修改] 遍历新变量
+            return Object.keys(crudFilterState).every(key => {
                 const filterVal = crudFilterState[key].toLowerCase();
                 const rowVal = String(row[key] !== undefined ? row[key] : "").toLowerCase();
-
-                if (filterVal === 'true' || filterVal === 'false') {
-                    return rowVal === filterVal;
-                }
+                if (filterVal === 'true' || filterVal === 'false') return rowVal === filterVal;
                 return rowVal.includes(filterVal);
             });
         });
 
-        // --- Step C: 排序数据 ---
+        // --- 2. 排序逻辑 ---
         if (sortState.key) {
             processedData.sort((a, b) => {
-                let valA = a[sortState.key];
-                let valB = b[sortState.key];
+                let valA = a[sortState.key], valB = b[sortState.key];
                 if (valA === null || valA === undefined) valA = "";
                 if (valB === null || valB === undefined) valB = "";
-
-                if (typeof valA === 'number' && typeof valB === 'number') {
-                    return sortState.direction === 'asc' ? valA - valB : valB - valA;
-                }
-
-                valA = String(valA).toLowerCase();
-                valB = String(valB).toLowerCase();
-
+                if (typeof valA === 'number' && typeof valB === 'number') return sortState.direction === 'asc' ? valA - valB : valB - valA;
+                valA = String(valA).toLowerCase(); valB = String(valB).toLowerCase();
                 if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
                 if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;
                 return 0;
             });
         }
 
-        // --- Step D: 渲染行 ---
+        // --- 3. 渲染 HTML ---
         let bodyHtml = "";
         if (processedData.length === 0) {
-            bodyHtml = `<tr><td colspan="${schema.columns.length + 1}" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">No matching records found</td></tr>`;
+            bodyHtml = `<tr><td colspan="${schema.columns.length + 1}" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">No results found</td></tr>`;
         } else {
             processedData.forEach(row => {
-                bodyHtml += `<tr>`;
+                const pk = schema.pk;
+                const isSelected = selectedCrudIds.includes(row[pk]);
+                const rowClass = isSelected ? 'selected' : '';
+
+                // [修改] 移除了 onclick，添加了 ondblclick (双击编辑)
+                bodyHtml += `<tr class="${rowClass}" ondblclick="openCrudModal('edit', ${row[pk]})">`;
+
+                // [修改] Checkbox 单元格 (保留 onclick 用于选中)
+                bodyHtml += `
+                    <td style="text-align:center; border-bottom:1px solid var(--border-color);">
+                        <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''}
+                        onclick="event.stopPropagation(); toggleRowSelection(${row[pk]})">
+                    </td>`;
+
                 schema.columns.forEach(col => {
                     let val = row[col.key];
                     if (val === undefined || val === null) val = "";
-
                     if (col.type === 'boolean') {
                         val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;
                     }
                     bodyHtml += `<td>${val}</td>`;
                 });
-                bodyHtml += `
-                    <td style="text-align:right;">
-                        <div class="action-btn-group" style="justify-content:flex-end">
-                            <button class="action-icon-btn" onclick="openCrudModal('edit', ${row[schema.pk]})" title="Edit"><i data-lucide="pencil" size="14"></i></button>
-                            <button class="action-icon-btn delete" onclick="deleteCrudRow(${row[schema.pk]})" title="Delete"><i data-lucide="trash-2" size="14"></i></button>
-                        </div>
-                    </td>`;
                 bodyHtml += `</tr>`;
             });
         }
         tbody.innerHTML = bodyHtml;
         lucide.createIcons();
+
+        // --- 4. 同步更新表头全选 Checkbox 状态 ---
+        updateHeaderCheckbox(processedData);
+
+        // 保存当前可见数据供全选使用
+        window.currentVisibleData = processedData;
     }
 
+    // 更新表头 Checkbox 状态
+    function updateHeaderCheckbox(visibleData) {
+        const checkbox = document.getElementById('header-select-all');
+        if (!checkbox) return;
+
+        if (visibleData.length === 0) {
+            checkbox.checked = false;
+            checkbox.indeterminate = false;
+            return;
+        }
+
+        const visibleIds = visibleData.map(d => d[dbSchema[currentTable].pk]);
+        // 计算当前可见数据中有多少已被选中
+        const selectedCount = visibleIds.filter(id => selectedCrudIds.includes(id)).length;
+
+        if (selectedCount === 0) {
+            checkbox.checked = false;
+            checkbox.indeterminate = false;
+        } else if (selectedCount === visibleIds.length) {
+            checkbox.checked = true;
+            checkbox.indeterminate = false;
+        } else {
+            checkbox.checked = false;
+            checkbox.indeterminate = true;
+        }
+    }
+
+    // 切换单行选中状态
+    function toggleRowSelection(id) {
+        const idx = selectedCrudIds.indexOf(id);
+        if (idx > -1) {
+            selectedCrudIds.splice(idx, 1); // 移除
+        } else {
+            selectedCrudIds.push(id); // 添加
+        }
+        renderCrudTable(); // 重新渲染表格以更新样式
+        updateToolbarState(); // 更新按钮状态
+    }
+
+    // [关键] 全选/反选处理
+    window.handleSelectAll = function(checked) {
+        const schema = dbSchema[currentTable];
+        const data = window.currentVisibleData || [];
+
+        if (checked) {
+            // 将所有可见行加入 selectedCrudIds (去重)
+            data.forEach(row => {
+                const id = row[schema.pk];
+                if (!selectedCrudIds.includes(id)) selectedCrudIds.push(id);
+            });
+        } else {
+            // 从 selectedCrudIds 中移除所有可见行
+            const visibleIds = new Set(data.map(r => r[schema.pk]));
+            selectedCrudIds = selectedCrudIds.filter(id => !visibleIds.has(id));
+        }
+        renderCrudTable();
+        updateToolbarState();
+    };
+
+    // 更新工具栏按钮 (Add, Edit, Delete) 状态
+    function updateToolbarState() {
+        const editBtn = document.getElementById('btn-edit');
+        const delBtn = document.getElementById('btn-delete');
+        const count = selectedCrudIds.length;
+
+        // Edit: 仅选中 1 行时可用
+        if (editBtn) editBtn.disabled = (count !== 1);
+
+        // Delete: 选中 >= 1 行时可用
+        if (delBtn) delBtn.disabled = (count === 0);
+    }
+
+    // 点击 Edit 按钮
+    function handleToolbarEdit() {
+        if (selectedCrudIds.length === 1) {
+            openCrudModal('edit', selectedCrudIds[0]);
+        }
+    }
+
+    // [修改] 点击 Delete 按钮 -> 打开确认 Modal
+    function handleToolbarDelete() {
+        if (selectedCrudIds.length > 0) {
+            openDeleteModal();
+        }
+    }
+
+    // [新增] 打开删除确认 Modal
+    function openDeleteModal() {
+        const modal = document.getElementById('crud-modal-overlay');
+        const container = document.getElementById('modal-form-container');
+        const title = document.getElementById('modal-title');
+        const submitBtn = document.getElementById('modal-submit-btn');
+
+        title.textContent = "Delete Records";
+
+        const count = selectedCrudIds.length;
+        // 复用表单容器显示提示信息
+        container.innerHTML = `
+            <div style="padding: 10px 0; font-size: 1rem; color: var(--text-secondary); line-height: 1.5;">
+                <div style="margin-bottom:8px;">Are you sure you want to delete <strong style="color:var(--text-main)">${count}</strong> selected record(s)?</div>
+                <div style="font-size:0.85rem; color:#ef4444; font-weight:600;"><i data-lucide="alert-triangle" size="14" style="vertical-align:text-bottom"></i> This action cannot be undone.</div>
+            </div>
+        `;
+        lucide.createIcons();
+
+        // 动态修改按钮为“删除模式”
+        if (submitBtn) {
+            submitBtn.textContent = "Delete";
+            submitBtn.style.backgroundColor = "#ef4444"; // 红色背景
+            submitBtn.onclick = confirmDeleteData; // 绑定删除函数
+        }
+
+        modal.classList.add('active');
+    }
+
+    // [新增] 确认删除逻辑
+    function confirmDeleteData() {
+        const pk = dbSchema[currentTable].pk;
+        // 从 mockDB 中过滤掉被选中的数据
+        mockDB[currentTable] = mockDB[currentTable].filter(row => !selectedCrudIds.includes(row[pk]));
+
+        // 清空选中状态并刷新界面
+        selectedCrudIds = [];
+        renderTableNav();
+        renderCrudTable();
+        updateToolbarState();
+        closeCrudModal();
+    }
+
+    // 兼容旧代码调用
     function deleteCrudRow(id) {
         if (!confirm("Are you sure you want to delete this record?")) return;
         const pk = dbSchema[currentTable].pk;
         mockDB[currentTable] = mockDB[currentTable].filter(row => row[pk] !== id);
-        renderTableNav(); // Update counts
+        renderTableNav();
         renderCrudTable();
     }
-
     function openCrudModal(mode, id = null) {
         const schema = dbSchema[currentTable];
         const modal = document.getElementById('crud-modal-overlay');
         const container = document.getElementById('modal-form-container');
         const title = document.getElementById('modal-title');
+        const submitBtn = document.getElementById('modal-submit-btn');
+
+        // [关键] 重置按钮状态 (恢复为 Save 模式)
+        if (submitBtn) {
+            submitBtn.textContent = "Save Changes";
+            submitBtn.style.backgroundColor = ""; // 清除内联样式，恢复默认绿色
+            submitBtn.onclick = saveCrudData;
+        }
 
         editingId = id;
         title.textContent = mode === 'edit' ? `Edit ${schema.label.slice(0, -1)}` : `New ${schema.label.slice(0, -1)}`;
@@ -4627,7 +4808,7 @@
         // Build Form
         let formHtml = "";
         schema.columns.forEach(col => {
-            if (col.readonly && mode === 'add') return; // Skip read-only on add (like ID/Date if auto-generated)
+            if (col.readonly && mode === 'add') return;
 
             const val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
             const disabled = (col.readonly && mode === 'edit') ? "disabled style='opacity:0.6; cursor:not-allowed'" : "";
@@ -4669,7 +4850,6 @@
             const key = input.id.replace('input-', '');
             let val = input.value;
 
-            // Type conversion
             const colDef = schema.columns.find(c => c.key === key);
             if (colDef) {
                 if (colDef.type === 'number') val = Number(val);
@@ -4682,16 +4862,13 @@
             // Update
             const idx = mockDB[currentTable].findIndex(r => r[schema.pk] === editingId);
             if (idx !== -1) {
-                // Keep ID and other fields not in form if any
                 mockDB[currentTable][idx] = {...mockDB[currentTable][idx], ...newRow};
             }
         } else {
             // Create
-            // Auto-generate ID (simulated)
             const maxId = mockDB[currentTable].reduce((max, r) => Math.max(max, r[schema.pk] || 0), 0);
             newRow[schema.pk] = maxId + 1;
 
-            // Auto-date if exists in schema but not form
             if (schema.columns.find(c => c.key === 'creation_date')) {
                 newRow.creation_date = new Date().toISOString().split('T')[0];
             }
@@ -4705,16 +4882,16 @@
     }
 
     function resetDataTable() {
-        // 1. 重置所有状态变量
         crudSearchQuery = "";
         crudFilterState = {};
         sortState = {key: null, direction: 'asc'};
+        selectedCrudIds = [];
+        updateToolbarState();
 
-        // 2. 清空搜索框 UI
         const searchInput = document.getElementById('data-search-input');
         if (searchInput) searchInput.value = "";
 
-        // 3. 重新渲染表格
+        renderCrudHeader(); // 重置表头
         renderCrudTable();
     }
 
