@@ -2631,35 +2631,7 @@
             color: #fca5a5;
         }
 
-        .action-btn-group {
-            display: flex;
-            gap: 8px;
-        }
 
-        .action-icon-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: transparent;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .action-icon-btn:hover {
-            background: var(--brand);
-            color: white;
-            border-color: var(--brand);
-        }
-
-        .action-icon-btn.delete:hover {
-            background: #ef4444;
-            border-color: #ef4444;
-        }
 
 
         .crud-modal-overlay {
@@ -3035,7 +3007,7 @@
                         </div>
                         <div class="select-options" id="opt-group"></div>
                     </div>
-                    <button class="btn-reset-filters" onclick="resetFilters()"><i data-lucide="rotate-ccw" size="16"></i> Reset</button>
+                    <button class="btn-toolbar" onclick="resetFilters()" style="width: 100%; margin-top: 12px;"><i data-lucide="rotate-ccw" size="16"></i> Reset</button>
                 </div>
             </div>
             <div id="sidebar" class="sidebar">
