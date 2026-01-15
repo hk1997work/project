@@ -13,9 +13,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-data/7.1.9/vis-data.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.css">
 
     <style>
         :root {
@@ -68,8 +65,6 @@
             /* --- MAP DYNAMIC VARS --- */
             --site-color: #0f172a;
             --site-color-tint: rgba(15, 23, 42, 0.05);
-
-            --tl-scale: 1;
         }
 
         /* --- DARK THEME OVERRIDES (暗色主题覆盖) --- */
@@ -1982,137 +1977,7 @@
             font-weight: 700;
         }
 
-        /* Timeline Layout & Card Adaptation */
-        .timeline-header-styled {
-            /* [修改] 移除自定义背景和Padding，与 Media 标题保持完全一致 */
-            z-index: 100;
-        }
 
-        /* [新增] 禁止时间轴卡片内的图片交互，防止拖拽 bug */
-        .tl-media-card img {
-            pointer-events: none;
-            -webkit-user-drag: none;
-            user-select: none;
-        }
-
-        .tl-media-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: calc(12px * var(--tl-scale, 1)); /* 动态圆角 */
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-        }
-
-        .tl-media-card:hover {
-            transform: translateY(calc(-3px * var(--tl-scale, 1)));
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            border-color: var(--brand);
-            z-index: 5;
-        }
-
-        /* [新增] 强制图标缩放 */
-        .tl-media-card svg {
-            width: calc(14px * var(--tl-scale, 1));
-            height: calc(14px * var(--tl-scale, 1));
-        }
-
-        .tl-media-card .spectrogram-cover {
-            width: 100%;
-            aspect-ratio: 2 / 1;
-            position: relative;
-            overflow: hidden;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .tl-media-card .spectrogram-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.85;
-            mix-blend-mode: screen;
-            filter: sepia(1) hue-rotate(60deg) saturate(3) contrast(1.2);
-        }
-
-        /* [新增] 让频谱图上的时间标签跟随缩放 */
-        .tl-media-card .duration-badge {
-            font-size: calc(0.7rem * var(--tl-scale, 1));
-            padding: calc(3px * var(--tl-scale, 1)) calc(8px * var(--tl-scale, 1));
-            border-radius: calc(6px * var(--tl-scale, 1));
-
-            /* 位置偏移也需要缩放，否则缩小后会离边缘太远 */
-            bottom: calc(8px * var(--tl-scale, 1));
-            right: calc(8px * var(--tl-scale, 1));
-        }
-
-        .tl-media-card .play-circle {
-            width: calc(40px * var(--tl-scale, 1));
-            height: calc(40px * var(--tl-scale, 1));
-        }
-
-        /* 播放图标单独处理 */
-        .tl-media-card .play-circle svg {
-            width: calc(20px * var(--tl-scale, 1));
-            height: calc(20px * var(--tl-scale, 1));
-        }
-
-        .tl-media-card .media-card-info {
-            padding: calc(10px * var(--tl-scale, 1)); /* 动态内边距 */
-            display: flex;
-            flex-direction: column;
-            gap: calc(6px * var(--tl-scale, 1)); /* 动态间距 */
-        }
-
-        .tl-media-card .media-name {
-            font-weight: 700;
-            font-size: calc(0.85rem * var(--tl-scale, 1)); /* 动态字体 */
-            color: var(--text-main);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .tl-media-card .media-tag {
-            padding: calc(2px * var(--tl-scale, 1)) calc(8px * var(--tl-scale, 1));
-            font-size: calc(0.65rem * var(--tl-scale, 1));
-            border-radius: calc(20px * var(--tl-scale, 1));
-        }
-
-        .tl-media-card .tags-row {
-            gap: calc(6px * var(--tl-scale, 1));
-            min-height: calc(20px * var(--tl-scale, 1));
-        }
-
-        /* [新增] Timeline Card Meta Row 适配 - 全部动态计算 */
-        .tl-media-card .media-meta-row {
-            margin-left: calc(-10px * var(--tl-scale, 1));
-            margin-right: calc(-10px * var(--tl-scale, 1));
-            margin-bottom: calc(-10px * var(--tl-scale, 1));
-
-            /* [修改] 稍微减小内边距，让底部更紧凑 */
-            padding: calc(6px * var(--tl-scale, 1)) calc(10px * var(--tl-scale, 1));
-
-            margin-top: auto;
-
-            /* [修改] 字体减小：从 0.75rem -> 0.65rem */
-            font-size: calc(0.5rem * var(--tl-scale, 1));
-
-            /* [新增] 稍微调淡颜色，增加层次感 */
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        /* [新增] 专门缩小底部栏的图标，使其与小字体匹配 (从全局14px -> 11px) */
-        .tl-media-card .media-meta-row svg {
-            width: calc(11px * var(--tl-scale, 1));
-            height: calc(11px * var(--tl-scale, 1));
-            opacity: 0.8;
-        }
-
-        .tl-media-card .meta-icon-text {
-            /* [修改] 间距稍微收紧 */
-            gap: calc(3px * var(--tl-scale, 1));
-        }
 
         .placeholder-card {
             display: flex;
@@ -2575,122 +2440,7 @@
             flex-shrink: 0;
         }
 
-        /* --- VIS TIMELINE CUSTOM STYLES --- */
-        .vis-timeline {
-            border: none;
-            font-family: var(--font-sans);
-            background: transparent;
-        }
 
-        /* Time Axis */
-        .vis-time-axis .vis-text {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            padding-top: 4px;
-        }
-        .vis-time-axis .vis-grid.vis-minor {
-            border-color: var(--border-color);
-        }
-        .vis-time-axis .vis-grid.vis-major {
-            border-color: var(--border-color);
-        }
-
-        /* Groups (Left Column) */
-        .vis-labelset .vis-label {
-            border-bottom: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-            background: var(--bg-surface);
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        /* --- VIS ITEM STYLES (Overflow Logic) --- */
-
-        /* 1. 基础容器：必须允许溢出 */
-        .vis-item {
-            border: none;
-            background: transparent;
-            box-shadow: none;
-            overflow: visible; /* 关键：允许溢出 */
-            z-index: 10;
-        }
-
-        .vis-item.vis-selected {
-            z-index: 200 !important;
-        }
-
-        .vis-item:hover {
-            z-index: 100 !important;
-        }
-
-        .vis-item .vis-item-content {
-            padding: 0;
-            overflow: visible;
-            width: 100%;
-        }
-
-        /* 2. 内容盒子：默认截断 */
-        .timeline-item-box {
-            display: block;
-            width: 100%;
-            padding: 4px 8px;
-            border-radius: 6px;
-
-            background-color: rgba(131, 205, 32, 0.15);
-            border: 1px solid var(--brand);
-            color: var(--text-main);
-
-            font-size: 0.85rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-
-            transition: min-width 0.2s, background-color 0.2s, color 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-
-        /* 3. 悬停/选中：绝对定位展开 */
-        .vis-item:hover .timeline-item-box,
-        .vis-item.vis-selected .timeline-item-box {
-            position: absolute;
-            top: 0;
-            left: 0;
-
-            width: auto;
-            min-width: 100%;
-            max-width: 300px;
-
-            background-color: var(--brand);
-            border-color: var(--brand-hover);
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-
-        /* 暗色模式适配 */
-        [data-theme="dark"] .vis-timeline {
-            border-color: var(--border-color);
-        }
-        [data-theme="dark"] .vis-time-axis .vis-text {
-            color: var(--text-muted);
-        }
-
-        [data-theme="dark"] .timeline-item-box {
-            background-color: rgba(131, 205, 32, 0.15);
-            border-color: var(--brand);
-            color: #e2e8f0;
-        }
-
-        [data-theme="dark"] .vis-item:hover .timeline-item-box,
-        [data-theme="dark"] .vis-item.vis-selected .timeline-item-box {
-            background-color: var(--brand);
-            color: white;
-        }
 
         /* --- DATA TAB STYLES --- */
         .data-layout-wrapper {
@@ -3273,38 +3023,7 @@
     </div>
 
     <div id="tab-timeline" class="tab-page">
-        <div class="dashboard-card" style="height: 100%;">
-            <div class="card-header media-header timeline-header-styled" style="z-index: 100;">
-                <div class="media-title">
-                    <i data-lucide="kanban" size="24"></i> Timeline
-                    <span class="media-count-badge" id="tl-count-badge">Loading...</span>
-                </div>
-
-                <div class="media-controls" style="gap: 12px;">
-                    <div class="custom-select-wrapper" id="tl-sel-group" style="width: 200px;">
-                        <div class="select-trigger" onclick="toggleSelect('tl-sel-group')">
-                            <span class="trigger-text" id="tl-text-group">Group by: Realm</span>
-                            <i data-lucide="chevron-down" size="16"></i>
-                        </div>
-                        <div class="select-options">
-                            <div class="select-option" onclick="setTimelineGrouping('realm')">Realm</div>
-                            <div class="select-option" onclick="setTimelineGrouping('biome')">Biome</div>
-                            <div class="select-option" onclick="setTimelineGrouping('group')">Group</div>
-                            <div class="select-option" onclick="setTimelineGrouping('site')">Site</div>
-                        </div>
-                    </div>
-
-                    <button class="nav-btn-simple" onclick="fitTimeline()" title="Fit All Items" style="width:auto; padding:0 12px; font-weight:600; gap:6px;">
-                        <i data-lucide="maximize" size="16"></i> Fit
-                    </button>
-                </div>
-            </div>
-
-            <div class="card-body" style="padding:0; overflow:hidden; position:relative;">
-                <div id="visualization" style="width: 100%; height: 100%;"></div>
-            </div>
         </div>
-    </div>
 
     <div id="tab-data" class="tab-page">
         <div class="data-layout-wrapper">
@@ -4063,29 +3782,7 @@
         renderMedia();
     }
 
-    // --- TIMELINE LOGIC (VIS.JS) ---
 
-    let timelineInstance = null;
-    let tlGrouping = 'realm'; // 默认分组
-
-    function setTimelineGrouping(val) {
-        tlGrouping = val;
-        const labelMap = {
-            'realm': 'Group by: Realm',
-            'biome': 'Group by: Biome',
-            'group': 'Group by: Group',
-            'site': 'Group by: Site'
-        };
-        document.getElementById('tl-text-group').textContent = labelMap[val] || val;
-        closeSelects();
-        renderTimeline();
-    }
-
-    function fitTimeline() {
-        if (timelineInstance) {
-            timelineInstance.fit();
-        }
-    }
 
     // 强关联数据：确保 MediaItems 的数据完整（保留你原有的逻辑，稍作精简）
     function enrichMediaData() {
@@ -4101,6 +3798,10 @@
                 item.realm = linkedSite.realm;
                 item.biome = linkedSite.biome;
                 item.group = linkedSite.group;
+
+                // [Fix] 修复列表视图中海拔和水深显示 undefined 的问题
+                item.topography_m = linkedSite.topography_m;
+                item.freshwater_depth_m = linkedSite.freshwater_depth_m;
 
                 // 确保有 ISO 格式的 start date 用于 Vis.js
                 // item.date 是 "YYYY-MM-DD", item.time 是 "HH:mm:ss"
@@ -4118,91 +3819,7 @@
         });
     }
 
-    function renderTimeline() {
-        enrichMediaData();
 
-        const badge = document.getElementById('tl-count-badge');
-        if (badge) badge.textContent = `${mediaItems.length} Items`;
-
-        const container = document.getElementById('visualization');
-        if (!container) return;
-
-        // 1. 准备 Groups
-        const groupsSet = new Set();
-        mediaItems.forEach(item => {
-            if (item[tlGrouping]) groupsSet.add(item[tlGrouping]);
-        });
-
-        const groupsData = Array.from(groupsSet).sort().map((gName) => ({
-            id: gName,
-            content: gName
-        }));
-        const groups = new vis.DataSet(groupsData);
-
-        // 2. 准备 Items (仅文本)
-        const itemsData = mediaItems.map(item => {
-            // 纯文本，放入 div 供 CSS 控制溢出
-            const contentHtml = `
-                <div class="timeline-item-box">${item.name}</div>
-            `;
-
-            return {
-                id: item.id,
-                group: item[tlGrouping] || 'Unknown',
-                start: item.start,
-                end: item.end,
-                content: contentHtml,
-                // 移除了 title 和 type: 'range'
-                type: 'range'
-            };
-        });
-        const items = new vis.DataSet(itemsData);
-
-        // 3. 配置项
-        const options = {
-            groupOrder: 'content',
-            orientation: 'top',
-            editable: false,
-            margin: { item: 10, axis: 5 },
-            stack: true,
-            zoomMin: 1000 * 60 * 60,
-            zoomMax: 1000 * 60 * 60 * 24 * 365 * 10,
-            height: '100%',
-            verticalScroll: true,
-            zoomKey: 'ctrlKey',
-            horizontalScroll: true,
-
-            // 移除了 Tooltip 配置
-
-            cluster: {
-                maxItems: 1,
-                titleTemplate: 'Cluster containing {count} events',
-                clusterCriteria: function(item1, item2) {
-                    return Math.abs(item1.start - item2.start) < 1000 * 60 * 60;
-                }
-            },
-            template: function (item, element, data) {
-                return item.content;
-            }
-        };
-
-        // 4. 创建实例
-        if (timelineInstance) {
-            timelineInstance.destroy();
-        }
-
-        timelineInstance = new vis.Timeline(container, items, groups, options);
-
-        // 移除了 select 事件监听 (不再弹窗)
-
-        timelineInstance.on('changed', () => {
-            lucide.createIcons();
-        });
-
-        setTimeout(() => {
-            lucide.createIcons();
-        }, 100);
-    }
 
     function getIconForStat(key) {
         const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
@@ -4371,7 +3988,6 @@
         const refreshAllViews = () => {
             renderSummary();
             updateMediaContext();
-            if (document.getElementById('tab-timeline').classList.contains('active')) renderTimeline();
             loadMapData();
             if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
         };
@@ -4489,7 +4105,6 @@
 
             renderSummary();
             updateMediaContext();
-            if (document.getElementById('tab-timeline').classList.contains('active')) renderTimeline();
             loadMapData();
             if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
             renderCollectionList();
@@ -4575,7 +4190,6 @@
                 }
             });
         }
-        if (tabName === 'timeline') renderTimeline();
         if (tabName === 'map') {
             if (!map) initMap();
             setTimeout(() => {
