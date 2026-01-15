@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
     <style>
         :root {
 
@@ -3112,7 +3114,7 @@
 
     <div class="crud-modal-overlay" id="crud-modal-overlay">
         <div class="crud-modal">
-            <div class="card-title" id="modal-title">Edit Record</div>
+            <div class="card-title" id="modal-title">Edit Item</div>
             <div class="form-grid" id="modal-form-container">
             </div>
             <div class="modal-footer">
@@ -4448,10 +4450,8 @@
         currentTable = tableName;
         crudSearchQuery = "";
 
-
         selectedCrudIds = [];
         updateToolbarState();
-
 
         const searchInput = document.getElementById('data-search-input');
         if (searchInput) {
@@ -4459,15 +4459,16 @@
             searchInput.placeholder = "Search";
         }
 
+        const schema = dbSchema[tableName];
+        const firstColKey = schema.columns[0].key;
+        sortState = {key: firstColKey, direction: 'asc'};
 
-        sortState = {key: null, direction: 'asc'};
         crudFilterState = {};
 
         renderTableNav();
         renderCrudHeader();
         renderCrudTable();
     }
-
 
     function handleDataSearch(val) {
         crudSearchQuery = val.toLowerCase();
@@ -4718,13 +4719,14 @@
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
 
-        title.textContent = "Delete Records";
+        const schema = dbSchema[currentTable];
+        title.textContent = `Delete ${schema.label}`;
 
         const count = selectedCrudIds.length;
 
         container.innerHTML = `
             <div style="padding: 10px 0; font-size: 1rem; color: var(--text-secondary); line-height: 1.5;">
-                <div style="margin-bottom:8px;">Are you sure you want to delete <strong style="color:var(--text-main)">${count}</strong> selected record(s)?</div>
+                <div style="margin-bottom:8px;">Are you sure you want to delete <strong style="color:var(--text-main)">${count}</strong> selected item(s)?</div>
                 <div style="font-size:0.85rem; color:#ef4444; font-weight:600;"><i data-lucide="alert-triangle" size="14" style="vertical-align:text-bottom"></i> This action cannot be undone.</div>
             </div>
         `;
