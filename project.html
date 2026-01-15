@@ -12,16 +12,14 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-
     <style>
         :root {
-            /* --- COLOR PALETTE (基础色) --- */
+
             --brand: #83CD20;
             --brand-tint: rgba(131, 205, 32, 0.08);
             --brand-hover: #72b51b;
 
-            /* --- LIGHT THEME (默认亮色变量) --- */
+
             --bg-page: radial-gradient(circle at top left, #ffffff, #f8fafc);
             --bg-nav: rgba(255, 255, 255, 0.85);
             --bg-capsule: #f1f5f9;
@@ -37,41 +35,41 @@
             --border-light: #e2e8f0;
             --border-color: rgba(0, 0, 0, 0.06);
 
-            /* --- CARD STYLES --- */
+
             --glass-bg: rgba(255, 255, 255, 0.9);
             --card-bg: #ffffff;
             --card-border: 1px solid rgba(0, 0, 0, 0.06);
             --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08),
             0 0 0 1px rgba(255, 255, 255, 0.8) inset;
 
-            /* --- DIMENSIONS --- */
+
             --nav-height: 80px;
             --capsule-height: 48px;
             --radius: 24px;
 
-            /* --- LAYOUT PROPORTIONS --- */
+
             --w-wide: 60%;
             --gap: 32px;
 
-            /* --- ANIMATION --- */
+
             --anim-layout-duration: 0.8s;
             --anim-layout-ease: cubic-bezier(0.19, 1, 0.22, 1);
             --anim-fade-duration: 0.3s;
             --anim-fade-ease: ease-out;
 
-            /* --- FONTS --- */
+
             --font-sans: 'Inter', sans-serif;
 
-            /* --- MAP DYNAMIC VARS --- */
+
             --site-color: #0f172a;
             --site-color-tint: rgba(15, 23, 42, 0.05);
 
-            /* --- DIMENSIONS (CONTROLS) --- */
-            --h-std: 40px;  /* 标准控件高度 */
-            --h-sm: 32px;   /* 小号控件高度 (如表头筛选) */
+
+            --h-std: 40px;
+            --h-sm: 32px;
         }
 
-        /* --- DARK THEME OVERRIDES (暗色主题覆盖) --- */
+
         [data-theme="dark"] {
             --bg-page: radial-gradient(circle at top left, #0f172a, #020617);
             --bg-nav: rgba(15, 23, 42, 0.85);
@@ -98,7 +96,7 @@
             --site-color: #f8fafc;
         }
 
-        /* --- Leaflet Map Dark Mode (地图暗色滤镜) --- */
+
         [data-theme="dark"] .leaflet-layer,
         [data-theme="dark"] .leaflet-control-zoom-in,
         [data-theme="dark"] .leaflet-control-zoom-out,
@@ -142,9 +140,7 @@
             background: var(--brand);
         }
 
-        /* =========================================
-   NAVIGATION
-   ========================================= */
+
         .project-nav-bar {
             position: absolute;
             top: 0;
@@ -211,7 +207,7 @@
             letter-spacing: -0.2px;
         }
 
-        /* --- Logo Styles --- */
+
         .nav-logo {
             display: flex;
             align-items: center;
@@ -249,7 +245,7 @@
             color: var(--brand);
         }
 
-        /* Breadcrumbs */
+
         .breadcrumb-group {
             display: flex;
             align-items: center;
@@ -408,7 +404,7 @@
             gap: 8px;
         }
 
-        /* Tabs */
+
         .sliding-pill {
             position: absolute;
             top: 4px;
@@ -443,7 +439,7 @@
             color: var(--brand);
         }
 
-        /* Right Actions */
+
         .nav-btn-simple {
             background: transparent;
             border: none;
@@ -567,9 +563,7 @@
             opacity: 0.6;
         }
 
-        /* =========================================
-   GLOBAL LAYOUT
-   ========================================= */
+
         .content-wrapper {
             position: absolute;
             top: var(--nav-height);
@@ -613,7 +607,7 @@
             to {
                 opacity: 1;
                 transform: none;
-                /* [关键修复] 移除 transform 以修复 sticky 定位 */
+
             }
         }
 
@@ -637,9 +631,7 @@
             height: 100%;
         }
 
-        /* =========================================
-   PAGE STYLES
-   ========================================= */
+
         .desc-layout {
             position: relative;
             width: 100%;
@@ -707,7 +699,7 @@
             opacity: 1;
         }
 
-        /* Headers, Text, etc. */
+
         .desc-header-section {
             flex-shrink: 0;
             padding-bottom: 24px;
@@ -1028,7 +1020,7 @@
             text-transform: uppercase;
         }
 
-        /* Summary */
+
         .summary-layout {
             display: flex;
             gap: var(--gap);
@@ -1096,16 +1088,16 @@
         .summary-stat-card .bg-icon {
             position: absolute;
             bottom: -20px;
-            /* 稍微减少偏移量 */
+
             right: -20px;
             width: 180px;
-            /* [修复] 宽高保持固定，不参与动画 */
+
             height: 180px;
             opacity: 0.06;
             color: var(--text-main);
-            /* [修复] 初始状态设为较小的 scale */
+
             transform: rotate(-10deg) scale(0.8);
-            /* [修复] 明确 transition 属性，确保离开时平滑回归 */
+
             transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out, bottom 0.4s ease-in-out, right 0.4s ease-in-out, color 0.3s ease;
             pointer-events: none;
             z-index: 1;
@@ -1114,7 +1106,7 @@
         .summary-stat-card:hover .bg-icon {
             bottom: 0;
             right: 0;
-            /* [关键] 悬停时放大，离开时会顺着 scale 平滑缩小到 0.8，不会突变 */
+
             transform: rotate(0deg) scale(0.9);
             opacity: 1;
             color: var(--brand);
@@ -1298,13 +1290,13 @@
             color: var(--brand);
         }
 
-        /* Media */
+
         .media-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            /* margin-bottom: 24px; */
-            /* Removed per request */
+
+
             flex-shrink: 0;
         }
 
@@ -1338,10 +1330,10 @@
             align-items: center;
             background: var(--bg-capsule);
             border-radius: 60px;
-            /* [修改] 统一圆角为 60px */
-            padding: 0 16px; /* [修改] 去除垂直 padding，由 Flex 居中 */
-            height: var(--h-std); /* [修改] 统一高度变量 */
-            /* [修改] 统一使用导航栏胶囊的内阴影 */
+
+            padding: 0 16px;
+            height: var(--h-std);
+
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
             width: 220px;
             box-sizing: border-box;
@@ -1349,7 +1341,7 @@
             transition: all 0.2s;
         }
 
-        /* [新增] 暗色模式阴影适配 */
+
         [data-theme="dark"] .media-search-box {
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
         }
@@ -1357,16 +1349,16 @@
         .media-search-box:focus-within {
             background: var(--bg-surface);
             border-color: var(--brand);
-            /* 聚焦时覆盖原有阴影 */
+
             box-shadow: 0 0 0 2px var(--brand-tint);
         }
 
         .media-search-icon {
             color: var(--text-secondary);
             width: 24px;
-            /* [修改] 调整为 24px，与参考对象一致 */
+
             height: 24px;
-            /* [修改] 调整为 24px */
+
             margin-right: 8px;
             transition: color 0.2s;
         }
@@ -1376,13 +1368,13 @@
             background: transparent;
             outline: none;
             font-size: 0.85rem;
-            /* 13.6px */
+
             width: 100%;
             color: var(--text-secondary);
-            /* [修改] 颜色改为次级文本色，与按钮一致 */
+
             font-family: var(--font-sans);
             font-weight: 700;
-            /* [新增] 加粗，与按钮字体风格一致 */
+
         }
 
         .media-search-input::placeholder {
@@ -1394,12 +1386,12 @@
             position: relative;
             display: flex;
             background: var(--bg-capsule);
-            /* 统一导航栏的内阴影 */
+
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
             border-radius: 60px;
-            /* 统一圆角 */
-            padding: 4px; /* 保留 padding 用于 pill 动画空间 */
-            height: var(--h-std); /* [修改] 统一高度变量 */
+
+            padding: 4px;
+            height: var(--h-std);
             box-sizing: border-box;
         }
 
@@ -1414,10 +1406,10 @@
             left: 4px;
             width: 90px;
             background: var(--brand);
-            /* [关键修改] 绿色背景，同导航栏 */
+
             border-radius: 50px;
             box-shadow: none;
-            /* 去除卡片阴影 */
+
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             z-index: 1;
             pointer-events: none;
@@ -1435,7 +1427,7 @@
             font-size: 0.85rem;
             font-weight: 700;
             color: var(--text-secondary);
-            /* 默认灰色，同导航栏 */
+
             transition: color 0.25s ease;
             display: flex;
             align-items: center;
@@ -1445,28 +1437,28 @@
 
         .view-btn.active {
             color: white;
-            /* [关键修改] 激活为白色 */
+
         }
 
         .view-btn:not(.active):hover {
             color: var(--brand);
-            /* 悬停变绿 */
+
         }
 
         .media-scroll-area {
             flex: 1;
             overflow-y: auto;
-            /* Updated padding */
+
             min-height: 0;
         }
 
-        /* Gallery View Styles */
+
         .media-container.view-gallery {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            /* Fixed 5 columns */
+
             gap: 32px;
-            /* Increased gap */
+
             padding: 20px;
         }
 
@@ -1488,7 +1480,7 @@
             flex-direction: column;
             position: relative;
             cursor: default;
-            /* Changed from pointer */
+
         }
 
         .media-item-card:hover {
@@ -1516,7 +1508,7 @@
         }
 
         .media-item-card:hover .spectrogram-img {
-            /* No zoom transform */
+
             opacity: 1;
         }
 
@@ -1540,7 +1532,7 @@
             flex-direction: column;
             gap: 10px;
             flex: 1;
-            /* Fill remaining height */
+
         }
 
         .media-name {
@@ -1580,23 +1572,23 @@
             box-shadow: 0 2px 5px rgba(131, 205, 32, 0.25);
         }
 
-        /* Updated Footer Style */
+
         .media-meta-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
 
             margin-top: auto;
-            /* Bottom align */
+
             margin-left: -16px;
-            /* Pull to edges */
+
             margin-right: -16px;
             margin-bottom: -16px;
 
             padding: 10px 16px;
-            /* Inner spacing */
+
             background: var(--bg-surface-secondary);
-            /* Footer bg */
+
             border-top: 1px solid var(--border-color);
 
             color: var(--text-secondary);
@@ -1619,12 +1611,12 @@
             color: var(--text-main);
         }
 
-        /* List View Row - Updated Grid & Style */
+
         .media-item-row {
             background: var(--bg-surface);
             border-radius: 12px;
             display: grid;
-            /* [修改] 第一列 auto (由图片容器决定)，中间 360px */
+
             grid-template-columns: auto 360px 1fr;
             align-items: stretch;
             gap: 24px;
@@ -1641,16 +1633,16 @@
             border-color: rgba(131, 205, 32, 0.3);
         }
 
-        /* List View Spectrogram Container */
+
         .media-item-row .list-spec-container {
-            /* [修改] 使用固定宽度，确保每一行图片大小一致 */
+
             width: 320px;
-            /* 高度自动，由 aspect-ratio 决定 */
+
             height: auto;
-            /* 锁定 2:1 比例 (结果高度为 120px) */
+
             aspect-ratio: 2 / 1;
 
-            /* [修改] 防止图片被行高拉伸，居中或顶部对齐 */
+
             align-self: center;
 
             border-radius: 8px;
@@ -1658,7 +1650,7 @@
             background: #0f172a;
             border: 1px solid var(--border-color);
             overflow: hidden;
-            /* 防止在极端情况下被压缩 */
+
             flex-shrink: 0;
         }
 
@@ -1691,14 +1683,14 @@
             z-index: 2;
         }
 
-        /* Middle Column: Basic Info */
+
         .row-basic-info {
             display: flex;
             flex-direction: column;
             gap: 12px;
             justify-content: flex-start;
             padding-top: 4px;
-            /* [新增] 确保中间列占满高度，以便底部对齐生效 */
+
             height: 100%;
             box-sizing: border-box;
         }
@@ -1726,7 +1718,7 @@
             flex-direction: row;
             flex-wrap: wrap;
             gap: 16px;
-            /* [修改] 使用 auto 将其推到容器底部 */
+
             margin-top: auto;
         }
 
@@ -1744,7 +1736,7 @@
             opacity: 0.7;
         }
 
-        /* Right Column: Details Grid */
+
         .row-details-col {
             display: flex;
             flex-direction: column;
@@ -1791,7 +1783,7 @@
             border-left: 1px solid var(--border-color);
             font-size: 0.75rem;
             color: var(--text-muted);
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
             font-weight: 600;
         }
 
@@ -1817,7 +1809,7 @@
 
         .rd-grid {
             display: grid;
-            /* [修改] 定义4列，最后一列宽度稍大，留给 Note */
+
             grid-template-columns: 1fr 1fr 1fr 1.5fr;
             grid-template-rows: auto auto;
             gap: 12px 16px;
@@ -1839,7 +1831,7 @@
             overflow: hidden;
         }
 
-        /* [新增] Note 专用样式：占据第4列的第1行到第2行 */
+
         .rd-item.span-v {
             grid-column: 4;
             grid-row: 1 / span 2;
@@ -1874,9 +1866,7 @@
             text-overflow: ellipsis;
         }
 
-        /* --- Timeline Matrix Styles --- */
 
-        /* [修改] New Dropdown Styles to Match Navigation */
         .custom-select-wrapper {
             position: relative;
             font-family: var(--font-sans);
@@ -1886,12 +1876,11 @@
             display: none;
         }
 
-        /* Hide label to match nav style */
 
         .select-trigger {
             width: auto;
             min-width: 160px;
-            height: var(--h-std); /* [修改] 统一高度变量 */
+            height: var(--h-std);
             padding: 0 16px;
             background: var(--bg-capsule);
             border: 1px solid transparent;
@@ -1920,7 +1909,7 @@
             border-color: var(--brand);
         }
 
-        /* [修改] Disabled Style */
+
         .select-trigger.disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -2009,9 +1998,7 @@
             line-height: 1.6;
         }
 
-        /* =========================================
-   MAP & FILTER & SIDEBAR STYLES (Merged from Project 2)
-   ========================================= */
+
         .map-wrapper {
             position: relative;
             width: 100%;
@@ -2026,7 +2013,7 @@
             background: #f0f3f8;
         }
 
-        /* Cluster Icons */
+
         .custom-cluster-icon {
             background: transparent;
         }
@@ -2053,16 +2040,16 @@
             transform: translate(-50%, -50%);
             width: 40px;
             height: 40px;
-            background: var(--bg-surface); /* 修复：改为变量 */
+            background: var(--bg-surface);
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: var(--text-main); /* 修复：改为变量 */
+            color: var(--text-main);
             line-height: 1;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: background 0.3s, color 0.3s; /* 新增过渡动画 */
+            transition: background 0.3s, color 0.3s;
         }
 
         .dc-num {
@@ -2074,7 +2061,7 @@
         .dc-label {
             font-size: 0.5rem;
             font-weight: 700;
-            color: var(--text-muted); /* 修复：改为变量 */
+            color: var(--text-muted);
             margin-top: 1px;
         }
 
@@ -2082,15 +2069,15 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: var(--bg-surface); /* 修复：改为变量 */
-            border: 4px solid var(--border-light); /* 修复：边框颜色也适配暗色 */
+            background: var(--bg-surface);
+            border: 4px solid var(--border-light);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
             font-size: 0.75rem;
-            color: var(--text-main); /* 修复：改为变量 */
+            color: var(--text-main);
             transition: transform 0.2s, background 0.3s, border-color 0.3s;
         }
 
@@ -2098,7 +2085,7 @@
             transform: scale(1.2);
         }
 
-        /* Filter Drawer */
+
         .filter-trigger-btn {
             position: absolute;
             top: 20px;
@@ -2198,7 +2185,7 @@
             flex: 1;
         }
 
-        /* 通用工具栏按钮样式 (复用 reset 样式) */
+
         .btn-toolbar {
             height: var(--h-std);
             padding: 0 20px;
@@ -2216,7 +2203,7 @@
             transition: all 0.2s;
         }
 
-        /* 默认悬停效果 (品牌色) */
+
         .btn-toolbar:hover:not(:disabled) {
             border-color: var(--brand);
             background: var(--brand);
@@ -2224,7 +2211,7 @@
             box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
         }
 
-        /* 红色悬停效果 (用于 Delete) */
+
         .btn-toolbar.danger:hover:not(:disabled) {
             border-color: #ef4444;
             background: #ef4444;
@@ -2232,7 +2219,7 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
 
-        /* 禁用状态 */
+
         .btn-toolbar:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -2241,17 +2228,17 @@
             border-color: transparent;
         }
 
-        /* 表格 checkbox 样式微调 */
+
         .crud-checkbox {
             cursor: pointer;
             width: 16px;
             height: 16px;
             accent-color: var(--brand);
-            vertical-align: middle; /* [新增] 垂直居中 */
-            margin: 0; /* [新增] 去除默认外边距 */
+            vertical-align: middle;
+            margin: 0;
         }
 
-        /* Sidebar */
+
         .sidebar {
             position: absolute;
             top: 20px;
@@ -2314,7 +2301,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-family: var(--font-mono);
+            font-family: var(--font-sans);
             font-size: 0.8rem;
         }
 
@@ -2356,7 +2343,7 @@
             flex-direction: column;
             gap: 12px;
             min-height: 0;
-            /* [关键] 允许子元素滚动 */
+
         }
 
         .data-row {
@@ -2365,7 +2352,7 @@
             align-items: baseline;
             border-bottom: 1px dashed var(--border-light);
             flex-shrink: 0;
-            /* 防止数据行被压缩 */
+
         }
 
         .data-label {
@@ -2392,7 +2379,7 @@
             flex-shrink: 0;
         }
 
-        /* [修改] 媒体滚动容器：使用 Flex Column 并允许滚动 */
+
         .media-scroll-container {
             display: flex;
             flex-direction: column;
@@ -2405,7 +2392,7 @@
             padding-bottom: 20px;
         }
 
-        /* [修改] 侧边栏卡片：防止被压缩 */
+
         .media-scroll-container .media-item-card {
             flex-shrink: 0;
         }
@@ -2471,7 +2458,6 @@
         }
 
 
-        /* --- DATA TAB STYLES --- */
         .data-layout-wrapper {
             display: flex;
             height: 100%;
@@ -2600,7 +2586,7 @@
         }
 
         .crud-table tr {
-            cursor: pointer; /* [新增] 鼠标手型 */
+            cursor: pointer;
             transition: background 0.1s;
         }
 
@@ -2608,7 +2594,7 @@
             background: var(--bg-surface-hover);
         }
 
-        /* [修改] 选中行高亮样式 (使用内阴影代替边框，防止文字抖动) */
+
         .crud-table tr.selected {
             background: var(--brand-tint) !important;
             box-shadow: inset 3px 0 0 var(--brand) !important;
@@ -2673,7 +2659,7 @@
             border-color: #ef4444;
         }
 
-        /* Modal */
+
         .crud-modal-overlay {
             position: fixed;
             top: 0;
@@ -2736,15 +2722,15 @@
         }
 
         .form-input {
-            height: var(--h-std); /* [修改] 统一高度 */
-            padding: 0 14px;      /* [修改] 调整内边距 */
+            height: var(--h-std);
+            padding: 0 14px;
             border-radius: 8px;
             border: 1px solid var(--border-light);
             background: var(--bg-capsule);
             color: var(--text-main);
             font-family: var(--font-sans);
             outline: none;
-            box-sizing: border-box; /* [新增] 防止 padding 撑大 */
+            box-sizing: border-box;
         }
 
         .form-input:focus {
@@ -2764,13 +2750,13 @@
             background: var(--brand);
             color: white;
             border: none;
-            height: var(--h-std); /* [修改] 统一高度 */
+            height: var(--h-std);
             padding: 0 24px;
             border-radius: 50px;
             font-weight: 700;
             cursor: pointer;
-            display: inline-flex; /* [新增] flex 布局 */
-            align-items: center;  /* [新增] 垂直居中 */
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
             gap: 6px;
         }
@@ -2779,17 +2765,17 @@
             background: transparent;
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
-            height: var(--h-std); /* [修改] 统一高度 */
+            height: var(--h-std);
             padding: 0 24px;
             border-radius: 50px;
             font-weight: 600;
             cursor: pointer;
-            display: inline-flex; /* [新增] flex 布局 */
-            align-items: center;  /* [新增] 垂直居中 */
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
         }
 
-        /* --- 排序与筛选增强样式 --- */
+
         .crud-table th {
             vertical-align: top;
             padding: 10px 12px;
@@ -2823,7 +2809,7 @@
 
         .th-filter-input {
             width: 100%;
-            height: var(--h-sm); /* [修改] 统一小号高度 */
+            height: var(--h-sm);
             padding: 0 8px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
@@ -3143,7 +3129,7 @@
 <script>
     lucide.createIcons();
 
-    // --- [新增] 富文本内容生成器 ---
+
     const generateRichText = (type, title, location, latinName) => {
         if (type === 'modern') {
             return `
@@ -3188,7 +3174,7 @@
                         <blockquote>"The results suggest a significant correlation between rainfall patterns and biological acoustic activity."</blockquote>
                     </div>
                 `;
-        } else { // Editorial / Blog
+        } else {
             return `
                     <div class="style-modern">
                         <p style="font-family:serif;font-size:1.2rem;line-height:1.8;color:var(--text-main);">
@@ -3227,14 +3213,14 @@
     const getImg = (idx) => projectImages[idx % projectImages.length];
     const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
-    // --- 贡献者生成逻辑 (Mock Data) ---
+
     const mockNames = ["A. Schmidt", "B. Cohen", "C. Kim", "D. Mwangi", "E. Rossi", "F. Yamamoto", "G. Dubois", "H. Petrov", "I. Al-Fayed", "J. Smith", "K. Gupta", "L. Wei"];
-    // 项目角色池
+
     const projRoles = ["Principal Investigator", "Lead Researcher", "Field Technician", "Data Analyst", "Project Manager", "Ecologist"];
-    // 集合角色池
+
     const colRoles = ["Field Recorder", "Annotator", "Reviewer", "Data Curator", "Metadata Specialist", "Logistics"];
 
-    // [修改] getContributors 接受一个可选的 leadName
+
     const getContributors = (count, type, leadName = null) => {
         const list = [];
         const rolePool = type === 'project' ? projRoles : colRoles;
@@ -3242,12 +3228,12 @@
         for (let i = 0; i < count; i++) {
             let name, role;
 
-            // 第一位如果是 leadName，则使用该名字和最高级别角色
+
             if (i === 0 && leadName) {
                 name = leadName;
-                role = rolePool[0]; // PI or Field Recorder
+                role = rolePool[0];
             } else {
-                // 其他随机
+
                 name = mockNames[Math.floor(Math.random() * mockNames.length)];
                 role = rolePool[Math.floor(Math.random() * (rolePool.length - 1)) + 1];
             }
@@ -3264,12 +3250,12 @@
 
     const createCollections = (baseName, count, startImgIdx, creatorName) => {
         return Array.from({length: count}, (_, i) => {
-            const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`; // 生成集合特定的创建者
+            const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
             return {
                 id: `c${i}`,
                 name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
                 active: false,
-                creator: collectionCreator, // 绑定到 metadata
+                creator: collectionCreator,
                 date: `2025-0${(i % 9) + 1}-15`,
                 doi: `10.ECO/col.${i + 1}`,
                 sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
@@ -3278,7 +3264,7 @@
                 description: colGenerators[i % 3](`${baseName}`),
                 image: getImg(startImgIdx + i + 1),
                 stats: {users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), tags: rInt(50, 300), sites: rInt(1, 5)},
-                // [修改] 传递集合创建者给生成函数
+
                 contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
             };
         });
@@ -3291,7 +3277,7 @@
             styleClass: "style-modern", image: getImg(0),
             collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
             stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", tags: 4500, sites: 12},
-            // [修改] 使用 Dr. Silva 作为项目 PI
+
             contributors: getContributors(4, 'project', "Dr. Silva")
         },
         {
@@ -3300,7 +3286,7 @@
             styleClass: "style-academic", image: getImg(1),
             collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
             stats: {users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", tags: 2100, sites: 5},
-            // [修改] 使用 Prof. Ocean 作为 PI
+
             contributors: getContributors(3, 'project', "Prof. Ocean")
         },
         {
@@ -3309,7 +3295,7 @@
             styleClass: "style-editorial", image: getImg(2),
             collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
             stats: {users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", tags: 1200, sites: 8},
-            // [修改] 使用 K. Mbeki 作为 PI
+
             contributors: getContributors(5, 'project', "K. Mbeki")
         }
     ];
@@ -3320,7 +3306,7 @@
     let projSearchQuery = "";
     let colSearchQuery = "";
 
-    // --- MAP VARIABLES & LOGIC (省略部分未变代码以节省空间) ---
+
     let map = null;
     let clusterGroup = null;
     let polyLayer = null;
@@ -3395,7 +3381,7 @@
     }
 
     function loadMapData() {
-        // [Fix] 移除了 if (!map) return; 以便在地图显示前也能生成 Site 数据供 Media 使用
+
         const projId = rawProjects[currProjIdx].id;
         const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null;
 
@@ -3408,7 +3394,7 @@
             currentSites = generateSitesForContext(projId, colId);
         }
 
-        // 只有当过滤器 UI 存在时才重置过滤器 (通常一直存在)
+
         resetFilters();
     }
 
@@ -3487,28 +3473,28 @@
         document.documentElement.style.setProperty('--site-color', color);
         document.documentElement.style.setProperty('--site-color-tint', color + '12');
 
-        // 1. 填充文本信息
+
         document.getElementById('sb-name').textContent = site.name;
         document.getElementById('val-realm').textContent = site.realm;
         document.getElementById('val-realm').style.color = color;
         document.getElementById('val-biome').textContent = site.biome;
         document.getElementById('val-group').textContent = site.group;
 
-        // 2. 渲染头部元数据 (Topography / Water Depth)
+
         const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
         const depthHtml = site.freshwater_depth_m !== "N/A"
             ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>`
             : '';
 
-        // 确保容器存在后再写入
+
         const metaContainer = document.getElementById('sb-meta-container');
         if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
 
-        // 3. 渲染 Media (Gallery 样式卡片 - 保持与 Media 页面完全一致的结构)
+
         const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
 
         const mediaHtml = site.media.map((m) => {
-            // 为了保持视觉一致性，这里模拟一些标签和数据
+
             const mockTagsHtml = `<span class="media-tag">Bio</span><span class="media-tag">Aves</span>`;
             const mockTime = "14:30:00";
             const mockSize = "2.4 MB";
@@ -3534,7 +3520,7 @@
                 </div>`;
         }).join('');
 
-        // [修改] 获取容器并重置滚动条位置
+
         const mediaListContainer = document.getElementById('media-container');
         mediaListContainer.innerHTML = mediaHtml;
         mediaListContainer.scrollTop = 0;
@@ -3624,11 +3610,11 @@
         const labelMap = {realm: "All Realms", biome: "All Biomes", group: "All Groups"};
 
         if (!value) {
-            textEl.innerHTML = labelMap[type]; // 使用 innerHTML 以防万一
+            textEl.innerHTML = labelMap[type];
             trigger.classList.remove('active');
         } else {
             if (type === 'realm') {
-                // 获取对应颜色并添加圆点
+
                 const color = getRealmColor(value);
                 textEl.innerHTML = `<span class="opt-dot" style="background:${color}; display:inline-block; margin-right:8px;"></span>${value}`;
             } else {
@@ -3671,7 +3657,7 @@
         renderMap(true);
     }
 
-    // --- MEDIA PAGE LOGIC (DYNAMIC) ---
+
     let mediaItems = [];
     let mediaSearchQuery = "";
     const taxonTags = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
@@ -3681,7 +3667,7 @@
         return shuffled.slice(0, count);
     };
 
-    // [修改] 年份随机化 (2021 - 2025)
+
     const generateMediaForContext = (proj, col) => {
         const prefix = col ? `COL_${col.id}` : `PROJ_${proj.id}`;
         const count = col ? rInt(8, 15) : rInt(24, 40);
@@ -3689,7 +3675,7 @@
             const h = Math.floor(Math.random() * 24).toString().padStart(2, '0');
             const m = Math.floor(Math.random() * 60).toString().padStart(2, '0');
             const s = Math.floor(Math.random() * 60).toString().padStart(2, '0');
-            const year = 2021 + Math.floor(Math.random() * 5); // 2021-2025
+            const year = 2021 + Math.floor(Math.random() * 5);
             const month = Math.floor(Math.random() * 12) + 1;
             const day = Math.floor(Math.random() * 28) + 1;
             const fullDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -3721,7 +3707,7 @@
         const searchInput = document.querySelector('.media-search-input');
         if (searchInput) searchInput.value = "";
 
-        // [新增] 切换上下文时，强制滚动区域回到顶部
+
         const scrollArea = document.querySelector('.media-scroll-area');
         if (scrollArea) scrollArea.scrollTop = 0;
 
@@ -3737,7 +3723,7 @@
     }
 
     function renderMedia() {
-        // [新增] 渲染前确保数据字段完整
+
         enrichMediaData();
 
         const container = document.getElementById('media-grid-container');
@@ -3757,13 +3743,13 @@
             const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
 
             if (isGallery) {
-                // [Gallery View] 保持不变
+
                 html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div><div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div></div></div></div>`;
             } else {
-                // [List View] 调整布局：Topography 和 Water Depth 移至 Site Header
+
                 const realmColor = getRealmColor(item.realm);
 
-                // 构建水深显示逻辑 (如果是 N/A 则不显示图标，保持整洁，或者您可以选择显示灰色)
+
                 const depthHtml = item.freshwater_depth_m !== 'N/A'
                     ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>`
                     : '';
@@ -3834,7 +3820,7 @@
             container.classList.add('view-list');
         }
 
-        // [新增] 切换视图时，让滚动区域回到顶部
+
         const scrollArea = document.querySelector('.media-scroll-area');
         if (scrollArea) scrollArea.scrollTop = 0;
 
@@ -3846,7 +3832,6 @@
     }
 
 
-    // 强关联数据：确保 MediaItems 的数据完整（保留你原有的逻辑，稍作精简）
     function enrichMediaData() {
         if (currentSites.length === 0) return;
         const realSites = currentSites;
@@ -3861,14 +3846,13 @@
                 item.biome = linkedSite.biome;
                 item.group = linkedSite.group;
 
-                // [Fix] 修复列表视图中海拔和水深显示 undefined 的问题
+
                 item.topography_m = linkedSite.topography_m;
                 item.freshwater_depth_m = linkedSite.freshwater_depth_m;
 
-                // 确保有 ISO 格式的 start date 用于 Vis.js
-                // item.date 是 "YYYY-MM-DD", item.time 是 "HH:mm:ss"
+
                 item.start = moment(`${item.date} ${item.time}`, "YYYY-MM-DD HH:mm:ss").toDate();
-                // 模拟时长，结束时间 = 开始 + 随机分钟
+
                 item.end = moment(item.start).add(rInt(1, 10), 'minutes').toDate();
 
                 if (!item.uploader) item.uploader = ["UserA", "LabAdmin", "J.Doe"][rInt(0, 2)];
@@ -3887,7 +3871,7 @@
         return map[key] || 'activity';
     }
 
-    function renderSummary() { /* ... same ... */
+    function renderSummary() {
         const statsContainer = document.getElementById('summary-stats-grid');
         const contribCard = document.querySelector('.summary-contributors-card');
         const contribList = document.getElementById('summary-contributors-list');
@@ -3939,7 +3923,7 @@
         });
     }
 
-    function renderProjectList() { /* ... same ... */
+    function renderProjectList() {
         const container = document.getElementById('project-list-container');
         const filteredProjs = rawProjects.map((p, i) => ({...p, originalIndex: i})).filter(p => p.name.toLowerCase().includes(projSearchQuery.toLowerCase()));
         if (filteredProjs.length === 0) {
@@ -3956,7 +3940,7 @@
         lucide.createIcons();
     }
 
-    function renderCollectionList() { /* ... same ... */
+    function renderCollectionList() {
         const container = document.getElementById('collection-list-container');
         const rawCols = rawProjects[currProjIdx].collections;
         const displayList = [{name: "All Collections"}, ...rawCols];
@@ -4024,7 +4008,7 @@
             projContainer.className = "";
             if (project.styleClass) projContainer.classList.add(project.styleClass);
         };
-        /* ... same animation logic ... */
+
         if (immediate) {
             updateLogic();
             const img = document.getElementById('main-project-image');
@@ -4057,7 +4041,7 @@
     }
 
     function selectProject(idx) {
-        // [Bug 修复] 立即隐藏菜单，防止闪烁
+
         const dropdown = document.getElementById('dropdown-project');
         dropdown.style.display = 'none';
 
@@ -4067,13 +4051,13 @@
             currProjIdx = idx;
             currColIdx = 0;
 
-            // --- [修改] 仅重置滚动位置，保留当前缩放倍数 ---
+
             const tlContainer = document.getElementById('tl-matrix-container');
             if (tlContainer) {
                 tlContainer.scrollTop = 0;
                 tlContainer.scrollLeft = 0;
             }
-            // ------------------------------------
+
 
             projSearchQuery = "";
             document.querySelector('#dropdown-project input').value = "";
@@ -4095,7 +4079,7 @@
             renderCollectionList();
             renderProjectList();
         }
-        // 稍后恢复显示属性（此时 opacity 已经是 0，所以用户看不见）
+
         setTimeout(() => {
             dropdown.style.display = '';
             closeAllMenus();
@@ -4103,20 +4087,20 @@
     }
 
     function selectCollection(idx) {
-        // [Bug 修复] 立即隐藏菜单
+
         const dropdown = document.getElementById('dropdown-collection');
         dropdown.style.display = 'none';
 
         if (currColIdx !== idx) {
             currColIdx = idx;
 
-            // --- [修改] 仅重置滚动位置，保留当前缩放倍数 ---
+
             const tlContainer = document.getElementById('tl-matrix-container');
             if (tlContainer) {
                 tlContainer.scrollTop = 0;
                 tlContainer.scrollLeft = 0;
             }
-            // ------------------------------------
+
 
             colSearchQuery = "";
             document.querySelector('#dropdown-collection input').value = "";
@@ -4130,7 +4114,7 @@
                 const colContainer = document.getElementById('panel-col-desc');
                 const colDoiShort = colData.doi.split('/')[1];
                 const updateCollectionHTML = () => {
-                    // [优化] 集合视图也使用新的胶囊风格
+
                     colContainer.innerHTML = `
                             <div class="collection-card block-anim">
                                 <div class="col-header-group">
@@ -4308,9 +4292,6 @@
     }
 
 
-    // --- CRUD / DATA TAB LOGIC ---
-
-    // 1. Define Schema based on 'database_postgresql_clean(fixed).sql'
     const dbSchema = {
         project: {
             label: "Projects",
@@ -4344,7 +4325,7 @@
             columns: [
                 {key: "site_id", label: "ID", type: "number", readonly: true},
                 {key: "name", label: "Site Name", type: "text"},
-                {key: "realm_id", label: "Realm", type: "text"}, // Simplified
+                {key: "realm_id", label: "Realm", type: "text"},
                 {key: "topography_m", label: "Elevation (m)", type: "number"},
                 {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number"}
             ]
@@ -4370,7 +4351,7 @@
                 {key: "name", label: "Filename", type: "text"},
                 {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video"]},
                 {key: "site_id", label: "Site ID", type: "number"},
-                {key: "duration_s", label: "Duration (s)", type: "text", readonly: true} // Simplified logic
+                {key: "duration_s", label: "Duration (s)", type: "text", readonly: true}
             ]
         },
         taxon: {
@@ -4396,7 +4377,7 @@
         }
     };
 
-    // 2. Mock Data Store
+
     let mockDB = {
         project: [
             {project_id: 1, name: "Amazon Rainforest Survey", creator_id: 101, public: true, active: true, creation_date: "2025-01-10"},
@@ -4430,22 +4411,18 @@
         ]
     };
 
-    // 3. State Variables
+
     let currentTable = "project";
     let crudSearchQuery = "";
     let editingId = null;
-    let selectedCrudIds = []; // [多选] 存储选中行的 ID 数组
+    let selectedCrudIds = [];
     let sortState = {key: null, direction: 'asc'};
-    let crudFilterState = {};
 
-    // --- Helper Functions ---
-
-    // 初始化入口
     function initDataTab() {
         switchCrudTable('project');
     }
 
-    // 渲染左侧导航
+
     function renderTableNav() {
         const navList = document.getElementById('table-nav-list');
         let html = "";
@@ -4466,76 +4443,76 @@
         lucide.createIcons();
     }
 
-    // 切换表格
+
     function switchCrudTable(tableName) {
         currentTable = tableName;
         crudSearchQuery = "";
 
-        // 重置选中状态
+
         selectedCrudIds = [];
         updateToolbarState();
 
-        // 重置搜索框
+
         const searchInput = document.getElementById('data-search-input');
         if (searchInput) {
             searchInput.value = "";
             searchInput.placeholder = "Search";
         }
 
-        // 重置高级状态
+
         sortState = {key: null, direction: 'asc'};
         crudFilterState = {};
 
         renderTableNav();
-        renderCrudHeader(); // 渲染一次表头
-        renderCrudTable();  // 渲染表体
+        renderCrudHeader();
+        renderCrudTable();
     }
 
-    // 搜索处理
+
     function handleDataSearch(val) {
         crudSearchQuery = val.toLowerCase();
-        renderCrudTable(); // 只更新表体
+        renderCrudTable();
     }
 
-    // 排序处理
+
     function handleSort(key) {
         if (sortState.key === key) {
-            // 仅在升序和降序之间切换
+
             sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
         } else {
-            // 新列默认升序
+
             sortState.key = key;
             sortState.direction = 'asc';
         }
-        renderCrudHeader(); // 更新 Header 图标
-        renderCrudTable();  // 更新 Body 数据顺序
+        renderCrudHeader();
+        renderCrudTable();
     }
 
-    // 筛选处理
+
     function handleColumnFilter(key, value) {
         if (value === "" || value === "all") {
             delete crudFilterState[key];
         } else {
             crudFilterState[key] = value;
         }
-        renderCrudTable(); // 只更新表体，不更新表头
+        renderCrudTable();
     }
 
-    // [关键] 渲染表头 (独立函数，防止输入框重绘丢失焦点)
+
     function renderCrudHeader() {
         const schema = dbSchema[currentTable];
         const thead = document.getElementById('crud-thead');
 
         let headHtml = "<tr>";
 
-        // 1. 全选 Checkbox 列
+
         headHtml += `
             <th style="width: 40px; text-align:center; vertical-align:top; padding-top:14px;">
                 <input type="checkbox" class="crud-checkbox" id="header-select-all"
                 onclick="handleSelectAll(this.checked)">
             </th>`;
 
-        // 2. 数据列
+
         schema.columns.forEach(col => {
             const isSorted = sortState.key === col.key;
             const sortIcon = isSorted ? (sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
@@ -4549,7 +4526,9 @@
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${currentFilterVal === 'true' ? 'selected' : ''}>True</option><option value="false" ${currentFilterVal === 'false' ? 'selected' : ''}>False</option></select>`;
             } else if (col.type === 'select') {
                 let opts = `<option value="all">All</option>`;
-                col.options.forEach(o => { opts += `<option value="${o}" ${currentFilterVal === o ? 'selected' : ''}>${o}</option>`; });
+                col.options.forEach(o => {
+                    opts += `<option value="${o}" ${currentFilterVal === o ? 'selected' : ''}>${o}</option>`;
+                });
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">${opts}</select>`;
             } else {
                 filterInputHtml = `<input type="text" class="th-filter-input" placeholder="Filter..." value="${currentFilterVal}" oninput="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">`;
@@ -4569,7 +4548,7 @@
         lucide.createIcons();
     }
 
-    // [关键] 渲染表格体
+
     function renderCrudTable() {
         const schema = dbSchema[currentTable];
         const rawData = mockDB[currentTable] || [];
@@ -4578,7 +4557,7 @@
 
         titleEl.innerHTML = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
 
-        // --- 1. 筛选逻辑 ---
+
         let processedData = rawData.filter(row => {
             const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
             if (!matchesGlobal) return false;
@@ -4590,21 +4569,22 @@
             });
         });
 
-        // --- 2. 排序逻辑 ---
+
         if (sortState.key) {
             processedData.sort((a, b) => {
                 let valA = a[sortState.key], valB = b[sortState.key];
                 if (valA === null || valA === undefined) valA = "";
                 if (valB === null || valB === undefined) valB = "";
                 if (typeof valA === 'number' && typeof valB === 'number') return sortState.direction === 'asc' ? valA - valB : valB - valA;
-                valA = String(valA).toLowerCase(); valB = String(valB).toLowerCase();
+                valA = String(valA).toLowerCase();
+                valB = String(valB).toLowerCase();
                 if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
                 if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;
                 return 0;
             });
         }
 
-        // --- 3. 渲染 HTML ---
+
         let bodyHtml = "";
         if (processedData.length === 0) {
             bodyHtml = `<tr><td colspan="${schema.columns.length + 1}" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">No results found</td></tr>`;
@@ -4614,10 +4594,10 @@
                 const isSelected = selectedCrudIds.includes(row[pk]);
                 const rowClass = isSelected ? 'selected' : '';
 
-                // [修改] 移除了 onclick，添加了 ondblclick (双击编辑)
+
                 bodyHtml += `<tr class="${rowClass}" ondblclick="openCrudModal('edit', ${row[pk]})">`;
 
-                // [修改] Checkbox 单元格 (保留 onclick 用于选中)
+
                 bodyHtml += `
                     <td style="text-align:center; border-bottom:1px solid var(--border-color);">
                         <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''}
@@ -4638,14 +4618,14 @@
         tbody.innerHTML = bodyHtml;
         lucide.createIcons();
 
-        // --- 4. 同步更新表头全选 Checkbox 状态 ---
+
         updateHeaderCheckbox(processedData);
 
-        // 保存当前可见数据供全选使用
+
         window.currentVisibleData = processedData;
     }
 
-    // 更新表头 Checkbox 状态
+
     function updateHeaderCheckbox(visibleData) {
         const checkbox = document.getElementById('header-select-all');
         if (!checkbox) return;
@@ -4657,7 +4637,7 @@
         }
 
         const visibleIds = visibleData.map(d => d[dbSchema[currentTable].pk]);
-        // 计算当前可见数据中有多少已被选中
+
         const selectedCount = visibleIds.filter(id => selectedCrudIds.includes(id)).length;
 
         if (selectedCount === 0) {
@@ -4672,31 +4652,31 @@
         }
     }
 
-    // 切换单行选中状态
+
     function toggleRowSelection(id) {
         const idx = selectedCrudIds.indexOf(id);
         if (idx > -1) {
-            selectedCrudIds.splice(idx, 1); // 移除
+            selectedCrudIds.splice(idx, 1);
         } else {
-            selectedCrudIds.push(id); // 添加
+            selectedCrudIds.push(id);
         }
-        renderCrudTable(); // 重新渲染表格以更新样式
-        updateToolbarState(); // 更新按钮状态
+        renderCrudTable();
+        updateToolbarState();
     }
 
-    // [关键] 全选/反选处理
-    window.handleSelectAll = function(checked) {
+
+    window.handleSelectAll = function (checked) {
         const schema = dbSchema[currentTable];
         const data = window.currentVisibleData || [];
 
         if (checked) {
-            // 将所有可见行加入 selectedCrudIds (去重)
+
             data.forEach(row => {
                 const id = row[schema.pk];
                 if (!selectedCrudIds.includes(id)) selectedCrudIds.push(id);
             });
         } else {
-            // 从 selectedCrudIds 中移除所有可见行
+
             const visibleIds = new Set(data.map(r => r[schema.pk]));
             selectedCrudIds = selectedCrudIds.filter(id => !visibleIds.has(id));
         }
@@ -4704,34 +4684,34 @@
         updateToolbarState();
     };
 
-    // 更新工具栏按钮 (Add, Edit, Delete) 状态
+
     function updateToolbarState() {
         const editBtn = document.getElementById('btn-edit');
         const delBtn = document.getElementById('btn-delete');
         const count = selectedCrudIds.length;
 
-        // Edit: 仅选中 1 行时可用
+
         if (editBtn) editBtn.disabled = (count !== 1);
 
-        // Delete: 选中 >= 1 行时可用
+
         if (delBtn) delBtn.disabled = (count === 0);
     }
 
-    // 点击 Edit 按钮
+
     function handleToolbarEdit() {
         if (selectedCrudIds.length === 1) {
             openCrudModal('edit', selectedCrudIds[0]);
         }
     }
 
-    // [修改] 点击 Delete 按钮 -> 打开确认 Modal
+
     function handleToolbarDelete() {
         if (selectedCrudIds.length > 0) {
             openDeleteModal();
         }
     }
 
-    // [新增] 打开删除确认 Modal
+
     function openDeleteModal() {
         const modal = document.getElementById('crud-modal-overlay');
         const container = document.getElementById('modal-form-container');
@@ -4741,7 +4721,7 @@
         title.textContent = "Delete Records";
 
         const count = selectedCrudIds.length;
-        // 复用表单容器显示提示信息
+
         container.innerHTML = `
             <div style="padding: 10px 0; font-size: 1rem; color: var(--text-secondary); line-height: 1.5;">
                 <div style="margin-bottom:8px;">Are you sure you want to delete <strong style="color:var(--text-main)">${count}</strong> selected record(s)?</div>
@@ -4750,23 +4730,23 @@
         `;
         lucide.createIcons();
 
-        // 动态修改按钮为“删除模式”
+
         if (submitBtn) {
             submitBtn.textContent = "Delete";
-            submitBtn.style.backgroundColor = "#ef4444"; // 红色背景
-            submitBtn.onclick = confirmDeleteData; // 绑定删除函数
+            submitBtn.style.backgroundColor = "#ef4444";
+            submitBtn.onclick = confirmDeleteData;
         }
 
         modal.classList.add('active');
     }
 
-    // [新增] 确认删除逻辑
+
     function confirmDeleteData() {
         const pk = dbSchema[currentTable].pk;
-        // 从 mockDB 中过滤掉被选中的数据
+
         mockDB[currentTable] = mockDB[currentTable].filter(row => !selectedCrudIds.includes(row[pk]));
 
-        // 清空选中状态并刷新界面
+
         selectedCrudIds = [];
         renderTableNav();
         renderCrudTable();
@@ -4774,14 +4754,6 @@
         closeCrudModal();
     }
 
-    // 兼容旧代码调用
-    function deleteCrudRow(id) {
-        if (!confirm("Are you sure you want to delete this record?")) return;
-        const pk = dbSchema[currentTable].pk;
-        mockDB[currentTable] = mockDB[currentTable].filter(row => row[pk] !== id);
-        renderTableNav();
-        renderCrudTable();
-    }
     function openCrudModal(mode, id = null) {
         const schema = dbSchema[currentTable];
         const modal = document.getElementById('crud-modal-overlay');
@@ -4789,23 +4761,23 @@
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
 
-        // [关键] 重置按钮状态 (恢复为 Save 模式)
+
         if (submitBtn) {
             submitBtn.textContent = "Save Changes";
-            submitBtn.style.backgroundColor = ""; // 清除内联样式，恢复默认绿色
+            submitBtn.style.backgroundColor = "";
             submitBtn.onclick = saveCrudData;
         }
 
         editingId = id;
         title.textContent = mode === 'edit' ? `Edit ${schema.label.slice(0, -1)}` : `New ${schema.label.slice(0, -1)}`;
 
-        // Get existing data if editing
+
         let currentRow = {};
         if (mode === 'edit') {
             currentRow = mockDB[currentTable].find(r => r[schema.pk] === id) || {};
         }
 
-        // Build Form
+
         let formHtml = "";
         schema.columns.forEach(col => {
             if (col.readonly && mode === 'add') return;
@@ -4859,13 +4831,13 @@
         });
 
         if (editingId !== null) {
-            // Update
+
             const idx = mockDB[currentTable].findIndex(r => r[schema.pk] === editingId);
             if (idx !== -1) {
                 mockDB[currentTable][idx] = {...mockDB[currentTable][idx], ...newRow};
             }
         } else {
-            // Create
+
             const maxId = mockDB[currentTable].reduce((max, r) => Math.max(max, r[schema.pk] || 0), 0);
             newRow[schema.pk] = maxId + 1;
 
@@ -4891,11 +4863,10 @@
         const searchInput = document.getElementById('data-search-input');
         if (searchInput) searchInput.value = "";
 
-        renderCrudHeader(); // 重置表头
+        renderCrudHeader();
         renderCrudTable();
     }
 
-    // Call init when tab is switched
     const originalSwitchTab = window.switchTab;
     window.switchTab = function (btn, tabName) {
         originalSwitchTab(btn, tabName);
