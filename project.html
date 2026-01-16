@@ -3272,8 +3272,7 @@
                 date: `2025-0${(i % 9) + 1}-15`,
                 doi: `10.ECO/col.${i + 1}`,
                 sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
-                external_media_url: "#",
-                project_url: "#",
+                url: "#",
                 description: colGenerators[i % 3](`${baseName}`),
                 image: getImg(startImgIdx + i + 1),
                 stats: {users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), tags: rInt(50, 300), sites: rInt(1, 5)},
@@ -4144,7 +4143,7 @@
                                     <div class="col-badge"><i data-lucide="globe-2" size="14"></i> ${colData.sphere}</div>
                                     <div class="title-row">
                                         <h2 class="col-title smooth-text">${colData.name}</h2>
-                                        <a href="${colData.external_media_url}" target="_blank" class="title-link-icon" title="External Media"><i data-lucide="link" size="20"></i></a>
+                                        <a href="${colData.url}" target="_blank" class="title-link-icon" title="External Media"><i data-lucide="link" size="20"></i></a>
                                     </div>
                                     <div class="col-meta-row smooth-text">
                                         <div class="meta-capsule-box">
@@ -4332,7 +4331,7 @@
             columns: [
                 { key: "project_id", label: "ID", type: "number", readonly: true },
                 { key: "uuid", label: "UUID", type: "text", readonly: true, hiddenInTable: true },
-                { key: "name", label: "Project Name", type: "text" },
+                { key: "name", label: "Name", type: "text" },
                 // 增加 filterType: 'text'，强制筛选器为文本框
                 { key: "creator_name", label: "Creator", type: "select", options: mockNames, filterType: 'text' },
                 { key: "url", label: "URL", type: "text" },
@@ -4349,13 +4348,19 @@
         collection: {
             label: "Collections",
             icon: "library",
-            pk: "id", // 对应 collection 中的 id
+            pk: "collection_id",
             columns: [
-                { key: "id", label: "ID", type: "text", readonly: true },
+                { key: "collection_id", label: "ID", type: "number", readonly: true },
+                { key: "uuid", label: "UUID", type: "text", readonly: true, hiddenInTable: true },
                 { key: "name", label: "Name", type: "text" },
-                { key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"] },
-                { key: "creator", label: "Creator", type: "text" },
-                { key: "doi", label: "DOI", type: "text" }
+                { key: "creator_id", label: "Creator", type: "text" },
+                { key: "url", label: "URL", type: "text" },
+                { key: "doi", label: "DOI", type: "text" },
+                { key: "sphere", label: "Sphere", type: "text" },
+                { key: "public_access", label: "Public Access", type: "boolean" },
+                { key: "public_tags", label: "Public Tags", type: "boolean" },
+                { key: "creation_date", label: "Created", type: "text", readonly: true },
+                { key: "description", label: "Description", type: "richtext", hiddenInTable: true }
             ]
         },
         site: {
@@ -4510,9 +4515,19 @@
             });
         }
         else if (tableName === 'collection') {
-            // 返回当前项目的所有集合
-            // 如果当前选择了特定集合(currColIdx > 0)，也可以选择只显示该集合，这里默认显示项目下所有集合
-            return currentProject.collections;
+            return currentProject.collections.map((c, i) => ({
+                collection_id: i + 1,
+                uuid: `c-${currentProject.id}-${i}-${Date.now()}`,
+                name: c.name,
+                creator_id: c.creator,
+                doi: c.doi,
+                description: c.description,
+                sphere: c.sphere || "Biosphere",
+                url: c.url || "",
+                public_access: c.active !== undefined ? c.active : false,
+                public_tags: false,
+                creation_date: c.date
+            }));
         }
         else if (tableName === 'site') {
             // 返回 Map 页面正在使用的 Sites 数据
@@ -5006,6 +5021,8 @@
         let newRow = {};
 
         const isProject = currentTable === 'project';
+        const isCollection = currentTable === 'collection';
+
         const currentData = getDataForTable(currentTable);
         let existingRow = null;
         if (editingId !== null) {
@@ -5029,17 +5046,21 @@
                 if (base64) {
                     val = base64;
                 } else if (existingRow) {
-                    val = existingRow[col.key]; // 保持原值
+                    val = existingRow[col.key];
                 } else {
                     val = "";
                 }
+            }
+
+            if (col.type === 'richtext') {
+               const hiddenInput = document.getElementById(`input-${col.key}`);
+               if (hiddenInput) val = hiddenInput.value;
             }
 
             newRow[col.key] = val;
         });
 
         if (isProject) {
-            // 特殊处理 Project 数据的回写
             const mappedProject = {
                 id: newRow.project_id,
                 name: newRow.name,
@@ -5055,13 +5076,11 @@
                 const target = rawProjects.find(p => p.id == editingId);
                 if (target) {
                     Object.assign(target, mappedProject);
-                    // 刷新当前详情页视图
                     if (editingId == rawProjects[currProjIdx].id) {
                          updateContent(target, true);
                     }
                 }
             } else {
-                // 新增项目
                 if(rawProjects.length > 0) {
                     mappedProject.id = Math.max(...rawProjects.map(p=>p.id)) + 1;
                 } else {
@@ -5073,9 +5092,34 @@
                 if(!mappedProject.date) mappedProject.date = new Date().toISOString().split('T')[0];
                 rawProjects.push(mappedProject);
             }
-            renderProjectList(); // 刷新左上角列表
+            renderProjectList();
+        } else if (isCollection) {
+            const proj = rawProjects[currProjIdx];
+
+            const mappedCol = {
+                 name: newRow.name,
+                 creator: newRow.creator_id,
+                 doi: newRow.doi,
+                 sphere: newRow.sphere,
+                 url: newRow.url,
+                 description: newRow.description,
+                 active: newRow.public_access,
+                 date: newRow.creation_date || new Date().toISOString().split('T')[0]
+            };
+
+            if (editingId !== null) {
+                 const colIndex = editingId - 1;
+                 if (proj.collections[colIndex]) {
+                     Object.assign(proj.collections[colIndex], mappedCol);
+                 }
+            } else {
+                 mappedCol.id = `c${proj.collections.length + Date.now()}`;
+                 mappedCol.stats = {users:0, projects:1, audio:0, photos:0, videos:0, metadata:0, tags:0, sites:0};
+                 mappedCol.contributors = [];
+                 proj.collections.push(mappedCol);
+            }
+            renderCollectionList();
         } else {
-            // 常规表格内存更新
             if (editingId !== null) {
                 const idx = currentData.findIndex(r => r[schema.pk] == editingId);
                 if (idx !== -1) {
