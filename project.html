@@ -2587,8 +2587,32 @@
             text-overflow: ellipsis;
         }
 
+        .crud-table th:first-child,
+        .crud-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .crud-table th:first-child {
+            z-index: 20;
+            background: var(--bg-surface-secondary);
+        }
+
+        .crud-table td:first-child {
+            background: var(--bg-surface);
+        }
+
+        .crud-table tr:hover td:first-child {
+            background: var(--bg-surface-hover);
+        }
+
+        .crud-table tr.selected td:first-child {
+            background: var(--brand-tint) !important;
+        }
+
         .crud-table tr {
-            cursor: pointer;
             transition: background 0.1s;
         }
 
@@ -4334,7 +4358,7 @@
             pk: "project_id",
             columns: [
                 { key: "project_id", label: "ID", type: "number", readonly: true },
-                { key: "uuid", label: "UUID", type: "text", readonly: true, hiddenInTable: true },
+                { key: "uuid", label: "UUID", type: "text", readonly: true },
                 { key: "name", label: "Name", type: "text" },
 
                 { key: "creator_name", label: "Creator", type: "select", options: mockNames, filterType: 'text' },
@@ -4355,7 +4379,7 @@
             pk: "collection_id",
             columns: [
                 { key: "collection_id", label: "ID", type: "number", readonly: true },
-                { key: "uuid", label: "UUID", type: "text", readonly: true, hiddenInTable: true },
+                { key: "uuid", label: "UUID", type: "text", readonly: true },
                 { key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true },
                 { key: "name", label: "Name", type: "text" },
                 { key: "creator_id", label: "Creator", type: "select", options: mockNames, filterType: 'text' },
@@ -4366,6 +4390,30 @@
                 { key: "public_tags", label: "Public Tags", type: "boolean" },
                 { key: "creation_date", label: "Created", type: "text", readonly: true },
                 { key: "description", label: "Description", type: "richtext", hiddenInTable: true }
+            ]
+        },
+        "user": {
+            label: "Users",
+            icon: "users",
+            pk: "user_id",
+            columns: [
+                { key: "user_id", label: "ID", type: "number", readonly: true },
+                { key: "username", label: "Username", type: "text" },
+                { key: "name", label: "Name", type: "text" },
+                { key: "email", label: "Email", type: "text" },
+                { key: "role_id", label: "Role ID", type: "select", options: [1, 2, 3, 4, 5] },
+                { key: "orcid", label: "ORCID", type: "text" },
+                { key: "active", label: "Active", type: "boolean" }
+            ]
+        },
+        role: {
+            label: "Roles",
+            icon: "shield",
+            pk: "role_id",
+            columns: [
+                { key: "role_id", label: "ID", type: "number", readonly: true },
+                { key: "name", label: "Role Name", type: "text" },
+                { key: "description", label: "Description", type: "text" }
             ]
         },
         site: {
@@ -4394,17 +4442,6 @@
                 { key: "duration", label: "Duration", type: "text" },
                 { key: "sensor", label: "Sensor", type: "text" },
                 { key: "size", label: "Size", type: "text" }
-            ]
-        },
-        "user": {
-            label: "Contributors",
-            icon: "users",
-            pk: "uid",
-            columns: [
-                { key: "uid", label: "ORCID / ID", type: "text", readonly: true },
-                { key: "name", label: "Name", type: "text" },
-                { key: "email", label: "Email", type: "text" },
-                { key: "role", label: "Role", type: "text" }
             ]
         },
         sensor: {
@@ -4555,11 +4592,28 @@
             return mediaItems;
         }
         else if (tableName === 'user') {
+            const source = (currColIdx > 0) ? currentProject.collections[currColIdx - 1].contributors : currentProject.contributors;
 
-            if (currColIdx > 0) {
-                return currentProject.collections[currColIdx - 1].contributors;
-            }
-            return currentProject.contributors;
+            // Map old contributor mock data to new user schema
+            return source.map((u, i) => ({
+                user_id: i + 1,
+                username: u.name.split(' ').join('.').toLowerCase() + (i + 1),
+                password: "hashed_pwd_placeholder", // hidden in table usually
+                name: u.name,
+                orcid: u.uid,
+                email: u.email,
+                role_id: Math.floor(Math.random() * 5) + 1,
+                active: true
+            }));
+        }
+        else if (tableName === 'role') {
+            return [
+                { role_id: 1, name: "Administrator", description: "Full system access and configuration rights." },
+                { role_id: 2, name: "Researcher", description: "Can create projects, upload data, and manage collections." },
+                { role_id: 3, name: "Annotator", description: "Can view media and add annotations to recordings." },
+                { role_id: 4, name: "Curator", description: "Can review, approve, and organize uploaded datasets." },
+                { role_id: 5, name: "Guest", description: "Read-only access to public resources." }
+            ];
         }
         else {
 
