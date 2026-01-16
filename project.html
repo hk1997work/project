@@ -133,7 +133,7 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.3); /* 加深颜色 */
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             transition: background 0.2s;
         }
@@ -2661,28 +2661,28 @@
             top: 0;
             right: 0;
             bottom: 0;
-            width: 480px; /* 侧边栏宽度 */
+            width: 480px;
             max-width: 100%;
             background: var(--bg-surface);
             padding: 30px;
-            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15); /* 阴影改为向左投射 */
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
             border-left: var(--card-border);
-            border-radius: 0; /* 修改：完全直角，去掉圆角 */
+            border-radius: 0;
 
-            transform: translateX(100%); /* 初始状态在屏幕右侧外 */
+            transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
             display: flex;
             flex-direction: column;
             gap: 20px;
-            max-height: 100%; /* 占满高度 */
+            max-height: 100%;
         }
 
         .crud-modal-overlay.active .crud-modal {
-            transform: translateX(0); /* 滑入屏幕 */
+            transform: translateX(0);
         }
 
-        /* 针对移动端优化，宽度占满 */
+
         @media (max-width: 600px) {
             .crud-modal {
                 width: 100%;
@@ -2695,9 +2695,9 @@
             gap: 16px;
             overflow-y: auto;
             padding-right: 5px;
-            flex: 1; /* 关键：撑满剩余空间 */
-            min-height: 0; /* 防止溢出 */
-            align-content: start; /* 内容较少时靠上对齐 */
+            flex: 1;
+            min-height: 0;
+            align-content: start;
         }
 
         .form-group {
@@ -2736,7 +2736,7 @@
             padding-top: 20px;
             border-top: 1px solid var(--border-color);
             margin-top: 0;
-            flex-shrink: 0; /* 防止被压缩 */
+            flex-shrink: 0;
         }
 
         .btn-primary {
@@ -3086,6 +3086,10 @@
                             <i data-lucide="pencil" size="16"></i> Edit
                         </button>
 
+                        <button class="btn-toolbar" id="btn-link" onclick="handleToolbarLink()" disabled>
+                            <i data-lucide="link" size="16"></i> Link
+                        </button>
+
                         <button class="btn-toolbar danger" id="btn-delete" onclick="handleToolbarDelete()" disabled>
                             <i data-lucide="trash-2" size="16"></i> Delete
                         </button>
@@ -3344,12 +3348,12 @@
     }
 
     function generateSitesForContext(projId, colId) {
-        // 修改：projId 已经是数字，colId 还是字符串 (c0, c1...)
+
         let seed = projId + (colId ? colId.charCodeAt(1) * 10 : 0);
         const count = 50 + (seed % 20);
         let baseLat = -3.4, baseLng = -62.2;
 
-        // 修改：匹配数字 ID
+
         if (projId === 2) {
             baseLat = -18.2;
             baseLng = 147.7;
@@ -3361,7 +3365,7 @@
         const realmKeys = Object.keys(TAXONOMY);
         return Array.from({length: count}, (_, i) => {
             let rIndex = Math.floor(Math.random() * realmKeys.length);
-            // 修改：匹配数字 ID
+
             if (projId === 1 && Math.random() > 0.3) rIndex = 0;
             if (projId === 2 && Math.random() > 0.3) rIndex = 1;
             const r = realmKeys[rIndex];
@@ -4095,10 +4099,10 @@
             renderCollectionList();
             renderProjectList();
 
-            // 新增：如果当前在 Data Tab，刷新数据
+
             if (document.getElementById('tab-data').classList.contains('active')) {
-                renderTableNav(); // 刷新侧边栏数量
-                renderCrudTable(); // 刷新表格内容
+                renderTableNav();
+                renderCrudTable();
             }
         }
 
@@ -4176,11 +4180,11 @@
             if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
             renderCollectionList();
 
-            // 新增：如果当前在 Data Tab，刷新数据
+
             if (document.getElementById('tab-data').classList.contains('active')) {
-                renderTableNav(); // 刷新侧边栏数量
-                // 切换集合时，如果当前看的是项目层级表（如 project/collection），可能需要切到 site 或 media 才有意义
-                // 或者保持当前表不动，只更新内容
+                renderTableNav();
+
+
                 renderCrudTable();
             }
         }
@@ -4332,14 +4336,14 @@
                 { key: "project_id", label: "ID", type: "number", readonly: true },
                 { key: "uuid", label: "UUID", type: "text", readonly: true, hiddenInTable: true },
                 { key: "name", label: "Name", type: "text" },
-                // 增加 filterType: 'text'，强制筛选器为文本框
+
                 { key: "creator_name", label: "Creator", type: "select", options: mockNames, filterType: 'text' },
                 { key: "url", label: "URL", type: "text" },
                 { key: "doi", label: "DOI", type: "text" },
                 { key: "public", label: "Public", type: "boolean" },
                 { key: "active", label: "Active", type: "boolean" },
                 { key: "creation_date", label: "Created", type: "text", readonly: true },
-                // 将三个“大控件”移动到底部
+
                 { key: "picture_url", label: "Picture", type: "file" },
                 { key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true },
                 { key: "description", label: "Description", type: "richtext", hiddenInTable: true }
@@ -4352,6 +4356,7 @@
             columns: [
                 { key: "collection_id", label: "ID", type: "number", readonly: true },
                 { key: "uuid", label: "UUID", type: "text", readonly: true, hiddenInTable: true },
+                { key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true },
                 { key: "name", label: "Name", type: "text" },
                 { key: "creator_id", label: "Creator", type: "select", options: mockNames, filterType: 'text' },
                 { key: "url", label: "URL", type: "text" },
@@ -4366,7 +4371,7 @@
         site: {
             label: "Sites",
             icon: "map-pin",
-            pk: "id", // 对应 currentSites 中的 id
+            pk: "id",
             columns: [
                 { key: "id", label: "Site ID", type: "text", readonly: true },
                 { key: "name", label: "Site Name", type: "text" },
@@ -4380,7 +4385,7 @@
         media: {
             label: "Media Files",
             icon: "file-audio",
-            pk: "id", // 对应 mediaItems 中的 id
+            pk: "id",
             columns: [
                 { key: "id", label: "ID", type: "number", readonly: true },
                 { key: "name", label: "Filename", type: "text" },
@@ -4394,7 +4399,7 @@
         "user": {
             label: "Contributors",
             icon: "users",
-            pk: "uid", // 对应 contributors 中的 uid
+            pk: "uid",
             columns: [
                 { key: "uid", label: "ORCID / ID", type: "text", readonly: true },
                 { key: "name", label: "Name", type: "text" },
@@ -4416,12 +4421,12 @@
             label: "Proj. Contributors",
             itemLabel: "Contribution",
             icon: "user-cog",
-            pk: "id", // 前端模拟使用合成主键
+            pk: "id",
             columns: [
                 { key: "id", label: "ID", type: "text", readonly: true, hiddenInTable: true },
                 { key: "project_id", label: "Project ID", type: "number" },
-                { key: "user_id", label: "User", type: "select", options: mockNames }, // 复用 mockNames 模拟外键关联 User
-                { key: "contribution_role", label: "Role", type: "text" }, // PI, Technician, etc.
+                { key: "user_id", label: "User", type: "select", options: mockNames },
+                { key: "contribution_role", label: "Role", type: "text" },
                 { key: "added_date", label: "Date Added", type: "text", readonly: true }
             ]
         }
@@ -4433,7 +4438,7 @@
     let selectedCrudIds = [];
     let sortState = { key: null, direction: 'asc' };
 
-    // 静态 Mock 数据用于 Sensors 等通用表
+
     const staticMockDB = {
         sensor: [
             { sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio" },
@@ -4442,7 +4447,7 @@
         ]
     };
 
-    // --- 新增辅助函数开始 ---
+
     let currentEditorTargetId = null;
 
     function handleFileChange(input) {
@@ -4450,7 +4455,7 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 input.setAttribute('data-base64', e.target.result);
-                // 更新逻辑：通过ID查找预览容器
+
                 const previewId = input.id + '-preview';
                 const previewEl = document.getElementById(previewId);
                 if (previewEl) {
@@ -4479,15 +4484,15 @@
             const val = document.getElementById('editor-textarea').value;
             document.getElementById(currentEditorTargetId).value = val;
             const preview = document.getElementById(currentEditorTargetId + '-preview');
-            // 简单去除HTML标签显示预览
+
             const textContent = val.replace(/<[^>]*>?/gm, '');
             if(preview) preview.textContent = textContent.substring(0, 40) + (textContent.length>40 ? '...' : '');
         }
         closeEditorModal();
     }
-    // --- 新增辅助函数结束 ---
 
-    // 核心函数：根据当前上下文动态获取表格数据
+
+
     function getDataForTable(tableName) {
         const currentProject = rawProjects[currProjIdx];
 
@@ -4506,7 +4511,7 @@
                     url: p.externalUrl || "https://example.com",
                     picture_url: p.image,
                     description: p.description,
-                    description_short: p.description, // 用于编辑和列表
+                    description_short: p.description,
                     doi: p.doi,
                     public: true,
                     active: true,
@@ -4515,47 +4520,55 @@
             });
         }
         else if (tableName === 'collection') {
-            return currentProject.collections.map((c, i) => ({
-                collection_id: i + 1,
-                uuid: `c-${currentProject.id}-${i}-${Date.now()}`,
-                name: c.name,
-                creator_id: c.creator,
-                doi: c.doi,
-                description: c.description,
-                sphere: c.sphere || "Biosphere",
-                url: c.url || "",
-                public_access: c.active !== undefined ? c.active : false,
-                public_tags: false,
-                creation_date: c.date
-            }));
+            return currentProject.collections.map((c, i) => {
+                const linkedProjs = rawProjects
+                    .filter(p => p.collections.some(col => col.id === c.id))
+                    .map(p => p.name);
+
+                return {
+                    collection_id: i + 1,
+                    uuid: `c-${currentProject.id}-${i}-${Date.now()}`,
+                    project_names: linkedProjs.join(", "),
+                    name: c.name,
+                    creator_id: c.creator,
+                    doi: c.doi,
+                    description: c.description,
+                    sphere: c.sphere || "Biosphere",
+                    url: c.url || "",
+                    public_access: c.active !== undefined ? c.active : false,
+                    public_tags: false,
+                    creation_date: c.date,
+                    _rawId: c.id
+                };
+            });
         }
         else if (tableName === 'site') {
-            // 返回 Map 页面正在使用的 Sites 数据
+
             return currentSites;
         }
         else if (tableName === 'media') {
-            // 返回 Media 页面正在使用的 Media 数据
-            // 注意：Media Tab 生成数据时可能没有 enriched，这里确保数据字段完整
+
+
             if(mediaItems.length > 0 && !mediaItems[0].enriched) {
                 enrichMediaData();
             }
             return mediaItems;
         }
         else if (tableName === 'user') {
-            // 返回当前项目或集合的贡献者
+
             if (currColIdx > 0) {
                 return currentProject.collections[currColIdx - 1].contributors;
             }
             return currentProject.contributors;
         }
         else {
-            // 对于 sensor 等通用数据，使用静态 Mock
+
             return staticMockDB[tableName] || [];
         }
     }
 
     function initDataTab() {
-        // 如果是从别的 Tab 切过来，重置到当前项目视图
+
         switchCrudTable('project');
     }
 
@@ -4566,7 +4579,7 @@
             const table = dbSchema[key];
             const isActive = currentTable === key ? 'active' : '';
 
-            // 动态获取当前数量
+
             const data = getDataForTable(key);
             const count = data ? data.length : 0;
 
@@ -4665,7 +4678,7 @@
 
             if (col.type === 'boolean') {
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${currentFilterVal === 'true' ? 'selected' : ''}>True</option><option value="false" ${currentFilterVal === 'false' ? 'selected' : ''}>False</option></select>`;
-            } else if (col.type === 'select' && col.filterType !== 'text') { // 修改：增加 filterType 检查
+            } else if (col.type === 'select' && col.filterType !== 'text') {
                 let opts = `<option value="all">All</option>`;
                 if(col.options) {
                     col.options.forEach(o => {
@@ -4695,7 +4708,7 @@
 
     function renderCrudTable() {
         const schema = dbSchema[currentTable];
-        // 修改点：使用动态数据源
+
         const rawData = getDataForTable(currentTable);
 
         const tbody = document.getElementById('crud-tbody');
@@ -4739,7 +4752,7 @@
         } else {
             processedData.forEach(row => {
                 const pk = schema.pk;
-                // 修复：强制转换为字符串比较，因为 HTML 属性中传回的是字符串
+
                 const rowIdStr = String(row[pk]);
                 const isSelected = selectedCrudIds.includes(rowIdStr);
                 const rowClass = isSelected ? 'selected' : '';
@@ -4765,7 +4778,7 @@
                         }
                     }
 
-                    // 新增：Collection 表格高亮当前选中的集合
+
                     if (currentTable === 'collection' && col.key === 'collection_id') {
                         if (currColIdx > 0 && row.collection_id === currColIdx) {
                             val = `<span style="display:flex; align-items:center; gap:8px;">
@@ -4807,7 +4820,7 @@
             return;
         }
 
-        // 修复：将数据ID转换为字符串，以便与 selectedCrudIds 匹配
+
         const visibleIds = visibleData.map(d => String(d[dbSchema[currentTable].pk]));
 
         const selectedCount = visibleIds.filter(id => selectedCrudIds.includes(id)).length;
@@ -4843,12 +4856,12 @@
 
         if (checked) {
             data.forEach(row => {
-                // 修复：ID 转字符串
+
                 const id = String(row[schema.pk]);
                 if (!selectedCrudIds.includes(id)) selectedCrudIds.push(id);
             });
         } else {
-             // 修复：ID 转字符串
+
              const visibleIds = new Set(data.map(r => String(r[schema.pk])));
              selectedCrudIds = selectedCrudIds.filter(id => !visibleIds.has(id));
         }
@@ -4860,13 +4873,118 @@
     function updateToolbarState() {
         const editBtn = document.getElementById('btn-edit');
         const delBtn = document.getElementById('btn-delete');
+        const linkBtn = document.getElementById('btn-link');
         const count = selectedCrudIds.length;
 
-
         if (editBtn) editBtn.disabled = (count !== 1);
-
-
         if (delBtn) delBtn.disabled = (count === 0);
+
+        if (linkBtn) {
+            if (currentTable === 'collection') {
+                linkBtn.style.display = 'inline-flex';
+                linkBtn.disabled = (count === 0);
+            } else {
+                linkBtn.style.display = 'none';
+            }
+        }
+    }
+
+    function handleToolbarLink() {
+        if (selectedCrudIds.length === 0) return;
+        openLinkModal();
+    }
+
+    function openLinkModal() {
+        const modal = document.getElementById('crud-modal-overlay');
+        const container = document.getElementById('modal-form-container');
+        const title = document.getElementById('modal-title');
+        const submitBtn = document.getElementById('modal-submit-btn');
+
+        const isMulti = selectedCrudIds.length > 1;
+        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Collections to Projects` : "Link Collection to Projects";
+
+        const currentData = getDataForTable('collection');
+
+        let currentLinkedProjIds = [];
+        if (!isMulti) {
+            const row = currentData.find(r => String(r.collection_id) === selectedCrudIds[0]);
+            if (row && row._rawId) {
+                rawProjects.forEach(p => {
+                    if (p.collections.some(c => c.id === row._rawId)) {
+                        currentLinkedProjIds.push(p.id);
+                    }
+                });
+            }
+        }
+
+        let html = `<div class="form-group"><label class="form-label">Select Projects</label>`;
+        html += `<div style="max-height:300px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">`;
+
+        rawProjects.forEach(p => {
+            const isChecked = !isMulti && currentLinkedProjIds.includes(p.id);
+
+            html += `
+                <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
+                    <input type="checkbox" class="link-proj-cb" value="${p.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                    <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${p.name}</span>
+                </label>
+            `;
+        });
+
+        html += `</div>`;
+        html += `<div style="margin-top:10px; font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">
+            ${isMulti ? 'The selected projects will be set for <strong>all</strong> selected collections (overwriting previous links).' : 'Uncheck to remove from a project, check to add.'}
+        </div></div>`;
+
+        container.innerHTML = html;
+
+        if (submitBtn) {
+            submitBtn.textContent = "Save Links";
+            submitBtn.style.backgroundColor = "";
+            submitBtn.onclick = saveLinkData;
+            submitBtn.disabled = false;
+        }
+        modal.classList.add('active');
+    }
+
+    function saveLinkData() {
+        const checkboxes = document.querySelectorAll('.link-proj-cb:checked');
+        const targetProjIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+        const currentData = getDataForTable('collection');
+        const currentProj = rawProjects[currProjIdx];
+
+        selectedCrudIds.forEach(idStr => {
+            const row = currentData.find(r => String(r.collection_id) === idStr);
+            if (row && row._rawId) {
+                let originalCol = currentProj.collections.find(c => c.id === row._rawId);
+
+                if (!originalCol) {
+                    for (const p of rawProjects) {
+                        originalCol = p.collections.find(c => c.id === row._rawId);
+                        if (originalCol) break;
+                    }
+                }
+
+                if (originalCol) {
+                    rawProjects.forEach(proj => {
+                        const shouldBeIn = targetProjIds.includes(proj.id);
+                        const index = proj.collections.findIndex(c => c.id === originalCol.id);
+
+                        if (shouldBeIn && index === -1) {
+                            proj.collections.push(originalCol);
+                        } else if (!shouldBeIn && index !== -1) {
+                            proj.collections.splice(index, 1);
+                        }
+                    });
+                }
+            }
+        });
+
+        renderCrudTable();
+        closeCrudModal();
+        selectedCrudIds = [];
+        updateToolbarState();
     }
 
 
@@ -4891,7 +5009,7 @@
         const submitBtn = document.getElementById('modal-submit-btn');
 
         const schema = dbSchema[currentTable];
-        // 修改：优先使用单数名称 itemLabel
+
         const itemName = schema.itemLabel || schema.label.slice(0, -1);
         title.textContent = `Delete ${itemName}`;
 
@@ -4920,9 +5038,9 @@
         const pk = dbSchema[currentTable].pk;
         const currentData = getDataForTable(currentTable);
 
-        // 从后往前遍历删除，避免索引错位
+
         for (let i = currentData.length - 1; i >= 0; i--) {
-            // 修复：ID 转字符串进行匹配
+
             if (selectedCrudIds.includes(String(currentData[i][pk]))) {
                 currentData.splice(i, 1);
             }
@@ -4934,7 +5052,7 @@
         updateToolbarState();
         closeCrudModal();
 
-        // 联动刷新
+
         if (currentTable === 'site' && map) renderMap(false);
     }
 
@@ -4946,7 +5064,6 @@
         const submitBtn = document.getElementById('modal-submit-btn');
 
         if (submitBtn) {
-            // 统一使用 "Save"，适用于新增和编辑
             submitBtn.textContent = "Save";
             submitBtn.style.backgroundColor = "";
             submitBtn.onclick = saveCrudData;
@@ -4964,16 +5081,15 @@
 
         let formHtml = "";
         schema.columns.forEach(col => {
-            if (col.readonly && mode === 'add') return;
+            if (col.hiddenInForm) return;
+            if (col.readonly) return;
 
             const val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
-            const disabled = (col.readonly && mode === 'edit') ? "disabled style='opacity:0.6; cursor:not-allowed'" : "";
 
             formHtml += `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
             if (col.type === 'select') {
-                formHtml += `<select class="form-input" id="input-${col.key}" ${disabled}>`;
-                // 添加默认空选项
+                formHtml += `<select class="form-input" id="input-${col.key}">`;
                 formHtml += `<option value="">Select...</option>`;
                 if (col.options) {
                     col.options.forEach(opt => {
@@ -4983,13 +5099,13 @@
                 }
                 formHtml += `</select>`;
             } else if (col.type === 'boolean') {
-                formHtml += `<select class="form-input" id="input-${col.key}" ${disabled}>
+                formHtml += `<select class="form-input" id="input-${col.key}">
                     <option value="true" ${val === true ? 'selected' : ''}>True</option>
                     <option value="false" ${val === false ? 'selected' : ''}>False</option>
                 </select>`;
             } else if (col.type === 'file') {
                 formHtml += `<div style="display:flex; gap:10px; align-items:center;">
-                    <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" ${disabled} style="display:none;">
+                    <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;">
                     <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button>
                     <span id="input-${col.key}-preview">
                         ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'}
@@ -5008,7 +5124,7 @@
                     </div>
                 `;
             } else {
-                formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabled}>`;
+                formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}">`;
             }
             formHtml += `</div>`;
         });
@@ -5035,10 +5151,14 @@
         }
 
         schema.columns.forEach(col => {
-            if (col.readonly && editingId === null) return;
-
             const input = document.getElementById(`input-${col.key}`);
-            if (!input && col.type !== 'file' && col.type !== 'richtext') return;
+
+            if (!input && col.type !== 'file' && col.type !== 'richtext') {
+                if (existingRow && existingRow[col.key] !== undefined) {
+                    newRow[col.key] = existingRow[col.key];
+                }
+                return;
+            }
 
             let val = input ? input.value : "";
 
