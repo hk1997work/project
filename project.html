@@ -2695,6 +2695,9 @@
             gap: 16px;
             overflow-y: auto;
             padding-right: 5px;
+            flex: 1; /* 关键：撑满剩余空间 */
+            min-height: 0; /* 防止溢出 */
+            align-content: start; /* 内容较少时靠上对齐 */
         }
 
         .form-group {
@@ -2730,8 +2733,10 @@
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            padding-top: 10px;
+            padding-top: 20px;
             border-top: 1px solid var(--border-color);
+            margin-top: 0;
+            flex-shrink: 0; /* 防止被压缩 */
         }
 
         .btn-primary {
@@ -4321,20 +4326,24 @@
     const dbSchema = {
         project: {
             label: "All Projects",
-            itemLabel: "Project", // 显式指定单数名称
+            itemLabel: "Project",
             icon: "folder-kanban",
             pk: "project_id",
             columns: [
                 { key: "project_id", label: "ID", type: "number", readonly: true },
-                { key: "uuid", label: "UUID", type: "text", readonly: true },
+                { key: "uuid", label: "UUID", type: "text", readonly: true, hiddenInTable: true },
                 { key: "name", label: "Project Name", type: "text" },
-                { key: "creator_name", label: "Creator", type: "text" },
-                { key: "url", label: "URL", type: "text" }, // URL 提到图片前面
-                { key: "picture_url", label: "Picture", type: "image" }, // 图片放后面
+                // 增加 filterType: 'text'，强制筛选器为文本框
+                { key: "creator_name", label: "Creator", type: "select", options: mockNames, filterType: 'text' },
+                { key: "url", label: "URL", type: "text" },
                 { key: "doi", label: "DOI", type: "text" },
                 { key: "public", label: "Public", type: "boolean" },
                 { key: "active", label: "Active", type: "boolean" },
-                { key: "creation_date", label: "Created", type: "text", readonly: true }
+                { key: "creation_date", label: "Created", type: "text", readonly: true },
+                // 将三个“大控件”移动到底部
+                { key: "picture_url", label: "Picture", type: "file" },
+                { key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true },
+                { key: "description", label: "Description", type: "richtext", hiddenInTable: true }
             ]
         },
         collection: {
@@ -4397,6 +4406,19 @@
                 { key: "name", label: "Model Name", type: "text" },
                 { key: "sensor_type", label: "Type", type: "select", options: ["audio", "photo"] }
             ]
+        },
+        project_contributor: {
+            label: "Proj. Contributors",
+            itemLabel: "Contribution",
+            icon: "user-cog",
+            pk: "id", // 前端模拟使用合成主键
+            columns: [
+                { key: "id", label: "ID", type: "text", readonly: true, hiddenInTable: true },
+                { key: "project_id", label: "Project ID", type: "number" },
+                { key: "user_id", label: "User", type: "select", options: mockNames }, // 复用 mockNames 模拟外键关联 User
+                { key: "contribution_role", label: "Role", type: "text" }, // PI, Technician, etc.
+                { key: "added_date", label: "Date Added", type: "text", readonly: true }
+            ]
         }
     };
 
@@ -4415,28 +4437,71 @@
         ]
     };
 
+    // --- 新增辅助函数开始 ---
+    let currentEditorTargetId = null;
+
+    function handleFileChange(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                input.setAttribute('data-base64', e.target.result);
+                // 更新逻辑：通过ID查找预览容器
+                const previewId = input.id + '-preview';
+                const previewEl = document.getElementById(previewId);
+                if (previewEl) {
+                    previewEl.innerHTML = `<img src="${e.target.result}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">`;
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function openEditorForInput(inputId) {
+        currentEditorTargetId = inputId;
+        const currentVal = document.getElementById(inputId).value;
+        const textarea = document.getElementById('editor-textarea');
+        textarea.value = currentVal;
+        document.getElementById('editor-modal-overlay').classList.add('active');
+    }
+
+    function closeEditorModal() {
+        document.getElementById('editor-modal-overlay').classList.remove('active');
+        currentEditorTargetId = null;
+    }
+
+    function saveEditorContent() {
+        if (currentEditorTargetId) {
+            const val = document.getElementById('editor-textarea').value;
+            document.getElementById(currentEditorTargetId).value = val;
+            const preview = document.getElementById(currentEditorTargetId + '-preview');
+            // 简单去除HTML标签显示预览
+            const textContent = val.replace(/<[^>]*>?/gm, '');
+            if(preview) preview.textContent = textContent.substring(0, 40) + (textContent.length>40 ? '...' : '');
+        }
+        closeEditorModal();
+    }
+    // --- 新增辅助函数结束 ---
+
     // 核心函数：根据当前上下文动态获取表格数据
     function getDataForTable(tableName) {
         const currentProject = rawProjects[currProjIdx];
 
         if (tableName === 'project') {
             return rawProjects.map(p => {
-                // 生成或提取纯文本简介用于 Short Desc
                 const stripHtml = (html) => {
                     let tmp = document.createElement("DIV");
                     tmp.innerHTML = html;
                     return tmp.textContent || tmp.innerText || "";
                 };
-
                 return {
                     project_id: p.id,
-                    uuid: `550e8400-e29b-41d4-a716-${String(p.id).padStart(12, '0')}`, // 模拟 UUID
+                    uuid: `550e8400-e29b-41d4-a716-${String(p.id).padStart(12, '0')}`,
                     name: p.name,
-                    creator_name: p.creator, // 映射：使用名称代替ID
+                    creator_name: p.creator,
                     url: p.externalUrl || "https://example.com",
-                    picture_url: p.image, // 映射：图片 URL
-                    description: p.description, // 保留完整 HTML 用于编辑
-                    description_short: stripHtml(p.description).substring(0, 50) + "...", // 截取纯文本用于列表
+                    picture_url: p.image,
+                    description: p.description,
+                    description_short: p.description, // 用于编辑和列表
                     doi: p.doi,
                     public: true,
                     active: true,
@@ -4573,6 +4638,8 @@
 
 
         schema.columns.forEach(col => {
+            if (col.hiddenInTable) return;
+
             const isSorted = sortState.key === col.key;
             const sortIcon = isSorted ? (sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
             const activeClass = isSorted ? 'active-sort' : '';
@@ -4583,12 +4650,16 @@
 
             if (col.type === 'boolean') {
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${currentFilterVal === 'true' ? 'selected' : ''}>True</option><option value="false" ${currentFilterVal === 'false' ? 'selected' : ''}>False</option></select>`;
-            } else if (col.type === 'select') {
+            } else if (col.type === 'select' && col.filterType !== 'text') { // 修改：增加 filterType 检查
                 let opts = `<option value="all">All</option>`;
-                col.options.forEach(o => {
-                    opts += `<option value="${o}" ${currentFilterVal === o ? 'selected' : ''}>${o}</option>`;
-                });
+                if(col.options) {
+                    col.options.forEach(o => {
+                        opts += `<option value="${o}" ${currentFilterVal === o ? 'selected' : ''}>${o}</option>`;
+                    });
+                }
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">${opts}</select>`;
+            } else if (col.type === 'file' || col.type === 'image' || col.type === 'richtext') {
+                filterInputHtml = '';
             } else {
                 filterInputHtml = `<input type="text" class="th-filter-input" placeholder="Filter..." value="${currentFilterVal}" oninput="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">`;
             }
@@ -4599,7 +4670,7 @@
                         <span>${col.label}</span>
                         <i data-lucide="${sortIcon}" size="14" style="opacity:${iconOpacity}"></i>
                     </div>
-                    <div class="th-filter-box">${filterInputHtml}</div>
+                    ${filterInputHtml ? `<div class="th-filter-box">${filterInputHtml}</div>` : ''}
                 </th>`;
         });
         headHtml += `</tr>`;
@@ -4647,31 +4718,28 @@
 
 
         let bodyHtml = "";
+        const visibleCols = schema.columns.filter(c => !c.hiddenInTable);
+
         if (processedData.length === 0) {
-            bodyHtml = `<tr><td colspan="${schema.columns.length + 1}" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">No results found</td></tr>`;
+            bodyHtml = `<tr><td colspan="${visibleCols.length + 1}" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">No results found</td></tr>`;
         } else {
             processedData.forEach(row => {
                 const pk = schema.pk;
                 const isSelected = selectedCrudIds.includes(row[pk]);
                 const rowClass = isSelected ? 'selected' : '';
 
-
-                bodyHtml += `<tr class="${rowClass}" ondblclick="openCrudModal('edit', ${row[pk]})">`;
-
-
+                bodyHtml += `<tr class="${rowClass}" ondblclick="openCrudModal('edit', '${row[pk]}')">`;
                 bodyHtml += `
                     <td style="text-align:center; border-bottom:1px solid var(--border-color);">
                         <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''}
-                        onclick="event.stopPropagation(); toggleRowSelection(${row[pk]})">
+                        onclick="event.stopPropagation(); toggleRowSelection('${row[pk]}')">
                     </td>`;
 
-                schema.columns.forEach(col => {
+                visibleCols.forEach(col => {
                     let val = row[col.key];
                     if (val === undefined || val === null) val = "";
 
-                    // 1. Current 标签逻辑 (针对 project_id)
                     if (currentTable === 'project' && col.key === 'project_id') {
-                        // 注意：rawProjects 里的 id 对应这里的 project_id
                         const currentProjId = rawProjects[currProjIdx] ? rawProjects[currProjIdx].id : null;
                         if (row.project_id === currentProjId) {
                             val = `<span style="display:flex; align-items:center; gap:8px;">
@@ -4680,20 +4748,16 @@
                                    </span>`;
                         }
                     }
-
-                    // 2. 图片类型渲染
-                    if (col.type === 'image') {
-                        val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img">`;
+                    if (col.type === 'image' || col.type === 'file') {
+                        val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img" onerror="this.style.display='none'">`;
                     }
-
-                    // 3. 布尔值渲染
                     if (col.type === 'boolean') {
                         val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;
                     }
-
-                    // 4. 富文本简单渲染 (限制长度，防止破坏表格)
                     if (col.type === 'richtext') {
-                        val = `<span style="opacity:0.8; font-size:0.85rem;">${val}</span>`;
+                        // 移除 HTML 标签并截断
+                        const text = String(val).replace(/<[^>]*>?/gm, '');
+                        val = `<span style="opacity:0.8; font-size:0.85rem;" title="${text}">${text.substring(0, 30)}${text.length > 30 ? '...' : ''}</span>`;
                     }
 
                     bodyHtml += `<td>${val}</td>`;
@@ -4861,26 +4925,22 @@
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
 
-
         if (submitBtn) {
-            submitBtn.textContent = "Save Changes";
+            // 统一使用 "Save"，适用于新增和编辑
+            submitBtn.textContent = "Save";
             submitBtn.style.backgroundColor = "";
             submitBtn.onclick = saveCrudData;
         }
 
         editingId = id;
-        // 优先使用显式定义的 itemLabel，否则回退到去尾法
         const itemName = schema.itemLabel || schema.label.slice(0, -1);
         title.textContent = mode === 'edit' ? `Edit ${itemName}` : `New ${itemName}`;
 
-
         let currentRow = {};
         if (mode === 'edit') {
-            // 修复：使用动态数据源查找，并使用 loose equality (==) 兼容字符串/数字ID
             const currentData = getDataForTable(currentTable);
             currentRow = currentData.find(r => r[schema.pk] == id) || {};
         }
-
 
         let formHtml = "";
         schema.columns.forEach(col => {
@@ -4893,16 +4953,40 @@
 
             if (col.type === 'select') {
                 formHtml += `<select class="form-input" id="input-${col.key}" ${disabled}>`;
-                col.options.forEach(opt => {
-                    const selected = val === opt ? 'selected' : '';
-                    formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
-                });
+                // 添加默认空选项
+                formHtml += `<option value="">Select...</option>`;
+                if (col.options) {
+                    col.options.forEach(opt => {
+                        const selected = val === opt ? 'selected' : '';
+                        formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
+                    });
+                }
                 formHtml += `</select>`;
             } else if (col.type === 'boolean') {
                 formHtml += `<select class="form-input" id="input-${col.key}" ${disabled}>
                     <option value="true" ${val === true ? 'selected' : ''}>True</option>
                     <option value="false" ${val === false ? 'selected' : ''}>False</option>
                 </select>`;
+            } else if (col.type === 'file') {
+                formHtml += `<div style="display:flex; gap:10px; align-items:center;">
+                    <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" ${disabled} style="display:none;">
+                    <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button>
+                    <span id="input-${col.key}-preview">
+                        ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'}
+                    </span>
+                </div>`;
+            } else if (col.type === 'richtext') {
+                const safeVal = String(val).replace(/'/g, "&apos;");
+                const textPreview = String(val).replace(/<[^>]*>?/gm, '');
+                formHtml += `
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="hidden" id="input-${col.key}" value='${safeVal}'>
+                        <button class="btn-secondary" onclick="openEditorForInput('input-${col.key}')" style="height:32px; font-size:0.8rem;">Edit Content</button>
+                        <span id="input-${col.key}-preview" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
+                            ${textPreview.substring(0, 30)}...
+                        </span>
+                    </div>
+                `;
             } else {
                 formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabled}>`;
             }
@@ -4919,62 +5003,102 @@
 
     function saveCrudData() {
         const schema = dbSchema[currentTable];
-        const inputs = document.querySelectorAll('#modal-form-container .form-input');
         let newRow = {};
 
-        inputs.forEach(input => {
-            const key = input.id.replace('input-', '');
-            let val = input.value;
+        const isProject = currentTable === 'project';
+        const currentData = getDataForTable(currentTable);
+        let existingRow = null;
+        if (editingId !== null) {
+            existingRow = currentData.find(r => r[schema.pk] == editingId);
+        }
 
-            const colDef = schema.columns.find(c => c.key === key);
-            if (colDef) {
-                if (colDef.type === 'number') val = Number(val);
-                if (colDef.type === 'boolean') val = (val === 'true');
+        schema.columns.forEach(col => {
+            if (col.readonly && editingId === null) return;
+
+            const input = document.getElementById(`input-${col.key}`);
+            if (!input && col.type !== 'file' && col.type !== 'richtext') return;
+
+            let val = input ? input.value : "";
+
+            if (col.type === 'number') val = Number(val);
+            if (col.type === 'boolean') val = (val === 'true');
+
+            if (col.type === 'file') {
+                const fileInput = document.getElementById(`input-${col.key}`);
+                const base64 = fileInput ? fileInput.getAttribute('data-base64') : null;
+                if (base64) {
+                    val = base64;
+                } else if (existingRow) {
+                    val = existingRow[col.key]; // 保持原值
+                } else {
+                    val = "";
+                }
             }
-            newRow[key] = val;
+
+            newRow[col.key] = val;
         });
 
-        // 获取当前数据源的引用
-        const currentData = getDataForTable(currentTable);
+        if (isProject) {
+            // 特殊处理 Project 数据的回写
+            const mappedProject = {
+                id: newRow.project_id,
+                name: newRow.name,
+                creator: newRow.creator_name,
+                externalUrl: newRow.url,
+                image: newRow.picture_url,
+                description: newRow.description,
+                doi: newRow.doi,
+                date: newRow.creation_date
+            };
 
-        if (editingId !== null) {
-            // 编辑模式
-            const idx = currentData.findIndex(r => r[schema.pk] == editingId); // 使用 loose equality 匹配 string/number ID
-            if (idx !== -1) {
-                // 直接修改内存中的对象，这样会同步更新 Map 和 Media 视图
-                Object.assign(currentData[idx], newRow);
-            }
-        } else {
-            // 新增模式
-            // 简单的 ID 生成逻辑（如果是数字ID）
-            if (currentData.length > 0 && typeof currentData[0][schema.pk] === 'number') {
-                 const maxId = currentData.reduce((max, r) => Math.max(max, r[schema.pk] || 0), 0);
-                 newRow[schema.pk] = maxId + 1;
+            if (editingId !== null) {
+                const target = rawProjects.find(p => p.id == editingId);
+                if (target) {
+                    Object.assign(target, mappedProject);
+                    // 刷新当前详情页视图
+                    if (editingId == rawProjects[currProjIdx].id) {
+                         updateContent(target, true);
+                    }
+                }
             } else {
-                // 字符串 ID 生成
-                newRow[schema.pk] = `new-${Date.now()}`;
+                // 新增项目
+                if(rawProjects.length > 0) {
+                    mappedProject.id = Math.max(...rawProjects.map(p=>p.id)) + 1;
+                } else {
+                    mappedProject.id = 1;
+                }
+                mappedProject.collections = [];
+                mappedProject.stats = {users:0, collections:0, audio:"0", photos:0, videos:0, metadata:"0", tags:0, sites:0};
+                mappedProject.contributors = [];
+                if(!mappedProject.date) mappedProject.date = new Date().toISOString().split('T')[0];
+                rawProjects.push(mappedProject);
             }
-
-            if (schema.columns.find(c => c.key === 'creation_date')) {
-                newRow.creation_date = new Date().toISOString().split('T')[0];
+            renderProjectList(); // 刷新左上角列表
+        } else {
+            // 常规表格内存更新
+            if (editingId !== null) {
+                const idx = currentData.findIndex(r => r[schema.pk] == editingId);
+                if (idx !== -1) {
+                    Object.assign(currentData[idx], newRow);
+                }
+            } else {
+                if (currentData.length > 0 && typeof currentData[0][schema.pk] === 'number') {
+                     const maxId = currentData.reduce((max, r) => Math.max(max, r[schema.pk] || 0), 0);
+                     newRow[schema.pk] = maxId + 1;
+                } else {
+                    newRow[schema.pk] = `new-${Date.now()}`;
+                }
+                currentData.push(newRow);
             }
+        }
 
-            // 推入数据源
-            currentData.push(newRow);
+        if (currentTable === 'site' && map) {
+             renderMap(false);
         }
 
         renderTableNav();
         renderCrudTable();
         closeCrudModal();
-
-        // 如果修改了 Sites 或 Media，可能需要刷新 Map 或 Media 视图
-        if (currentTable === 'site' && map) {
-             renderMap(false); // 刷新地图标记
-        }
-        if (currentTable === 'media') {
-            const mediaGrid = document.getElementById('media-grid-container');
-            if(mediaGrid) mediaGrid.innerHTML = ''; // 强制 Media Tab 下次重绘
-        }
     }
 
     function resetDataTable() {
