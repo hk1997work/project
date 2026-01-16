@@ -133,7 +133,7 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.06);
+            background: rgba(0, 0, 0, 0.3); /* 加深颜色 */
             border-radius: 10px;
             transition: background 0.2s;
         }
@@ -2657,23 +2657,37 @@
         }
 
         .crud-modal {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 480px; /* 侧边栏宽度 */
+            max-width: 100%;
             background: var(--bg-surface);
-            width: 500px;
-            max-width: 90%;
-            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-            border: var(--card-border);
-            transform: translateY(20px);
-            transition: 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15); /* 阴影改为向左投射 */
+            border-left: var(--card-border);
+            border-radius: 0; /* 修改：完全直角，去掉圆角 */
+
+            transform: translateX(100%); /* 初始状态在屏幕右侧外 */
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+
             display: flex;
             flex-direction: column;
             gap: 20px;
-            max-height: 85vh;
+            max-height: 100%; /* 占满高度 */
         }
 
         .crud-modal-overlay.active .crud-modal {
-            transform: translateY(0);
+            transform: translateX(0); /* 滑入屏幕 */
+        }
+
+        /* 针对移动端优化，宽度占满 */
+        @media (max-width: 600px) {
+            .crud-modal {
+                width: 100%;
+                border-radius: 0;
+            }
         }
 
         .form-grid {
@@ -3097,6 +3111,26 @@
     </div>
 </div>
 
+<div class="crud-modal-overlay" id="editor-modal-overlay" style="z-index: 10000;">
+    <div class="crud-modal" style="width: 800px; max-width: 90vw; transform: translateX(0); left: 50%; top: 50%; bottom: auto; right: auto; border-radius: 16px; transform: translate(-50%, -50%); border-left: none;">
+        <div class="card-title" id="editor-title">Edit Description</div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 400px;">
+            <div style="background: var(--bg-capsule); padding: 8px; border-radius: 8px; display: flex; gap: 8px; border: 1px solid var(--border-light);">
+                <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="bold" size="16"></i></button>
+                <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="italic" size="16"></i></button>
+                <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="list" size="16"></i></button>
+                <div class="nav-divider"></div>
+                <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="image" size="16"></i></button>
+            </div>
+            <textarea id="editor-textarea" style="flex: 1; width: 100%; padding: 16px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-surface); color: var(--text-main); font-family: monospace; line-height: 1.6; resize: none; outline: none; box-sizing: border-box;"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeEditorModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveEditorContent()">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
@@ -3246,7 +3280,7 @@
 
     const initialProjects = [
         {
-            id: "p1", name: "Amazon Rainforest Survey", creator: "Dr. Silva", date: "2025-01-10", doi: "10.1234/amz.01", externalUrl: "#",
+            id: 1, name: "Amazon Rainforest Survey", creator: "Dr. Silva", date: "2025-01-10", doi: "10.1234/amz.01", externalUrl: "https://www.worldwildlife.org/places/amazon",
             description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"),
             styleClass: "style-modern", image: getImg(0),
             collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
@@ -3255,7 +3289,7 @@
             contributors: getContributors(4, 'project', "Dr. Silva")
         },
         {
-            id: "p2", name: "Marine Ecosystems Study", creator: "Prof. Ocean", date: "2024-11-05", doi: "10.5678/mar.02", externalUrl: "#",
+            id: 2, name: "Marine Ecosystems Study", creator: "Prof. Ocean", date: "2024-11-05", doi: "10.5678/mar.02", externalUrl: "https://www.barrierreef.org/",
             description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"),
             styleClass: "style-academic", image: getImg(1),
             collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
@@ -3264,7 +3298,7 @@
             contributors: getContributors(3, 'project', "Prof. Ocean")
         },
         {
-            id: "p3", name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15", doi: "10.9999/sav.03", externalUrl: "#",
+            id: 3, name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15", doi: "10.9999/sav.03", externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant",
             description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"),
             styleClass: "style-editorial", image: getImg(2),
             collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
@@ -3306,22 +3340,26 @@
     }
 
     function generateSitesForContext(projId, colId) {
-        let seed = projId.charCodeAt(1) + (colId ? colId.charCodeAt(1) * 10 : 0);
+        // 修改：projId 已经是数字，colId 还是字符串 (c0, c1...)
+        let seed = projId + (colId ? colId.charCodeAt(1) * 10 : 0);
         const count = 50 + (seed % 20);
         let baseLat = -3.4, baseLng = -62.2;
-        if (projId === "p2") {
+
+        // 修改：匹配数字 ID
+        if (projId === 2) {
             baseLat = -18.2;
             baseLng = 147.7;
         }
-        if (projId === "p3") {
+        if (projId === 3) {
             baseLat = -2.3;
             baseLng = 34.8;
         }
         const realmKeys = Object.keys(TAXONOMY);
         return Array.from({length: count}, (_, i) => {
             let rIndex = Math.floor(Math.random() * realmKeys.length);
-            if (projId === "p1" && Math.random() > 0.3) rIndex = 0;
-            if (projId === "p2" && Math.random() > 0.3) rIndex = 1;
+            // 修改：匹配数字 ID
+            if (projId === 1 && Math.random() > 0.3) rIndex = 0;
+            if (projId === 2 && Math.random() > 0.3) rIndex = 1;
             const r = realmKeys[rIndex];
             const bKeys = Object.keys(TAXONOMY[r]);
             const b = bKeys[Math.floor(Math.random() * bKeys.length)];
@@ -4052,6 +4090,12 @@
             }
             renderCollectionList();
             renderProjectList();
+
+            // 新增：如果当前在 Data Tab，刷新数据
+            if (document.getElementById('tab-data').classList.contains('active')) {
+                renderTableNav(); // 刷新侧边栏数量
+                renderCrudTable(); // 刷新表格内容
+            }
         }
 
         setTimeout(() => {
@@ -4127,6 +4171,14 @@
             loadMapData();
             if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
             renderCollectionList();
+
+            // 新增：如果当前在 Data Tab，刷新数据
+            if (document.getElementById('tab-data').classList.contains('active')) {
+                renderTableNav(); // 刷新侧边栏数量
+                // 切换集合时，如果当前看的是项目层级表（如 project/collection），可能需要切到 site 或 media 才有意义
+                // 或者保持当前表不动，只更新内容
+                renderCrudTable();
+            }
         }
         setTimeout(() => {
             dropdown.style.display = '';
@@ -4268,134 +4320,164 @@
 
     const dbSchema = {
         project: {
-            label: "Projects",
+            label: "All Projects",
+            itemLabel: "Project", // 显式指定单数名称
             icon: "folder-kanban",
             pk: "project_id",
             columns: [
-                {key: "project_id", label: "ID", type: "number", readonly: true},
-                {key: "name", label: "Project Name", type: "text"},
-                {key: "creator_id", label: "Creator ID", type: "number"},
-                {key: "public", label: "Public", type: "boolean"},
-                {key: "active", label: "Active", type: "boolean"},
-                {key: "creation_date", label: "Created", type: "datetime", readonly: true}
+                { key: "project_id", label: "ID", type: "number", readonly: true },
+                { key: "uuid", label: "UUID", type: "text", readonly: true },
+                { key: "name", label: "Project Name", type: "text" },
+                { key: "creator_name", label: "Creator", type: "text" },
+                { key: "url", label: "URL", type: "text" }, // URL 提到图片前面
+                { key: "picture_url", label: "Picture", type: "image" }, // 图片放后面
+                { key: "doi", label: "DOI", type: "text" },
+                { key: "public", label: "Public", type: "boolean" },
+                { key: "active", label: "Active", type: "boolean" },
+                { key: "creation_date", label: "Created", type: "text", readonly: true }
             ]
         },
         collection: {
             label: "Collections",
             icon: "library",
-            pk: "collection_id",
+            pk: "id", // 对应 collection 中的 id
             columns: [
-                {key: "collection_id", label: "ID", type: "number", readonly: true},
-                {key: "name", label: "Name", type: "text"},
-                {key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]},
-                {key: "public_access", label: "Public Access", type: "boolean"},
-                {key: "doi", label: "DOI", type: "text"}
+                { key: "id", label: "ID", type: "text", readonly: true },
+                { key: "name", label: "Name", type: "text" },
+                { key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"] },
+                { key: "creator", label: "Creator", type: "text" },
+                { key: "doi", label: "DOI", type: "text" }
             ]
         },
         site: {
             label: "Sites",
             icon: "map-pin",
-            pk: "site_id",
+            pk: "id", // 对应 currentSites 中的 id
             columns: [
-                {key: "site_id", label: "ID", type: "number", readonly: true},
-                {key: "name", label: "Site Name", type: "text"},
-                {key: "realm_id", label: "Realm", type: "text"},
-                {key: "topography_m", label: "Elevation (m)", type: "number"},
-                {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number"}
-            ]
-        },
-        "user": {
-            label: "Users",
-            icon: "users",
-            pk: "user_id",
-            columns: [
-                {key: "user_id", label: "ID", type: "number", readonly: true},
-                {key: "username", label: "Username", type: "text"},
-                {key: "email", label: "Email", type: "text"},
-                {key: "role_id", label: "Role ID", type: "number"},
-                {key: "active", label: "Active", type: "boolean"}
+                { key: "id", label: "Site ID", type: "text", readonly: true },
+                { key: "name", label: "Site Name", type: "text" },
+                { key: "realm", label: "Realm", type: "text" },
+                { key: "biome", label: "Biome", type: "text" },
+                { key: "group", label: "Group", type: "text" },
+                { key: "topography_m", label: "Elevation (m)", type: "number" },
+                { key: "mediaCount", label: "Media Count", type: "number", readonly: true }
             ]
         },
         media: {
-            label: "Media",
+            label: "Media Files",
             icon: "file-audio",
-            pk: "media_id",
+            pk: "id", // 对应 mediaItems 中的 id
             columns: [
-                {key: "media_id", label: "ID", type: "number", readonly: true},
-                {key: "name", label: "Filename", type: "text"},
-                {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video"]},
-                {key: "site_id", label: "Site ID", type: "number"},
-                {key: "duration_s", label: "Duration (s)", type: "text", readonly: true}
+                { key: "id", label: "ID", type: "number", readonly: true },
+                { key: "name", label: "Filename", type: "text" },
+                { key: "site", label: "Site Name", type: "text" },
+                { key: "date", label: "Date", type: "text" },
+                { key: "duration", label: "Duration", type: "text" },
+                { key: "sensor", label: "Sensor", type: "text" },
+                { key: "size", label: "Size", type: "text" }
             ]
         },
-        taxon: {
-            label: "Taxonomy",
-            icon: "sprout",
-            pk: "taxon_id",
+        "user": {
+            label: "Contributors",
+            icon: "users",
+            pk: "uid", // 对应 contributors 中的 uid
             columns: [
-                {key: "taxon_id", label: "ID", type: "number", readonly: true},
-                {key: "cached_scientific_name", label: "Scientific Name", type: "text"},
-                {key: "cached_common_name", label: "Common Name", type: "text"},
-                {key: "col_species_id", label: "CoL ID", type: "text"}
+                { key: "uid", label: "ORCID / ID", type: "text", readonly: true },
+                { key: "name", label: "Name", type: "text" },
+                { key: "email", label: "Email", type: "text" },
+                { key: "role", label: "Role", type: "text" }
             ]
         },
         sensor: {
-            label: "Sensors",
+            label: "Sensors (Ref)",
             icon: "cpu",
             pk: "sensor_id",
             columns: [
-                {key: "sensor_id", label: "ID", type: "number", readonly: true},
-                {key: "name", label: "Model Name", type: "text"},
-                {key: "sensor_type", label: "Type", type: "select", options: ["audio", "photo"]}
+                { key: "sensor_id", label: "ID", type: "number", readonly: true },
+                { key: "name", label: "Model Name", type: "text" },
+                { key: "sensor_type", label: "Type", type: "select", options: ["audio", "photo"] }
             ]
         }
     };
-
-
-    let mockDB = {
-        project: [
-            {project_id: 1, name: "Amazon Rainforest Survey", creator_id: 101, public: true, active: true, creation_date: "2025-01-10"},
-            {project_id: 2, name: "Marine Ecosystems Study", creator_id: 102, public: true, active: true, creation_date: "2024-11-05"},
-            {project_id: 3, name: "African Savanna Project", creator_id: 105, public: true, active: false, creation_date: "2025-02-15"}
-        ],
-        collection: [
-            {collection_id: 1, name: "Canopy Audio Phase A", sphere: "Biosphere", public_access: true, doi: "10.123/col.1"},
-            {collection_id: 2, name: "Hydrophone Data", sphere: "Hydrosphere", public_access: false, doi: "10.123/col.2"}
-        ],
-        site: [
-            {site_id: 1, name: "Site A-101", realm_id: "Terrestrial", topography_m: 450, freshwater_depth_m: 0},
-            {site_id: 2, name: "Reef Zone B", realm_id: "Marine", topography_m: -20, freshwater_depth_m: 25.5}
-        ],
-        "user": [
-            {user_id: 101, username: "drsilva", email: "silva@lab.edu", role_id: 2, active: true},
-            {user_id: 102, username: "profocean", email: "ocean@uni.edu", role_id: 2, active: true},
-            {user_id: 103, username: "student1", email: "s1@uni.edu", role_id: 3, active: false}
-        ],
-        media: [
-            {media_id: 501, name: "REC_20250101.wav", media_type: "audio", site_id: 1, duration_s: "60.0"},
-            {media_id: 502, name: "IMG_0023.jpg", media_type: "photo", site_id: 1, duration_s: "-"}
-        ],
-        taxon: [
-            {taxon_id: 1, cached_scientific_name: "Panthera onca", cached_common_name: "Jaguar", col_species_id: "COL:123"},
-            {taxon_id: 2, cached_scientific_name: "Ara macao", cached_common_name: "Scarlet Macaw", col_species_id: "COL:456"}
-        ],
-        sensor: [
-            {sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"},
-            {sensor_id: 2, name: "GoPro Hero 10", sensor_type: "photo"}
-        ]
-    };
-
 
     let currentTable = "project";
     let crudSearchQuery = "";
     let editingId = null;
     let selectedCrudIds = [];
-    let sortState = {key: null, direction: 'asc'};
+    let sortState = { key: null, direction: 'asc' };
 
-    function initDataTab() {
-        switchCrudTable('project');
+    // 静态 Mock 数据用于 Sensors 等通用表
+    const staticMockDB = {
+        sensor: [
+            { sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio" },
+            { sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio" },
+            { sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo" }
+        ]
+    };
+
+    // 核心函数：根据当前上下文动态获取表格数据
+    function getDataForTable(tableName) {
+        const currentProject = rawProjects[currProjIdx];
+
+        if (tableName === 'project') {
+            return rawProjects.map(p => {
+                // 生成或提取纯文本简介用于 Short Desc
+                const stripHtml = (html) => {
+                    let tmp = document.createElement("DIV");
+                    tmp.innerHTML = html;
+                    return tmp.textContent || tmp.innerText || "";
+                };
+
+                return {
+                    project_id: p.id,
+                    uuid: `550e8400-e29b-41d4-a716-${String(p.id).padStart(12, '0')}`, // 模拟 UUID
+                    name: p.name,
+                    creator_name: p.creator, // 映射：使用名称代替ID
+                    url: p.externalUrl || "https://example.com",
+                    picture_url: p.image, // 映射：图片 URL
+                    description: p.description, // 保留完整 HTML 用于编辑
+                    description_short: stripHtml(p.description).substring(0, 50) + "...", // 截取纯文本用于列表
+                    doi: p.doi,
+                    public: true,
+                    active: true,
+                    creation_date: p.date
+                };
+            });
+        }
+        else if (tableName === 'collection') {
+            // 返回当前项目的所有集合
+            // 如果当前选择了特定集合(currColIdx > 0)，也可以选择只显示该集合，这里默认显示项目下所有集合
+            return currentProject.collections;
+        }
+        else if (tableName === 'site') {
+            // 返回 Map 页面正在使用的 Sites 数据
+            return currentSites;
+        }
+        else if (tableName === 'media') {
+            // 返回 Media 页面正在使用的 Media 数据
+            // 注意：Media Tab 生成数据时可能没有 enriched，这里确保数据字段完整
+            if(mediaItems.length > 0 && !mediaItems[0].enriched) {
+                enrichMediaData();
+            }
+            return mediaItems;
+        }
+        else if (tableName === 'user') {
+            // 返回当前项目或集合的贡献者
+            if (currColIdx > 0) {
+                return currentProject.collections[currColIdx - 1].contributors;
+            }
+            return currentProject.contributors;
+        }
+        else {
+            // 对于 sensor 等通用数据，使用静态 Mock
+            return staticMockDB[tableName] || [];
+        }
     }
 
+    function initDataTab() {
+        // 如果是从别的 Tab 切过来，重置到当前项目视图
+        switchCrudTable('project');
+    }
 
     function renderTableNav() {
         const navList = document.getElementById('table-nav-list');
@@ -4403,7 +4485,11 @@
         Object.keys(dbSchema).forEach(key => {
             const table = dbSchema[key];
             const isActive = currentTable === key ? 'active' : '';
-            const count = mockDB[key] ? mockDB[key].length : 0;
+
+            // 动态获取当前数量
+            const data = getDataForTable(key);
+            const count = data ? data.length : 0;
+
             html += `
                 <div class="dt-item ${isActive}" onclick="switchCrudTable('${key}')">
                     <span style="display:flex; align-items:center; gap:8px;">
@@ -4524,7 +4610,9 @@
 
     function renderCrudTable() {
         const schema = dbSchema[currentTable];
-        const rawData = mockDB[currentTable] || [];
+        // 修改点：使用动态数据源
+        const rawData = getDataForTable(currentTable);
+
         const tbody = document.getElementById('crud-tbody');
         const titleEl = document.getElementById('current-table-title');
 
@@ -4580,9 +4668,34 @@
                 schema.columns.forEach(col => {
                     let val = row[col.key];
                     if (val === undefined || val === null) val = "";
+
+                    // 1. Current 标签逻辑 (针对 project_id)
+                    if (currentTable === 'project' && col.key === 'project_id') {
+                        // 注意：rawProjects 里的 id 对应这里的 project_id
+                        const currentProjId = rawProjects[currProjIdx] ? rawProjects[currProjIdx].id : null;
+                        if (row.project_id === currentProjId) {
+                            val = `<span style="display:flex; align-items:center; gap:8px;">
+                                    ${val}
+                                    <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span>
+                                   </span>`;
+                        }
+                    }
+
+                    // 2. 图片类型渲染
+                    if (col.type === 'image') {
+                        val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img">`;
+                    }
+
+                    // 3. 布尔值渲染
                     if (col.type === 'boolean') {
                         val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;
                     }
+
+                    // 4. 富文本简单渲染 (限制长度，防止破坏表格)
+                    if (col.type === 'richtext') {
+                        val = `<span style="opacity:0.8; font-size:0.85rem;">${val}</span>`;
+                    }
+
                     bodyHtml += `<td>${val}</td>`;
                 });
                 bodyHtml += `</tr>`;
@@ -4692,7 +4805,9 @@
         const submitBtn = document.getElementById('modal-submit-btn');
 
         const schema = dbSchema[currentTable];
-        title.textContent = `Delete ${schema.label}`;
+        // 修改：优先使用单数名称 itemLabel
+        const itemName = schema.itemLabel || schema.label.slice(0, -1);
+        title.textContent = `Delete ${itemName}`;
 
         const count = selectedCrudIds.length;
 
@@ -4717,15 +4832,26 @@
 
     function confirmDeleteData() {
         const pk = dbSchema[currentTable].pk;
+        const currentData = getDataForTable(currentTable);
 
-        mockDB[currentTable] = mockDB[currentTable].filter(row => !selectedCrudIds.includes(row[pk]));
+        // 找出需要保留的元素（这是一个简化的删除，实际上如果引用的 array 是 rawProjects 的属性，这样做可能无法重新赋值回去，
+        // 但由于 JS 数组引用特性，splice 是更好的选择）
 
+        // 从后往前遍历删除，避免索引错位
+        for (let i = currentData.length - 1; i >= 0; i--) {
+            if (selectedCrudIds.includes(currentData[i][pk])) {
+                currentData.splice(i, 1);
+            }
+        }
 
         selectedCrudIds = [];
         renderTableNav();
         renderCrudTable();
         updateToolbarState();
         closeCrudModal();
+
+        // 联动刷新
+        if (currentTable === 'site' && map) renderMap(false);
     }
 
     function openCrudModal(mode, id = null) {
@@ -4743,12 +4869,16 @@
         }
 
         editingId = id;
-        title.textContent = mode === 'edit' ? `Edit ${schema.label.slice(0, -1)}` : `New ${schema.label.slice(0, -1)}`;
+        // 优先使用显式定义的 itemLabel，否则回退到去尾法
+        const itemName = schema.itemLabel || schema.label.slice(0, -1);
+        title.textContent = mode === 'edit' ? `Edit ${itemName}` : `New ${itemName}`;
 
 
         let currentRow = {};
         if (mode === 'edit') {
-            currentRow = mockDB[currentTable].find(r => r[schema.pk] === id) || {};
+            // 修复：使用动态数据源查找，并使用 loose equality (==) 兼容字符串/数字ID
+            const currentData = getDataForTable(currentTable);
+            currentRow = currentData.find(r => r[schema.pk] == id) || {};
         }
 
 
@@ -4804,27 +4934,47 @@
             newRow[key] = val;
         });
 
-        if (editingId !== null) {
+        // 获取当前数据源的引用
+        const currentData = getDataForTable(currentTable);
 
-            const idx = mockDB[currentTable].findIndex(r => r[schema.pk] === editingId);
+        if (editingId !== null) {
+            // 编辑模式
+            const idx = currentData.findIndex(r => r[schema.pk] == editingId); // 使用 loose equality 匹配 string/number ID
             if (idx !== -1) {
-                mockDB[currentTable][idx] = {...mockDB[currentTable][idx], ...newRow};
+                // 直接修改内存中的对象，这样会同步更新 Map 和 Media 视图
+                Object.assign(currentData[idx], newRow);
             }
         } else {
-
-            const maxId = mockDB[currentTable].reduce((max, r) => Math.max(max, r[schema.pk] || 0), 0);
-            newRow[schema.pk] = maxId + 1;
+            // 新增模式
+            // 简单的 ID 生成逻辑（如果是数字ID）
+            if (currentData.length > 0 && typeof currentData[0][schema.pk] === 'number') {
+                 const maxId = currentData.reduce((max, r) => Math.max(max, r[schema.pk] || 0), 0);
+                 newRow[schema.pk] = maxId + 1;
+            } else {
+                // 字符串 ID 生成
+                newRow[schema.pk] = `new-${Date.now()}`;
+            }
 
             if (schema.columns.find(c => c.key === 'creation_date')) {
                 newRow.creation_date = new Date().toISOString().split('T')[0];
             }
 
-            mockDB[currentTable].push(newRow);
+            // 推入数据源
+            currentData.push(newRow);
         }
 
         renderTableNav();
         renderCrudTable();
         closeCrudModal();
+
+        // 如果修改了 Sites 或 Media，可能需要刷新 Map 或 Media 视图
+        if (currentTable === 'site' && map) {
+             renderMap(false); // 刷新地图标记
+        }
+        if (currentTable === 'media') {
+            const mediaGrid = document.getElementById('media-grid-container');
+            if(mediaGrid) mediaGrid.innerHTML = ''; // 强制 Media Tab 下次重绘
+        }
     }
 
     function resetDataTable() {
