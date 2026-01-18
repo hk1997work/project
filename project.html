@@ -4668,40 +4668,67 @@
             return mediaItems;
         }
         else if (tableName === 'user') {
-            const projContributors = currentProject.contributors;
-            const colContributors = (currColIdx > 0)
-                ? currentProject.collections[currColIdx - 1].contributors
-                : [];
-
-            const isUserInCurrentContext = (u) => {
-                if (currColIdx > 0) {
-                     return colContributors.some(c => c.name === u.name);
-                }
-                return projContributors.some(c => c.name === u.name);
-            };
+            const directProjContributors = currentProject.contributors;
+            const activeCollection = (currColIdx > 0) ? currentProject.collections[currColIdx - 1] : null;
 
             let displayUsers = [];
+
+            // 1. 确定要显示的用户列表
             if (dataScope === 'current') {
-                displayUsers = (currColIdx > 0) ? [...colContributors] : [...projContributors];
+                if (currColIdx > 0) {
+                    // 【集合视图】：只显示该集合的用户
+                    displayUsers = [...activeCollection.contributors];
+                } else {
+                    // 【项目视图】：显示 (项目直接成员 + 该项目下所有集合的成员)
+                    let allProjectUsers = [...directProjContributors];
+                    currentProject.collections.forEach(c => {
+                        allProjectUsers.push(...c.contributors);
+                    });
+                    displayUsers = allProjectUsers;
+                }
             } else {
+                // 【全部视图】：显示系统所有用户
                  rawProjects.forEach(p => {
                      displayUsers.push(...p.contributors);
                      p.collections.forEach(c => displayUsers.push(...c.contributors));
                  });
             }
 
+            // 去重
             displayUsers = Array.from(new Map(displayUsers.map(u => [u.name, u])).values());
 
             return displayUsers.map((u, i) => {
-                const pEntry = projContributors.find(c => c.name === u.name);
-                const cEntry = colContributors.find(c => c.name === u.name);
-
-                // 业务逻辑：如果用户在集合中有角色，但没有显式的项目角色，赋予默认项目角色
+                // 2. 计算角色
+                // 项目角色：查找直接项目成员表
+                const pEntry = directProjContributors.find(c => c.name === u.name);
                 let pRole = pEntry ? (pEntry.role || "-") : "-";
-                let cRole = cEntry ? (cEntry.role || "-") : "-";
 
-                if (cEntry && pRole === "-") {
+                // 集合角色：查找当前选中的集合（如果没选集合，则是"-"）
+                let cRole = "-";
+                if (activeCollection) {
+                    const cEntry = activeCollection.contributors.find(c => c.name === u.name);
+                    cRole = cEntry ? (cEntry.role || "-") : "-";
+                }
+
+                // 3. 业务规则：集合用户一定是项目用户
+                // 检查该用户是否在当前项目的“任意”集合中
+                const isInAnyCollectionOfProject = currentProject.collections.some(col =>
+                    col.contributors.some(c => c.name === u.name)
+                );
+
+                // 如果用户是直接项目成员 OR 是子集合成员，但他没有明确的项目角色，则默认为 "Participant"
+                if ((pEntry || isInAnyCollectionOfProject) && pRole === "-") {
                     pRole = "Participant";
+                }
+
+                // 4. 计算 Current 标签 (用于 All 视图下的高亮)
+                let isCurrent = false;
+                if (currColIdx > 0) {
+                    // 集合视图：必须属于当前集合
+                    isCurrent = activeCollection.contributors.some(c => c.name === u.name);
+                } else {
+                    // 项目视图：属于项目直接成员 OR 属于任意子集合
+                    isCurrent = (!!pEntry) || isInAnyCollectionOfProject;
                 }
 
                 return {
@@ -4715,7 +4742,7 @@
                     project_role: pRole,
                     collection_role: cRole,
                     active: true,
-                    _isCurrent: isUserInCurrentContext(u)
+                    _isCurrent: isCurrent
                 };
             });
         }
