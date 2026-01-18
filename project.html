@@ -1,27 +1,22 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>ecoSignal | Dashboard</title>
 
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+    <link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" rel="stylesheet"/>
+    <link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" rel="stylesheet"/>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-
     <style>
         :root {
-
             --brand: #83CD20;
             --brand-tint: rgba(131, 205, 32, 0.08);
             --brand-hover: #72b51b;
-
-
             --bg-page: radial-gradient(circle at top left, #ffffff, #f8fafc);
             --bg-nav: rgba(255, 255, 255, 0.85);
             --bg-capsule: #f1f5f9;
@@ -30,47 +25,31 @@
             --bg-surface-secondary: #f8fafc;
             --bg-input: #ffffff;
             --bg-header-tint: rgba(255, 255, 255, 0.4);
-
             --text-main: #1e293b;
             --text-secondary: #475569;
             --text-muted: #94a3b8;
             --border-light: #e2e8f0;
             --border-color: rgba(0, 0, 0, 0.06);
-
-
             --glass-bg: rgba(255, 255, 255, 0.9);
             --card-bg: #ffffff;
             --card-border: 1px solid rgba(0, 0, 0, 0.06);
             --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08),
             0 0 0 1px rgba(255, 255, 255, 0.8) inset;
-
-
             --nav-height: 80px;
             --capsule-height: 48px;
             --radius: 24px;
-
-
             --w-wide: 60%;
             --gap: 32px;
-
-
             --anim-layout-duration: 0.8s;
             --anim-layout-ease: cubic-bezier(0.19, 1, 0.22, 1);
             --anim-fade-duration: 0.3s;
             --anim-fade-ease: ease-out;
-
-
             --font-sans: 'Inter', sans-serif;
-
-
             --site-color: #0f172a;
             --site-color-tint: rgba(15, 23, 42, 0.05);
-
-
             --h-std: 40px;
             --h-sm: 32px;
         }
-
 
         [data-theme="dark"] {
             --bg-page: radial-gradient(circle at top left, #0f172a, #020617);
@@ -81,23 +60,18 @@
             --bg-surface-secondary: #020617;
             --bg-input: #0f172a;
             --bg-header-tint: rgba(0, 0, 0, 0.2);
-
             --text-main: #f8fafc;
             --text-secondary: #cbd5e1;
             --text-muted: #94a3b8;
-
             --border-light: #334155;
             --border-color: rgba(255, 255, 255, 0.1);
-
             --glass-bg: rgba(30, 41, 59, 0.85);
             --card-bg: #1e293b;
             --card-border: 1px solid rgba(255, 255, 255, 0.08);
             --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4),
             0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-
             --site-color: #f8fafc;
         }
-
 
         [data-theme="dark"] .leaflet-layer,
         [data-theme="dark"] .leaflet-control-zoom-in,
@@ -141,7 +115,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--brand);
         }
-
 
         .project-nav-bar {
             position: absolute;
@@ -209,7 +182,6 @@
             letter-spacing: -0.2px;
         }
 
-
         .nav-logo {
             display: flex;
             align-items: center;
@@ -246,7 +218,6 @@
             background: white;
             color: var(--brand);
         }
-
 
         .breadcrumb-group {
             display: flex;
@@ -406,7 +377,6 @@
             gap: 8px;
         }
 
-
         .sliding-pill {
             position: absolute;
             top: 4px;
@@ -440,7 +410,6 @@
         .nav-item:not(.active):hover {
             color: var(--brand);
         }
-
 
         .nav-btn-simple {
             background: transparent;
@@ -565,7 +534,6 @@
             opacity: 0.6;
         }
 
-
         .content-wrapper {
             position: absolute;
             top: var(--nav-height);
@@ -605,11 +573,9 @@
                 opacity: 0;
                 transform: translateY(5px);
             }
-
             to {
                 opacity: 1;
                 transform: none;
-
             }
         }
 
@@ -632,7 +598,6 @@
             flex-direction: column;
             height: 100%;
         }
-
 
         .desc-layout {
             position: relative;
@@ -700,7 +665,6 @@
             transform: translateX(0);
             opacity: 1;
         }
-
 
         .desc-header-section {
             flex-shrink: 0;
@@ -1022,7 +986,6 @@
             text-transform: uppercase;
         }
 
-
         .summary-layout {
             display: flex;
             gap: var(--gap);
@@ -1090,16 +1053,12 @@
         .summary-stat-card .bg-icon {
             position: absolute;
             bottom: -20px;
-
             right: -20px;
             width: 180px;
-
             height: 180px;
             opacity: 0.06;
             color: var(--text-main);
-
             transform: rotate(-10deg) scale(0.8);
-
             transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out, bottom 0.4s ease-in-out, right 0.4s ease-in-out, color 0.3s ease;
             pointer-events: none;
             z-index: 1;
@@ -1108,7 +1067,6 @@
         .summary-stat-card:hover .bg-icon {
             bottom: 0;
             right: 0;
-
             transform: rotate(0deg) scale(0.9);
             opacity: 1;
             color: var(--brand);
@@ -1292,13 +1250,10 @@
             color: var(--brand);
         }
 
-
         .media-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-
-
             flex-shrink: 0;
         }
 
@@ -1332,17 +1287,14 @@
             align-items: center;
             background: var(--bg-capsule);
             border-radius: 60px;
-
             padding: 0 16px;
             height: var(--h-std);
-
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
             width: 220px;
             box-sizing: border-box;
             border: 1px solid transparent;
             transition: all 0.2s;
         }
-
 
         [data-theme="dark"] .media-search-box {
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
@@ -1351,16 +1303,13 @@
         .media-search-box:focus-within {
             background: var(--bg-surface);
             border-color: var(--brand);
-
             box-shadow: 0 0 0 2px var(--brand-tint);
         }
 
         .media-search-icon {
             color: var(--text-secondary);
             width: 24px;
-
             height: 24px;
-
             margin-right: 8px;
             transition: color 0.2s;
         }
@@ -1370,13 +1319,10 @@
             background: transparent;
             outline: none;
             font-size: 0.85rem;
-
             width: 100%;
             color: var(--text-secondary);
-
             font-family: var(--font-sans);
             font-weight: 700;
-
         }
 
         .media-search-input::placeholder {
@@ -1388,10 +1334,8 @@
             position: relative;
             display: flex;
             background: var(--bg-capsule);
-
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
             border-radius: 60px;
-
             padding: 4px;
             height: var(--h-std);
             box-sizing: border-box;
@@ -1408,10 +1352,8 @@
             left: 4px;
             width: 90px;
             background: var(--brand);
-
             border-radius: 50px;
             box-shadow: none;
-
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             z-index: 1;
             pointer-events: none;
@@ -1429,7 +1371,6 @@
             font-size: 0.85rem;
             font-weight: 700;
             color: var(--text-secondary);
-
             transition: color 0.25s ease;
             display: flex;
             align-items: center;
@@ -1439,28 +1380,22 @@
 
         .view-btn.active {
             color: white;
-
         }
 
         .view-btn:not(.active):hover {
             color: var(--brand);
-
         }
 
         .media-scroll-area {
             flex: 1;
             overflow-y: auto;
-
             min-height: 0;
         }
-
 
         .media-container.view-gallery {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-
             gap: 32px;
-
             padding: 20px;
         }
 
@@ -1482,7 +1417,6 @@
             flex-direction: column;
             position: relative;
             cursor: default;
-
         }
 
         .media-item-card:hover {
@@ -1510,7 +1444,6 @@
         }
 
         .media-item-card:hover .spectrogram-img {
-
             opacity: 1;
         }
 
@@ -1534,7 +1467,6 @@
             flex-direction: column;
             gap: 10px;
             flex: 1;
-
         }
 
         .media-name {
@@ -1574,25 +1506,17 @@
             box-shadow: 0 2px 5px rgba(131, 205, 32, 0.25);
         }
 
-
         .media-meta-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-
             margin-top: auto;
-
             margin-left: -16px;
-
             margin-right: -16px;
             margin-bottom: -16px;
-
             padding: 10px 16px;
-
             background: var(--bg-surface-secondary);
-
             border-top: 1px solid var(--border-color);
-
             color: var(--text-secondary);
             font-size: 0.75rem;
             font-family: var(--font-sans);
@@ -1613,12 +1537,10 @@
             color: var(--text-main);
         }
 
-
         .media-item-row {
             background: var(--bg-surface);
             border-radius: 12px;
             display: grid;
-
             grid-template-columns: auto 360px 1fr;
             align-items: stretch;
             gap: 24px;
@@ -1635,24 +1557,16 @@
             border-color: rgba(131, 205, 32, 0.3);
         }
 
-
         .media-item-row .list-spec-container {
-
             width: 320px;
-
             height: auto;
-
             aspect-ratio: 2 / 1;
-
-
             align-self: center;
-
             border-radius: 8px;
             position: relative;
             background: #0f172a;
             border: 1px solid var(--border-color);
             overflow: hidden;
-
             flex-shrink: 0;
         }
 
@@ -1685,14 +1599,12 @@
             z-index: 2;
         }
 
-
         .row-basic-info {
             display: flex;
             flex-direction: column;
             gap: 12px;
             justify-content: flex-start;
             padding-top: 4px;
-
             height: 100%;
             box-sizing: border-box;
         }
@@ -1720,7 +1632,6 @@
             flex-direction: row;
             flex-wrap: wrap;
             gap: 16px;
-
             margin-top: auto;
         }
 
@@ -1737,7 +1648,6 @@
         .row-meta-item i {
             opacity: 0.7;
         }
-
 
         .row-details-col {
             display: flex;
@@ -1811,7 +1721,6 @@
 
         .rd-grid {
             display: grid;
-
             grid-template-columns: 1fr 1fr 1fr 1.5fr;
             grid-template-rows: auto auto;
             gap: 12px 16px;
@@ -1832,7 +1741,6 @@
             gap: 3px;
             overflow: hidden;
         }
-
 
         .rd-item.span-v {
             grid-column: 4;
@@ -1868,7 +1776,6 @@
             text-overflow: ellipsis;
         }
 
-
         .custom-select-wrapper {
             position: relative;
             font-family: var(--font-sans);
@@ -1877,7 +1784,6 @@
         .select-label {
             display: none;
         }
-
 
         .select-trigger {
             width: auto;
@@ -1910,7 +1816,6 @@
             color: var(--brand);
             border-color: var(--brand);
         }
-
 
         .select-trigger.disabled {
             opacity: 0.5;
@@ -1972,7 +1877,6 @@
             font-weight: 700;
         }
 
-
         .placeholder-card {
             display: flex;
             flex-direction: column;
@@ -2000,7 +1904,6 @@
             line-height: 1.6;
         }
 
-
         .map-wrapper {
             position: relative;
             width: 100%;
@@ -2014,7 +1917,6 @@
             outline: none;
             background: #f0f3f8;
         }
-
 
         .custom-cluster-icon {
             background: transparent;
@@ -2086,7 +1988,6 @@
         .site-marker-pin:hover {
             transform: scale(1.2);
         }
-
 
         .filter-trigger-btn {
             position: absolute;
@@ -2187,7 +2088,6 @@
             flex: 1;
         }
 
-
         .btn-toolbar {
             height: var(--h-std);
             padding: 0 20px;
@@ -2205,7 +2105,6 @@
             transition: all 0.2s;
         }
 
-
         .btn-toolbar:hover:not(:disabled) {
             border-color: var(--brand);
             background: var(--brand);
@@ -2213,14 +2112,12 @@
             box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
         }
 
-
         .btn-toolbar.danger:hover:not(:disabled) {
             border-color: #ef4444;
             background: #ef4444;
             color: white;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
-
 
         .btn-toolbar:disabled {
             opacity: 0.5;
@@ -2230,7 +2127,6 @@
             border-color: transparent;
         }
 
-
         .crud-checkbox {
             cursor: pointer;
             width: 16px;
@@ -2239,7 +2135,6 @@
             vertical-align: middle;
             margin: 0;
         }
-
 
         .sidebar {
             position: absolute;
@@ -2345,7 +2240,6 @@
             flex-direction: column;
             gap: 12px;
             min-height: 0;
-
         }
 
         .data-row {
@@ -2354,7 +2248,6 @@
             align-items: baseline;
             border-bottom: 1px dashed var(--border-light);
             flex-shrink: 0;
-
         }
 
         .data-label {
@@ -2381,7 +2274,6 @@
             flex-shrink: 0;
         }
 
-
         .media-scroll-container {
             display: flex;
             flex-direction: column;
@@ -2393,7 +2285,6 @@
             padding-top: 10px;
             padding-bottom: 20px;
         }
-
 
         .media-scroll-container .media-item-card {
             flex-shrink: 0;
@@ -2458,7 +2349,6 @@
             border-radius: 50%;
             flex-shrink: 0;
         }
-
 
         .data-layout-wrapper {
             display: flex;
@@ -2587,8 +2477,7 @@
             text-overflow: ellipsis;
         }
 
-        .crud-table th:first-child,
-        .crud-table td:first-child {
+        .crud-table th:first-child, .crud-table td:first-child {
             position: sticky;
             left: 0;
             z-index: 5;
@@ -2619,7 +2508,6 @@
         .crud-table tr:hover {
             background: var(--bg-surface-hover);
         }
-
 
         .crud-table tr.selected {
             background: var(--brand-tint) !important;
@@ -2655,9 +2543,6 @@
             color: #fca5a5;
         }
 
-
-
-
         .crud-modal-overlay {
             position: fixed;
             top: 0;
@@ -2692,10 +2577,8 @@
             box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
             border-left: var(--card-border);
             border-radius: 0;
-
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -2705,7 +2588,6 @@
         .crud-modal-overlay.active .crud-modal {
             transform: translateX(0);
         }
-
 
         @media (max-width: 600px) {
             .crud-modal {
@@ -2792,7 +2674,6 @@
             justify-content: center;
         }
 
-
         .crud-table th {
             vertical-align: top;
             padding: 10px 12px;
@@ -2853,13 +2734,11 @@
         }
     </style>
 </head>
-
 <body>
-
 <nav class="project-nav-bar">
     <div class="nav-left">
         <div class="nav-capsule-box">
-            <a href="index.html" class="nav-logo">
+            <a class="nav-logo" href="index.html">
                 <div class="logo-icon-box"><i data-lucide="activity"></i></div>
                 <span>ecoSignal</span>
             </a>
@@ -2867,33 +2746,33 @@
             <div class="breadcrumb-group">
                 <div class="crumb-wrapper" id="project-wrap">
                     <button class="crumb-btn" onclick="toggleMenu('project-wrap')">
-                        <span id="label-project" class="block-anim">Loading...</span><i data-lucide="chevron-down"
-                                                                                        size="14"></i>
+                        <span class="block-anim" id="label-project">Loading...</span>
+                        <i data-lucide="chevron-down" size="14"></i>
                     </button>
                     <div class="crumb-dropdown" id="dropdown-project">
                         <div class="dropdown-search-box">
-                            <div class="search-input-wrapper"><i data-lucide="search"
-                                                                 class="search-icon-small"></i><input type="text" class="dropdown-input"
-                                                                                                      placeholder="Search..." oninput="handleSearchProject(this.value)"
-                                                                                                      onclick="event.stopPropagation()"></div>
+                            <div class="search-input-wrapper">
+                                <i class="search-icon-small" data-lucide="search"></i>
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchProject(this.value)" placeholder="Search..." type="text">
+                            </div>
                         </div>
-                        <div id="project-list-container" class="dropdown-list-scroll"></div>
+                        <div class="dropdown-list-scroll" id="project-list-container"></div>
                     </div>
                 </div>
                 <span class="crumb-separator">/</span>
                 <div class="crumb-wrapper" id="collection-wrap">
                     <button class="crumb-btn" onclick="toggleMenu('collection-wrap')">
-                        <span id="label-collection" class="block-anim">Loading...</span><i
-                            data-lucide="chevron-down" size="14"></i>
+                        <span class="block-anim" id="label-collection">Loading...</span>
+                        <i data-lucide="chevron-down" size="14"></i>
                     </button>
                     <div class="crumb-dropdown" id="dropdown-collection">
                         <div class="dropdown-search-box">
-                            <div class="search-input-wrapper"><i data-lucide="search"
-                                                                 class="search-icon-small"></i><input type="text" class="dropdown-input"
-                                                                                                      placeholder="Search..." oninput="handleSearchCollection(this.value)"
-                                                                                                      onclick="event.stopPropagation()"></div>
+                            <div class="search-input-wrapper">
+                                <i class="search-icon-small" data-lucide="search"></i>
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchCollection(this.value)" placeholder="Search..." type="text">
+                            </div>
                         </div>
-                        <div id="collection-list-container" class="dropdown-list-scroll"></div>
+                        <div class="dropdown-list-scroll" id="collection-list-container"></div>
                     </div>
                 </div>
             </div>
@@ -2916,35 +2795,31 @@
                 <i data-lucide="moon" id="theme-icon-el" size="20"></i>
             </button>
             <div class="nav-divider"></div>
-
             <button class="nav-btn-simple" title="Information"><i data-lucide="info" size="20"></i></button>
             <div class="nav-divider"></div>
             <div class="user-wrapper" id="user-menu">
                 <div class="user-capsule-btn" onclick="toggleUserMenu()">
                     <div class="user-avatar-icon"><i data-lucide="user" size="16"></i></div>
                     <span class="user-name-text">Liudilong</span>
-                    <i data-lucide="chevron-down" class="chevron-icon" size="14"></i>
+                    <i class="chevron-icon" data-lucide="chevron-down" size="14"></i>
                 </div>
                 <div class="dropdown-menu">
-                    <a href="#" class="dropdown-item"><i data-lucide="settings" size="18"></i> Settings</a>
+                    <a class="dropdown-item" href="#"><i data-lucide="settings" size="18"></i>Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="index.html" class="dropdown-item danger"><i data-lucide="log-out" size="18"></i>
-                        Logout</a>
+                    <a class="dropdown-item danger" href="index.html"><i data-lucide="log-out" size="18"></i>Logout</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
-
 <div class="content-wrapper">
-    <div id="tab-desc" class="tab-page active">
+    <div class="tab-page active" id="tab-desc">
         <div class="desc-layout" id="desc-layout-container">
-            <div id="panel-proj-desc" class="panel-anim">
+            <div class="panel-anim" id="panel-proj-desc">
                 <div class="desc-header-section block-anim">
                     <div class="title-row">
                         <h1 class="desc-title-text" id="desc-project-title">Loading...</h1>
-                        <a href="#" target="_blank" class="title-link-icon" id="meta-link"
-                           title="Visit Project Website"><i data-lucide="link"></i></a>
+                        <a class="title-link-icon" href="#" id="meta-link" target="_blank" title="Visit Project Website"><i data-lucide="link"></i></a>
                     </div>
                     <div class="meta-row">
                         <div class="meta-capsule-box">
@@ -2969,22 +2844,20 @@
                     <div id="rich-text-container">Loading...</div>
                 </div>
             </div>
-            <div id="panel-visual" class="panel-anim">
+            <div class="panel-anim" id="panel-visual">
                 <div class="desc-image-container">
-                    <img src="" alt="Project Visual" class="desc-project-img" id="main-project-image">
+                    <img alt="Project Visual" class="desc-project-img" id="main-project-image" src="">
                 </div>
             </div>
-            <div id="panel-col-desc" class="panel-anim"></div>
+            <div class="panel-anim" id="panel-col-desc"></div>
         </div>
     </div>
-
-    <div id="tab-summary" class="tab-page">
+    <div class="tab-page" id="tab-summary">
         <div class="summary-layout">
             <div class="summary-stats-container block-anim" id="summary-stats-grid"></div>
             <div class="summary-contributors-card block-anim">
                 <div class="card-header">
-                    <div class="card-title" id="contrib-title"><i data-lucide="users"></i> Project Contributors
-                    </div>
+                    <div class="card-title" id="contrib-title"><i data-lucide="users"></i> Project Contributors</div>
                 </div>
                 <div class="card-body">
                     <div class="contributors-list" id="summary-contributors-list"></div>
@@ -2992,24 +2865,16 @@
             </div>
         </div>
     </div>
-    <div id="tab-media" class="tab-page">
+    <div class="tab-page" id="tab-media">
         <div class="dashboard-card" style="height: 100%;">
             <div class="card-header media-header">
-                <div class="media-title"><i data-lucide="music" size="24"></i> Media <span class="media-count-badge"
-                                                                                           id="media-count-badge">Loading...</span></div>
+                <div class="media-title"><i data-lucide="music" size="24"></i> Media <span class="media-count-badge" id="media-count-badge">Loading...</span></div>
                 <div class="media-controls">
-                    <div class="media-search-box"><i data-lucide="search" class="media-search-icon"></i><input
-                            type="text" class="media-search-input" placeholder="Search media or tags..."
-                            oninput="handleSearchMedia(this.value)"></div>
+                    <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" oninput="handleSearchMedia(this.value)" placeholder="Search media or tags..." type="text"></div>
                     <div class="view-switcher-container">
                         <div class="view-pill" id="view-pill"></div>
-                        <button class="view-btn active"
-                                onclick="switchMediaView('gallery', this)"><i data-lucide="grid" size="14"></i>
-                            Gallery
-                        </button>
-                        <button class="view-btn" onclick="switchMediaView('list', this)"><i
-                                data-lucide="list" size="14"></i> List
-                        </button>
+                        <button class="view-btn active" onclick="switchMediaView('gallery', this)"><i data-lucide="grid" size="14"></i>Gallery</button>
+                        <button class="view-btn" onclick="switchMediaView('list', this)"><i data-lucide="list" size="14"></i> List</button>
                     </div>
                 </div>
             </div>
@@ -3018,137 +2883,83 @@
             </div>
         </div>
     </div>
-    <div id="tab-map" class="tab-page">
+    <div class="tab-page" id="tab-map">
         <div class="map-wrapper">
             <div id="full-map"></div>
-            <button class="filter-trigger-btn" id="filter-btn-main"
-                    onclick="openFilterDrawer()"><i data-lucide="sliders-horizontal" size="22"></i></button>
+            <button class="filter-trigger-btn" id="filter-btn-main" onclick="openFilterDrawer()"><i data-lucide="sliders-horizontal" size="22"></i></button>
             <div class="filter-drawer" id="filter-drawer">
                 <div class="fd-header">
-                    <div class="fd-title"><i data-lucide="sliders-horizontal" size="20"
-                                             color="var(--brand)"></i><span>Filters</span></div>
-                    <button class="fd-close"
-                            onclick="closeFilterDrawer()"><i data-lucide="chevrons-left" size="20"></i></button>
+                    <div class="fd-title"><i color="var(--brand)" data-lucide="sliders-horizontal" size="20"></i><span>Filters</span></div>
+                    <button class="fd-close" onclick="closeFilterDrawer()"><i data-lucide="chevrons-left" size="20"></i></button>
                 </div>
                 <div class="fd-content">
                     <div class="custom-select-wrapper" id="sel-realm">
-                        <div class="select-trigger" onclick="toggleSelect('sel-realm')"><span class="trigger-text"
-                                                                                              id="text-realm">All Realms</span><i data-lucide="chevron-down" size="16"></i></div>
+                        <div class="select-trigger" onclick="toggleSelect('sel-realm')"><span class="trigger-text" id="text-realm">All Realms</span><i data-lucide="chevron-down" size="16"></i></div>
                         <div class="select-options" id="opt-realm"></div>
                     </div>
                     <div class="custom-select-wrapper" id="sel-biome">
-                        <div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')">
-                            <span class="trigger-text" id="text-biome">All Biomes</span><i
-                                data-lucide="chevron-down" size="16"></i>
-                        </div>
+                        <div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')"><span class="trigger-text" id="text-biome">All Biomes</span><i data-lucide="chevron-down" size="16"></i></div>
                         <div class="select-options" id="opt-biome"></div>
                     </div>
                     <div class="custom-select-wrapper" id="sel-group">
-                        <div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')">
-                            <span class="trigger-text" id="text-group">All Groups</span><i
-                                data-lucide="chevron-down" size="16"></i>
-                        </div>
+                        <div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')"><span class="trigger-text" id="text-group">All Groups</span><i data-lucide="chevron-down" size="16"></i></div>
                         <div class="select-options" id="opt-group"></div>
                     </div>
                     <button class="btn-toolbar" onclick="resetFilters()" style="width: 100%; margin-top: 12px;"><i data-lucide="rotate-ccw" size="16"></i> Reset</button>
                 </div>
             </div>
-            <div id="sidebar" class="sidebar">
+            <div class="sidebar" id="sidebar">
                 <div class="sb-header" id="sb-header-bg">
-                    <div class="sb-header-content">
-                        <h2 class="sb-title" id="sb-name">Site Name</h2>
+                    <div class="sb-header-content"><h2 class="sb-title" id="sb-name">Site Name</h2>
                         <div class="sb-meta-row" id="sb-meta-container"></div>
                     </div>
                     <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
                 </div>
                 <div class="sb-content">
-                    <div class="data-row"><span class="data-label">Realm</span><span class="data-val"
-                                                                                     id="val-realm">--</span></div>
-                    <div class="data-row"><span class="data-label">Biome</span><span class="data-val"
-                                                                                     id="val-biome">--</span></div>
-                    <div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span
-                            class="data-val" id="val-group">--</span></div>
-
+                    <div class="data-row"><span class="data-label">Realm</span><span class="data-val" id="val-realm">--</span></div>
+                    <div class="data-row"><span class="data-label">Biome</span><span class="data-val" id="val-biome">--</span></div>
+                    <div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span class="data-val" id="val-group">--</span></div>
                     <div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div>
                     <div class="media-scroll-container" id="media-container"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div id="tab-timeline" class="tab-page">
-    </div>
-
-    <div id="tab-data" class="tab-page">
+    <div class="tab-page" id="tab-timeline"></div>
+    <div class="tab-page" id="tab-data">
         <div class="data-layout-wrapper">
             <div class="data-sidebar">
-                <div class="data-sidebar-header">
-                    <i data-lucide="database" size="18" style="color:var(--brand);"></i> Tables
-                </div>
-                <div class="data-table-list" id="table-nav-list">
-                </div>
+                <div class="data-sidebar-header"><i data-lucide="database" size="18" style="color:var(--brand);"></i> Tables</div>
+                <div class="data-table-list" id="table-nav-list"></div>
             </div>
-
             <div class="data-main-content">
                 <div class="data-toolbar">
                     <div class="card-title" id="current-table-title"><i data-lucide="table"></i> Project</div>
                     <div class="media-controls">
-
-                        <div class="media-search-box">
-                            <i data-lucide="search" class="media-search-icon"></i>
-                            <input type="text" class="media-search-input" id="data-search-input" placeholder="Search" oninput="handleDataSearch(this.value)">
-                        </div>
-
-                        <button class="btn-toolbar" onclick="resetDataTable()" title="Reset">
-                            <i data-lucide="rotate-ccw" size="16"></i> Reset
-                        </button>
-
-                        <button class="btn-toolbar" onclick="openCrudModal('add')">
-                            <i data-lucide="plus" size="16"></i> Add
-                        </button>
-
-                        <button class="btn-toolbar" id="btn-edit" onclick="handleToolbarEdit()" disabled>
-                            <i data-lucide="pencil" size="16"></i> Edit
-                        </button>
-
-                        <button class="btn-toolbar" id="btn-link" onclick="handleToolbarLink()" disabled>
-                            <i data-lucide="link" size="16"></i> Link
-                        </button>
-
-                        <button class="btn-toolbar" id="btn-reset-pwd" onclick="handleToolbarResetPassword()" disabled style="display:none;">
-                            <i data-lucide="key" size="16"></i> Reset Pwd
-                        </button>
-
-                        <button class="btn-toolbar" id="btn-permission" onclick="handleToolbarPermission()" disabled style="display:none;">
-                            <i data-lucide="shield-check" size="16"></i> Permission
-                        </button>
-
-                        <button class="btn-toolbar" id="btn-set-contrib" onclick="handleSetContributor()" disabled style="display:none;">
-                            <i data-lucide="user-plus" size="16"></i> Set Role
-                        </button>
-
-                        <button class="btn-toolbar danger" id="btn-delete" onclick="handleToolbarDelete()" disabled>
-                            <i data-lucide="trash-2" size="16"></i> Delete
-                        </button>
+                        <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" id="data-search-input" oninput="handleDataSearch(this.value)" placeholder="Search" type="text"></div>
+                        <button class="btn-toolbar" onclick="resetDataTable()" title="Reset"><i data-lucide="rotate-ccw" size="16"></i> Reset</button>
+                        <button class="btn-toolbar" onclick="openCrudModal('add')"><i data-lucide="plus" size="16"></i> Add</button>
+                        <button class="btn-toolbar" disabled id="btn-edit" onclick="handleToolbarEdit()"><i data-lucide="pencil" size="16"></i> Edit</button>
+                        <button class="btn-toolbar" disabled id="btn-link" onclick="handleToolbarLink()"><i data-lucide="link" size="16"></i> Link</button>
+                        <button class="btn-toolbar" disabled id="btn-reset-pwd" onclick="handleToolbarResetPassword()" style="display:none;"><i data-lucide="key" size="16"></i> Reset Pwd</button>
+                        <button class="btn-toolbar" disabled id="btn-permission" onclick="handleToolbarPermission()" style="display:none;"><i data-lucide="shield-check" size="16"></i> Permission</button>
+                        <button class="btn-toolbar" disabled id="btn-set-contrib" onclick="handleSetContributor()" style="display:none;"><i data-lucide="user-plus" size="16"></i> Set Role</button>
+                        <button class="btn-toolbar danger" disabled id="btn-delete" onclick="handleToolbarDelete()"><i data-lucide="trash-2" size="16"></i> Delete</button>
                     </div>
                 </div>
                 <div class="data-table-container">
                     <table class="crud-table">
-                        <thead id="crud-thead">
-                        </thead>
-                        <tbody id="crud-tbody">
-                        </tbody>
+                        <thead id="crud-thead"></thead>
+                        <tbody id="crud-tbody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-
     <div class="crud-modal-overlay" id="crud-modal-overlay">
         <div class="crud-modal">
             <div class="card-title" id="modal-title">Edit Item</div>
-            <div class="form-grid" id="modal-form-container">
-            </div>
+            <div class="form-grid" id="modal-form-container"></div>
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeCrudModal()">Cancel</button>
                 <button class="btn-primary" id="modal-submit-btn" onclick="saveCrudData()">Save Changes</button>
@@ -3156,7 +2967,6 @@
         </div>
     </div>
 </div>
-
 <div class="crud-modal-overlay" id="editor-modal-overlay" style="z-index: 10000;">
     <div class="crud-modal" style="width: 800px; max-width: 90vw; transform: translateX(0); left: 50%; top: 50%; bottom: auto; right: auto; border-radius: 16px; transform: translate(-50%, -50%); border-left: none;">
         <div class="card-title" id="editor-title">Edit Description</div>
@@ -3168,97 +2978,73 @@
                 <div class="nav-divider"></div>
                 <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="image" size="16"></i></button>
             </div>
-            <textarea id="editor-textarea" style="flex: 1; width: 100%; padding: 16px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-surface); color: var(--text-main); font-family: monospace; line-height: 1.6; resize: none; outline: none; box-sizing: border-box;"></textarea>
-        </div>
+            <textarea id="editor-textarea" style="flex: 1; width: 100%; padding: 16px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-surface); color: var(--text-main); font-family: monospace; line-height: 1.6; resize: none; outline: none; box-sizing: border-box;"></textarea></div>
         <div class="modal-footer">
             <button class="btn-secondary" onclick="closeEditorModal()">Cancel</button>
             <button class="btn-primary" onclick="saveEditorContent()">Confirm</button>
         </div>
     </div>
 </div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
 <script>
     lucide.createIcons();
-
-
     const generateRichText = (type, title, location, latinName) => {
         if (type === 'modern') {
-            return `
-                    <div class="style-modern">
-                        <span class="tag-label" style="display:inline-block;padding:4px 8px;background:var(--brand);color:white;border-radius:4px;font-size:0.7rem;font-weight:700;margin-bottom:10px;text-transform:uppercase;">Live Monitoring</span>
-                        <h1>${title} Digital Overview</h1>
-                        <p style="font-size:1.1rem;color:var(--text-secondary);">Deploying next-generation <strong>edge-computing nodes</strong> in ${location} to capture high-fidelity acoustic data.</p>
-
-                        <div class="data-grid">
-                            <div class="data-item"><span class="data-val">98.5%</span><span class="data-key">Uptime</span></div>
-                            <div class="data-item"><span class="data-val">24/7</span><span class="data-key">Streaming</span></div>
-                            <div class="data-item"><span class="data-val">AI</span><span class="data-key">Detection</span></div>
-                        </div>
-
-                        <h3>System Architecture</h3>
-                        <ul>
-                            <li><strong>Edge Nodes:</strong> Solar-powered Raspberry Pi units with AudioMoth sensors.</li>
-                            <li><strong>Connectivity:</strong> LoRaWAN mesh network for real-time metadata transmission.</li>
-                            <li><strong>Cloud Sync:</strong> Daily batch uploads via Starlink satellite link.</li>
-                        </ul>
-                    </div>
-                `;
+            return `<div class="style-modern"><span class="tag-label" style="display:inline-block;padding:4px 8px;background:var(--brand);color:white;border-radius:4px;font-size:0.7rem;font-weight:700;margin-bottom:10px;text-transform:uppercase;">Live Monitoring</span>
+    <h1>${title} Digital Overview</h1>
+    <p style="font-size:1.1rem;color:var(--text-secondary);">Deploying next-generation <strong>edge-computing nodes</strong> in ${location} to capture high-fidelity acoustic data.</p>
+    <div class="data-grid">
+        <div class="data-item"><span class="data-val">98.5%</span><span class="data-key">Uptime</span></div>
+        <div class="data-item"><span class="data-val">24/7</span><span class="data-key">Streaming</span></div>
+        <div class="data-item"><span class="data-val">AI</span><span class="data-key">Detection</span></div>
+    </div>
+    <h3>System Architecture</h3>
+    <ul>
+        <li><strong>Edge Nodes:</strong> Solar-powered Raspberry Pi units with AudioMoth sensors.</li>
+        <li><strong>Connectivity:</strong> LoRaWAN mesh network for real-time metadata transmission.</li>
+        <li><strong>Cloud Sync:</strong> Daily batch uploads via Starlink satellite link.</li>
+    </ul>
+</div>
+`;
         } else if (type === 'academic') {
-            return `
-                    <div class="style-modern">
-                        <div style="background:var(--bg-surface-secondary);padding:20px;border-left:4px solid var(--text-main);margin-bottom:24px;">
-                            <h4 style="margin:0 0 8px 0;font-size:0.9rem;text-transform:uppercase;color:var(--text-muted);">Abstract</h4>
-                            <p style="margin:0;font-style:italic;">This study investigates the acoustic signature of <em>${latinName}</em> within the ${location} ecosystem, focusing on temporal variations in vocalization intensity.</p>
-                        </div>
-
-                        <h2>1. Introduction</h2>
-                        <p>Passive Acoustic Monitoring (PAM) has emerged as a non-invasive method for assessing biodiversity.</p>
-
-                        <h2>2. Methodology</h2>
-                        <p>We deployed <strong>50 autonomous recording units (ARUs)</strong> across a stratified random grid.</p>
-                        <ul>
-                            <li>Sampling Rate: 48 kHz</li>
-                            <li>Duty Cycle: 10 mins / hour</li>
-                            <li>Duration: 6 months</li>
-                        </ul>
-
-                        <blockquote>"The results suggest a significant correlation between rainfall patterns and biological acoustic activity."</blockquote>
-                    </div>
-                `;
+            return `<div class="style-modern">
+    <div style="background:var(--bg-surface-secondary);padding:20px;border-left:4px solid var(--text-main);margin-bottom:24px;"><h4 style="margin:0 0 8px 0;font-size:0.9rem;text-transform:uppercase;color:var(--text-muted);">Abstract</h4>
+        <p style="margin:0;font-style:italic;">This study investigates the acoustic signature of <em>${latinName}</em> within the ${location} ecosystem, focusing on temporal variations in vocalization intensity.</p></div>
+    <h2>1. Introduction</h2>
+    <p>Passive Acoustic Monitoring (PAM) has emerged as a non-invasive method for assessing biodiversity.</p>
+    <h2>2. Methodology</h2>
+    <p>We deployed <strong>50 autonomous recording units (ARUs)</strong> across a stratified random grid.</p>
+    <ul>
+        <li>Sampling Rate: 48 kHz</li>
+        <li>Duty Cycle: 10 mins / hour</li>
+        <li>Duration: 6 months</li>
+    </ul>
+    <blockquote>"The results suggest a significant correlation between rainfall patterns and biological acoustic activity."</blockquote>
+</div>
+`;
         } else {
-            return `
-                    <div class="style-modern">
-                        <p style="font-family:serif;font-size:1.2rem;line-height:1.8;color:var(--text-main);">
-                            The jungle was alive. Not with the roar of engines, but with the <strong>symphony of life</strong>.
-                        </p>
-                        <p>Our team trekked for three days into the heart of ${location}. The humidity was oppressive, but the soundscape was mesmerizing.</p>
-
-                        <div style="margin:24px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border-color);">
-                            <img src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=800&q=80" style="width:100%;height:200px;object-fit:cover;display:block;">
-                            <div style="padding:12px;background:var(--bg-surface-secondary);font-size:0.8rem;color:var(--text-muted);">Figure 1: Field deployment site at sunrise.</div>
-                        </div>
-
-                        <h3>Field Notes: Day 3</h3>
-                        <p>We encountered a rare species of <em>${latinName}</em> near the riverbank. The recordings captured here are pristine.</p>
-                        <ul>
-                            <li>Equipment: Sony PCM-D10</li>
-                            <li>Conditions: Light rain</li>
-                            <li>Team: K. Mbeki, J. Doe</li>
-                        </ul>
-                    </div>
-                `;
+            return `<div class="style-modern"><p style="font-family:serif;font-size:1.2rem;line-height:1.8;color:var(--text-main);"> The jungle was alive. Not with the roar of engines, but with the <strong>symphony of life</strong>. </p>
+    <p>Our team trekked for three days into the heart of ${location}. The humidity was oppressive, but the soundscape was mesmerizing.</p>
+    <div style="margin:24px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border-color);"><img src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=800&q=80" style="width:100%;height:200px;object-fit:cover;display:block;">
+        <div style="padding:12px;background:var(--bg-surface-secondary);font-size:0.8rem;color:var(--text-muted);">Figure 1: Field deployment site at sunrise.</div>
+    </div>
+    <h3>Field Notes: Day 3</h3>
+    <p>We encountered a rare species of <em>${latinName}</em> near the riverbank. The recordings captured here are pristine.</p>
+    <ul>
+        <li>Equipment: Sony PCM-D10</li>
+        <li>Conditions: Light rain</li>
+        <li>Team: K. Mbeki, J. Doe</li>
+    </ul>
+</div>
+  `;
         }
     };
-
     const colGenerators = [
         (n) => `<div class="col-rt-modern"><h3><i data-lucide="activity"></i> Spectral Analysis</h3><p>${n} exhibits high-frequency harmonics typical of neotropical avian species. The spectrogram reveals distinct banding patterns.</p><ul><li>Bandwidth: 2kHz - 8kHz</li><li>Duration: 1.5s pulses</li></ul></div>`,
         (n) => `<div class="col-rt-modern"><h3><i data-lucide="clock"></i> Temporal Patterns</h3><p>${n} activity peaks during the dawn chorus (05:00 - 06:30) with a secondary, lower intensity peak at dusk.</p></div>`,
         (n) => `<div class="col-rt-modern"><h3><i data-lucide="map-pin"></i> Spatial Distribution</h3><p>Recorded primarily in the riparian zones of the transect. ${n} density decreases significantly >500m from water sources.</p></div>`
     ];
-
     const projectImages = [
         'https://ecosound-web.de/ecosound_web/sounds/projects/108.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/117.jpeg',
         'https://ecosound-web.de/ecosound_web/sounds/projects/121.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/105.jpeg',
@@ -3266,32 +3052,21 @@
     ];
     const getImg = (idx) => projectImages[idx % projectImages.length];
     const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
-
-
     const mockNames = ["A. Schmidt", "B. Cohen", "C. Kim", "D. Mwangi", "E. Rossi", "F. Yamamoto", "G. Dubois", "H. Petrov", "I. Al-Fayed", "J. Smith", "K. Gupta", "L. Wei"];
-
     const projRoles = ["Principal Investigator", "Lead Researcher", "Field Technician", "Data Analyst", "Project Manager", "Ecologist"];
-
     const colRoles = ["Field Recorder", "Annotator", "Reviewer", "Data Curator", "Metadata Specialist", "Logistics"];
-
-
     const getContributors = (count, type, leadName = null) => {
         const list = [];
         const rolePool = type === 'project' ? projRoles : colRoles;
-
         for (let i = 0; i < count; i++) {
             let name, role;
-
-
             if (i === 0 && leadName) {
                 name = leadName;
                 role = rolePool[0];
             } else {
-
                 name = mockNames[Math.floor(Math.random() * mockNames.length)];
                 role = rolePool[Math.floor(Math.random() * (rolePool.length - 1)) + 1];
             }
-
             list.push({
                 name: name,
                 role: role,
@@ -3301,7 +3076,6 @@
         }
         return list;
     };
-
     const createCollections = (baseName, count, startImgIdx, creatorName) => {
         return Array.from({length: count}, (_, i) => {
             const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
@@ -3317,49 +3091,59 @@
                 description: colGenerators[i % 3](`${baseName}`),
                 image: getImg(startImgIdx + i + 1),
                 stats: {users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), tags: rInt(50, 300), sites: rInt(1, 5)},
-
                 contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
             };
         });
     };
-
     const initialProjects = [
         {
-            id: 1, name: "Amazon Rainforest Survey", creator: "Dr. Silva", date: "2025-01-10", doi: "10.1234/amz.01", externalUrl: "https://www.worldwildlife.org/places/amazon",
+            id: 1,
+            name: "Amazon Rainforest Survey",
+            creator: "Dr. Silva",
+            date: "2025-01-10",
+            doi: "10.1234/amz.01",
+            externalUrl: "https://www.worldwildlife.org/places/amazon",
             description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"),
-            styleClass: "style-modern", image: getImg(0),
+            styleClass: "style-modern",
+            image: getImg(0),
             collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
             stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", tags: 4500, sites: 12},
-
             contributors: getContributors(4, 'project', "Dr. Silva")
         },
         {
-            id: 2, name: "Marine Ecosystems Study", creator: "Prof. Ocean", date: "2024-11-05", doi: "10.5678/mar.02", externalUrl: "https://www.barrierreef.org/",
+            id: 2,
+            name: "Marine Ecosystems Study",
+            creator: "Prof. Ocean",
+            date: "2024-11-05",
+            doi: "10.5678/mar.02",
+            externalUrl: "https://www.barrierreef.org/",
             description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"),
-            styleClass: "style-academic", image: getImg(1),
+            styleClass: "style-academic",
+            image: getImg(1),
             collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
             stats: {users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", tags: 2100, sites: 5},
-
             contributors: getContributors(3, 'project', "Prof. Ocean")
         },
         {
-            id: 3, name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15", doi: "10.9999/sav.03", externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant",
+            id: 3,
+            name: "African Savanna Project",
+            creator: "K. Mbeki",
+            date: "2025-02-15",
+            doi: "10.9999/sav.03",
+            externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant",
             description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"),
-            styleClass: "style-editorial", image: getImg(2),
+            styleClass: "style-editorial",
+            image: getImg(2),
             collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
             stats: {users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", tags: 1200, sites: 8},
-
             contributors: getContributors(5, 'project', "K. Mbeki")
         }
     ];
     const rawProjects = [...initialProjects];
-
     let currProjIdx = 0;
     let currColIdx = 0;
     let projSearchQuery = "";
     let colSearchQuery = "";
-
-
     let map = null;
     let clusterGroup = null;
     let polyLayer = null;
@@ -3385,12 +3169,9 @@
     }
 
     function generateSitesForContext(projId, colId) {
-
         let seed = projId + (colId ? colId.charCodeAt(1) * 10 : 0);
         const count = 50 + (seed % 20);
         let baseLat = -3.4, baseLng = -62.2;
-
-
         if (projId === 2) {
             baseLat = -18.2;
             baseLng = 147.7;
@@ -3402,7 +3183,6 @@
         const realmKeys = Object.keys(TAXONOMY);
         return Array.from({length: count}, (_, i) => {
             let rIndex = Math.floor(Math.random() * realmKeys.length);
-
             if (projId === 1 && Math.random() > 0.3) rIndex = 0;
             if (projId === 2 && Math.random() > 0.3) rIndex = 1;
             const r = realmKeys[rIndex];
@@ -3438,10 +3218,8 @@
     }
 
     function loadMapData() {
-
         const projId = rawProjects[currProjIdx].id;
         const colId = currColIdx > 0 ? rawProjects[currProjIdx].collections[currColIdx - 1].id : null;
-
         if (!colId) {
             currentSites = [];
             rawProjects[currProjIdx].collections.forEach(c => {
@@ -3450,8 +3228,6 @@
         } else {
             currentSites = generateSitesForContext(projId, colId);
         }
-
-
         resetFilters();
     }
 
@@ -3519,9 +3295,7 @@
             visibleBounds.extend(site.center);
         });
         if (currentSelectedSiteId && !isCurrentSiteVisible) closeSidebar();
-        if ((shouldZoom || visibleCount > 0) && visibleCount > 0) {
-            if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, {duration: 0.8, easeLinearity: 0.5}); else map.fitBounds(visibleBounds, {padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5});
-        }
+        if ((shouldZoom || visibleCount > 0) && visibleCount > 0) if (visibleCount === 1) map.flyTo(visibleBounds.getCenter(), 14, {duration: 0.8, easeLinearity: 0.5}); else map.fitBounds(visibleBounds, {padding: [50, 50], maxZoom: 15, duration: 0.8, easeLinearity: 0.5});
     }
 
     function openSidebar(site) {
@@ -3529,59 +3303,42 @@
         const color = getRealmColor(site.realm);
         document.documentElement.style.setProperty('--site-color', color);
         document.documentElement.style.setProperty('--site-color-tint', color + '12');
-
-
         document.getElementById('sb-name').textContent = site.name;
         document.getElementById('val-realm').textContent = site.realm;
         document.getElementById('val-realm').style.color = color;
         document.getElementById('val-biome').textContent = site.biome;
         document.getElementById('val-group').textContent = site.group;
-
-
         const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
         const depthHtml = site.freshwater_depth_m !== "N/A"
             ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>`
             : '';
-
-
         const metaContainer = document.getElementById('sb-meta-container');
         if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
-
-
         const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
-
         const mediaHtml = site.media.map((m) => {
-
             const mockTagsHtml = `<span class="media-tag">Bio</span><span class="media-tag">Aves</span>`;
             const mockTime = "14:30:00";
             const mockSize = "2.4 MB";
-
-            return `
-                <div class="media-item-card" onclick="event.stopPropagation();">
-                    <div class="spectrogram-cover">
-                        <img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec">
-                        <div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div>
-                        <div class="duration-badge">${m.duration}</div>
-                    </div>
-                    <div class="media-card-info">
-                        <a href="#" class="media-name" title="${m.name}" onclick="return false;">${m.name}</a>
-
-                        <div class="tags-row">${mockTagsHtml}</div>
-
-                        <div class="media-meta-row">
-                            <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
-                            <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${mockTime}</div>
-                            <div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${mockSize}</div>
-                        </div>
-                    </div>
-                </div>`;
+            return `<div class="media-item-card" onclick="event.stopPropagation();">
+    <div class="spectrogram-cover"><img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec">
+        <div class="play-overlay">
+            <div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div>
+        </div>
+        <div class="duration-badge">${m.duration}</div>
+    </div>
+    <div class="media-card-info"><a href="#" class="media-name" title="${m.name}" onclick="return false;">${m.name}</a>
+        <div class="tags-row">${mockTagsHtml}</div>
+        <div class="media-meta-row">
+            <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
+            <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${mockTime}</div>
+            <div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${mockSize}</div>
+        </div>
+    </div>
+</div>`;
         }).join('');
-
-
         const mediaListContainer = document.getElementById('media-container');
         mediaListContainer.innerHTML = mediaHtml;
         mediaListContainer.scrollTop = 0;
-
         lucide.createIcons();
         document.getElementById('sidebar').classList.add('active');
         map.flyTo(site.center, 14, {duration: 0.8, easeLinearity: 0.5});
@@ -3665,18 +3422,14 @@
         const textEl = document.getElementById('text-' + type);
         const trigger = type === 'realm' ? document.getElementById('sel-realm').querySelector('.select-trigger') : document.getElementById('trig-' + type);
         const labelMap = {realm: "All Realms", biome: "All Biomes", group: "All Groups"};
-
         if (!value) {
             textEl.innerHTML = labelMap[type];
             trigger.classList.remove('active');
         } else {
             if (type === 'realm') {
-
                 const color = getRealmColor(value);
                 textEl.innerHTML = `<span class="opt-dot" style="background:${color}; display:inline-block; margin-right:8px;"></span>${value}`;
-            } else {
-                textEl.innerText = value;
-            }
+            } else textEl.innerText = value;
             trigger.classList.add('active');
         }
     }
@@ -3714,7 +3467,6 @@
         renderMap(true);
     }
 
-
     let mediaItems = [];
     let mediaSearchQuery = "";
     const taxonTags = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
@@ -3723,8 +3475,6 @@
         const shuffled = taxonTags.sort(() => 0.5 - Math.random());
         return shuffled.slice(0, count);
     };
-
-
     const generateMediaForContext = (proj, col) => {
         const prefix = col ? `COL_${col.id}` : `PROJ_${proj.id}`;
         const count = col ? rInt(8, 15) : rInt(24, 40);
@@ -3736,7 +3486,6 @@
             const month = Math.floor(Math.random() * 12) + 1;
             const day = Math.floor(Math.random() * 28) + 1;
             const fullDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
             return {
                 id: i,
                 name: `${prefix}_REC_${20250000 + i}.wav`,
@@ -3763,11 +3512,8 @@
         mediaSearchQuery = "";
         const searchInput = document.querySelector('.media-search-input');
         if (searchInput) searchInput.value = "";
-
-
         const scrollArea = document.querySelector('.media-scroll-area');
         if (scrollArea) scrollArea.scrollTop = 0;
-
         const container = document.getElementById('media-grid-container');
         animateBlockSwap(container, () => {
             renderMedia();
@@ -3780,84 +3526,73 @@
     }
 
     function renderMedia() {
-
         enrichMediaData();
-
         const container = document.getElementById('media-grid-container');
         const badge = document.getElementById('media-count-badge');
         const isGallery = container.classList.contains('view-gallery');
         const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
         badge.textContent = `${filteredItems.length} Items`;
-
         if (filteredItems.length === 0) {
             container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
             lucide.createIcons();
             return;
         }
-
         let html = '';
         filteredItems.forEach(item => {
             const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
-
             if (isGallery) {
-
-                html += `<div class="media-item-card"><div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div></div><div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a><div class="tags-row">${tagsHtml}</div><div class="media-meta-row"><div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div><div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div><div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div></div></div></div>`;
+                html += `<div class="media-item-card">
+    <div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec">
+        <div class="play-overlay">
+            <div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div>
+        </div>
+        <div class="duration-badge">${item.duration}</div>
+    </div>
+    <div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a>
+        <div class="tags-row">${tagsHtml}</div>
+        <div class="media-meta-row">
+            <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
+            <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div>
+            <div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div>
+        </div>
+    </div>
+</div>`;
             } else {
-
                 const realmColor = getRealmColor(item.realm);
-
-
                 const depthHtml = item.freshwater_depth_m !== 'N/A'
                     ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>`
                     : '';
-
-                html += `
-                    <div class="media-item-row">
-                        <div class="list-spec-container">
-                            <img src="${item.spectrogram}" class="list-spec-img" alt="Spec">
-                            <div class="duration-badge">${item.duration}</div>
-                        </div>
-
-                        <div class="row-basic-info">
-                            <a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a>
-                            <div class="tags-row">${tagsHtml}</div>
-                            <div class="row-meta-list">
-                                <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
-                                <div class="row-meta-item"><i data-lucide="clock" size="14"></i> ${item.time}</div>
-                                <div class="row-meta-item"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div>
-                            </div>
-                        </div>
-
-                        <div class="row-details-col">
-                            <div class="rd-header-row">
-                                <div class="rd-site-group">
-                                    <div class="rd-site-name"><i data-lucide="map-pin" size="14" style="color:var(--brand);"></i>${item.site}</div>
-                                    <div class="rd-site-metrics">
-                                        <span title="Topography"><i data-lucide="mountain" size="12"></i> ${item.topography_m}m</span>
-                                        ${depthHtml}
-                                    </div>
-                                </div>
-                                <div class="rd-hierarchy">
-                                    <span style="color:${realmColor}">${item.realm}</span>
-                                    <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span>
-                                    <span>${item.biome}</span>
-                                    <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span>
-                                    <span>${item.group}</span>
-                                </div>
-                            </div>
-                            <div class="rd-grid">
-                                <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
-                                <div class="rd-item"><span class="rd-label">Sensor</span><span class="rd-val" title="${item.sensor}">${item.sensor}</span></div>
-                                <div class="rd-item"><span class="rd-label">License</span><span class="rd-val" title="${item.license}">${item.license}</span></div>
-
-                                <div class="rd-item span-v"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
-
-                                <div class="rd-item"><span class="rd-label">Uploader</span><span class="rd-val" title="${item.uploader}">${item.uploader}</span></div>
-                                <div class="rd-item"><span class="rd-label">Creator</span><span class="rd-val" title="${item.creator}">${item.creator}</span></div>
-                                <div class="rd-item"><span class="rd-label">DOI</span><span class="rd-val" title="${item.doi}">${item.doi}</span></div>
-                            </div>
-                        </div>
-                    </div>`;
+                html += `<div class="media-item-row">
+    <div class="list-spec-container"><img src="${item.spectrogram}" class="list-spec-img" alt="Spec">
+        <div class="duration-badge">${item.duration}</div>
+    </div>
+    <div class="row-basic-info"><a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a>
+        <div class="tags-row">${tagsHtml}</div>
+        <div class="row-meta-list">
+            <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
+            <div class="row-meta-item"><i data-lucide="clock" size="14"></i> ${item.time}</div>
+            <div class="row-meta-item"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div>
+        </div>
+    </div>
+    <div class="row-details-col">
+        <div class="rd-header-row">
+            <div class="rd-site-group">
+                <div class="rd-site-name"><i data-lucide="map-pin" size="14" style="color:var(--brand);"></i>${item.site}</div>
+                <div class="rd-site-metrics"><span title="Topography"><i data-lucide="mountain" size="12"></i> ${item.topography_m}m</span> ${depthHtml}</div>
+            </div>
+            <div class="rd-hierarchy"><span style="color:${realmColor}">${item.realm}</span> <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span> <span>${item.biome}</span> <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span> <span>${item.group}</span></div>
+        </div>
+        <div class="rd-grid">
+            <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
+            <div class="rd-item"><span class="rd-label">Sensor</span><span class="rd-val" title="${item.sensor}">${item.sensor}</span></div>
+            <div class="rd-item"><span class="rd-label">License</span><span class="rd-val" title="${item.license}">${item.license}</span></div>
+            <div class="rd-item span-v"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
+            <div class="rd-item"><span class="rd-label">Uploader</span><span class="rd-val" title="${item.uploader}">${item.uploader}</span></div>
+            <div class="rd-item"><span class="rd-label">Creator</span><span class="rd-val" title="${item.creator}">${item.creator}</span></div>
+            <div class="rd-item"><span class="rd-label">DOI</span><span class="rd-val" title="${item.doi}">${item.doi}</span></div>
+        </div>
+    </div>
+</div>`;
             }
         });
         container.innerHTML = html;
@@ -3868,7 +3603,6 @@
         const container = document.getElementById('media-grid-container');
         const btns = document.querySelectorAll('.view-btn');
         const pill = document.getElementById('view-pill');
-
         if (mode === 'gallery') {
             container.classList.remove('view-list');
             container.classList.add('view-gallery');
@@ -3876,11 +3610,8 @@
             container.classList.remove('view-gallery');
             container.classList.add('view-list');
         }
-
-
         const scrollArea = document.querySelector('.media-scroll-area');
         if (scrollArea) scrollArea.scrollTop = 0;
-
         btns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         pill.style.width = btn.offsetWidth + 'px';
@@ -3888,40 +3619,29 @@
         renderMedia();
     }
 
-
     function enrichMediaData() {
         if (currentSites.length === 0) return;
         const realSites = currentSites;
-
         mediaItems.forEach((item, index) => {
             if (!item.enriched || !item.realSiteLinked) {
                 const siteIndex = (item.id + index) % realSites.length;
                 const linkedSite = realSites[siteIndex];
-
                 item.site = linkedSite.name;
                 item.realm = linkedSite.realm;
                 item.biome = linkedSite.biome;
                 item.group = linkedSite.group;
-
-
                 item.topography_m = linkedSite.topography_m;
                 item.freshwater_depth_m = linkedSite.freshwater_depth_m;
-
-
                 item.start = moment(`${item.date} ${item.time}`, "YYYY-MM-DD HH:mm:ss").toDate();
-
                 item.end = moment(item.start).add(rInt(1, 10), 'minutes').toDate();
-
                 if (!item.uploader) item.uploader = ["UserA", "LabAdmin", "J.Doe"][rInt(0, 2)];
                 if (!item.medium) item.medium = ['Marine', 'Freshwater'].includes(item.realm) ? 'Water' : 'Air';
                 if (!item.sensor) item.sensor = ["AudioMoth", "Song Meter", "Audiomoth Dev"][rInt(0, 2)];
-
                 item.realSiteLinked = true;
                 item.enriched = true;
             }
         });
     }
-
 
     function getIconForStat(key) {
         const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
@@ -4038,9 +3758,7 @@
             img.removeEventListener('load', handleLoad);
         };
         img.addEventListener('load', handleLoad);
-        if (img.complete && img.naturalWidth > 0) {
-            handleLoad();
-        }
+        if (img.complete && img.naturalWidth > 0) handleLoad();
     };
     const animateTextSwap = async (elementOrId, newContent) => {
         const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
@@ -4065,7 +3783,6 @@
             projContainer.className = "";
             if (project.styleClass) projContainer.classList.add(project.styleClass);
         };
-
         if (immediate) {
             updateLogic();
             const img = document.getElementById('main-project-image');
@@ -4098,10 +3815,8 @@
     }
 
     function selectProject(idx) {
-
         const dropdown = document.getElementById('dropdown-project');
         dropdown.style.display = 'none';
-
         const container = document.getElementById('desc-layout-container');
         const isCollectionMode = container.classList.contains('mode-collection');
         if (currProjIdx !== idx) {
@@ -4126,15 +3841,12 @@
             }
             renderCollectionList();
             renderProjectList();
-
-
             if (document.getElementById('tab-data').classList.contains('active')) {
                 renderTableNav();
-                renderCrudHeader(); // 新增：切换项目时刷新表头，确保标题正确
+                renderCrudHeader();
                 renderCrudTable();
             }
         }
-
         setTimeout(() => {
             dropdown.style.display = '';
             closeAllMenus();
@@ -4142,10 +3854,8 @@
     }
 
     function selectCollection(idx) {
-
         const dropdown = document.getElementById('dropdown-collection');
         dropdown.style.display = 'none';
-
         if (currColIdx !== idx) {
             currColIdx = idx;
             colSearchQuery = "";
@@ -4160,27 +3870,30 @@
                 const colContainer = document.getElementById('panel-col-desc');
                 const colDoiShort = colData.doi.split('/')[1];
                 const updateCollectionHTML = () => {
-
-                    colContainer.innerHTML = `
-                            <div class="collection-card block-anim">
-                                <div class="col-header-group">
-                                    <div class="col-badge"><i data-lucide="globe-2" size="14"></i> ${colData.sphere}</div>
-                                    <div class="title-row">
-                                        <h2 class="col-title smooth-text">${colData.name}</h2>
-                                        <a href="${colData.url}" target="_blank" class="title-link-icon" title="External Media"><i data-lucide="link" size="20"></i></a>
-                                    </div>
-                                    <div class="col-meta-row smooth-text">
-                                        <div class="meta-capsule-box">
-                                            <div class="meta-item-btn"><div class="meta-item-icon"><i data-lucide="user" size="14"></i></div>${colData.creator}</div>
-                                            <div class="meta-divider"></div>
-                                            <div class="meta-item-btn"><div class="meta-item-icon"><i data-lucide="calendar" size="14"></i></div>${colData.date}</div>
-                                            <div class="meta-divider"></div>
-                                            <div class="meta-item-btn"><div class="meta-item-icon"><i data-lucide="bookmark" size="14"></i></div>${colDoiShort}</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-rich-text smooth-text">${colData.description}</div>
-                            </div>`;
+                    colContainer.innerHTML = `<div class="collection-card block-anim">
+    <div class="col-header-group">
+        <div class="col-badge"><i data-lucide="globe-2" size="14"></i> ${colData.sphere}</div>
+        <div class="title-row"><h2 class="col-title smooth-text">${colData.name}</h2> <a href="${colData.url}" target="_blank" class="title-link-icon" title="External Media"><i data-lucide="link" size="20"></i></a></div>
+        <div class="col-meta-row smooth-text">
+            <div class="meta-capsule-box">
+                <div class="meta-item-btn">
+                    <div class="meta-item-icon"><i data-lucide="user" size="14"></i></div>
+                    ${colData.creator}
+                </div>
+                <div class="meta-divider"></div>
+                <div class="meta-item-btn">
+                    <div class="meta-item-icon"><i data-lucide="calendar" size="14"></i></div>
+                    ${colData.date}
+                </div>
+                <div class="meta-divider"></div>
+                <div class="meta-item-btn">
+                    <div class="meta-item-icon"><i data-lucide="bookmark" size="14"></i></div>
+                    ${colDoiShort}</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-rich-text smooth-text">${colData.description}</div>
+</div>`;
                     lucide.createIcons();
                 };
                 if (!container.classList.contains('mode-collection')) {
@@ -4193,17 +3906,14 @@
                 const newLabel = project.collections[currColIdx - 1].name;
                 animateTextSwap('label-collection', newLabel);
             }
-
             renderSummary();
             updateMediaContext();
             loadMapData();
             if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
             renderCollectionList();
-
-
             if (document.getElementById('tab-data').classList.contains('active')) {
                 renderTableNav();
-                renderCrudHeader(); // 新增：切换集合时刷新表头，更新为 Collection Contributor
+                renderCrudHeader();
                 renderCrudTable();
             }
         }
@@ -4258,9 +3968,7 @@
 
     document.addEventListener('click', e => {
         if (e.target.closest('.dropdown-search-box')) return;
-        if (!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) {
-            document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active'));
-        }
+        if (!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active'));
         if (!e.target.closest('.custom-select-wrapper')) closeSelects();
     });
 
@@ -4344,7 +4052,6 @@
         if (active) movePill(active);
     }
 
-
     const dbSchema = {
         project: {
             label: "Project",
@@ -4352,20 +4059,18 @@
             icon: "folder-kanban",
             pk: "project_id",
             columns: [
-                { key: "project_id", label: "ID", type: "number", readonly: true },
-                { key: "uuid", label: "UUID", type: "text", readonly: true },
-                { key: "name", label: "Name", type: "text" },
-
-                { key: "creator_name", label: "Creator", type: "select", options: mockNames },
-                { key: "url", label: "URL", type: "text" },
-                { key: "doi", label: "DOI", type: "text" },
-                { key: "public", label: "Public", type: "boolean" },
-                { key: "active", label: "Active", type: "boolean" },
-                { key: "creation_date", label: "Created", type: "text", readonly: true },
-
-                { key: "picture_url", label: "Picture", type: "file", hiddenInTable: true },
-                { key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true },
-                { key: "description", label: "Description", type: "richtext", hiddenInTable: true }
+                {key: "project_id", label: "ID", type: "number", readonly: true},
+                {key: "uuid", label: "UUID", type: "text", readonly: true},
+                {key: "name", label: "Name", type: "text"},
+                {key: "creator_name", label: "Creator", type: "select", options: mockNames},
+                {key: "url", label: "URL", type: "text"},
+                {key: "doi", label: "DOI", type: "text"},
+                {key: "public", label: "Public", type: "boolean"},
+                {key: "active", label: "Active", type: "boolean"},
+                {key: "creation_date", label: "Created", type: "text", readonly: true},
+                {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true},
+                {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true},
+                {key: "description", label: "Description", type: "richtext", hiddenInTable: true}
             ]
         },
         collection: {
@@ -4373,46 +4078,44 @@
             icon: "library",
             pk: "collection_id",
             columns: [
-                { key: "collection_id", label: "ID", type: "number", readonly: true },
-                { key: "uuid", label: "UUID", type: "text", readonly: true },
-                { key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true },
-                { key: "name", label: "Name", type: "text" },
-                { key: "creator_id", label: "Creator", type: "select", options: mockNames },
-                { key: "url", label: "URL", type: "text" },
-                { key: "doi", label: "DOI", type: "text" },
-                { key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"] },
-                { key: "public_access", label: "Public Access", type: "boolean" },
-                { key: "public_tags", label: "Public Tags", type: "boolean" },
-                { key: "creation_date", label: "Created", type: "text", readonly: true },
-                { key: "description", label: "Description", type: "richtext", hiddenInTable: true }
-            ]
+                {key: "collection_id", label: "ID", type: "number", readonly: true},
+                {key: "uuid", label: "UUID", type: "text", readonly: true},
+                {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true},
+                {key: "name", label: "Name", type: "text"},
+                {key: "creator_id", label: "Creator", type: "select", options: mockNames},
+                {key: "url", label: "URL", type: "text"},
+                {key: "doi", label: "DOI", type: "text"},
+                {key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]},
+                {key: "public_access", label: "Public Access", type: "boolean"},
+                {key: "public_tags", label: "Public Tags", type: "boolean"},
+                {key: "creation_date", label: "Created", type: "text", readonly: true},
+                {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
         },
         "user": {
             label: "Users",
             icon: "users",
             pk: "user_id",
             columns: [
-                { key: "user_id", label: "ID", type: "number", readonly: true },
-                { key: "username", label: "Username", type: "text", readonlyOnUpdate: true },
-                { key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true },
-                { key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true },
-                { key: "name", label: "Name", type: "text" },
-                { key: "email", label: "Email", type: "text" },
-                { key: "role_name", label: "Role", type: "select", options: ["Administrator", "Researcher", "Annotator", "Curator", "Guest"] },
-                { key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true },
-                { key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true },
-                { key: "orcid", label: "ORCID", type: "text" },
-                { key: "active", label: "Active", type: "boolean" }
-            ]
+                {key: "user_id", label: "ID", type: "number", readonly: true},
+                {key: "username", label: "Username", type: "text", readonlyOnUpdate: true},
+                {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true},
+                {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true},
+                {key: "name", label: "Name", type: "text"},
+                {key: "email", label: "Email", type: "text"},
+                {key: "role_name", label: "Role", type: "select", options: ["Administrator", "Researcher", "Annotator", "Curator", "Guest"]},
+                {key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true},
+                {key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true},
+                {key: "orcid", label: "ORCID", type: "text"},
+                {key: "active", label: "Active", type: "boolean"}]
         },
         role: {
             label: "Roles",
             icon: "shield",
             pk: "role_id",
             columns: [
-                { key: "role_id", label: "ID", type: "number", readonly: true },
-                { key: "name", label: "Role Name", type: "text" },
-                { key: "description", label: "Description", type: "text" }
+                {key: "role_id", label: "ID", type: "number", readonly: true},
+                {key: "name", label: "Role Name", type: "text"},
+                {key: "description", label: "Description", type: "text"}
             ]
         },
         site: {
@@ -4420,13 +4123,13 @@
             icon: "map-pin",
             pk: "id",
             columns: [
-                { key: "id", label: "Site ID", type: "text", readonly: true },
-                { key: "name", label: "Site Name", type: "text" },
-                { key: "realm", label: "Realm", type: "text" },
-                { key: "biome", label: "Biome", type: "text" },
-                { key: "group", label: "Group", type: "text" },
-                { key: "topography_m", label: "Elevation (m)", type: "number" },
-                { key: "mediaCount", label: "Media Count", type: "number", readonly: true }
+                {key: "id", label: "Site ID", type: "text", readonly: true},
+                {key: "name", label: "Site Name", type: "text"},
+                {key: "realm", label: "Realm", type: "text"},
+                {key: "biome", label: "Biome", type: "text"},
+                {key: "group", label: "Group", type: "text"},
+                {key: "topography_m", label: "Elevation (m)", type: "number"},
+                {key: "mediaCount", label: "Media Count", type: "number", readonly: true}
             ]
         },
         media: {
@@ -4434,13 +4137,13 @@
             icon: "file-audio",
             pk: "id",
             columns: [
-                { key: "id", label: "ID", type: "number", readonly: true },
-                { key: "name", label: "Filename", type: "text" },
-                { key: "site", label: "Site Name", type: "text" },
-                { key: "date", label: "Date", type: "text" },
-                { key: "duration", label: "Duration", type: "text" },
-                { key: "sensor", label: "Sensor", type: "text" },
-                { key: "size", label: "Size", type: "text" }
+                {key: "id", label: "ID", type: "number", readonly: true},
+                {key: "name", label: "Filename", type: "text"},
+                {key: "site", label: "Site Name", type: "text"},
+                {key: "date", label: "Date", type: "text"},
+                {key: "duration", label: "Duration", type: "text"},
+                {key: "sensor", label: "Sensor", type: "text"},
+                {key: "size", label: "Size", type: "text"}
             ]
         },
         sensor: {
@@ -4448,9 +4151,9 @@
             icon: "cpu",
             pk: "sensor_id",
             columns: [
-                { key: "sensor_id", label: "ID", type: "number", readonly: true },
-                { key: "name", label: "Model Name", type: "text" },
-                { key: "sensor_type", label: "Type", type: "select", options: ["audio", "photo"] }
+                {key: "sensor_id", label: "ID", type: "number", readonly: true},
+                {key: "name", label: "Model Name", type: "text"},
+                {key: "sensor_type", label: "Type", type: "select", options: ["audio", "photo"]}
             ]
         },
         project_contributor: {
@@ -4459,11 +4162,11 @@
             icon: "user-cog",
             pk: "uid",
             columns: [
-                { key: "uid", label: "ID", type: "text", readonly: true, hiddenInTable: true },
-                { key: "name", label: "User Name", type: "text", readonly: true },
-                { key: "role", label: "Project Role", type: "text" },
-                { key: "email", label: "Email", type: "text", readonly: true },
-                { key: "added_date", label: "Date Added", type: "text", readonly: true }
+                {key: "uid", label: "ID", type: "text", readonly: true, hiddenInTable: true},
+                {key: "name", label: "User Name", type: "text", readonly: true},
+                {key: "role", label: "Project Role", type: "text"},
+                {key: "email", label: "Email", type: "text", readonly: true},
+                {key: "added_date", label: "Date Added", type: "text", readonly: true}
             ]
         },
         collection_contributor: {
@@ -4472,60 +4175,56 @@
             icon: "users-2",
             pk: "uid",
             columns: [
-                { key: "uid", label: "ID", type: "text", readonly: true, hiddenInTable: true },
-                { key: "name", label: "User Name", type: "text", readonly: true },
-                { key: "role", label: "Collection Role", type: "text" },
-                { key: "email", label: "Email", type: "text", readonly: true },
-                { key: "added_date", label: "Date Added", type: "text", readonly: true }
+                {key: "uid", label: "ID", type: "text", readonly: true, hiddenInTable: true},
+                {key: "name", label: "User Name", type: "text", readonly: true},
+                {key: "role", label: "Collection Role", type: "text"},
+                {key: "email", label: "Email", type: "text", readonly: true},
+                {key: "added_date", label: "Date Added", type: "text", readonly: true}
             ]
         }
     };
-
     let currentTable = "project";
     let dataScope = "current";
     let crudSearchQuery = "";
     let editingId = null;
     let selectedCrudIds = [];
-    let sortState = { key: null, direction: 'asc' };
+    let sortState = {key: null, direction: 'asc'};
 
     function switchDataScope(scope, btn) {
         if (dataScope === scope) return;
         dataScope = scope;
-
         const pill = document.getElementById('scope-pill');
         if (pill && btn) {
             pill.style.width = btn.offsetWidth + 'px';
             pill.style.left = btn.offsetLeft + 'px';
         }
         const container = document.getElementById('scope-pill-container');
-        if(container) {
+        if (container) {
             container.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         }
-
-        // 新增：数据范围改变后，需要重新渲染表头，以更新筛选器中的选项（例如Creator列表）
+        crudFilterState = {};
+        selectedCrudIds = [];
+        updateToolbarState();
         renderCrudHeader();
         renderCrudTable();
     }
 
-
     const staticMockDB = {
         sensor: [
-            { sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio" },
-            { sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio" },
-            { sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo" }
+            {sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"},
+            {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"},
+            {sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo"}
         ]
     };
-
     const PERMISSIONS = [
-        { id: 1, code: 'project:read', label: 'Project: Read' },
-        { id: 2, code: 'project:write', label: 'Project: Write' },
-        { id: 3, code: 'collection:read', label: 'Collection: Read' },
-        { id: 4, code: 'collection:write', label: 'Collection: Write' },
-        { id: 5, code: 'user:read', label: 'User: Read' },
-        { id: 6, code: 'user:write', label: 'User: Write' }
+        {id: 1, code: 'project:read', label: 'Project: Read'},
+        {id: 2, code: 'project:write', label: 'Project: Write'},
+        {id: 3, code: 'collection:read', label: 'Collection: Read'},
+        {id: 4, code: 'collection:write', label: 'Collection: Write'},
+        {id: 5, code: 'user:read', label: 'User: Read'},
+        {id: 6, code: 'user:write', label: 'User: Write'}
     ];
-
     let currentEditorTargetId = null;
 
     function handleFileChange(input) {
@@ -4533,12 +4232,9 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 input.setAttribute('data-base64', e.target.result);
-
                 const previewId = input.id + '-preview';
                 const previewEl = document.getElementById(previewId);
-                if (previewEl) {
-                    previewEl.innerHTML = `<img src="${e.target.result}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">`;
-                }
+                if (previewEl) previewEl.innerHTML = `<img src="${e.target.result}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">`;
             };
             reader.readAsDataURL(input.files[0]);
         }
@@ -4562,21 +4258,16 @@
             const val = document.getElementById('editor-textarea').value;
             document.getElementById(currentEditorTargetId).value = val;
             const preview = document.getElementById(currentEditorTargetId + '-preview');
-
             const textContent = val.replace(/<[^>]*>?/gm, '');
-            if(preview) preview.textContent = textContent.substring(0, 40) + (textContent.length>40 ? '...' : '');
+            if (preview) preview.textContent = textContent.substring(0, 40) + (textContent.length > 40 ? '...' : '');
         }
         closeEditorModal();
     }
 
-
-
     function getDataForTable(tableName) {
         const currentProject = rawProjects[currProjIdx];
-
         if (tableName === 'project') {
             let source = (dataScope === 'current') ? [currentProject] : rawProjects;
-
             return source.map(p => {
                 const stripHtml = (html) => {
                     let tmp = document.createElement("DIV");
@@ -4598,42 +4289,30 @@
                     creation_date: p.date
                 };
             });
-        }
-        else if (tableName === 'collection') {
+        } else if (tableName === 'collection') {
             let source = [];
             if (dataScope === 'all') {
-                 rawProjects.forEach(p => source.push(...p.collections));
+                rawProjects.forEach(p => source.push(...p.collections));
             } else {
-                 if (currColIdx > 0) {
-                     source = [currentProject.collections[currColIdx - 1]];
-                 } else {
-                     source = currentProject.collections;
-                 }
+                if (currColIdx > 0) {
+                    source = [currentProject.collections[currColIdx - 1]];
+                } else {
+                    source = currentProject.collections;
+                }
             }
-
             return source.map((c, i) => {
                 const linkedProjs = rawProjects
                     .filter(p => p.collections.some(col => col.id === c.id))
                     .map(p => p.name);
-
-                // 修复逻辑：使用对象引用比较，防止不同 Project 间 ID 重复导致的错误
                 let isCurrent = false;
-
                 if (currColIdx > 0) {
-                    // 场景 1: 面包屑选择了具体的 Collection
-                    // 只有该 Collection 自身被标记为 Current
                     const activeCollection = currentProject.collections[currColIdx - 1];
                     isCurrent = (c === activeCollection);
                 } else {
-                    // 场景 2: 面包屑选择了 "All Collections" (Project 层级)
-                    // 当前 Project 下的所有 Collection 都标记为 Current
                     isCurrent = currentProject.collections.includes(c);
                 }
-
-                // 随机生成 URL 逻辑
                 const domains = ["https://nature-data.org", "https://bio-archive.edu", "https://eco-research.net", "https://science-db.io"];
                 const mockUrl = `${domains[i % domains.length]}/collection/${c.id}`;
-
                 return {
                     collection_id: i + 1,
                     uuid: `c-${c.id}-${Date.now()}`,
@@ -4651,31 +4330,19 @@
                     _isCurrent: isCurrent
                 };
             });
-        }
-        else if (tableName === 'site') {
+        } else if (tableName === 'site') {
             return currentSites;
-        }
-        else if (tableName === 'media') {
-            if(mediaItems.length > 0 && !mediaItems[0].enriched) {
-                enrichMediaData();
-            }
+        } else if (tableName === 'media') {
+            if (mediaItems.length > 0 && !mediaItems[0].enriched) enrichMediaData();
             return mediaItems;
-        }
-        else if (tableName === 'user') {
+        } else if (tableName === 'user') {
             const directProjContributors = currentProject.contributors;
             const activeCollection = (currColIdx > 0) ? currentProject.collections[currColIdx - 1] : null;
-
             let displayUsers = [];
-
-            // 1. 确定要显示的用户列表
             if (dataScope === 'current') {
                 if (currColIdx > 0) {
-                    // 【集合视图】：显示 (项目直接成员 + 本集合的贡献者)
-                    // 这样既包含了"本集合的人"，也包含了"项目管理人员"(他们在集合中角色为"-")
-                    // 同时排除了"其他集合的成员"，确保数量少于项目总人数
                     displayUsers = [...directProjContributors, ...activeCollection.contributors];
                 } else {
-                    // 【项目视图】：显示 (项目直接成员 + 该项目下所有集合的成员)
                     let allProjectUsers = [...directProjContributors];
                     currentProject.collections.forEach(c => {
                         allProjectUsers.push(...c.contributors);
@@ -4683,48 +4350,27 @@
                     displayUsers = allProjectUsers;
                 }
             } else {
-                // 【全部视图】：显示系统所有用户
-                 rawProjects.forEach(p => {
-                     displayUsers.push(...p.contributors);
-                     p.collections.forEach(c => displayUsers.push(...c.contributors));
-                 });
+                rawProjects.forEach(p => {
+                    displayUsers.push(...p.contributors);
+                    p.collections.forEach(c => displayUsers.push(...c.contributors));
+                });
             }
-
-            // 去重
             displayUsers = Array.from(new Map(displayUsers.map(u => [u.name, u])).values());
-
             return displayUsers.map((u, i) => {
-                // 2. 计算角色
-                // 项目角色：查找直接项目成员表
                 const pEntry = directProjContributors.find(c => c.name === u.name);
                 let pRole = pEntry ? (pEntry.role || "-") : "-";
-
-                // 集合角色：查找当前选中的集合（如果没选集合，则是"-"）
                 let cRole = "-";
                 if (activeCollection) {
                     const cEntry = activeCollection.contributors.find(c => c.name === u.name);
                     cRole = cEntry ? (cEntry.role || "-") : "-";
                 }
-
-                // 3. 业务规则：集合用户一定是项目用户
-                // 检查该用户是否在当前项目的“任意”集合中
                 const isInAnyCollectionOfProject = currentProject.collections.some(col =>
                     col.contributors.some(c => c.name === u.name)
                 );
-
-                // [已移除] 之前强制将无角色的用户设为 "Participant" 的逻辑。
-                // 现在允许用户存在但没有任何角色 (显示为 "-")。
-
-                // 4. 计算 Current 标签 (用于 All 视图下的高亮)
                 let isCurrent = false;
                 if (currColIdx > 0) {
-                    // 集合视图：必须属于当前集合
                     isCurrent = activeCollection.contributors.some(c => c.name === u.name);
-                } else {
-                    // 项目视图：属于项目直接成员 OR 属于任意子集合
-                    isCurrent = (!!pEntry) || isInAnyCollectionOfProject;
-                }
-
+                } else isCurrent = (!!pEntry) || isInAnyCollectionOfProject;
                 return {
                     user_id: i + 1,
                     username: u.name.split(' ').join('.').toLowerCase() + (i + 1),
@@ -4739,8 +4385,7 @@
                     _isCurrent: isCurrent
                 };
             });
-        }
-        else if (tableName === 'project_contributor') {
+        } else if (tableName === 'project_contributor') {
             return currentProject.contributors.map(u => ({
                 uid: u.uid,
                 name: u.name,
@@ -4748,14 +4393,11 @@
                 email: u.email,
                 added_date: u.date || new Date().toISOString().split('T')[0]
             }));
-        }
-        else if (tableName === 'collection_contributor') {
+        } else if (tableName === 'collection_contributor') {
             let source = [];
             if (currColIdx > 0) {
-                // Only current collection
                 source = currentProject.collections[currColIdx - 1].contributors;
             } else {
-                // In project view, show contributors from ALL collections for overview
                 currentProject.collections.forEach(c => {
                     source = [...source, ...c.contributors];
                 });
@@ -4767,24 +4409,18 @@
                 email: u.email,
                 added_date: u.date || new Date().toISOString().split('T')[0]
             }));
-        }
-        else if (tableName === 'role') {
+        } else if (tableName === 'role') {
             return [
-                { role_id: 1, name: "Administrator", description: "Full system access and configuration rights." },
-                { role_id: 2, name: "Researcher", description: "Can create projects, upload data, and manage collections." },
-                { role_id: 3, name: "Annotator", description: "Can view media and add annotations to recordings." },
-                { role_id: 4, name: "Curator", description: "Can review, approve, and organize uploaded datasets." },
-                { role_id: 5, name: "Guest", description: "Read-only access to public resources." }
+                {role_id: 1, name: "Administrator", description: "Full system access and configuration rights."},
+                {role_id: 2, name: "Researcher", description: "Can create projects, upload data, and manage collections."},
+                {role_id: 3, name: "Annotator", description: "Can view media and add annotations to recordings."},
+                {role_id: 4, name: "Curator", description: "Can review, approve, and organize uploaded datasets."},
+                {role_id: 5, name: "Guest", description: "Read-only access to public resources."}
             ];
-        }
-        else {
-
-            return staticMockDB[tableName] || [];
-        }
+        } else return staticMockDB[tableName] || [];
     }
 
     function initDataTab() {
-
         switchCrudTable('project');
     }
 
@@ -4794,44 +4430,28 @@
         Object.keys(dbSchema).forEach(key => {
             const table = dbSchema[key];
             const isActive = currentTable === key ? 'active' : '';
-
-
             const data = getDataForTable(key);
             const count = data ? data.length : 0;
-
-            html += `
-                <div class="dt-item ${isActive}" onclick="switchCrudTable('${key}')">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <i data-lucide="${table.icon}" size="16"></i> ${table.label}
-                    </span>
-                    <span class="dt-count">${count}</span>
-                </div>
-            `;
+            html += `<div class="dt-item ${isActive}" onclick="switchCrudTable('${key}')"><span style="display:flex; align-items:center; gap:8px;"> <i data-lucide="${table.icon}" size="16"></i> ${table.label} </span> <span class="dt-count">${count}</span></div> `;
         });
         navList.innerHTML = html;
         lucide.createIcons();
     }
 
-
     function switchCrudTable(tableName) {
         currentTable = tableName;
         crudSearchQuery = "";
-
         selectedCrudIds = [];
         updateToolbarState();
-
         const searchInput = document.getElementById('data-search-input');
         if (searchInput) {
             searchInput.value = "";
             searchInput.placeholder = "Search";
         }
-
         const schema = dbSchema[tableName];
         const firstColKey = schema.columns[0].key;
         sortState = {key: firstColKey, direction: 'asc'};
-
         crudFilterState = {};
-
         renderTableNav();
         renderCrudHeader();
         renderCrudTable();
@@ -4842,13 +4462,10 @@
         renderCrudTable();
     }
 
-
     function handleSort(key) {
         if (sortState.key === key) {
-
             sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
         } else {
-
             sortState.key = key;
             sortState.direction = 'asc';
         }
@@ -4856,73 +4473,44 @@
         renderCrudTable();
     }
 
-
     function handleColumnFilter(key, value) {
         if (value === "" || value === "all") {
             delete crudFilterState[key];
-        } else {
-            crudFilterState[key] = value;
-        }
+        } else crudFilterState[key] = value;
         renderCrudTable();
     }
-
 
     function renderCrudHeader() {
         const schema = dbSchema[currentTable];
         const thead = document.getElementById('crud-thead');
-
         let headHtml = "<tr>";
-
-
-        headHtml += `
-            <th style="width: 40px; text-align:center; vertical-align:top; padding-top:14px;">
-                <input type="checkbox" class="crud-checkbox" id="header-select-all"
-                onclick="handleSelectAll(this.checked)">
-            </th>`;
-
-
+        headHtml += `<th style="width: 40px; text-align:center; vertical-align:top; padding-top:14px;"><input type="checkbox" class="crud-checkbox" id="header-select-all" onclick="handleSelectAll(this.checked)"></th>`;
         schema.columns.forEach(col => {
             if (col.hiddenInTable) return;
-
             if (currentTable === 'user') {
                 if (currColIdx === 0 && col.key === 'collection_role') return;
                 if (currColIdx > 0 && col.key === 'project_role') return;
             }
-
             const isSorted = sortState.key === col.key;
             const sortIcon = isSorted ? (sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
             const activeClass = isSorted ? 'active-sort' : '';
             const iconOpacity = isSorted ? '1' : '0.3';
-
             let filterInputHtml = '';
             const currentFilterVal = crudFilterState[col.key] || "";
-
             if (col.type === 'boolean') {
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${currentFilterVal === 'true' ? 'selected' : ''}>True</option><option value="false" ${currentFilterVal === 'false' ? 'selected' : ''}>False</option></select>`;
             } else if (col.type === 'select' && col.filterType !== 'text') {
                 let opts = `<option value="all">All</option>`;
-
                 const uniqueVals = getUniqueValues(getDataForTable(currentTable), col.key);
                 uniqueVals.forEach(o => {
                     const isSelected = String(currentFilterVal) === String(o);
                     opts += `<option value="${o}" ${isSelected ? 'selected' : ''}>${o}</option>`;
                 });
-
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">${opts}</select>`;
             } else if (col.type === 'file' || col.type === 'image' || col.type === 'richtext') {
                 filterInputHtml = '';
-            } else {
-                filterInputHtml = `<input type="text" class="th-filter-input" placeholder="Filter..." value="${currentFilterVal}" oninput="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">`;
-            }
-
-            headHtml += `
-                <th style="min-width: 140px;">
-                    <div class="th-header-content ${activeClass}" onclick="handleSort('${col.key}')">
-                        <span>${col.label}</span>
-                        <i data-lucide="${sortIcon}" size="14" style="opacity:${iconOpacity}"></i>
-                    </div>
-                    ${filterInputHtml ? `<div class="th-filter-box">${filterInputHtml}</div>` : ''}
-                </th>`;
+            } else filterInputHtml = `<input type="text" class="th-filter-input" placeholder="Filter..." value="${currentFilterVal}" oninput="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">`;
+            headHtml += ` <th style="min-width: 140px;"> <div class="th-header-content ${activeClass}" onclick="handleSort('${col.key}')"> <span>${col.label}</span> <i data-lucide="${sortIcon}" size="14" style="opacity:${iconOpacity}"></i> </div> ${filterInputHtml ? `<div class="th-filter-box">${filterInputHtml}</div>` : ''} </th>`;
         });
         headHtml += `</tr>`;
         thead.innerHTML = headHtml;
@@ -4934,31 +4522,21 @@
         const rawData = getDataForTable(currentTable);
         const tbody = document.getElementById('crud-tbody');
         const titleEl = document.getElementById('current-table-title');
-
         let titleHtml = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
-
-        if (['project', 'collection', 'user'].includes(currentTable)) {
-            titleHtml += `
-            <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;">
-                <div class="view-pill" id="scope-pill"></div>
-                <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" onclick="switchDataScope('current', this)" style="font-size:0.75rem; padding:0 12px;">Current</button>
-                <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button>
-            </div>`;
-        }
+        if (['project', 'collection', 'user'].includes(currentTable)) titleHtml += ` <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;"> <div class="view-pill" id="scope-pill"></div> <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" onclick="switchDataScope('current', this)" style="font-size:0.75rem; padding:0 12px;">Current</button> <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button> </div>`;
         titleEl.innerHTML = titleHtml;
-
         if (['project', 'collection', 'user'].includes(currentTable)) {
-             setTimeout(() => {
-                 const activeBtn = document.querySelector('#scope-pill-container .view-btn.active');
-                 const pill = document.getElementById('scope-pill');
-                 if(activeBtn && pill) {
-                     pill.style.transition = 'none';
-                     pill.style.width = activeBtn.offsetWidth + 'px';
-                     pill.style.left = activeBtn.offsetLeft + 'px';
-                     void pill.offsetWidth;
-                     pill.style.transition = '';
-                 }
-             }, 0);
+            setTimeout(() => {
+                const activeBtn = document.querySelector('#scope-pill-container .view-btn.active');
+                const pill = document.getElementById('scope-pill');
+                if (activeBtn && pill) {
+                    pill.style.transition = 'none';
+                    pill.style.width = activeBtn.offsetWidth + 'px';
+                    pill.style.left = activeBtn.offsetLeft + 'px';
+                    void pill.offsetWidth;
+                    pill.style.transition = '';
+                }
+            }, 0);
         }
 
         let processedData = rawData.filter(row => {
@@ -4971,8 +4549,6 @@
                 return rowVal.includes(filterVal);
             });
         });
-
-
         if (sortState.key) {
             processedData.sort((a, b) => {
                 let valA = a[sortState.key], valB = b[sortState.key];
@@ -4987,83 +4563,43 @@
             });
         }
 
-
         let bodyHtml = "";
         const visibleCols = schema.columns.filter(c => !c.hiddenInTable);
-
         if (processedData.length === 0) {
             bodyHtml = `<tr><td colspan="${visibleCols.length + 1}" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">No results found</td></tr>`;
         } else {
             processedData.forEach(row => {
                 const pk = schema.pk;
-
                 const rowIdStr = String(row[pk]);
                 const isSelected = selectedCrudIds.includes(rowIdStr);
                 const rowClass = isSelected ? 'selected' : '';
-
                 bodyHtml += `<tr class="${rowClass}" ondblclick="openCrudModal('edit', '${row[pk]}')">`;
-                bodyHtml += `
-                    <td style="text-align:center; border-bottom:1px solid var(--border-color);">
-                        <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''}
-                        onclick="event.stopPropagation(); toggleRowSelection('${rowIdStr}', this)"
-                        ondblclick="event.stopPropagation()">
-                    </td>`;
-
+                bodyHtml += ` <td style="text-align:center; border-bottom:1px solid var(--border-color);"> <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleRowSelection('${rowIdStr}', this)" ondblclick="event.stopPropagation()"> </td>`;
                 visibleCols.forEach(col => {
-                    // 互斥显示逻辑：与表头保持一致
                     if (currentTable === 'user') {
                         if (currColIdx === 0 && col.key === 'collection_role') return;
                         if (currColIdx > 0 && col.key === 'project_role') return;
                     }
-
                     let val = row[col.key];
                     if (val === undefined || val === null) val = "";
-
                     if (currentTable === 'project' && col.key === 'project_id') {
                         const currentProjId = rawProjects[currProjIdx] ? rawProjects[currProjIdx].id : null;
-                        if (dataScope === 'all' && row.project_id === currentProjId) {
-                            val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                                    <span>${val}</span>
-                                    <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span>
-                                   </div>`;
-                        }
+                        if (dataScope === 'all' && row.project_id === currentProjId) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
                     }
-
-
-                    if (currentTable === 'collection' && col.key === 'collection_id') {
-                        if (dataScope === 'all' && row._isCurrent) {
-                            val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                                    <span>${val}</span>
-                                    <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span>
-                                   </div>`;
-                        }
-                    }
-
-                    if (currentTable === 'user' && col.key === 'user_id') {
-                        if (dataScope === 'all' && row._isCurrent) {
-                            val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                                    <span>${val}</span>
-                                    <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span>
-                                   </div>`;
-                        }
-                    }
-
-                    if (col.type === 'image' || col.type === 'file') {
-                        val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img" onerror="this.style.display='none'">`;
-                    }
-                    if (col.type === 'boolean') {
-                        val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;
-                    }
+                    if (currentTable === 'collection' && col.key === 'collection_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
+                    if (currentTable === 'user' && col.key === 'user_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
+                    if (col.type === 'image' || col.type === 'file') val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img" onerror="this.style.display='none'">`;
+                    if (col.type === 'boolean') val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;
                     if (col.type === 'richtext') {
                         const text = String(val).replace(/<[^>]*>?/gm, '');
                         val = `<span style="opacity:0.8; font-size:0.85rem;" title="${text}">${text.substring(0, 30)}${text.length > 30 ? '...' : ''}</span>`;
                     }
-
                     bodyHtml += `<td>${val}</td>`;
                 });
                 bodyHtml += `</tr>`;
             });
         }
+
         tbody.innerHTML = bodyHtml;
         lucide.createIcons();
         updateHeaderCheckbox(processedData);
@@ -5073,18 +4609,13 @@
     function updateHeaderCheckbox(visibleData) {
         const checkbox = document.getElementById('header-select-all');
         if (!checkbox) return;
-
         if (visibleData.length === 0) {
             checkbox.checked = false;
             checkbox.indeterminate = false;
             return;
         }
-
-
         const visibleIds = visibleData.map(d => String(d[dbSchema[currentTable].pk]));
-
         const selectedCount = visibleIds.filter(id => selectedCrudIds.includes(id)).length;
-
         if (selectedCount === 0) {
             checkbox.checked = false;
             checkbox.indeterminate = false;
@@ -5096,7 +4627,6 @@
             checkbox.indeterminate = true;
         }
     }
-
 
     function toggleRowSelection(id, el) {
         const idx = selectedCrudIds.indexOf(id);
@@ -5111,65 +4641,43 @@
         updateToolbarState();
     }
 
-
     window.handleSelectAll = function (checked) {
         const schema = dbSchema[currentTable];
         const data = window.currentVisibleData || [];
-
         if (checked) {
             data.forEach(row => {
-
                 const id = String(row[schema.pk]);
                 if (!selectedCrudIds.includes(id)) selectedCrudIds.push(id);
             });
         } else {
-
-             const visibleIds = new Set(data.map(r => String(r[schema.pk])));
-             selectedCrudIds = selectedCrudIds.filter(id => !visibleIds.has(id));
+            const visibleIds = new Set(data.map(r => String(r[schema.pk])));
+            selectedCrudIds = selectedCrudIds.filter(id => !visibleIds.has(id));
         }
         renderCrudTable();
         updateToolbarState();
     };
-
 
     function updateToolbarState() {
         const editBtn = document.getElementById('btn-edit');
         const delBtn = document.getElementById('btn-delete');
         const linkBtn = document.getElementById('btn-link');
         const resetBtn = document.getElementById('btn-reset-pwd');
-        const permBtn = document.getElementById('btn-permission'); // 获取新按钮
+        const permBtn = document.getElementById('btn-permission');
         const count = selectedCrudIds.length;
-
         if (editBtn) editBtn.disabled = (count !== 1);
         if (delBtn) delBtn.disabled = (count === 0);
-
-        if (linkBtn) {
-            if (currentTable === 'collection') {
-                linkBtn.style.display = 'inline-flex';
-                linkBtn.disabled = (count === 0);
-            } else {
-                linkBtn.style.display = 'none';
-            }
-        }
-
-        if (resetBtn) {
-            if (currentTable === 'user') {
-                resetBtn.style.display = 'inline-flex';
-                resetBtn.disabled = (count !== 1);
-            } else {
-                resetBtn.style.display = 'none';
-            }
-        }
-
-        // 新增：User 表显示 Permission 按钮
-        if (permBtn) {
-            if (currentTable === 'user') {
-                permBtn.style.display = 'inline-flex';
-                permBtn.disabled = (count === 0);
-            } else {
-                permBtn.style.display = 'none';
-            }
-        }
+        if (linkBtn) if (currentTable === 'collection') {
+            linkBtn.style.display = 'inline-flex';
+            linkBtn.disabled = (count === 0);
+        } else linkBtn.style.display = 'none';
+        if (resetBtn) if (currentTable === 'user') {
+            resetBtn.style.display = 'inline-flex';
+            resetBtn.disabled = (count !== 1);
+        } else resetBtn.style.display = 'none';
+        if (permBtn) if (currentTable === 'user') {
+            permBtn.style.display = 'inline-flex';
+            permBtn.disabled = (count === 0);
+        } else permBtn.style.display = 'none';
     }
 
     function handleToolbarLink() {
@@ -5182,45 +4690,26 @@
         const container = document.getElementById('modal-form-container');
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
-
         const isMulti = selectedCrudIds.length > 1;
         title.textContent = isMulti ? `Link ${selectedCrudIds.length} Collections to Projects` : "Link Collection to Projects";
-
         const currentData = getDataForTable('collection');
-
         let currentLinkedProjIds = [];
         if (!isMulti) {
             const row = currentData.find(r => String(r.collection_id) === selectedCrudIds[0]);
-            if (row && row._rawId) {
-                rawProjects.forEach(p => {
-                    if (p.collections.some(c => c.id === row._rawId)) {
-                        currentLinkedProjIds.push(p.id);
-                    }
-                });
-            }
+            if (row && row._rawId) rawProjects.forEach(p => {
+                    if (p.collections.some(c => c.id === row._rawId)) currentLinkedProjIds.push(p.id);
+                }
+            );
         }
-
         let html = `<div class="form-group"><label class="form-label">Select Projects</label>`;
         html += `<div style="max-height:300px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">`;
-
         rawProjects.forEach(p => {
             const isChecked = !isMulti && currentLinkedProjIds.includes(p.id);
-
-            html += `
-                <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
-                    <input type="checkbox" class="link-proj-cb" value="${p.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
-                    <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${p.name}</span>
-                </label>
-            `;
+            html += ` <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);"> <input type="checkbox" class="link-proj-cb" value="${p.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);"> <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${p.name}</span> </label> `;
         });
-
         html += `</div>`;
-        html += `<div style="margin-top:10px; font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">
-            ${isMulti ? 'The selected projects will be set for <strong>all</strong> selected collections (overwriting previous links).' : 'Uncheck to remove from a project, check to add.'}
-        </div></div>`;
-
+        html += `<div style="margin-top:10px; font-size:0.85rem; color:var(--text-secondary); line-height:1.5;"> ${isMulti ? 'The selected projects will be set for <strong>all</strong> selected collections (overwriting previous links).' : 'Uncheck to remove from a project, check to add.'} </div></div>`;
         container.innerHTML = html;
-
         if (submitBtn) {
             submitBtn.textContent = "Save Links";
             submitBtn.style.backgroundColor = "";
@@ -5233,81 +4722,48 @@
     function saveLinkData() {
         const checkboxes = document.querySelectorAll('.link-proj-cb:checked');
         const targetProjIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
-
         const currentData = getDataForTable('collection');
         const currentProj = rawProjects[currProjIdx];
-
         selectedCrudIds.forEach(idStr => {
             const row = currentData.find(r => String(r.collection_id) === idStr);
             if (row && row._rawId) {
                 let originalCol = currentProj.collections.find(c => c.id === row._rawId);
-
-                if (!originalCol) {
-                    for (const p of rawProjects) {
-                        originalCol = p.collections.find(c => c.id === row._rawId);
-                        if (originalCol) break;
-                    }
+                if (!originalCol) for (const p of rawProjects) {
+                    originalCol = p.collections.find(c => c.id === row._rawId);
+                    if (originalCol) break;
                 }
-
-                if (originalCol) {
-                    rawProjects.forEach(proj => {
-                        const shouldBeIn = targetProjIds.includes(proj.id);
-                        const index = proj.collections.findIndex(c => c.id === originalCol.id);
-
-                        if (shouldBeIn && index === -1) {
-                            proj.collections.push(originalCol);
-                        } else if (!shouldBeIn && index !== -1) {
-                            proj.collections.splice(index, 1);
-                        }
-                    });
-                }
+                if (originalCol) rawProjects.forEach(proj => {
+                    const shouldBeIn = targetProjIds.includes(proj.id);
+                    const index = proj.collections.findIndex(c => c.id === originalCol.id);
+                    if (shouldBeIn && index === -1) {
+                        proj.collections.push(originalCol);
+                    } else if (!shouldBeIn && index !== -1) proj.collections.splice(index, 1);
+                });
             }
         });
-
         renderCrudTable();
         closeCrudModal();
         selectedCrudIds = [];
         updateToolbarState();
     }
 
-
     function handleToolbarEdit() {
-        if (selectedCrudIds.length === 1) {
-            openCrudModal('edit', selectedCrudIds[0]);
-        }
+        if (selectedCrudIds.length === 1) openCrudModal('edit', selectedCrudIds[0]);
     }
 
     function handleToolbarResetPassword() {
         if (selectedCrudIds.length !== 1) return;
-
         const modal = document.getElementById('crud-modal-overlay');
         const container = document.getElementById('modal-form-container');
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
-
         title.textContent = "Reset Password";
-
-        container.innerHTML = `
-            <div class="form-group">
-                <label class="form-label">Current Admin Password</label>
-                <input type="password" class="form-input" id="reset-admin-pwd">
-            </div>
-            <div class="form-group">
-                <label class="form-label">New Password</label>
-                <input type="password" class="form-input" id="reset-new-pwd">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Confirm Password</label>
-                <input type="password" class="form-input" id="reset-confirm-pwd">
-            </div>
-        `;
-
+        container.innerHTML = ` <div class="form-group"> <label class="form-label">Current Admin Password</label> <input type="password" class="form-input" id="reset-admin-pwd"> </div> <div class="form-group"> <label class="form-label">New Password</label> <input type="password" class="form-input" id="reset-new-pwd"> </div> <div class="form-group"> <label class="form-label">Confirm Password</label> <input type="password" class="form-input" id="reset-confirm-pwd"> </div> `;
         if (submitBtn) {
             submitBtn.textContent = "Confirm Reset";
             submitBtn.style.backgroundColor = "";
             submitBtn.onclick = saveResetPassword;
         }
-
         modal.classList.add('active');
     }
 
@@ -5315,7 +4771,6 @@
         const adminPwd = document.getElementById('reset-admin-pwd').value;
         const newPwd = document.getElementById('reset-new-pwd').value;
         const confirm = document.getElementById('reset-confirm-pwd').value;
-
         if (!adminPwd || !newPwd || !confirm) {
             alert("All fields are required");
             return;
@@ -5324,8 +4779,6 @@
             alert("New passwords do not match");
             return;
         }
-
-        // 这里可以添加对 adminPwd 的校验逻辑
         alert("Password has been reset successfully.");
         closeCrudModal();
     }
@@ -5340,57 +4793,22 @@
         const container = document.getElementById('modal-form-container');
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
-
         const isMulti = selectedCrudIds.length > 1;
         title.textContent = isMulti ? `Assign Permissions for ${selectedCrudIds.length} Users` : "Assign Permissions for User";
-
-        // 1. 获取所有合集列表
         const collections = getDataForTable('collection');
-
-        // 2. 构建权限选择下拉框
         let permOptions = PERMISSIONS.map(p => `<option value="${p.id}">${p.label} (${p.code})</option>`).join('');
-
-        let html = `
-            <div class="form-group">
-                <label class="form-label">Permission Level</label>
-                <select class="form-input" id="perm-select">
-                    ${permOptions}
-                </select>
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-                    This permission will be applied to the selected user(s) on the collections checked below.
-                </div>
-            </div>
-
-            <div class="form-group" style="flex:1; display:flex; flex-direction:column; min-height:0;">
-                <label class="form-label">Target Collections</label>
-                <div style="flex:1; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">
-        `;
-
-        // 3. 构建合集复选框列表
-        // 注意：这里简单列出所有合集。如果需要回显已有的权限，逻辑会比较复杂（因为是多对多），
-        // 建议这里作为"添加/覆盖"操作。
+        let html = ` <div class="form-group"> <label class="form-label">Permission Level</label> <select class="form-input" id="perm-select"> ${permOptions} </select> <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;"> This permission will be applied to the selected user(s) on the collections checked below. </div> </div> <div class="form-group" style="flex:1; display:flex; flex-direction:column; min-height:0;"> <label class="form-label">Target Collections</label> <div style="flex:1; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">`;
         collections.forEach(c => {
-            html += `
-                <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
-                    <input type="checkbox" class="perm-col-cb" value="${c._rawId || c.collection_id}" style="width:16px; height:16px; accent-color:var(--brand);">
-                    <div style="display:flex; flex-direction:column;">
-                        <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">ID: ${c._rawId || c.collection_id}</span>
-                    </div>
-                </label>
-            `;
-        });
-
+                html += ` <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);"> <input type="checkbox" class="perm-col-cb" value="${c._rawId || c.collection_id}" style="width:16px; height:16px; accent-color:var(--brand);"> <div style="display:flex; flex-direction:column;"> <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span> <span style="font-size:0.75rem; color:var(--text-muted);">ID: ${c._rawId || c.collection_id}</span> </div> </label>`;
+            }
+        );
         html += `</div></div>`;
-
         container.innerHTML = html;
-
         if (submitBtn) {
             submitBtn.textContent = "Save Permissions";
             submitBtn.style.backgroundColor = "";
             submitBtn.onclick = savePermissionData;
         }
-
         modal.classList.add('active');
     }
 
@@ -5398,97 +4816,56 @@
         const permId = document.getElementById('perm-select').value;
         const checkboxes = document.querySelectorAll('.perm-col-cb:checked');
         const targetColIds = Array.from(checkboxes).map(cb => cb.value);
-
         if (targetColIds.length === 0) {
             alert("Please select at least one collection.");
             return;
         }
-
         const permInfo = PERMISSIONS.find(p => p.id == permId);
-
-        // 模拟保存逻辑
         console.log("Saving Permissions...");
         console.log("Users:", selectedCrudIds);
         console.log("Permission:", permInfo);
         console.log("Collections:", targetColIds);
-
-        // 这里可以添加实际的 API 调用逻辑
-        // SQL 逻辑对应:
-        // INSERT INTO user_permission (user_id, collection_id, permission_id)
-        // VALUES ...
-        // ON CONFLICT (user_id, collection_id) DO UPDATE SET permission_id = EXCLUDED.permission_id;
-
         const userCount = selectedCrudIds.length;
         const colCount = targetColIds.length;
-
         alert(`Successfully assigned permission "${permInfo.code}" to ${userCount} user(s) for ${colCount} collection(s).`);
-
         closeCrudModal();
         selectedCrudIds = [];
         updateToolbarState();
-
-        // 可选：刷新表格
         renderCrudTable();
     }
 
     function handleToolbarDelete() {
-        if (selectedCrudIds.length > 0) {
-            openDeleteModal();
-        }
+        if (selectedCrudIds.length > 0) openDeleteModal();
     }
-
 
     function openDeleteModal() {
         const modal = document.getElementById('crud-modal-overlay');
         const container = document.getElementById('modal-form-container');
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
-
         const schema = dbSchema[currentTable];
-
         const itemName = schema.itemLabel || schema.label.slice(0, -1);
         title.textContent = `Delete ${itemName}`;
-
         const count = selectedCrudIds.length;
-
-        container.innerHTML = `
-            <div style="padding: 10px 0; font-size: 1rem; color: var(--text-secondary); line-height: 1.5;">
-                <div style="margin-bottom:8px;">Are you sure you want to delete <strong style="color:var(--text-main)">${count}</strong> selected item(s)?</div>
-                <div style="font-size:0.85rem; color:#ef4444; font-weight:600;"><i data-lucide="alert-triangle" size="14" style="vertical-align:text-bottom"></i> This action cannot be undone.</div>
-            </div>
-        `;
+        container.innerHTML = ` <div style="padding: 10px 0; font-size: 1rem; color: var(--text-secondary); line-height: 1.5;"> <div style="margin-bottom:8px;">Are you sure you want to delete <strong style="color:var(--text-main)">${count}</strong> selected item(s)?</div> <div style="font-size:0.85rem; color:#ef4444; font-weight:600;"><i data-lucide="alert-triangle" size="14" style="vertical-align:text-bottom"></i> This action cannot be undone.</div> </div> `;
         lucide.createIcons();
-
-
         if (submitBtn) {
             submitBtn.textContent = "Delete";
             submitBtn.style.backgroundColor = "#ef4444";
             submitBtn.onclick = confirmDeleteData;
         }
-
         modal.classList.add('active');
     }
-
 
     function confirmDeleteData() {
         const pk = dbSchema[currentTable].pk;
         const currentData = getDataForTable(currentTable);
-
-
-        for (let i = currentData.length - 1; i >= 0; i--) {
-
-            if (selectedCrudIds.includes(String(currentData[i][pk]))) {
-                currentData.splice(i, 1);
-            }
-        }
-
+        for (let i = currentData.length - 1; i >= 0; i--) if (selectedCrudIds.includes(String(currentData[i][pk]))) currentData.splice(i, 1);
         selectedCrudIds = [];
         renderTableNav();
         renderCrudTable();
         updateToolbarState();
         closeCrudModal();
-
-
         if (currentTable === 'site' && map) renderMap(false);
     }
 
@@ -5498,77 +4875,48 @@
         const container = document.getElementById('modal-form-container');
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
-
         if (submitBtn) {
             submitBtn.textContent = "Save";
             submitBtn.style.backgroundColor = "";
             submitBtn.onclick = saveCrudData;
         }
-
         editingId = id;
         const itemName = schema.itemLabel || schema.label.slice(0, -1);
         title.textContent = mode === 'edit' ? `Edit ${itemName}` : `New ${itemName}`;
-
         let currentRow = {};
         if (mode === 'edit') {
             const currentData = getDataForTable(currentTable);
             currentRow = currentData.find(r => r[schema.pk] == id) || {};
         }
-
         let formHtml = "";
         schema.columns.forEach(col => {
             if (col.hiddenInForm) return;
             if (col.readonly) return;
             if (col.onlyOnCreate && mode === 'edit') return;
-
             const val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
             const disabledAttr = (mode === 'edit' && col.readonlyOnUpdate) ? "disabled style='opacity:0.6; cursor:not-allowed;'" : "";
-
             formHtml += `<div class="form-group"><label class="form-label">${col.label}</label>`;
-
             if (col.type === 'select') {
                 formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}>`;
                 formHtml += `<option value="">Select...</option>`;
-                if (col.options) {
-                    col.options.forEach(opt => {
-                        const selected = val === opt ? 'selected' : '';
-                        formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
-                    });
-                }
+                if (col.options) col.options.forEach(opt => {
+                    const selected = val === opt ? 'selected' : '';
+                    formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
+                });
                 formHtml += `</select>`;
             } else if (col.type === 'boolean') {
-                formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}>
-                    <option value="true" ${val === true ? 'selected' : ''}>True</option>
-                    <option value="false" ${val === false ? 'selected' : ''}>False</option>
-                </select>`;
+                formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}> <option value="true" ${val === true ? 'selected' : ''}>True</option> <option value="false" ${val === false ? 'selected' : ''}>False</option> </select>`;
             } else if (col.type === 'file') {
-                formHtml += `<div style="display:flex; gap:10px; align-items:center;">
-                    <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;">
-                    <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button>
-                    <span id="input-${col.key}-preview">
-                        ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'}
-                    </span>
-                </div>`;
+                formHtml += `<div style="display:flex; gap:10px; align-items:center;"> <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;"> <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button> <span id="input-${col.key}-preview"> ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'} </span> </div>`;
             } else if (col.type === 'richtext') {
                 const safeVal = String(val).replace(/'/g, "&apos;");
                 const textPreview = String(val).replace(/<[^>]*>?/gm, '');
-                formHtml += `
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <input type="hidden" id="input-${col.key}" value='${safeVal}'>
-                        <button class="btn-secondary" onclick="openEditorForInput('input-${col.key}')" style="height:32px; font-size:0.8rem;">Edit Content</button>
-                        <span id="input-${col.key}-preview" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
-                            ${textPreview.substring(0, 30)}...
-                        </span>
-                    </div>
-                `;
+                formHtml += ` <div style="display:flex; gap:10px; align-items:center;"> <input type="hidden" id="input-${col.key}" value='${safeVal}'> <button class="btn-secondary" onclick="openEditorForInput('input-${col.key}')" style="height:32px; font-size:0.8rem;">Edit Content</button> <span id="input-${col.key}-preview" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"> ${textPreview.substring(0, 30)}... </span> </div> `;
             } else if (col.type === 'password') {
                 formHtml += `<input type="password" class="form-input" id="input-${col.key}" value="" ${disabledAttr}>`;
-            } else {
-                formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabledAttr}>`;
-            }
+            } else formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabledAttr}>`;
             formHtml += `</div>`;
         });
-
         container.innerHTML = formHtml;
         modal.classList.add('active');
     }
@@ -5590,34 +4938,22 @@
                 return;
             }
         }
-
         const schema = dbSchema[currentTable];
         let newRow = {};
-
         const isProject = currentTable === 'project';
         const isCollection = currentTable === 'collection';
-
         const currentData = getDataForTable(currentTable);
         let existingRow = null;
-        if (editingId !== null) {
-            existingRow = currentData.find(r => r[schema.pk] == editingId);
-        }
-
+        if (editingId !== null) existingRow = currentData.find(r => r[schema.pk] == editingId);
         schema.columns.forEach(col => {
             const input = document.getElementById(`input-${col.key}`);
-
             if (!input && col.type !== 'file' && col.type !== 'richtext') {
-                if (existingRow && existingRow[col.key] !== undefined) {
-                    newRow[col.key] = existingRow[col.key];
-                }
+                if (existingRow && existingRow[col.key] !== undefined) newRow[col.key] = existingRow[col.key];
                 return;
             }
-
             let val = input ? input.value : "";
-
             if (col.type === 'number') val = Number(val);
             if (col.type === 'boolean') val = (val === 'true');
-
             if (col.type === 'file') {
                 const fileInput = document.getElementById(`input-${col.key}`);
                 const base64 = fileInput ? fileInput.getAttribute('data-base64') : null;
@@ -5625,99 +4961,57 @@
                     val = base64;
                 } else if (existingRow) {
                     val = existingRow[col.key];
-                } else {
-                    val = "";
-                }
+                } else val = "";
             }
-
             if (col.type === 'richtext') {
-               const hiddenInput = document.getElementById(`input-${col.key}`);
-               if (hiddenInput) val = hiddenInput.value;
+                const hiddenInput = document.getElementById(`input-${col.key}`);
+                if (hiddenInput) val = hiddenInput.value;
             }
-
             newRow[col.key] = val;
         });
-
         if (isProject) {
-            const mappedProject = {
-                id: newRow.project_id,
-                name: newRow.name,
-                creator: newRow.creator_name,
-                externalUrl: newRow.url,
-                image: newRow.picture_url,
-                description: newRow.description,
-                doi: newRow.doi,
-                date: newRow.creation_date
-            };
-
+            const mappedProject = {id: newRow.project_id, name: newRow.name, creator: newRow.creator_name, externalUrl: newRow.url, image: newRow.picture_url, description: newRow.description, doi: newRow.doi, date: newRow.creation_date};
             if (editingId !== null) {
                 const target = rawProjects.find(p => p.id == editingId);
                 if (target) {
                     Object.assign(target, mappedProject);
-                    if (editingId == rawProjects[currProjIdx].id) {
-                         updateContent(target, true);
-                    }
+                    if (editingId == rawProjects[currProjIdx].id) updateContent(target, true);
                 }
             } else {
-                if(rawProjects.length > 0) {
-                    mappedProject.id = Math.max(...rawProjects.map(p=>p.id)) + 1;
-                } else {
-                    mappedProject.id = 1;
-                }
+                if (rawProjects.length > 0) {
+                    mappedProject.id = Math.max(...rawProjects.map(p => p.id)) + 1;
+                } else mappedProject.id = 1;
                 mappedProject.collections = [];
-                mappedProject.stats = {users:0, collections:0, audio:"0", photos:0, videos:0, metadata:"0", tags:0, sites:0};
+                mappedProject.stats = {users: 0, collections: 0, audio: "0", photos: 0, videos: 0, metadata: "0", tags: 0, sites: 0};
                 mappedProject.contributors = [];
-                if(!mappedProject.date) mappedProject.date = new Date().toISOString().split('T')[0];
+                if (!mappedProject.date) mappedProject.date = new Date().toISOString().split('T')[0];
                 rawProjects.push(mappedProject);
             }
             renderProjectList();
         } else if (isCollection) {
             const proj = rawProjects[currProjIdx];
-
-            const mappedCol = {
-                 name: newRow.name,
-                 creator: newRow.creator_id,
-                 doi: newRow.doi,
-                 sphere: newRow.sphere,
-                 url: newRow.url,
-                 description: newRow.description,
-                 active: newRow.public_access,
-                 date: newRow.creation_date || new Date().toISOString().split('T')[0]
-            };
-
+            const mappedCol = {name: newRow.name, creator: newRow.creator_id, doi: newRow.doi, sphere: newRow.sphere, url: newRow.url, description: newRow.description, active: newRow.public_access, date: newRow.creation_date || new Date().toISOString().split('T')[0]};
             if (editingId !== null) {
-                 const colIndex = editingId - 1;
-                 if (proj.collections[colIndex]) {
-                     Object.assign(proj.collections[colIndex], mappedCol);
-                 }
+                const colIndex = editingId - 1;
+                if (proj.collections[colIndex]) Object.assign(proj.collections[colIndex], mappedCol);
             } else {
-                 mappedCol.id = `c${proj.collections.length + Date.now()}`;
-                 mappedCol.stats = {users:0, projects:1, audio:0, photos:0, videos:0, metadata:0, tags:0, sites:0};
-                 mappedCol.contributors = [];
-                 proj.collections.push(mappedCol);
+                mappedCol.id = `c${proj.collections.length + Date.now()}`;
+                mappedCol.stats = {users: 0, projects: 1, audio: 0, photos: 0, videos: 0, metadata: 0, tags: 0, sites: 0};
+                mappedCol.contributors = [];
+                proj.collections.push(mappedCol);
             }
             renderCollectionList();
+        } else if (editingId !== null) {
+            const idx = currentData.findIndex(r => r[schema.pk] == editingId);
+            if (idx !== -1) Object.assign(currentData[idx], newRow);
         } else {
-            if (editingId !== null) {
-                const idx = currentData.findIndex(r => r[schema.pk] == editingId);
-                if (idx !== -1) {
-                    Object.assign(currentData[idx], newRow);
-                }
-            } else {
-                if (currentData.length > 0 && typeof currentData[0][schema.pk] === 'number') {
-                     const maxId = currentData.reduce((max, r) => Math.max(max, r[schema.pk] || 0), 0);
-                     newRow[schema.pk] = maxId + 1;
-                } else {
-                    newRow[schema.pk] = `new-${Date.now()}`;
-                }
-                currentData.push(newRow);
-            }
+            if (currentData.length > 0 && typeof currentData[0][schema.pk] === 'number') {
+                const maxId = currentData.reduce((max, r) => Math.max(max, r[schema.pk] || 0), 0);
+                newRow[schema.pk] = maxId + 1;
+            } else newRow[schema.pk] = `new-${Date.now()}`;
+            currentData.push(newRow);
         }
-
-        if (currentTable === 'site' && map) {
-             renderMap(false);
-        }
-
+        if (currentTable === 'site' && map) renderMap(false);
         renderTableNav();
         renderCrudTable();
         closeCrudModal();
@@ -5729,10 +5023,8 @@
         sortState = {key: null, direction: 'asc'};
         selectedCrudIds = [];
         updateToolbarState();
-
         const searchInput = document.getElementById('data-search-input');
         if (searchInput) searchInput.value = "";
-
         renderCrudHeader();
         renderCrudTable();
     }
@@ -5740,12 +5032,9 @@
     const originalSwitchTab = window.switchTab;
     window.switchTab = function (btn, tabName) {
         originalSwitchTab(btn, tabName);
-        if (tabName === 'data') {
-            initDataTab();
-        }
+        if (tabName === 'data') initDataTab();
     };
     init();
 </script>
 </body>
-
 </html>
