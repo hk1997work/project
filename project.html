@@ -3115,6 +3115,10 @@
                             <i data-lucide="link" size="16"></i> Link
                         </button>
 
+                        <button class="btn-toolbar" id="btn-reset-pwd" onclick="handleToolbarResetPassword()" disabled style="display:none;">
+                            <i data-lucide="key" size="16"></i> Reset Pwd
+                        </button>
+
                         <button class="btn-toolbar" id="btn-set-contrib" onclick="handleSetContributor()" disabled style="display:none;">
                             <i data-lucide="user-plus" size="16"></i> Set Role
                         </button>
@@ -4131,6 +4135,7 @@
 
             if (document.getElementById('tab-data').classList.contains('active')) {
                 renderTableNav();
+                renderCrudHeader(); // 新增：切换项目时刷新表头，确保标题正确
                 renderCrudTable();
             }
         }
@@ -4212,8 +4217,7 @@
 
             if (document.getElementById('tab-data').classList.contains('active')) {
                 renderTableNav();
-
-
+                renderCrudHeader(); // 新增：切换集合时刷新表头，更新为 Collection Contributor
                 renderCrudTable();
             }
         }
@@ -4357,7 +4361,7 @@
 
     const dbSchema = {
         project: {
-            label: "All Projects",
+            label: "Project",
             itemLabel: "Project",
             icon: "folder-kanban",
             pk: "project_id",
@@ -4403,11 +4407,14 @@
             pk: "user_id",
             columns: [
                 { key: "user_id", label: "ID", type: "number", readonly: true },
-                { key: "username", label: "Username", type: "text" },
+                { key: "username", label: "Username", type: "text", readonlyOnUpdate: true },
+                { key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true },
+                { key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true },
                 { key: "name", label: "Name", type: "text" },
                 { key: "email", label: "Email", type: "text" },
                 { key: "role_name", label: "Role", type: "select", options: ["Administrator", "Researcher", "Annotator", "Curator", "Guest"] },
-                { key: "current_role", label: "Contrib. Role", type: "text", readonly: true },
+                { key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true },
+                { key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true },
                 { key: "orcid", label: "ORCID", type: "text" },
                 { key: "active", label: "Active", type: "boolean" }
             ]
@@ -4489,10 +4496,31 @@
     };
 
     let currentTable = "project";
+    let dataScope = "current";
     let crudSearchQuery = "";
     let editingId = null;
     let selectedCrudIds = [];
     let sortState = { key: null, direction: 'asc' };
+
+    function switchDataScope(scope, btn) {
+        if (dataScope === scope) return;
+        dataScope = scope;
+
+        const pill = document.getElementById('scope-pill');
+        if (pill && btn) {
+            pill.style.width = btn.offsetWidth + 'px';
+            pill.style.left = btn.offsetLeft + 'px';
+        }
+        const container = document.getElementById('scope-pill-container');
+        if(container) {
+            container.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // 新增：数据范围改变后，需要重新渲染表头，以更新筛选器中的选项（例如Creator列表）
+        renderCrudHeader();
+        renderCrudTable();
+    }
 
 
     const staticMockDB = {
@@ -4553,7 +4581,9 @@
         const currentProject = rawProjects[currProjIdx];
 
         if (tableName === 'project') {
-            return rawProjects.map(p => {
+            let source = (dataScope === 'current') ? [currentProject] : rawProjects;
+
+            return source.map(p => {
                 const stripHtml = (html) => {
                     let tmp = document.createElement("DIV");
                     tmp.innerHTML = html;
@@ -4576,59 +4606,103 @@
             });
         }
         else if (tableName === 'collection') {
-            return currentProject.collections.map((c, i) => {
+            let source = [];
+            if (dataScope === 'all') {
+                 rawProjects.forEach(p => source.push(...p.collections));
+            } else {
+                 if (currColIdx > 0) {
+                     source = [currentProject.collections[currColIdx - 1]];
+                 } else {
+                     source = currentProject.collections;
+                 }
+            }
+
+            return source.map((c, i) => {
                 const linkedProjs = rawProjects
                     .filter(p => p.collections.some(col => col.id === c.id))
                     .map(p => p.name);
 
+                // 修复逻辑：使用对象引用比较，防止不同 Project 间 ID 重复导致的错误
+                let isCurrent = false;
+
+                if (currColIdx > 0) {
+                    // 场景 1: 面包屑选择了具体的 Collection
+                    // 只有该 Collection 自身被标记为 Current
+                    const activeCollection = currentProject.collections[currColIdx - 1];
+                    isCurrent = (c === activeCollection);
+                } else {
+                    // 场景 2: 面包屑选择了 "All Collections" (Project 层级)
+                    // 当前 Project 下的所有 Collection 都标记为 Current
+                    isCurrent = currentProject.collections.includes(c);
+                }
+
+                // 随机生成 URL 逻辑
+                const domains = ["https://nature-data.org", "https://bio-archive.edu", "https://eco-research.net", "https://science-db.io"];
+                const mockUrl = `${domains[i % domains.length]}/collection/${c.id}`;
+
                 return {
                     collection_id: i + 1,
-                    uuid: `c-${currentProject.id}-${i}-${Date.now()}`,
+                    uuid: `c-${c.id}-${Date.now()}`,
                     project_names: linkedProjs.join(", "),
                     name: c.name,
                     creator_id: c.creator,
                     doi: c.doi,
                     description: c.description,
                     sphere: c.sphere || "Biosphere",
-                    url: c.url || "",
+                    url: (c.url && c.url !== "#") ? c.url : mockUrl,
                     public_access: c.active !== undefined ? c.active : false,
                     public_tags: false,
                     creation_date: c.date,
-                    _rawId: c.id
+                    _rawId: c.id,
+                    _isCurrent: isCurrent
                 };
             });
         }
         else if (tableName === 'site') {
-
             return currentSites;
         }
         else if (tableName === 'media') {
-
-
             if(mediaItems.length > 0 && !mediaItems[0].enriched) {
                 enrichMediaData();
             }
             return mediaItems;
         }
         else if (tableName === 'user') {
-            // Get current contributors based on context for 'current_role' calculation
-            const currentContributors = (currColIdx > 0)
+            const projContributors = currentProject.contributors;
+            const colContributors = (currColIdx > 0)
                 ? currentProject.collections[currColIdx - 1].contributors
-                : currentProject.contributors;
+                : [];
 
-            // Mock a larger user base (aggregating all contributors from all projects/collections)
-            let allUsers = [];
-            rawProjects.forEach(p => {
-                allUsers = [...allUsers, ...p.contributors];
-                p.collections.forEach(c => allUsers = [...allUsers, ...c.contributors]);
-            });
-            // Deduplicate by name for list
-            allUsers = Array.from(new Map(allUsers.map(u => [u.name, u])).values());
+            const isUserInCurrentContext = (u) => {
+                if (currColIdx > 0) {
+                     return colContributors.some(c => c.name === u.name);
+                }
+                return projContributors.some(c => c.name === u.name);
+            };
 
-            return allUsers.map((u, i) => {
-                // Check if this user is a contributor in the CURRENT context
-                const contribEntry = currentContributors.find(c => c.name === u.name);
-                const currentRole = contribEntry ? (contribEntry.role || "-") : "-";
+            let displayUsers = [];
+            if (dataScope === 'current') {
+                displayUsers = (currColIdx > 0) ? [...colContributors] : [...projContributors];
+            } else {
+                 rawProjects.forEach(p => {
+                     displayUsers.push(...p.contributors);
+                     p.collections.forEach(c => displayUsers.push(...c.contributors));
+                 });
+            }
+
+            displayUsers = Array.from(new Map(displayUsers.map(u => [u.name, u])).values());
+
+            return displayUsers.map((u, i) => {
+                const pEntry = projContributors.find(c => c.name === u.name);
+                const cEntry = colContributors.find(c => c.name === u.name);
+
+                // 业务逻辑：如果用户在集合中有角色，但没有显式的项目角色，赋予默认项目角色
+                let pRole = pEntry ? (pEntry.role || "-") : "-";
+                let cRole = cEntry ? (cEntry.role || "-") : "-";
+
+                if (cEntry && pRole === "-") {
+                    pRole = "Participant";
+                }
 
                 return {
                     user_id: i + 1,
@@ -4638,8 +4712,10 @@
                     orcid: u.uid,
                     email: u.email,
                     role_name: ["Administrator", "Researcher", "Annotator", "Curator", "Guest"][i % 5],
-                    current_role: currentRole,
-                    active: true
+                    project_role: pRole,
+                    collection_role: cRole,
+                    active: true,
+                    _isCurrent: isUserInCurrentContext(u)
                 };
             });
         }
@@ -4787,6 +4863,11 @@
         schema.columns.forEach(col => {
             if (col.hiddenInTable) return;
 
+            if (currentTable === 'user') {
+                if (currColIdx === 0 && col.key === 'collection_role') return;
+                if (currColIdx > 0 && col.key === 'project_role') return;
+            }
+
             const isSorted = sortState.key === col.key;
             const sortIcon = isSorted ? (sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
             const activeClass = isSorted ? 'active-sort' : '';
@@ -4829,14 +4910,35 @@
 
     function renderCrudTable() {
         const schema = dbSchema[currentTable];
-
         const rawData = getDataForTable(currentTable);
-
         const tbody = document.getElementById('crud-tbody');
         const titleEl = document.getElementById('current-table-title');
 
-        titleEl.innerHTML = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
+        let titleHtml = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
 
+        if (['project', 'collection', 'user'].includes(currentTable)) {
+            titleHtml += `
+            <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;">
+                <div class="view-pill" id="scope-pill"></div>
+                <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" onclick="switchDataScope('current', this)" style="font-size:0.75rem; padding:0 12px;">Current</button>
+                <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button>
+            </div>`;
+        }
+        titleEl.innerHTML = titleHtml;
+
+        if (['project', 'collection', 'user'].includes(currentTable)) {
+             setTimeout(() => {
+                 const activeBtn = document.querySelector('#scope-pill-container .view-btn.active');
+                 const pill = document.getElementById('scope-pill');
+                 if(activeBtn && pill) {
+                     pill.style.transition = 'none';
+                     pill.style.width = activeBtn.offsetWidth + 'px';
+                     pill.style.left = activeBtn.offsetLeft + 'px';
+                     void pill.offsetWidth;
+                     pill.style.transition = '';
+                 }
+             }, 0);
+        }
 
         let processedData = rawData.filter(row => {
             const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
@@ -4887,26 +4989,41 @@
                     </td>`;
 
                 visibleCols.forEach(col => {
+                    // 互斥显示逻辑：与表头保持一致
+                    if (currentTable === 'user') {
+                        if (currColIdx === 0 && col.key === 'collection_role') return;
+                        if (currColIdx > 0 && col.key === 'project_role') return;
+                    }
+
                     let val = row[col.key];
                     if (val === undefined || val === null) val = "";
 
                     if (currentTable === 'project' && col.key === 'project_id') {
                         const currentProjId = rawProjects[currProjIdx] ? rawProjects[currProjIdx].id : null;
-                        if (row.project_id === currentProjId) {
-                            val = `<span style="display:flex; align-items:center; gap:8px;">
-                                    ${val}
+                        if (dataScope === 'all' && row.project_id === currentProjId) {
+                            val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                    <span>${val}</span>
                                     <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span>
-                                   </span>`;
+                                   </div>`;
                         }
                     }
 
 
                     if (currentTable === 'collection' && col.key === 'collection_id') {
-                        if (currColIdx > 0 && row.collection_id === currColIdx) {
-                            val = `<span style="display:flex; align-items:center; gap:8px;">
-                                    ${val}
+                        if (dataScope === 'all' && row._isCurrent) {
+                            val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                    <span>${val}</span>
                                     <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span>
-                                   </span>`;
+                                   </div>`;
+                        }
+                    }
+
+                    if (currentTable === 'user' && col.key === 'user_id') {
+                        if (dataScope === 'all' && row._isCurrent) {
+                            val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                    <span>${val}</span>
+                                    <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span>
+                                   </div>`;
                         }
                     }
 
@@ -4998,6 +5115,7 @@
         const editBtn = document.getElementById('btn-edit');
         const delBtn = document.getElementById('btn-delete');
         const linkBtn = document.getElementById('btn-link');
+        const resetBtn = document.getElementById('btn-reset-pwd');
         const count = selectedCrudIds.length;
 
         if (editBtn) editBtn.disabled = (count !== 1);
@@ -5009,6 +5127,15 @@
                 linkBtn.disabled = (count === 0);
             } else {
                 linkBtn.style.display = 'none';
+            }
+        }
+
+        if (resetBtn) {
+            if (currentTable === 'user') {
+                resetBtn.style.display = 'inline-flex';
+                resetBtn.disabled = (count !== 1);
+            } else {
+                resetBtn.style.display = 'none';
             }
         }
     }
@@ -5118,6 +5245,59 @@
         }
     }
 
+    function handleToolbarResetPassword() {
+        if (selectedCrudIds.length !== 1) return;
+
+        const modal = document.getElementById('crud-modal-overlay');
+        const container = document.getElementById('modal-form-container');
+        const title = document.getElementById('modal-title');
+        const submitBtn = document.getElementById('modal-submit-btn');
+
+        title.textContent = "Reset Password";
+
+        container.innerHTML = `
+            <div class="form-group">
+                <label class="form-label">Current Admin Password</label>
+                <input type="password" class="form-input" id="reset-admin-pwd">
+            </div>
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-input" id="reset-new-pwd">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-input" id="reset-confirm-pwd">
+            </div>
+        `;
+
+        if (submitBtn) {
+            submitBtn.textContent = "Confirm Reset";
+            submitBtn.style.backgroundColor = "";
+            submitBtn.onclick = saveResetPassword;
+        }
+
+        modal.classList.add('active');
+    }
+
+    function saveResetPassword() {
+        const adminPwd = document.getElementById('reset-admin-pwd').value;
+        const newPwd = document.getElementById('reset-new-pwd').value;
+        const confirm = document.getElementById('reset-confirm-pwd').value;
+
+        if (!adminPwd || !newPwd || !confirm) {
+            alert("All fields are required");
+            return;
+        }
+        if (newPwd !== confirm) {
+            alert("New passwords do not match");
+            return;
+        }
+
+        // 这里可以添加对 adminPwd 的校验逻辑
+        alert("Password has been reset successfully.");
+        closeCrudModal();
+    }
+
 
     function handleToolbarDelete() {
         if (selectedCrudIds.length > 0) {
@@ -5207,13 +5387,15 @@
         schema.columns.forEach(col => {
             if (col.hiddenInForm) return;
             if (col.readonly) return;
+            if (col.onlyOnCreate && mode === 'edit') return;
 
             const val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
+            const disabledAttr = (mode === 'edit' && col.readonlyOnUpdate) ? "disabled style='opacity:0.6; cursor:not-allowed;'" : "";
 
             formHtml += `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
             if (col.type === 'select') {
-                formHtml += `<select class="form-input" id="input-${col.key}">`;
+                formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}>`;
                 formHtml += `<option value="">Select...</option>`;
                 if (col.options) {
                     col.options.forEach(opt => {
@@ -5223,7 +5405,7 @@
                 }
                 formHtml += `</select>`;
             } else if (col.type === 'boolean') {
-                formHtml += `<select class="form-input" id="input-${col.key}">
+                formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}>
                     <option value="true" ${val === true ? 'selected' : ''}>True</option>
                     <option value="false" ${val === false ? 'selected' : ''}>False</option>
                 </select>`;
@@ -5247,8 +5429,10 @@
                         </span>
                     </div>
                 `;
+            } else if (col.type === 'password') {
+                formHtml += `<input type="password" class="form-input" id="input-${col.key}" value="" ${disabledAttr}>`;
             } else {
-                formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}">`;
+                formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabledAttr}>`;
             }
             formHtml += `</div>`;
         });
@@ -5262,6 +5446,19 @@
     }
 
     function saveCrudData() {
+        if (currentTable === 'user' && editingId === null) {
+            const pwd = document.getElementById('input-password').value;
+            const confirm = document.getElementById('input-confirm_password').value;
+            if (!pwd) {
+                alert("Password is required");
+                return;
+            }
+            if (pwd !== confirm) {
+                alert("Passwords do not match");
+                return;
+            }
+        }
+
         const schema = dbSchema[currentTable];
         let newRow = {};
 
