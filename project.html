@@ -2685,8 +2685,8 @@
             top: 0;
             right: 0;
             bottom: 0;
-            width: 480px;
-            max-width: 100%;
+            width: 800px; /* 增加宽度 */
+            max-width: 95vw;
             background: var(--bg-surface);
             padding: 30px;
             box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
@@ -2850,6 +2850,171 @@
             background-repeat: no-repeat;
             background-position: right 8px center;
             padding-right: 24px;
+        }
+
+        /* Permission Tree Styles */
+        .perm-tree-container {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-surface-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px;
+            min-height: 300px;
+        }
+
+        .perm-project-node {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .perm-project-header {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-capsule);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .perm-project-header:hover {
+            background: var(--bg-surface-hover);
+        }
+
+        .perm-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        .perm-header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .perm-batch-check {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .perm-batch-check:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .perm-collection-list {
+            display: none;
+            padding: 0;
+            border-top: 1px solid var(--border-color);
+            flex-direction: column;
+        }
+
+        .perm-project-node.expanded .perm-collection-list {
+            display: flex;
+        }
+
+        .perm-collection-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 16px;
+            border-bottom: 1px dashed var(--border-color);
+            background: var(--bg-surface);
+        }
+
+        .perm-collection-item:last-child {
+            border-bottom: none;
+        }
+
+        .perm-col-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .perm-matrix {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr;
+            gap: 8px;
+            font-size: 0.8rem;
+            background: var(--bg-surface-secondary);
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .perm-matrix-row {
+            display: contents;
+        }
+
+        .perm-cat-label {
+            color: var(--text-muted);
+            font-weight: 600;
+            text-align: right;
+            padding-right: 12px;
+            align-self: center;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .perm-check-cell {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-surface);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: 0.2s;
+        }
+
+        .perm-check-cell:hover {
+            border-color: var(--brand);
+        }
+
+        .perm-checkbox {
+            width: 14px;
+            height: 14px;
+            accent-color: var(--brand);
+            cursor: pointer;
+            margin: 0;
+        }
+
+        /* 补充/优化矩阵样式 */
+        .perm-matrix-header {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            padding: 0 8px;
+        }
+
+        .perm-matrix-col-header {
+            text-align: center;
         }
     </style>
 </head>
@@ -4535,14 +4700,7 @@
         ]
     };
 
-    const PERMISSIONS = [
-        { id: 1, code: 'project:read', label: 'Project: Read' },
-        { id: 2, code: 'project:write', label: 'Project: Write' },
-        { id: 3, code: 'collection:read', label: 'Collection: Read' },
-        { id: 4, code: 'collection:write', label: 'Collection: Write' },
-        { id: 5, code: 'user:read', label: 'User: Read' },
-        { id: 6, code: 'user:write', label: 'User: Write' }
-    ];
+
 
     let currentEditorTargetId = null;
 
@@ -5348,60 +5506,122 @@
         closeCrudModal();
     }
 
+    // === Advanced Permission System ===
+
+    const PERM_MATRIX = {
+        project: { label: 'Project', read: 1, write: 2 },
+        collection: { label: 'Collection', read: 3, write: 4 },
+        user: { label: 'User', read: 5, write: 6 }
+    };
+
     function handleToolbarPermission() {
         if (selectedCrudIds.length === 0) return;
         openPermissionModal();
     }
 
     function openPermissionModal() {
-        const modal = document.getElementById('crud-modal-overlay');
+        const modalOverlay = document.getElementById('crud-modal-overlay');
+        const modalContent = modalOverlay.querySelector('.crud-modal');
+
+        // 【关键修复】动态设置宽度，只针对 Permission 页面生效，不影响其他
+        modalContent.style.width = '900px';
+        modalContent.style.maxWidth = '95vw';
+
         const container = document.getElementById('modal-form-container');
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
 
         const isMulti = selectedCrudIds.length > 1;
-        title.textContent = isMulti ? `Assign Permissions for ${selectedCrudIds.length} Users` : "Assign Permissions for User";
+        title.textContent = isMulti ? `Manage Permissions (${selectedCrudIds.length} Users)` : "Manage User Permissions";
 
-        // 1. 获取所有合集列表
-        const collections = getDataForTable('collection');
-
-        // 2. 构建权限选择下拉框
-        let permOptions = PERMISSIONS.map(p => `<option value="${p.id}">${p.label} (${p.code})</option>`).join('');
+        // 1. 构建项目树结构 (Project -> Collections)
+        const projectTree = rawProjects.map(proj => ({
+            id: proj.id,
+            name: proj.name,
+            collections: proj.collections
+        }));
 
         let html = `
-            <div class="form-group">
-                <label class="form-label">Permission Level</label>
-                <select class="form-input" id="perm-select">
-                    ${permOptions}
-                </select>
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-                    This permission will be applied to the selected user(s) on the collections checked below.
-                </div>
+            <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:12px; line-height:1.5;">
+                Select permissions below. <strong style="color:var(--brand)">Read</strong> and <strong style="color:var(--brand)">Write</strong> are mutually exclusive (selecting one clears the other).
             </div>
-
-            <div class="form-group" style="flex:1; display:flex; flex-direction:column; min-height:0;">
-                <label class="form-label">Target Collections</label>
-                <div style="flex:1; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">
+            <div class="perm-tree-container" style="flex: 1; overflow-y: auto; min-height: 0; border: 1px solid var(--border-light); border-radius: 8px; background: var(--bg-surface-secondary); padding: 8px; display: flex; flex-direction: column; gap: 8px;">
         `;
 
-        // 3. 构建合集复选框列表
-        // 注意：这里简单列出所有合集。如果需要回显已有的权限，逻辑会比较复杂（因为是多对多），
-        // 建议这里作为"添加/覆盖"操作。
-        collections.forEach(c => {
+        projectTree.forEach(proj => {
+            // 如果项目没有集合，跳过
+            const hasCols = proj.collections && proj.collections.length > 0;
+            if (!hasCols) return;
+
             html += `
-                <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
-                    <input type="checkbox" class="perm-col-cb" value="${c._rawId || c.collection_id}" style="width:16px; height:16px; accent-color:var(--brand);">
-                    <div style="display:flex; flex-direction:column;">
-                        <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">ID: ${c._rawId || c.collection_id}</span>
+                <div class="perm-project-node" id="proj-node-${proj.id}">
+                    <div class="perm-project-header" onclick="togglePermProject(${proj.id})">
+                        <div class="perm-header-left">
+                            <i data-lucide="chevron-right" class="perm-arrow" id="arrow-${proj.id}" size="16"></i>
+                            <i data-lucide="folder-kanban" size="14" style="color:var(--brand)"></i>
+                            ${proj.name}
+                        </div>
+                        <div class="perm-header-right" onclick="event.stopPropagation()">
+                            <span style="font-size:0.7rem; text-transform:uppercase; font-weight:700; margin-right:4px;">Batch:</span>
+                            <label class="perm-batch-check" title="Grant READ to all scopes">
+                                <input type="checkbox" class="perm-checkbox" onchange="batchCheckProject(${proj.id}, 'read', this.checked)"> Read All
+                            </label>
+                            <label class="perm-batch-check" title="Grant WRITE to all scopes">
+                                <input type="checkbox" class="perm-checkbox" onchange="batchCheckProject(${proj.id}, 'write', this.checked)"> Write All
+                            </label>
+                        </div>
                     </div>
-                </label>
+                    <div class="perm-collection-list">
             `;
+
+            proj.collections.forEach(col => {
+                const renderRow = (scope) => {
+                    const conf = PERM_MATRIX[scope];
+                    return `
+                        <div class="perm-matrix-row">
+                            <div class="perm-cat-label">${conf.label}</div>
+                            <label class="perm-check-cell">
+                                <input type="checkbox" class="perm-checkbox p-check-${proj.id}-read"
+                                       value="${conf.read}" data-col="${col.id}">
+                                <span>Read</span>
+                            </label>
+                            <label class="perm-check-cell">
+                                <input type="checkbox" class="perm-checkbox p-check-${proj.id}-write"
+                                       value="${conf.write}" data-col="${col.id}">
+                                <span>Write</span>
+                            </label>
+                        </div>
+                    `;
+                };
+
+                html += `
+                        <div class="perm-collection-item">
+                            <div class="perm-col-title">
+                                <i data-lucide="library" size="14" style="color:var(--text-muted)"></i>
+                                ${col.name}
+                            </div>
+                            <div class="perm-matrix-header">
+                                <div></div>
+                                <div class="perm-matrix-col-header">Read</div>
+                                <div class="perm-matrix-col-header">Write</div>
+                            </div>
+                            <div class="perm-matrix">
+                                ${renderRow('project')}
+                                ${renderRow('collection')}
+                                ${renderRow('user')}
+                            </div>
+                        </div>
+                `;
+            });
+
+            html += `   </div>
+                </div>`;
         });
 
-        html += `</div></div>`;
+        html += `</div>`; // Close tree container
 
         container.innerHTML = html;
+        lucide.createIcons();
 
         if (submitBtn) {
             submitBtn.textContent = "Save Permissions";
@@ -5409,43 +5629,89 @@
             submitBtn.onclick = savePermissionData;
         }
 
-        modal.classList.add('active');
+        // 使用 overlay 变量激活
+        document.getElementById('crud-modal-overlay').classList.add('active');
+    }
+
+    // 【关键修复】互斥检查：同一维度下 Read/Write 只能选一个
+    function handleMutexCheck(checkbox, otherIdClass) {
+        if (checkbox.checked) {
+            const otherCheckbox = document.getElementsByClassName(otherIdClass)[0];
+            if (otherCheckbox) {
+                otherCheckbox.checked = false;
+            }
+        }
+    }
+
+    function togglePermProject(projId) {
+        const node = document.getElementById(`proj-node-${projId}`);
+        const arrow = document.getElementById(`arrow-${projId}`);
+        const isExpanded = node.classList.contains('expanded');
+
+        if (isExpanded) {
+            node.classList.remove('expanded');
+            arrow.setAttribute('data-lucide', 'chevron-right');
+        } else {
+            node.classList.add('expanded');
+            arrow.setAttribute('data-lucide', 'chevron-down');
+        }
+        lucide.createIcons();
+    }
+
+    function batchCheckProject(projId, type, isChecked) {
+        // type: 'read' | 'write'
+        // 选中该项目下所有集合中，对应类型的复选框 (class: p-check-{projId}-{type})
+        const selector = `.p-check-${projId}-${type}`;
+        const checkboxes = document.querySelectorAll(selector);
+        checkboxes.forEach(cb => {
+            cb.checked = isChecked;
+        });
+
+        // 自动展开项目，让用户看到变化
+        const node = document.getElementById(`proj-node-${projId}`);
+        if (!node.classList.contains('expanded')) {
+            togglePermProject(projId);
+        }
     }
 
     function savePermissionData() {
-        const permId = document.getElementById('perm-select').value;
-        const checkboxes = document.querySelectorAll('.perm-col-cb:checked');
-        const targetColIds = Array.from(checkboxes).map(cb => cb.value);
+        // 收集所有选中的 checkbox
+        const checkedBoxes = document.querySelectorAll('.perm-tree-container input[type="checkbox"]:checked:not([onchange])');
 
-        if (targetColIds.length === 0) {
-            alert("Please select at least one collection.");
+        // 数据聚合: Map<CollectionID, Set<PermissionID>>
+        const resultMap = new Map();
+
+        checkedBoxes.forEach(cb => {
+            const colId = cb.getAttribute('data-col'); // 这里可能是 'c0', 'c1' 等虚拟ID
+            const permId = parseInt(cb.value);
+
+            if (!colId) return;
+
+            if (!resultMap.has(colId)) {
+                resultMap.set(colId, []);
+            }
+            resultMap.get(colId).push(permId);
+        });
+
+        if (resultMap.size === 0) {
+            alert("Please select at least one permission.");
             return;
         }
 
-        const permInfo = PERMISSIONS.find(p => p.id == permId);
-
-        // 模拟保存逻辑
-        console.log("Saving Permissions...");
-        console.log("Users:", selectedCrudIds);
-        console.log("Permission:", permInfo);
-        console.log("Collections:", targetColIds);
-
-        // 这里可以添加实际的 API 调用逻辑
-        // SQL 逻辑对应:
-        // INSERT INTO user_permission (user_id, collection_id, permission_id)
-        // VALUES ...
-        // ON CONFLICT (user_id, collection_id) DO UPDATE SET permission_id = EXCLUDED.permission_id;
-
         const userCount = selectedCrudIds.length;
-        const colCount = targetColIds.length;
+        const colCount = resultMap.size;
 
-        alert(`Successfully assigned permission "${permInfo.code}" to ${userCount} user(s) for ${colCount} collection(s).`);
+        // 打印到控制台模拟提交
+        console.log("=== Submitting Permissions ===");
+        console.log("Target Users (IDs):", selectedCrudIds);
+        console.log("Permissions Payload:", Object.fromEntries(resultMap));
+
+        // 提示信息
+        alert(`Successfully updated permissions for ${userCount} user(s) across ${colCount} collection(s).`);
 
         closeCrudModal();
         selectedCrudIds = [];
         updateToolbarState();
-
-        // 可选：刷新表格
         renderCrudTable();
     }
 
@@ -5592,7 +5858,16 @@
     }
 
     function closeCrudModal() {
-        document.getElementById('crud-modal-overlay').classList.remove('active');
+        const overlay = document.getElementById('crud-modal-overlay');
+        overlay.classList.remove('active');
+        // 延迟重置宽度，确保不影响其他页面/功能的模态框样式
+        setTimeout(() => {
+            const modal = overlay.querySelector('.crud-modal');
+            if(modal) {
+                modal.style.width = '';
+                modal.style.maxWidth = '';
+            }
+        }, 300);
     }
 
     function saveCrudData() {
