@@ -2609,7 +2609,7 @@
         }
 
         .crud-table tr.selected td:first-child {
-            background: var(--brand-tint) !important;
+            background: linear-gradient(var(--brand-tint), var(--brand-tint)), var(--bg-surface) !important;
         }
 
         .crud-table tr {
@@ -3093,14 +3093,15 @@
                 <div class="data-toolbar">
                     <div class="card-title" id="current-table-title"><i data-lucide="table"></i> Project</div>
                     <div class="media-controls">
-                        <button class="btn-toolbar" onclick="resetDataTable()" title="Reset">
-                            <i data-lucide="rotate-ccw" size="16"></i> Reset
-                        </button>
 
                         <div class="media-search-box">
                             <i data-lucide="search" class="media-search-icon"></i>
                             <input type="text" class="media-search-input" id="data-search-input" placeholder="Search" oninput="handleDataSearch(this.value)">
                         </div>
+
+                        <button class="btn-toolbar" onclick="resetDataTable()" title="Reset">
+                            <i data-lucide="rotate-ccw" size="16"></i> Reset
+                        </button>
 
                         <button class="btn-toolbar" onclick="openCrudModal('add')">
                             <i data-lucide="plus" size="16"></i> Add
@@ -3112,6 +3113,10 @@
 
                         <button class="btn-toolbar" id="btn-link" onclick="handleToolbarLink()" disabled>
                             <i data-lucide="link" size="16"></i> Link
+                        </button>
+
+                        <button class="btn-toolbar" id="btn-set-contrib" onclick="handleSetContributor()" disabled style="display:none;">
+                            <i data-lucide="user-plus" size="16"></i> Set Role
                         </button>
 
                         <button class="btn-toolbar danger" id="btn-delete" onclick="handleToolbarDelete()" disabled>
@@ -4361,14 +4366,14 @@
                 { key: "uuid", label: "UUID", type: "text", readonly: true },
                 { key: "name", label: "Name", type: "text" },
 
-                { key: "creator_name", label: "Creator", type: "select", options: mockNames, filterType: 'text' },
+                { key: "creator_name", label: "Creator", type: "select", options: mockNames },
                 { key: "url", label: "URL", type: "text" },
                 { key: "doi", label: "DOI", type: "text" },
                 { key: "public", label: "Public", type: "boolean" },
                 { key: "active", label: "Active", type: "boolean" },
                 { key: "creation_date", label: "Created", type: "text", readonly: true },
 
-                { key: "picture_url", label: "Picture", type: "file" },
+                { key: "picture_url", label: "Picture", type: "file", hiddenInTable: true },
                 { key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true },
                 { key: "description", label: "Description", type: "richtext", hiddenInTable: true }
             ]
@@ -4382,10 +4387,10 @@
                 { key: "uuid", label: "UUID", type: "text", readonly: true },
                 { key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true },
                 { key: "name", label: "Name", type: "text" },
-                { key: "creator_id", label: "Creator", type: "select", options: mockNames, filterType: 'text' },
+                { key: "creator_id", label: "Creator", type: "select", options: mockNames },
                 { key: "url", label: "URL", type: "text" },
                 { key: "doi", label: "DOI", type: "text" },
-                { key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"], filterType: 'text' },
+                { key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"] },
                 { key: "public_access", label: "Public Access", type: "boolean" },
                 { key: "public_tags", label: "Public Tags", type: "boolean" },
                 { key: "creation_date", label: "Created", type: "text", readonly: true },
@@ -4401,7 +4406,8 @@
                 { key: "username", label: "Username", type: "text" },
                 { key: "name", label: "Name", type: "text" },
                 { key: "email", label: "Email", type: "text" },
-                { key: "role_id", label: "Role ID", type: "select", options: [1, 2, 3, 4, 5] },
+                { key: "role_name", label: "Role", type: "select", options: ["Administrator", "Researcher", "Annotator", "Curator", "Guest"] },
+                { key: "current_role", label: "Contrib. Role", type: "text", readonly: true },
                 { key: "orcid", label: "ORCID", type: "text" },
                 { key: "active", label: "Active", type: "boolean" }
             ]
@@ -4456,14 +4462,27 @@
         },
         project_contributor: {
             label: "Proj. Contributors",
-            itemLabel: "Contribution",
+            itemLabel: "Contributor",
             icon: "user-cog",
-            pk: "id",
+            pk: "uid",
             columns: [
-                { key: "id", label: "ID", type: "text", readonly: true, hiddenInTable: true },
-                { key: "project_id", label: "Project ID", type: "number" },
-                { key: "user_id", label: "User", type: "select", options: mockNames },
-                { key: "contribution_role", label: "Role", type: "text" },
+                { key: "uid", label: "ID", type: "text", readonly: true, hiddenInTable: true },
+                { key: "name", label: "User Name", type: "text", readonly: true },
+                { key: "role", label: "Project Role", type: "text" },
+                { key: "email", label: "Email", type: "text", readonly: true },
+                { key: "added_date", label: "Date Added", type: "text", readonly: true }
+            ]
+        },
+        collection_contributor: {
+            label: "Coll. Contributors",
+            itemLabel: "Contributor",
+            icon: "users-2",
+            pk: "uid",
+            columns: [
+                { key: "uid", label: "ID", type: "text", readonly: true, hiddenInTable: true },
+                { key: "name", label: "User Name", type: "text", readonly: true },
+                { key: "role", label: "Collection Role", type: "text" },
+                { key: "email", label: "Email", type: "text", readonly: true },
                 { key: "added_date", label: "Date Added", type: "text", readonly: true }
             ]
         }
@@ -4592,18 +4611,64 @@
             return mediaItems;
         }
         else if (tableName === 'user') {
-            const source = (currColIdx > 0) ? currentProject.collections[currColIdx - 1].contributors : currentProject.contributors;
+            // Get current contributors based on context for 'current_role' calculation
+            const currentContributors = (currColIdx > 0)
+                ? currentProject.collections[currColIdx - 1].contributors
+                : currentProject.contributors;
 
-            // Map old contributor mock data to new user schema
-            return source.map((u, i) => ({
-                user_id: i + 1,
-                username: u.name.split(' ').join('.').toLowerCase() + (i + 1),
-                password: "hashed_pwd_placeholder", // hidden in table usually
+            // Mock a larger user base (aggregating all contributors from all projects/collections)
+            let allUsers = [];
+            rawProjects.forEach(p => {
+                allUsers = [...allUsers, ...p.contributors];
+                p.collections.forEach(c => allUsers = [...allUsers, ...c.contributors]);
+            });
+            // Deduplicate by name for list
+            allUsers = Array.from(new Map(allUsers.map(u => [u.name, u])).values());
+
+            return allUsers.map((u, i) => {
+                // Check if this user is a contributor in the CURRENT context
+                const contribEntry = currentContributors.find(c => c.name === u.name);
+                const currentRole = contribEntry ? (contribEntry.role || "-") : "-";
+
+                return {
+                    user_id: i + 1,
+                    username: u.name.split(' ').join('.').toLowerCase() + (i + 1),
+                    password: "hashed_pwd_placeholder",
+                    name: u.name,
+                    orcid: u.uid,
+                    email: u.email,
+                    role_name: ["Administrator", "Researcher", "Annotator", "Curator", "Guest"][i % 5],
+                    current_role: currentRole,
+                    active: true
+                };
+            });
+        }
+        else if (tableName === 'project_contributor') {
+            return currentProject.contributors.map(u => ({
+                uid: u.uid,
                 name: u.name,
-                orcid: u.uid,
+                role: u.role || "-",
                 email: u.email,
-                role_id: Math.floor(Math.random() * 5) + 1,
-                active: true
+                added_date: u.date || new Date().toISOString().split('T')[0]
+            }));
+        }
+        else if (tableName === 'collection_contributor') {
+            let source = [];
+            if (currColIdx > 0) {
+                // Only current collection
+                source = currentProject.collections[currColIdx - 1].contributors;
+            } else {
+                // In project view, show contributors from ALL collections for overview
+                currentProject.collections.forEach(c => {
+                    source = [...source, ...c.contributors];
+                });
+            }
+            return source.map((u, i) => ({
+                uid: u.uid + '_col_' + i,
+                name: u.name,
+                role: u.role || "-",
+                email: u.email,
+                added_date: u.date || new Date().toISOString().split('T')[0]
             }));
         }
         else if (tableName === 'role') {
@@ -4734,11 +4799,13 @@
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${currentFilterVal === 'true' ? 'selected' : ''}>True</option><option value="false" ${currentFilterVal === 'false' ? 'selected' : ''}>False</option></select>`;
             } else if (col.type === 'select' && col.filterType !== 'text') {
                 let opts = `<option value="all">All</option>`;
-                if(col.options) {
-                    col.options.forEach(o => {
-                        opts += `<option value="${o}" ${currentFilterVal === o ? 'selected' : ''}>${o}</option>`;
-                    });
-                }
+
+                const uniqueVals = getUniqueValues(getDataForTable(currentTable), col.key);
+                uniqueVals.forEach(o => {
+                    const isSelected = String(currentFilterVal) === String(o);
+                    opts += `<option value="${o}" ${isSelected ? 'selected' : ''}>${o}</option>`;
+                });
+
                 filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">${opts}</select>`;
             } else if (col.type === 'file' || col.type === 'image' || col.type === 'richtext') {
                 filterInputHtml = '';
@@ -4815,7 +4882,8 @@
                 bodyHtml += `
                     <td style="text-align:center; border-bottom:1px solid var(--border-color);">
                         <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''}
-                        onclick="event.stopPropagation(); toggleRowSelection('${rowIdStr}')">
+                        onclick="event.stopPropagation(); toggleRowSelection('${rowIdStr}', this)"
+                        ondblclick="event.stopPropagation()">
                     </td>`;
 
                 visibleCols.forEach(col => {
@@ -4892,14 +4960,16 @@
     }
 
 
-    function toggleRowSelection(id) {
+    function toggleRowSelection(id, el) {
         const idx = selectedCrudIds.indexOf(id);
         if (idx > -1) {
             selectedCrudIds.splice(idx, 1);
+            if (el) el.closest('tr').classList.remove('selected');
         } else {
             selectedCrudIds.push(id);
+            if (el) el.closest('tr').classList.add('selected');
         }
-        renderCrudTable();
+        updateHeaderCheckbox(window.currentVisibleData);
         updateToolbarState();
     }
 
