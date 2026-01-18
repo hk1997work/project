@@ -3119,6 +3119,10 @@
                             <i data-lucide="key" size="16"></i> Reset Pwd
                         </button>
 
+                        <button class="btn-toolbar" id="btn-permission" onclick="handleToolbarPermission()" disabled style="display:none;">
+                            <i data-lucide="shield-check" size="16"></i> Permission
+                        </button>
+
                         <button class="btn-toolbar" id="btn-set-contrib" onclick="handleSetContributor()" disabled style="display:none;">
                             <i data-lucide="user-plus" size="16"></i> Set Role
                         </button>
@@ -4531,6 +4535,14 @@
         ]
     };
 
+    const PERMISSIONS = [
+        { id: 1, code: 'project:read', label: 'Project: Read' },
+        { id: 2, code: 'project:write', label: 'Project: Write' },
+        { id: 3, code: 'collection:read', label: 'Collection: Read' },
+        { id: 4, code: 'collection:write', label: 'Collection: Write' },
+        { id: 5, code: 'user:read', label: 'User: Read' },
+        { id: 6, code: 'user:write', label: 'User: Write' }
+    ];
 
     let currentEditorTargetId = null;
 
@@ -4676,8 +4688,10 @@
             // 1. 确定要显示的用户列表
             if (dataScope === 'current') {
                 if (currColIdx > 0) {
-                    // 【集合视图】：只显示该集合的用户
-                    displayUsers = [...activeCollection.contributors];
+                    // 【集合视图】：显示 (项目直接成员 + 本集合的贡献者)
+                    // 这样既包含了"本集合的人"，也包含了"项目管理人员"(他们在集合中角色为"-")
+                    // 同时排除了"其他集合的成员"，确保数量少于项目总人数
+                    displayUsers = [...directProjContributors, ...activeCollection.contributors];
                 } else {
                     // 【项目视图】：显示 (项目直接成员 + 该项目下所有集合的成员)
                     let allProjectUsers = [...directProjContributors];
@@ -4716,10 +4730,8 @@
                     col.contributors.some(c => c.name === u.name)
                 );
 
-                // 如果用户是直接项目成员 OR 是子集合成员，但他没有明确的项目角色，则默认为 "Participant"
-                if ((pEntry || isInAnyCollectionOfProject) && pRole === "-") {
-                    pRole = "Participant";
-                }
+                // [已移除] 之前强制将无角色的用户设为 "Participant" 的逻辑。
+                // 现在允许用户存在但没有任何角色 (显示为 "-")。
 
                 // 4. 计算 Current 标签 (用于 All 视图下的高亮)
                 let isCurrent = false;
@@ -5143,6 +5155,7 @@
         const delBtn = document.getElementById('btn-delete');
         const linkBtn = document.getElementById('btn-link');
         const resetBtn = document.getElementById('btn-reset-pwd');
+        const permBtn = document.getElementById('btn-permission'); // 获取新按钮
         const count = selectedCrudIds.length;
 
         if (editBtn) editBtn.disabled = (count !== 1);
@@ -5163,6 +5176,16 @@
                 resetBtn.disabled = (count !== 1);
             } else {
                 resetBtn.style.display = 'none';
+            }
+        }
+
+        // 新增：User 表显示 Permission 按钮
+        if (permBtn) {
+            if (currentTable === 'user') {
+                permBtn.style.display = 'inline-flex';
+                permBtn.disabled = (count === 0);
+            } else {
+                permBtn.style.display = 'none';
             }
         }
     }
@@ -5325,6 +5348,106 @@
         closeCrudModal();
     }
 
+    function handleToolbarPermission() {
+        if (selectedCrudIds.length === 0) return;
+        openPermissionModal();
+    }
+
+    function openPermissionModal() {
+        const modal = document.getElementById('crud-modal-overlay');
+        const container = document.getElementById('modal-form-container');
+        const title = document.getElementById('modal-title');
+        const submitBtn = document.getElementById('modal-submit-btn');
+
+        const isMulti = selectedCrudIds.length > 1;
+        title.textContent = isMulti ? `Assign Permissions for ${selectedCrudIds.length} Users` : "Assign Permissions for User";
+
+        // 1. 获取所有合集列表
+        const collections = getDataForTable('collection');
+
+        // 2. 构建权限选择下拉框
+        let permOptions = PERMISSIONS.map(p => `<option value="${p.id}">${p.label} (${p.code})</option>`).join('');
+
+        let html = `
+            <div class="form-group">
+                <label class="form-label">Permission Level</label>
+                <select class="form-input" id="perm-select">
+                    ${permOptions}
+                </select>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+                    This permission will be applied to the selected user(s) on the collections checked below.
+                </div>
+            </div>
+
+            <div class="form-group" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+                <label class="form-label">Target Collections</label>
+                <div style="flex:1; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">
+        `;
+
+        // 3. 构建合集复选框列表
+        // 注意：这里简单列出所有合集。如果需要回显已有的权限，逻辑会比较复杂（因为是多对多），
+        // 建议这里作为"添加/覆盖"操作。
+        collections.forEach(c => {
+            html += `
+                <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
+                    <input type="checkbox" class="perm-col-cb" value="${c._rawId || c.collection_id}" style="width:16px; height:16px; accent-color:var(--brand);">
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">ID: ${c._rawId || c.collection_id}</span>
+                    </div>
+                </label>
+            `;
+        });
+
+        html += `</div></div>`;
+
+        container.innerHTML = html;
+
+        if (submitBtn) {
+            submitBtn.textContent = "Save Permissions";
+            submitBtn.style.backgroundColor = "";
+            submitBtn.onclick = savePermissionData;
+        }
+
+        modal.classList.add('active');
+    }
+
+    function savePermissionData() {
+        const permId = document.getElementById('perm-select').value;
+        const checkboxes = document.querySelectorAll('.perm-col-cb:checked');
+        const targetColIds = Array.from(checkboxes).map(cb => cb.value);
+
+        if (targetColIds.length === 0) {
+            alert("Please select at least one collection.");
+            return;
+        }
+
+        const permInfo = PERMISSIONS.find(p => p.id == permId);
+
+        // 模拟保存逻辑
+        console.log("Saving Permissions...");
+        console.log("Users:", selectedCrudIds);
+        console.log("Permission:", permInfo);
+        console.log("Collections:", targetColIds);
+
+        // 这里可以添加实际的 API 调用逻辑
+        // SQL 逻辑对应:
+        // INSERT INTO user_permission (user_id, collection_id, permission_id)
+        // VALUES ...
+        // ON CONFLICT (user_id, collection_id) DO UPDATE SET permission_id = EXCLUDED.permission_id;
+
+        const userCount = selectedCrudIds.length;
+        const colCount = targetColIds.length;
+
+        alert(`Successfully assigned permission "${permInfo.code}" to ${userCount} user(s) for ${colCount} collection(s).`);
+
+        closeCrudModal();
+        selectedCrudIds = [];
+        updateToolbarState();
+
+        // 可选：刷新表格
+        renderCrudTable();
+    }
 
     function handleToolbarDelete() {
         if (selectedCrudIds.length > 0) {
