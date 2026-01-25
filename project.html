@@ -3099,7 +3099,7 @@
         {
             id: 1,
             name: "Amazon Rainforest Survey",
-            creator: "Dr. Silva",
+            creator: "Liudilong",
             date: "2025-01-10",
             doi: "10.1234/amz.01",
             externalUrl: "https://www.worldwildlife.org/places/amazon",
@@ -3113,7 +3113,7 @@
         {
             id: 2,
             name: "Marine Ecosystems Study",
-            creator: "Prof. Ocean",
+            creator: "Liudilong",
             date: "2024-11-05",
             doi: "10.5678/mar.02",
             externalUrl: "https://www.barrierreef.org/",
@@ -3842,9 +3842,15 @@
             renderCollectionList();
             renderProjectList();
             if (document.getElementById('tab-data').classList.contains('active')) {
-                renderTableNav();
-                renderCrudHeader();
-                renderCrudTable();
+                const currentUser = document.querySelector('.user-name-text').textContent.trim();
+                const currentProject = rawProjects[currProjIdx];
+                if (currentTable === 'project' && currentProject.creator !== currentUser) {
+                    switchCrudTable('collection');
+                } else {
+                    renderTableNav();
+                    renderCrudHeader();
+                    renderCrudTable();
+                }
             }
         }
         setTimeout(() => {
@@ -4268,6 +4274,10 @@
         const currentProject = rawProjects[currProjIdx];
         if (tableName === 'project') {
             let source = (dataScope === 'current') ? [currentProject] : rawProjects;
+            if (dataScope === 'all') {
+                const currentUser = document.querySelector('.user-name-text').textContent.trim();
+                source = source.filter(p => p.creator === currentUser);
+            }
             return source.map(p => {
                 const stripHtml = (html) => {
                     let tmp = document.createElement("DIV");
@@ -4428,11 +4438,25 @@
         const navList = document.getElementById('table-nav-list');
         let html = "";
         Object.keys(dbSchema).forEach(key => {
+            if (key === 'project') {
+                const currentUser = document.querySelector('.user-name-text').textContent.trim();
+                const currentProject = rawProjects[currProjIdx];
+                if (currentProject && currentProject.creator !== currentUser) {
+                    return;
+                }
+            }
             const table = dbSchema[key];
             const isActive = currentTable === key ? 'active' : '';
             const data = getDataForTable(key);
             const count = data ? data.length : 0;
-            html += `<div class="dt-item ${isActive}" onclick="switchCrudTable('${key}')"><span style="display:flex; align-items:center; gap:8px;"> <i data-lucide="${table.icon}" size="16"></i> ${table.label} </span> <span class="dt-count">${count}</span></div> `;
+            html += `
+                <div class="dt-item ${isActive}" onclick="switchCrudTable('${key}')">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="${table.icon}" size="16"></i> ${table.label}
+                    </span>
+                    <span class="dt-count">${count}</span>
+                </div>
+            `;
         });
         navList.innerHTML = html;
         lucide.createIcons();
@@ -4664,20 +4688,52 @@
         const resetBtn = document.getElementById('btn-reset-pwd');
         const permBtn = document.getElementById('btn-permission');
         const count = selectedCrudIds.length;
-        if (editBtn) editBtn.disabled = (count !== 1);
-        if (delBtn) delBtn.disabled = (count === 0);
-        if (linkBtn) if (currentTable === 'collection') {
-            linkBtn.style.display = 'inline-flex';
-            linkBtn.disabled = (count === 0);
-        } else linkBtn.style.display = 'none';
-        if (resetBtn) if (currentTable === 'user') {
-            resetBtn.style.display = 'inline-flex';
-            resetBtn.disabled = (count !== 1);
-        } else resetBtn.style.display = 'none';
-        if (permBtn) if (currentTable === 'user') {
-            permBtn.style.display = 'inline-flex';
-            permBtn.disabled = (count === 0);
-        } else permBtn.style.display = 'none';
+
+        if (editBtn) {
+            editBtn.disabled = (count !== 1);
+            editBtn.style.display = '';
+        }
+        if (delBtn) {
+            delBtn.disabled = (count === 0);
+            delBtn.style.display = '';
+        }
+
+        if (linkBtn) {
+            if (currentTable === 'project') {
+                linkBtn.style.display = 'inline-flex';
+                linkBtn.disabled = (count === 0);
+            } else {
+                linkBtn.style.display = 'none';
+            }
+        }
+
+        if (resetBtn) {
+            if (currentTable === 'user') {
+                resetBtn.style.display = 'inline-flex';
+                resetBtn.disabled = (count !== 1);
+            } else {
+                resetBtn.style.display = 'none';
+            }
+        }
+
+        if (permBtn) {
+            if (currentTable === 'user') {
+                permBtn.style.display = 'inline-flex';
+                permBtn.disabled = (count === 0);
+            } else {
+                permBtn.style.display = 'none';
+            }
+        }
+
+        if (currentTable === 'project' && count === 1) {
+            const currentUser = document.querySelector('.user-name-text').textContent.trim();
+            const currentData = getDataForTable('project');
+            const selectedItem = currentData.find(p => String(p.project_id) === String(selectedCrudIds[0]));
+
+            if (selectedItem && selectedItem.creator_name !== currentUser) {
+                if (editBtn) editBtn.style.display = 'none';
+            }
+        }
     }
 
     function handleToolbarLink() {
@@ -4690,61 +4746,117 @@
         const container = document.getElementById('modal-form-container');
         const title = document.getElementById('modal-title');
         const submitBtn = document.getElementById('modal-submit-btn');
-        const isMulti = selectedCrudIds.length > 1;
-        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Collections to Projects` : "Link Collection to Projects";
-        const currentData = getDataForTable('collection');
-        let currentLinkedProjIds = [];
-        if (!isMulti) {
-            const row = currentData.find(r => String(r.collection_id) === selectedCrudIds[0]);
-            if (row && row._rawId) rawProjects.forEach(p => {
-                    if (p.collections.some(c => c.id === row._rawId)) currentLinkedProjIds.push(p.id);
+
+        if (currentTable === 'project') {
+            const isMulti = selectedCrudIds.length > 1;
+            title.textContent = isMulti ? `Link Collections to ${selectedCrudIds.length} Projects` : "Link Collections to Project";
+
+            const currentUser = document.querySelector('.user-name-text').textContent.trim();
+
+            const allCollectionsMap = new Map();
+            rawProjects.forEach(p => {
+                p.collections.forEach(c => {
+                    if (!allCollectionsMap.has(c.id)) {
+                        allCollectionsMap.set(c.id, c);
+                    }
+                });
+            });
+            const allCollections = Array.from(allCollectionsMap.values());
+
+            const writableCollections = allCollections.filter(c => {
+                if (c.creator === currentUser) return true;
+                const contrib = c.contributors.find(u => u.name === currentUser);
+                if (contrib && ['Administrator', 'Researcher', 'Curator'].includes(contrib.role)) return true;
+                return false;
+            });
+
+            let currentLinkedColIds = [];
+            if (!isMulti) {
+                const targetProj = rawProjects.find(p => String(p.id) === selectedCrudIds[0]);
+                if (targetProj) {
+                    currentLinkedColIds = targetProj.collections.map(c => c.id);
                 }
-            );
+            }
+
+            let html = `<div class="form-group"><label class="form-label">Select Collections (Writable Only)</label>`;
+            html += `<div style="max-height:300px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">`;
+
+            if (writableCollections.length === 0) {
+                html += `<div style="padding:10px; color:var(--text-muted); text-align:center;">No writable collections found.</div>`;
+            } else {
+                writableCollections.forEach(c => {
+                    const isChecked = !isMulti && currentLinkedColIds.includes(c.id);
+                    html += `
+                        <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
+                            <input type="checkbox" class="link-target-cb" value="${c.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                            <div style="display:flex; flex-direction:column;">
+                                <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
+                                <span style="font-size:0.75rem; color:var(--text-muted);">ID: ${c.id} | Role: ${c.creator === currentUser ? 'Creator' : 'Contributor'}</span>
+                            </div>
+                        </label>
+                    `;
+                });
+            }
+            html += `</div>`;
+            html += `<div style="margin-top:10px; font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">
+                Only collections where you have <strong>write permission</strong> are shown. Selected collections will be linked to the chosen project(s).
+            </div></div>`;
+            container.innerHTML = html;
+
+            if (submitBtn) {
+                submitBtn.textContent = "Save Links";
+                submitBtn.style.backgroundColor = "";
+                submitBtn.onclick = saveLinkData;
+                submitBtn.disabled = false;
+            }
+            modal.classList.add('active');
         }
-        let html = `<div class="form-group"><label class="form-label">Select Projects</label>`;
-        html += `<div style="max-height:300px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">`;
-        rawProjects.forEach(p => {
-            const isChecked = !isMulti && currentLinkedProjIds.includes(p.id);
-            html += ` <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);"> <input type="checkbox" class="link-proj-cb" value="${p.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);"> <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${p.name}</span> </label> `;
-        });
-        html += `</div>`;
-        html += `<div style="margin-top:10px; font-size:0.85rem; color:var(--text-secondary); line-height:1.5;"> ${isMulti ? 'The selected projects will be set for <strong>all</strong> selected collections (overwriting previous links).' : 'Uncheck to remove from a project, check to add.'} </div></div>`;
-        container.innerHTML = html;
-        if (submitBtn) {
-            submitBtn.textContent = "Save Links";
-            submitBtn.style.backgroundColor = "";
-            submitBtn.onclick = saveLinkData;
-            submitBtn.disabled = false;
-        }
-        modal.classList.add('active');
     }
 
     function saveLinkData() {
-        const checkboxes = document.querySelectorAll('.link-proj-cb:checked');
-        const targetProjIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
-        const currentData = getDataForTable('collection');
-        const currentProj = rawProjects[currProjIdx];
-        selectedCrudIds.forEach(idStr => {
-            const row = currentData.find(r => String(r.collection_id) === idStr);
-            if (row && row._rawId) {
-                let originalCol = currentProj.collections.find(c => c.id === row._rawId);
-                if (!originalCol) for (const p of rawProjects) {
-                    originalCol = p.collections.find(c => c.id === row._rawId);
-                    if (originalCol) break;
+        const checkboxes = document.querySelectorAll('.link-target-cb:checked');
+        const targetIds = Array.from(checkboxes).map(cb => cb.value);
+
+        if (currentTable === 'project') {
+            const allCollectionsMap = new Map();
+            rawProjects.forEach(p => p.collections.forEach(c => allCollectionsMap.set(c.id, c)));
+
+            const currentUser = document.querySelector('.user-name-text').textContent.trim();
+            const allCollections = Array.from(allCollectionsMap.values());
+            const writableCollectionIds = allCollections.filter(c => {
+                if (c.creator === currentUser) return true;
+                const contrib = c.contributors.find(u => u.name === currentUser);
+                if (contrib && ['Administrator', 'Researcher', 'Curator'].includes(contrib.role)) return true;
+                return false;
+            }).map(c => c.id);
+
+            selectedCrudIds.forEach(projIdStr => {
+                const proj = rawProjects.find(p => String(p.id) === projIdStr);
+                if (proj) {
+                    const keepCollections = proj.collections.filter(c => !writableCollectionIds.includes(c.id));
+
+                    const addCollections = [];
+                    targetIds.forEach(cId => {
+                        if (allCollectionsMap.has(cId)) {
+                            addCollections.push(allCollectionsMap.get(cId));
+                        }
+                    });
+
+                    const merged = [...keepCollections, ...addCollections];
+                    proj.collections = merged;
                 }
-                if (originalCol) rawProjects.forEach(proj => {
-                    const shouldBeIn = targetProjIds.includes(proj.id);
-                    const index = proj.collections.findIndex(c => c.id === originalCol.id);
-                    if (shouldBeIn && index === -1) {
-                        proj.collections.push(originalCol);
-                    } else if (!shouldBeIn && index !== -1) proj.collections.splice(index, 1);
-                });
-            }
-        });
+            });
+        }
+
         renderCrudTable();
         closeCrudModal();
         selectedCrudIds = [];
         updateToolbarState();
+
+        renderTableNav();
+        if (currColIdx > 0 || document.getElementById('dropdown-collection').style.display !== 'none') {
+            renderCollectionList();
+        }
     }
 
     function handleToolbarEdit() {
