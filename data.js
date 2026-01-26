@@ -200,4 +200,4 @@ const dbSchema = {
 const staticMockDB = {
     sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}, {sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo"}]
 };
-const PERMISSIONS = [{id: 1, code: 'project:read', label: 'Project: Read'}, {id: 2, code: 'project:write', label: 'Project: Write'}, {id: 3, code: 'collection:read', label: 'Collection: Read'}, {id: 4, code: 'collection:write', label: 'Collection: Write'}, {id: 5, code: 'user:read', label: 'User: Read'}, {id: 6, code: 'user:write', label: 'User: Write'}];
+const PERMISSIONS = [{id: 1, code: 'collection:read', label: 'Collection: Read'}, {id: 2, code: 'collection:write', label: 'Collection: Write'}, {id: 3, code: 'user:read', label: 'User: Read'}, {id: 4, code: 'user:write', label: 'User: Write'}];

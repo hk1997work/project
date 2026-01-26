@@ -542,6 +542,9 @@ function renderSummary() {
 function renderProjectList() {
     const container = document.getElementById('project-list-container');
     const filteredProjs = rawProjects.map((p, i) => ({...p, originalIndex: i})).filter(p => p.name.toLowerCase().includes(projSearchQuery.toLowerCase()));
+
+    const currentUser = document.querySelector('.user-name-text').textContent.trim();
+
     if (filteredProjs.length === 0) {
         container.innerHTML = `<div class="empty-state"><i data-lucide="search-x" size="20"></i>No projects found</div>`;
         lucide.createIcons();
@@ -550,7 +553,10 @@ function renderProjectList() {
     let html = '';
     filteredProjs.forEach(proj => {
         const isSel = proj.originalIndex === currProjIdx;
-        html += `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectProject(${proj.originalIndex})"><span>${proj.name}</span><i data-lucide="check" class="check-icon"></i></div>`;
+        const isCreator = proj.creator === currentUser;
+        const manageBadge = isCreator ? `<span style="background:var(--brand);color:white;padding:2px 6px;border-radius:4px;font-size:0.6rem;margin-left:8px;text-transform:uppercase;font-weight:700;">Manage</span>` : '';
+
+        html += `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectProject(${proj.originalIndex})"><span style="display:flex;align-items:center;">${proj.name}${manageBadge}</span><i data-lucide="check" class="check-icon"></i></div>`;
     });
     container.innerHTML = html;
     lucide.createIcons();
