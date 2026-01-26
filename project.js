@@ -100,10 +100,7 @@ function initMap() {
                 currentPercentage += pct;
             });
             return L.divIcon({
-                html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`,
-                className: 'custom-cluster-icon',
-                iconSize: L.point(50, 50),
-                iconAnchor: [25, 25]
+                html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`, className: 'custom-cluster-icon', iconSize: L.point(50, 50), iconAnchor: [25, 25]
             });
         }
     });
@@ -131,8 +128,7 @@ function renderMap(shouldZoom = false) {
             openSidebar(site);
         });
         const marker = L.marker(site.center, {
-            customData: {realm: site.realm, mediaCount: site.mediaCount},
-            icon: L.divIcon({html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28]})
+            customData: {realm: site.realm, mediaCount: site.mediaCount}, icon: L.divIcon({html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28]})
         });
         marker.on('click', () => openSidebar(site));
         clusterGroup.addLayer(marker);
@@ -153,9 +149,7 @@ function openSidebar(site) {
     document.getElementById('val-biome').textContent = site.biome;
     document.getElementById('val-group').textContent = site.group;
     const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
-    const depthHtml = site.freshwater_depth_m !== "N/A"
-        ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>`
-        : '';
+    const depthHtml = site.freshwater_depth_m !== "N/A" ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>` : '';
     const metaContainer = document.getElementById('sb-meta-container');
     if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
     const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
@@ -398,9 +392,7 @@ function renderMedia() {
 </div>`;
         } else {
             const realmColor = getRealmColor(item.realm);
-            const depthHtml = item.freshwater_depth_m !== 'N/A'
-                ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>`
-                : '';
+            const depthHtml = item.freshwater_depth_m !== 'N/A' ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` : '';
             html += `<div class="media-item-row">
 <div class="list-spec-container"><img src="${item.spectrogram}" class="list-spec-img" alt="Spec">
     <div class="duration-badge">${item.duration}</div>
@@ -985,18 +977,7 @@ function getDataForTable(tableName) {
                 return tmp.textContent || tmp.innerText || "";
             };
             return {
-                project_id: p.id,
-                uuid: `550e8400-e29b-41d4-a716-${String(p.id).padStart(12, '0')}`,
-                name: p.name,
-                creator_name: p.creator,
-                url: p.externalUrl || "https://example.com",
-                picture_url: p.image,
-                description: p.description,
-                description_short: p.description,
-                doi: p.doi,
-                public: true,
-                active: true,
-                creation_date: p.date
+                project_id: p.id, uuid: `550e8400-e29b-41d4-a716-${String(p.id).padStart(12, '0')}`, name: p.name, creator_name: p.creator, url: p.externalUrl || "https://example.com", picture_url: p.image, description: p.description, description_short: p.description, doi: p.doi, public: true, active: true, creation_date: p.date
             };
         });
     } else if (tableName === 'collection') {
@@ -1024,20 +1005,7 @@ function getDataForTable(tableName) {
             const domains = ["https://nature-data.org", "https://bio-archive.edu", "https://eco-research.net", "https://science-db.io"];
             const mockUrl = `${domains[i % domains.length]}/collection/${c.id}`;
             return {
-                collection_id: i + 1,
-                uuid: `c-${c.id}-${Date.now()}`,
-                project_names: linkedProjs.join(", "),
-                name: c.name,
-                creator_id: c.creator,
-                doi: c.doi,
-                description: c.description,
-                sphere: c.sphere || "Biosphere",
-                url: (c.url && c.url !== "#") ? c.url : mockUrl,
-                public_access: c.active !== undefined ? c.active : false,
-                public_tags: false,
-                creation_date: c.date,
-                _rawId: c.id,
-                _isCurrent: isCurrent
+                collection_id: i + 1, uuid: `c-${c.id}-${Date.now()}`, project_names: linkedProjs.join(", "), name: c.name, creator_id: c.creator, doi: c.doi, description: c.description, sphere: c.sphere || "Biosphere", url: (c.url && c.url !== "#") ? c.url : mockUrl, public_access: c.active !== undefined ? c.active : false, public_tags: false, creation_date: c.date, _rawId: c.id, _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'site') {
@@ -1074,34 +1042,18 @@ function getDataForTable(tableName) {
                 const cEntry = activeCollection.contributors.find(c => c.name === u.name);
                 cRole = cEntry ? (cEntry.role || "-") : "-";
             }
-            const isInAnyCollectionOfProject = currentProject.collections.some(col =>
-                col.contributors.some(c => c.name === u.name)
-            );
+            const isInAnyCollectionOfProject = currentProject.collections.some(col => col.contributors.some(c => c.name === u.name));
             let isCurrent = false;
             if (currColIdx > 0) {
                 isCurrent = activeCollection.contributors.some(c => c.name === u.name);
             } else isCurrent = (!!pEntry) || isInAnyCollectionOfProject;
             return {
-                user_id: i + 1,
-                username: u.name.split(' ').join('.').toLowerCase() + (i + 1),
-                password: "hashed_pwd_placeholder",
-                name: u.name,
-                orcid: u.uid,
-                email: u.email,
-                role_name: ["Admin", "Manage", "User"][i % 3],
-                project_role: pRole,
-                collection_role: cRole,
-                active: true,
-                _isCurrent: isCurrent
+                user_id: i + 1, username: u.name.split(' ').join('.').toLowerCase() + (i + 1), password: "hashed_pwd_placeholder", name: u.name, orcid: u.uid, email: u.email, role_name: ["Admin", "Manage", "User"][i % 3], project_role: pRole, collection_role: cRole, active: true, _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'project_contributor') {
         return currentProject.contributors.map(u => ({
-            uid: u.uid,
-            name: u.name,
-            role: u.role || "-",
-            email: u.email,
-            added_date: u.date || new Date().toISOString().split('T')[0]
+            uid: u.uid, name: u.name, role: u.role || "-", email: u.email, added_date: u.date || new Date().toISOString().split('T')[0]
         }));
     } else if (tableName === 'collection_contributor') {
         let source = [];
@@ -1113,18 +1065,10 @@ function getDataForTable(tableName) {
             });
         }
         return source.map((u, i) => ({
-            uid: u.uid + '_col_' + i,
-            name: u.name,
-            role: u.role || "-",
-            email: u.email,
-            added_date: u.date || new Date().toISOString().split('T')[0]
+            uid: u.uid + '_col_' + i, name: u.name, role: u.role || "-", email: u.email, added_date: u.date || new Date().toISOString().split('T')[0]
         }));
     } else if (tableName === 'role') {
-        return [
-            {role_id: 1, name: "Admin", description: "Full system access and configuration rights."},
-            {role_id: 2, name: "Manage", description: "Can create projects, upload data, and manage collections."},
-            {role_id: 3, name: "User", description: "Read-only access to public resources."}
-        ];
+        return [{role_id: 1, name: "Admin", description: "Full system access and configuration rights."}, {role_id: 2, name: "Manage", description: "Can create projects, upload data, and manage collections."}, {role_id: 3, name: "User", description: "Read-only access to public resources."}];
     } else return staticMockDB[tableName] || [];
 }
 
@@ -1439,6 +1383,27 @@ function handleToolbarLink() {
     openLinkModal();
 }
 
+function toggleLinkGroup(id, header) {
+    const el = document.getElementById(id);
+    const icon = header.querySelector('.group-chevron');
+    if (el.style.display === 'none') {
+        el.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+    } else {
+        el.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(-90deg)';
+    }
+}
+
+function syncCollectionCheckboxes(el) {
+    const val = el.value;
+    const checked = el.checked;
+    // 查找所有具有相同 value (即相同 collection ID) 的复选框并同步状态
+    document.querySelectorAll(`.link-target-cb[value="${val}"]`).forEach(cb => {
+        cb.checked = checked;
+    });
+}
+
 function openLinkModal() {
     const modal = document.getElementById('crud-modal-overlay');
     const container = document.getElementById('modal-form-container');
@@ -1451,34 +1416,6 @@ function openLinkModal() {
 
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
 
-        const allCollectionsMap = new Map();
-        rawProjects.forEach(p => {
-            p.collections.forEach(c => {
-                if (!allCollectionsMap.has(c.id)) {
-                    allCollectionsMap.set(c.id, c);
-                }
-            });
-        });
-        const allCollections = Array.from(allCollectionsMap.values());
-
-        const userProjectCols = new Set();
-        rawProjects.forEach(p => {
-            if (p.creator === currentUser) {
-                p.collections.forEach(c => userProjectCols.add(c.id));
-            }
-        });
-
-        const writableCollections = allCollections.filter(c => {
-            if (userProjectCols.has(c.id)) return true;
-
-            if (c.creator === currentUser) return true;
-
-            const contrib = c.contributors.find(u => u.name === currentUser);
-            if (contrib && ['Admin', 'Manage'].includes(contrib.role)) return true;
-
-            return false;
-        });
-
         let currentLinkedColIds = [];
         if (!isMulti) {
             const targetProj = rawProjects.find(p => String(p.id) === selectedCrudIds[0]);
@@ -1487,30 +1424,75 @@ function openLinkModal() {
             }
         }
 
-        let html = `<div class="form-group"><label class="form-label">Select Collections (Writable Only)</label>`;
-        html += `<div style="max-height:300px; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">`;
+        let html = `<div class="form-group">`;
+        html += `<div style="padding-right: 4px;">`;
 
-        if (writableCollections.length === 0) {
-            html += `<div style="padding:10px; color:var(--text-muted); text-align:center;">No writable collections found.</div>`;
-        } else {
-            writableCollections.forEach(c => {
-                const isChecked = !isMulti && currentLinkedColIds.includes(c.id);
+        let hasFoundAny = false;
+
+        // 修改 1: 用于去重的 Set
+        const displayedColIds = new Set();
+
+        // 修改 2: 对项目进行排序，将当前选中的项目排在最前面
+        // 这样可以确保集合优先显示在它所属的（当前正在编辑的）项目分组下，而不是其他项目下
+        const sortedProjects = [...rawProjects].sort((a, b) => {
+            const aSelected = selectedCrudIds.includes(String(a.id));
+            const bSelected = selectedCrudIds.includes(String(b.id));
+            return (bSelected ? 1 : 0) - (aSelected ? 1 : 0);
+        });
+
+        sortedProjects.forEach(proj => {
+            const isProjCreator = proj.creator === currentUser;
+
+            // 筛选该项目下用户有权操作的集合
+            const validCols = proj.collections.filter(c => {
+                if (isProjCreator) return true;
+                if (c.creator === currentUser) return true;
+                const contrib = c.contributors.find(u => u.name === currentUser);
+                if (contrib && ['Admin', 'Manage'].includes(contrib.role)) return true;
+                return false;
+            });
+
+            // 过滤掉已经在列表中显示过的集合 (去重核心逻辑)
+            const uniqueCols = validCols.filter(c => !displayedColIds.has(c.id));
+
+            if (uniqueCols.length > 0) {
+                hasFoundAny = true;
+                const groupId = `link-group-${proj.id}`;
+
+                // 标记这些集合为已显示
+                uniqueCols.forEach(c => displayedColIds.add(c.id));
+
                 html += `
-                        <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
-                            <input type="checkbox" class="link-target-cb" value="${c.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
-                            <div style="display:flex; flex-direction:column;">
-                                <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
-                                <span style="font-size:0.75rem; color:var(--text-muted);">ID: ${c.id} | Role: ${c.creator === currentUser ? 'Creator' : 'Contributor'}</span>
-                            </div>
+                <div onclick="toggleLinkGroup('${groupId}', this)" style="padding: 10px 0; font-weight:700; color:var(--text-main); border-bottom: 1px solid var(--border-light); margin-bottom:4px; margin-top:8px; font-size:0.95rem; display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;">
+                    <i data-lucide="chevron-down" class="group-chevron" style="width:16px; height:16px; transition:transform 0.2s;"></i>
+                    <i data-lucide="folder-kanban" style="width:16px; height:16px; color:var(--brand);"></i> 
+                    ${proj.name}
+                </div>
+                <div id="${groupId}" style="display:block; padding-left:12px; margin-bottom:12px;">`;
+
+                uniqueCols.forEach(c => {
+                    const isChecked = !isMulti && currentLinkedColIds.includes(c.id);
+                    html += `
+                        <label style="display:flex; align-items:center; gap:10px; padding:10px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
+                            <input type="checkbox" class="link-target-cb" value="${c.id}" ${isChecked ? 'checked' : ''} onchange="syncCollectionCheckboxes(this)" style="width:16px; height:16px; accent-color:var(--brand);">
+                            <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
                         </label>
                     `;
-            });
+                });
+
+                html += `</div>`;
+            }
+        });
+
+        if (!hasFoundAny) {
+            html += `<div style="padding:20px; color:var(--text-muted); text-align:center;">No writable collections found (or all available collections are already listed).</div>`;
         }
+
         html += `</div>`;
-        html += `<div style="margin-top:10px; font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">
-                Only collections where you have <strong>write permission</strong> are shown. Selected collections will be linked to the chosen project(s).
-            </div></div>`;
+        html += `</div>`;
+
         container.innerHTML = html;
+        lucide.createIcons();
 
         if (submitBtn) {
             submitBtn.textContent = "Save Links";
@@ -1524,26 +1506,40 @@ function openLinkModal() {
 
 function saveLinkData() {
     const checkboxes = document.querySelectorAll('.link-target-cb:checked');
-    const targetIds = Array.from(checkboxes).map(cb => cb.value);
+    const targetIds = new Set(Array.from(checkboxes).map(cb => cb.value));
+    const currentUser = document.querySelector('.user-name-text').textContent.trim();
 
     if (currentTable === 'project') {
+        // 1. 准备所有集合的查找表，确保引用一致
         const allCollectionsMap = new Map();
         rawProjects.forEach(p => p.collections.forEach(c => allCollectionsMap.set(c.id, c)));
 
-        const currentUser = document.querySelector('.user-name-text').textContent.trim();
-        const allCollections = Array.from(allCollectionsMap.values());
-        const writableCollectionIds = allCollections.filter(c => {
-            if (c.creator === currentUser) return true;
-            const contrib = c.contributors.find(u => u.name === currentUser);
-            if (contrib && ['Administrator', 'Researcher', 'Curator'].includes(contrib.role)) return true;
-            return false;
-        }).map(c => c.id);
+        // 2. 计算“可操作集合”的 ID 集合 (Universe of Selectable Collections)
+        // 这必须与 openLinkModal 中的显示逻辑完全一致
+        const selectableCollectionIds = new Set();
+        rawProjects.forEach(proj => {
+            const isProjCreator = proj.creator === currentUser;
+            proj.collections.forEach(c => {
+                let isSelectable = false;
+                if (isProjCreator) isSelectable = true; else if (c.creator === currentUser) isSelectable = true; else {
+                    const contrib = c.contributors.find(u => u.name === currentUser);
+                    if (contrib && ['Admin', 'Manage'].includes(contrib.role)) isSelectable = true;
+                }
 
+                if (isSelectable) {
+                    selectableCollectionIds.add(c.id);
+                }
+            });
+        });
+
+        // 3. 更新选中的项目
         selectedCrudIds.forEach(projIdStr => {
             const proj = rawProjects.find(p => String(p.id) === projIdStr);
             if (proj) {
-                const keepCollections = proj.collections.filter(c => !writableCollectionIds.includes(c.id));
+                // A. 保留部分：原项目中存在，但用户无权操作（未在弹窗显示）的集合
+                const keepCollections = proj.collections.filter(c => !selectableCollectionIds.has(c.id));
 
+                // B. 选中部分：用户在弹窗中打勾的集合
                 const addCollections = [];
                 targetIds.forEach(cId => {
                     if (allCollectionsMap.has(cId)) {
@@ -1551,8 +1547,8 @@ function saveLinkData() {
                     }
                 });
 
-                const merged = [...keepCollections, ...addCollections];
-                proj.collections = merged;
+                // C. 合并 (A 和 B 是互斥的，不会重复)
+                proj.collections = [...keepCollections, ...addCollections];
             }
         });
     }
@@ -1620,9 +1616,8 @@ function openPermissionModal() {
     let permOptions = PERMISSIONS.map(p => `<option value="${p.id}">${p.label} (${p.code})</option>`).join('');
     let html = ` <div class="form-group"> <label class="form-label">Permission Level</label> <select class="form-input" id="perm-select"> ${permOptions} </select> <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;"> This permission will be applied to the selected user(s) on the collections checked below. </div> </div> <div class="form-group" style="flex:1; display:flex; flex-direction:column; min-height:0;"> <label class="form-label">Target Collections</label> <div style="flex:1; overflow-y:auto; border:1px solid var(--border-light); padding:10px; border-radius:8px; background:var(--bg-surface);">`;
     collections.forEach(c => {
-            html += ` <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);"> <input type="checkbox" class="perm-col-cb" value="${c._rawId || c.collection_id}" style="width:16px; height:16px; accent-color:var(--brand);"> <div style="display:flex; flex-direction:column;"> <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span> <span style="font-size:0.75rem; color:var(--text-muted);">ID: ${c._rawId || c.collection_id}</span> </div> </label>`;
-        }
-    );
+        html += ` <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);"> <input type="checkbox" class="perm-col-cb" value="${c._rawId || c.collection_id}" style="width:16px; height:16px; accent-color:var(--brand);"> <div style="display:flex; flex-direction:column;"> <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span> <span style="font-size:0.75rem; color:var(--text-muted);">ID: ${c._rawId || c.collection_id}</span> </div> </label>`;
+    });
     html += `</div></div>`;
     container.innerHTML = html;
     if (submitBtn) {
@@ -1849,4 +1844,5 @@ function resetDataTable() {
     renderCrudHeader();
     renderCrudTable();
 }
+
 init();

@@ -53,7 +53,7 @@ const colGenerators = [(n) => `<div class="col-rt-modern"><h3><i data-lucide="ac
 const projectImages = ['https://ecosound-web.de/ecosound_web/sounds/projects/108.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/117.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/121.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/105.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/114.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/123.jpeg'];
 const getImg = (idx) => projectImages[idx % projectImages.length];
 const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
-const mockNames = ["A. Schmidt", "B. Cohen", "C. Kim", "D. Mwangi", "E. Rossi", "F. Yamamoto", "G. Dubois", "H. Petrov", "I. Al-Fayed", "J. Smith", "K. Gupta", "L. Wei"];
+const mockNames = ["Liudilong", "A. Schmidt", "B. Cohen", "C. Kim", "D. Mwangi", "E. Rossi", "F. Yamamoto", "G. Dubois", "H. Petrov", "I. Al-Fayed", "J. Smith", "K. Gupta", "L. Wei"];
 const projRoles = ["Principal Investigator", "Lead Researcher", "Field Technician", "Data Analyst", "Project Manager", "Ecologist"];
 const colRoles = ["Field Recorder", "Annotator", "Reviewer", "Data Curator", "Metadata Specialist", "Logistics"];
 const getContributors = (count, type, leadName = null) => {
@@ -105,7 +105,7 @@ const initialProjects = [{
     image: getImg(0),
     collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
     stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", tags: 4500, sites: 12},
-    contributors: getContributors(4, 'project', "Dr. Silva")
+    contributors: getContributors(4, 'project', "Liudilong")
 }, {
     id: 2,
     name: "Marine Ecosystems Study",
@@ -161,7 +161,7 @@ const getRealmColor = (r) => {
 
 const dbSchema = {
     project: {
-        label: "Project",
+        label: "Projects",
         itemLabel: "Project",
         icon: "folder-kanban",
         pk: "project_id",
