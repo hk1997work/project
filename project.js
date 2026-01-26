@@ -854,6 +854,7 @@ function switchTab(btn, tabName) {
             renderMap(false);
         }, 100);
     }
+    if (tabName === 'data') initDataTab();
 }
 
 window.addEventListener('resize', () => {
@@ -1087,7 +1088,7 @@ function getDataForTable(tableName) {
                 name: u.name,
                 orcid: u.uid,
                 email: u.email,
-                role_name: ["Administrator", "Researcher", "Annotator", "Curator", "Guest"][i % 5],
+                role_name: ["Admin", "Manage", "User"][i % 3],
                 project_role: pRole,
                 collection_role: cRole,
                 active: true,
@@ -1120,11 +1121,9 @@ function getDataForTable(tableName) {
         }));
     } else if (tableName === 'role') {
         return [
-            {role_id: 1, name: "Administrator", description: "Full system access and configuration rights."},
-            {role_id: 2, name: "Researcher", description: "Can create projects, upload data, and manage collections."},
-            {role_id: 3, name: "Annotator", description: "Can view media and add annotations to recordings."},
-            {role_id: 4, name: "Curator", description: "Can review, approve, and organize uploaded datasets."},
-            {role_id: 5, name: "Guest", description: "Read-only access to public resources."}
+            {role_id: 1, name: "Admin", description: "Full system access and configuration rights."},
+            {role_id: 2, name: "Manage", description: "Can create projects, upload data, and manage collections."},
+            {role_id: 3, name: "User", description: "Read-only access to public resources."}
         ];
     } else return staticMockDB[tableName] || [];
 }
@@ -1462,10 +1461,21 @@ function openLinkModal() {
         });
         const allCollections = Array.from(allCollectionsMap.values());
 
+        const userProjectCols = new Set();
+        rawProjects.forEach(p => {
+            if (p.creator === currentUser) {
+                p.collections.forEach(c => userProjectCols.add(c.id));
+            }
+        });
+
         const writableCollections = allCollections.filter(c => {
+            if (userProjectCols.has(c.id)) return true;
+
             if (c.creator === currentUser) return true;
+
             const contrib = c.contributors.find(u => u.name === currentUser);
-            if (contrib && ['Administrator', 'Researcher', 'Curator'].includes(contrib.role)) return true;
+            if (contrib && ['Admin', 'Manage'].includes(contrib.role)) return true;
+
             return false;
         });
 
@@ -1839,10 +1849,4 @@ function resetDataTable() {
     renderCrudHeader();
     renderCrudTable();
 }
-
-const originalSwitchTab = window.switchTab;
-window.switchTab = function (btn, tabName) {
-    originalSwitchTab(btn, tabName);
-    if (tabName === 'data') initDataTab();
-};
 init();
