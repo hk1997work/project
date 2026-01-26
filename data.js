@@ -68,22 +68,27 @@ const getContributors = (count, type, leadName = null) => {
             name = mockNames[Math.floor(Math.random() * mockNames.length)];
             role = rolePool[Math.floor(Math.random() * (rolePool.length - 1)) + 1];
         }
+        // [修改] 生成纯数字 UID
+        const numUid = Math.floor(100000000 + Math.random() * 900000000);
         list.push({
-            name: name, role: role, email: name.toLowerCase().replace('. ', '.').replace(' ', '.') + "@lab.edu", uid: `0000-000${Math.floor(Math.random() * 9)}-${Math.floor(Math.random() * 9999)}-${Math.floor(Math.random() * 9999)}`
+            name: name, role: role, email: name.toLowerCase().replace('. ', '.').replace(' ', '.') + "@lab.edu", uid: String(numUid)
         });
     }
     return list;
 };
+
 const createCollections = (baseName, count, startImgIdx, creatorName) => {
     return Array.from({length: count}, (_, i) => {
         const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
+        // [修改] 生成纯数字 Collection ID
+        const colId = 10000 + (startImgIdx * 100) + i;
         return {
-            id: `c${i}`,
+            id: String(colId),
             name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
             active: false,
             creator: collectionCreator,
             date: `2025-0${(i % 9) + 1}-15`,
-            doi: `10.ECO/col.${i + 1}`,
+            doi: `10.ECO/col.${colId}`,
             sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
             url: "#",
             description: colGenerators[i % 3](`${baseName}`),
@@ -158,28 +163,27 @@ const getRandomTags = () => {
 const getRealmColor = (r) => {
     return REALM_COLORS[r] || "#0f172a";
 }
-
 const dbSchema = {
     project: {
         label: "Projects",
         itemLabel: "Project",
         icon: "folder-kanban",
         pk: "project_id",
-        columns: [{key: "project_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_name", label: "Creator", type: "select", options: mockNames}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "public", label: "Public", type: "boolean"}, {key: "active", label: "Active", type: "boolean"}, {
+        columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_name", label: "Creator", type: "select", options: mockNames}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "public", label: "Public", type: "boolean"}, {key: "active", label: "Active", type: "boolean"}, {
             key: "creation_date", label: "Created", type: "text", readonly: true
         }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, collection: {
         label: "Collections",
         icon: "library",
         pk: "collection_id",
-        columns: [{key: "collection_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
+        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
             key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
         }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_tags", label: "Public Tags", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, "user": {
         label: "Users",
         icon: "users",
         pk: "user_id",
-        columns: [{key: "user_id", label: "ID", type: "number", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"}, {
+        columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"}, {
             key: "role_name", label: "Role", type: "select", options: ["Admin", "Manage", "User"]
         }, {key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true}, {key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true}, {key: "orcid", label: "ORCID", type: "text"}, {key: "active", label: "Active", type: "boolean"}]
     }, role: {
@@ -187,7 +191,7 @@ const dbSchema = {
     }, site: {
         label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "Site ID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "text"}, {key: "biome", label: "Biome", type: "text"}, {key: "group", label: "Group", type: "text"}, {key: "topography_m", label: "Elevation (m)", type: "number"}, {key: "mediaCount", label: "Media Count", type: "number", readonly: true}]
     }, media: {
-        label: "Media Files", icon: "file-audio", pk: "id", columns: [{key: "id", label: "ID", type: "number", readonly: true}, {key: "name", label: "Filename", type: "text"}, {key: "site", label: "Site Name", type: "text"}, {key: "date", label: "Date", type: "text"}, {key: "duration", label: "Duration", type: "text"}, {key: "sensor", label: "Sensor", type: "text"}, {key: "size", label: "Size", type: "text"}]
+        label: "Media Files", icon: "file-audio", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "name", label: "Filename", type: "text"}, {key: "site", label: "Site Name", type: "text"}, {key: "date", label: "Date", type: "text"}, {key: "duration", label: "Duration", type: "text"}, {key: "sensor", label: "Sensor", type: "text"}, {key: "size", label: "Size", type: "text"}]
     }, sensor: {
         label: "Sensors (Ref)", icon: "cpu", pk: "sensor_id", columns: [{key: "sensor_id", label: "ID", type: "number", readonly: true}, {key: "name", label: "Model Name", type: "text"}, {key: "sensor_type", label: "Type", type: "select", options: ["audio", "photo"]}]
     }, project_contributor: {

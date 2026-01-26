@@ -13,7 +13,9 @@ let currentSelectedSiteId = null;
 let filterState = {realm: "", biome: "", group: ""};
 
 function generateSitesForContext(projId, colId) {
-    let seed = projId + (colId ? colId.charCodeAt(1) * 10 : 0);
+    // [修改] 适配纯数字 ID 的随机种子生成
+    let cidNum = colId ? Number(colId) : 0;
+    let seed = projId + (cidNum * 7);
     const count = 50 + (seed % 20);
     let baseLat = -3.4, baseLng = -62.2;
     if (projId === 2) {
@@ -45,8 +47,10 @@ function generateSitesForContext(projId, colId) {
             const r = baseRadius * (0.8 + Math.random() * 0.4);
             poly.push([lat + Math.sin(angle) * r, lng + Math.cos(angle) * r]);
         }
+        // [修改] 纯数字 ID
+        const siteId = `${projId}${cidNum}${String(i).padStart(3, '0')}`;
         return {
-            id: `${projId}-${colId || 'all'}-${i}`,
+            id: siteId,
             name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`,
             center: [lat, lng],
             polygon: poly,
@@ -309,7 +313,11 @@ let mediaItems = [];
 let mediaSearchQuery = "";
 
 const generateMediaForContext = (proj, col) => {
-    const prefix = col ? `COL_${col.id}` : `PROJ_${proj.id}`;
+    // [修改] 生成纯数字前缀和 ID
+    const pId = Number(proj.id);
+    const cId = col ? Number(col.id) : 0;
+    const basePrefix = `${pId}${cId}`;
+
     const count = col ? rInt(8, 15) : rInt(24, 40);
     return Array.from({length: count}, (_, i) => {
         const h = Math.floor(Math.random() * 24).toString().padStart(2, '0');
@@ -319,9 +327,13 @@ const generateMediaForContext = (proj, col) => {
         const month = Math.floor(Math.random() * 12) + 1;
         const day = Math.floor(Math.random() * 28) + 1;
         const fullDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // [修改] 纯数字 ID
+        const recId = `${basePrefix}${20250000 + i}`;
+
         return {
-            id: i,
-            name: `${prefix}_REC_${20250000 + i}.wav`,
+            id: recId,
+            name: `REC_${recId}.wav`,
             date: fullDate,
             time: `${h}:${m}:${s}`,
             fullDate: `${fullDate} ${h}:${m}`,
@@ -455,14 +467,19 @@ function enrichMediaData() {
     const realSites = currentSites;
     mediaItems.forEach((item, index) => {
         if (!item.enriched || !item.realSiteLinked) {
-            const siteIndex = (item.id + index) % realSites.length;
+            // 修改：直接使用 index 取模，避免因 item.id 为字符串导致计算出现 NaN
+            const siteIndex = index % realSites.length;
             const linkedSite = realSites[siteIndex];
-            item.site = linkedSite.name;
-            item.realm = linkedSite.realm;
-            item.biome = linkedSite.biome;
-            item.group = linkedSite.group;
-            item.topography_m = linkedSite.topography_m;
-            item.freshwater_depth_m = linkedSite.freshwater_depth_m;
+
+            if (linkedSite) {
+                item.site = linkedSite.name;
+                item.realm = linkedSite.realm;
+                item.biome = linkedSite.biome;
+                item.group = linkedSite.group;
+                item.topography_m = linkedSite.topography_m;
+                item.freshwater_depth_m = linkedSite.freshwater_depth_m;
+            }
+
             item.start = moment(`${item.date} ${item.time}`, "YYYY-MM-DD HH:mm:ss").toDate();
             item.end = moment(item.start).add(rInt(1, 10), 'minutes').toDate();
             if (!item.uploader) item.uploader = ["UserA", "LabAdmin", "J.Doe"][rInt(0, 2)];
@@ -681,13 +698,18 @@ function selectProject(idx) {
         if (document.getElementById('tab-data').classList.contains('active')) {
             const currentUser = document.querySelector('.user-name-text').textContent.trim();
             const currentProject = rawProjects[currProjIdx];
-            if (currentTable === 'project' && currentProject.creator !== currentUser) {
-                switchCrudTable('collection');
+
+            // [修改] 如果不是管理者，强制 scope 为 'all'，否则默认为 'current'
+            // 移除了 switchCrudTable('collection') 的跳转逻辑
+            if (currentProject.creator !== currentUser) {
+                dataScope = 'all';
             } else {
-                renderTableNav();
-                renderCrudHeader();
-                renderCrudTable();
+                dataScope = 'current';
             }
+
+            renderTableNav();
+            renderCrudHeader();
+            renderCrudTable();
         }
     }
     setTimeout(() => {
@@ -919,6 +941,7 @@ function switchDataScope(scope, btn) {
     crudFilterState = {};
     selectedCrudIds = [];
     updateToolbarState();
+    renderTableNav();
     renderCrudHeader();
     renderCrudTable();
 }
@@ -977,13 +1000,22 @@ function getDataForTable(tableName) {
                 return tmp.textContent || tmp.innerText || "";
             };
             return {
-                project_id: p.id, uuid: `550e8400-e29b-41d4-a716-${String(p.id).padStart(12, '0')}`, name: p.name, creator_name: p.creator, url: p.externalUrl || "https://example.com", picture_url: p.image, description: p.description, description_short: p.description, doi: p.doi, public: true, active: true, creation_date: p.date
+                project_id: String(p.id), uuid: `5508400${String(p.id).padStart(6, '0')}`, name: p.name, creator_name: p.creator, url: p.externalUrl || "https://example.com", picture_url: p.image, description: p.description, description_short: p.description, doi: p.doi, public: true, active: true, creation_date: p.date
             };
         });
     } else if (tableName === 'collection') {
         let source = [];
         if (dataScope === 'all') {
-            rawProjects.forEach(p => source.push(...p.collections));
+            // [修改] 使用 Set 进行去重，防止同一个集合在因为被 Link 到多个项目而出现多次
+            const seenIds = new Set();
+            rawProjects.forEach(p => {
+                p.collections.forEach(c => {
+                    if (!seenIds.has(c.id)) {
+                        seenIds.add(c.id);
+                        source.push(c);
+                    }
+                });
+            });
         } else {
             if (currColIdx > 0) {
                 source = [currentProject.collections[currColIdx - 1]];
@@ -1005,7 +1037,7 @@ function getDataForTable(tableName) {
             const domains = ["https://nature-data.org", "https://bio-archive.edu", "https://eco-research.net", "https://science-db.io"];
             const mockUrl = `${domains[i % domains.length]}/collection/${c.id}`;
             return {
-                collection_id: i + 1, uuid: `c-${c.id}-${Date.now()}`, project_names: linkedProjs.join(", "), name: c.name, creator_id: c.creator, doi: c.doi, description: c.description, sphere: c.sphere || "Biosphere", url: (c.url && c.url !== "#") ? c.url : mockUrl, public_access: c.active !== undefined ? c.active : false, public_tags: false, creation_date: c.date, _rawId: c.id, _isCurrent: isCurrent
+                collection_id: c.id, uuid: `${c.id}9999`, project_names: linkedProjs.join(", "), name: c.name, creator_id: c.creator, doi: c.doi, description: c.description, sphere: c.sphere || "Biosphere", url: (c.url && c.url !== "#") ? c.url : mockUrl, public_access: c.active !== undefined ? c.active : false, public_tags: false, creation_date: c.date, _rawId: c.id, _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'site') {
@@ -1048,7 +1080,7 @@ function getDataForTable(tableName) {
                 isCurrent = activeCollection.contributors.some(c => c.name === u.name);
             } else isCurrent = (!!pEntry) || isInAnyCollectionOfProject;
             return {
-                user_id: i + 1, username: u.name.split(' ').join('.').toLowerCase() + (i + 1), password: "hashed_pwd_placeholder", name: u.name, orcid: u.uid, email: u.email, role_name: ["Admin", "Manage", "User"][i % 3], project_role: pRole, collection_role: cRole, active: true, _isCurrent: isCurrent
+                user_id: u.uid, username: u.name.split(' ').join('.').toLowerCase() + (i + 1), password: "hashed_pwd_placeholder", name: u.name, orcid: u.uid, email: u.email, role_name: ["Admin", "Manage", "User"][i % 3], project_role: pRole, collection_role: cRole, active: true, _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'project_contributor') {
@@ -1065,7 +1097,7 @@ function getDataForTable(tableName) {
             });
         }
         return source.map((u, i) => ({
-            uid: u.uid + '_col_' + i, name: u.name, role: u.role || "-", email: u.email, added_date: u.date || new Date().toISOString().split('T')[0]
+            uid: `${u.uid}${i}`, name: u.name, role: u.role || "-", email: u.email, added_date: u.date || new Date().toISOString().split('T')[0]
         }));
     } else if (tableName === 'role') {
         return [{role_id: 1, name: "Admin", description: "Full system access and configuration rights."}, {role_id: 2, name: "Manage", description: "Can create projects, upload data, and manage collections."}, {role_id: 3, name: "User", description: "Read-only access to public resources."}];
@@ -1080,13 +1112,9 @@ function renderTableNav() {
     const navList = document.getElementById('table-nav-list');
     let html = "";
     Object.keys(dbSchema).forEach(key => {
-        if (key === 'project') {
-            const currentUser = document.querySelector('.user-name-text').textContent.trim();
-            const currentProject = rawProjects[currProjIdx];
-            if (currentProject && currentProject.creator !== currentUser) {
-                return;
-            }
-        }
+        // [修改] 移除了之前检查 creator !== currentUser 然后 return 的逻辑
+        // 确保 Project 始终显示在列表中
+
         const table = dbSchema[key];
         const isActive = currentTable === key ? 'active' : '';
         const data = getDataForTable(key);
@@ -1188,9 +1216,30 @@ function renderCrudTable() {
     const rawData = getDataForTable(currentTable);
     const tbody = document.getElementById('crud-tbody');
     const titleEl = document.getElementById('current-table-title');
+
+    // [修改] 检查当前用户权限
+    const currentUser = document.querySelector('.user-name-text').textContent.trim();
+    const currentProject = rawProjects[currProjIdx];
+    const isManager = currentProject.creator === currentUser;
+
+    // [修改] 如果不是管理者且当前 scope 是 current，强制切回 all
+    if (!isManager && dataScope === 'current') {
+        dataScope = 'all';
+    }
+
     let titleHtml = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
-    if (['project', 'collection', 'user'].includes(currentTable)) titleHtml += ` <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;"> <div class="view-pill" id="scope-pill"></div> <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" onclick="switchDataScope('current', this)" style="font-size:0.75rem; padding:0 12px;">Current</button> <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button> </div>`;
+    if (['project', 'collection', 'user'].includes(currentTable)) {
+        // [修改] 根据权限设置 Current 按钮的状态 (disabled 和样式)
+        const currentBtnAttr = isManager ? `onclick="switchDataScope('current', this)"` : `disabled style="font-size:0.75rem; padding:0 12px; opacity:0.5; cursor:not-allowed;"`;
+
+        // 如果是管理者，样式保持原样；如果不是，上面已经内联了 disabled 样式，这里只需要处理通用样式
+        const currentBtnStyle = isManager ? `style="font-size:0.75rem; padding:0 12px;"` : ``;
+
+        titleHtml += ` <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;"> <div class="view-pill" id="scope-pill"></div> <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" ${currentBtnAttr} ${currentBtnStyle}>Current</button> <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button> </div>`;
+    }
     titleEl.innerHTML = titleHtml;
+
+    // 更新 Pill 位置的逻辑
     if (['project', 'collection', 'user'].includes(currentTable)) {
         setTimeout(() => {
             const activeBtn = document.querySelector('#scope-pill-container .view-btn.active');
@@ -1248,9 +1297,11 @@ function renderCrudTable() {
                 }
                 let val = row[col.key];
                 if (val === undefined || val === null) val = "";
+
+                // [修改] 确保 project_id 比较使用 String 转换
                 if (currentTable === 'project' && col.key === 'project_id') {
                     const currentProjId = rawProjects[currProjIdx] ? rawProjects[currProjIdx].id : null;
-                    if (dataScope === 'all' && row.project_id === currentProjId) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
+                    if (dataScope === 'all' && String(row.project_id) === String(currentProjId)) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
                 }
                 if (currentTable === 'collection' && col.key === 'collection_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
                 if (currentTable === 'user' && col.key === 'user_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
@@ -1343,7 +1394,7 @@ function updateToolbarState() {
     if (linkBtn) {
         if (currentTable === 'project') {
             linkBtn.style.display = 'inline-flex';
-            linkBtn.disabled = (count === 0);
+            linkBtn.disabled = (count !== 1);
         } else {
             linkBtn.style.display = 'none';
         }
@@ -1379,7 +1430,7 @@ function updateToolbarState() {
 }
 
 function handleToolbarLink() {
-    if (selectedCrudIds.length === 0) return;
+    if (selectedCrudIds.length !== 1) return;
     openLinkModal();
 }
 
@@ -1398,11 +1449,13 @@ function toggleLinkGroup(id, header) {
 function syncCollectionCheckboxes(el) {
     const val = el.value;
     const checked = el.checked;
-    // 查找所有具有相同 value (即相同 collection ID) 的复选框并同步状态
     document.querySelectorAll(`.link-target-cb[value="${val}"]`).forEach(cb => {
         cb.checked = checked;
     });
 }
+
+// 全局 Map：记录当前弹窗中显示了哪些 Collection (Key: ID, Value: Collection Object)
+let currentModalSelectableColMap = new Map();
 
 function openLinkModal() {
     const modal = document.getElementById('crud-modal-overlay');
@@ -1416,34 +1469,30 @@ function openLinkModal() {
 
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
 
-        let currentLinkedColIds = [];
+        // 1. 获取当前目标项目已关联的 Collection ID (用于单选时的初始勾选状态)
+        const currentLinkedColIds = new Set();
         if (!isMulti) {
             const targetProj = rawProjects.find(p => String(p.id) === selectedCrudIds[0]);
             if (targetProj) {
-                currentLinkedColIds = targetProj.collections.map(c => c.id);
+                targetProj.collections.forEach(c => currentLinkedColIds.add(String(c.id)));
             }
         }
 
-        let html = `<div class="form-group">`;
-        html += `<div style="padding-right: 4px;">`;
-
+        // 2. 清空并重新构建 Map
+        currentModalSelectableColMap.clear();
+        let html = `<div class="form-group"><div style="padding-right: 4px;">`;
         let hasFoundAny = false;
 
-        // 修改 1: 用于去重的 Set
-        const displayedColIds = new Set();
-
-        // 修改 2: 对项目进行排序，将当前选中的项目排在最前面
-        // 这样可以确保集合优先显示在它所属的（当前正在编辑的）项目分组下，而不是其他项目下
         const sortedProjects = [...rawProjects].sort((a, b) => {
             const aSelected = selectedCrudIds.includes(String(a.id));
             const bSelected = selectedCrudIds.includes(String(b.id));
             return (bSelected ? 1 : 0) - (aSelected ? 1 : 0);
         });
 
+        // 3. 遍历项目，收集所有可用的 Collection，并按 ID 去重
         sortedProjects.forEach(proj => {
             const isProjCreator = proj.creator === currentUser;
 
-            // 筛选该项目下用户有权操作的集合
             const validCols = proj.collections.filter(c => {
                 if (isProjCreator) return true;
                 if (c.creator === currentUser) return true;
@@ -1452,15 +1501,12 @@ function openLinkModal() {
                 return false;
             });
 
-            // 过滤掉已经在列表中显示过的集合 (去重核心逻辑)
-            const uniqueCols = validCols.filter(c => !displayedColIds.has(c.id));
+            // 仅显示那些 ID 尚未出现的 Collection
+            const uniqueCols = validCols.filter(c => !currentModalSelectableColMap.has(String(c.id)));
 
             if (uniqueCols.length > 0) {
                 hasFoundAny = true;
                 const groupId = `link-group-${proj.id}`;
-
-                // 标记这些集合为已显示
-                uniqueCols.forEach(c => displayedColIds.add(c.id));
 
                 html += `
                 <div onclick="toggleLinkGroup('${groupId}', this)" style="padding: 10px 0; font-weight:700; color:var(--text-main); border-bottom: 1px solid var(--border-light); margin-bottom:4px; margin-top:8px; font-size:0.95rem; display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;">
@@ -1471,10 +1517,15 @@ function openLinkModal() {
                 <div id="${groupId}" style="display:block; padding-left:12px; margin-bottom:12px;">`;
 
                 uniqueCols.forEach(c => {
-                    const isChecked = !isMulti && currentLinkedColIds.includes(c.id);
+                    const cIdStr = String(c.id);
+                    // 核心：用数据中的 ID 作为 Key
+                    currentModalSelectableColMap.set(cIdStr, c);
+
+                    const isChecked = !isMulti && currentLinkedColIds.has(cIdStr);
+
                     html += `
                         <label style="display:flex; align-items:center; gap:10px; padding:10px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
-                            <input type="checkbox" class="link-target-cb" value="${c.id}" ${isChecked ? 'checked' : ''} onchange="syncCollectionCheckboxes(this)" style="width:16px; height:16px; accent-color:var(--brand);">
+                            <input type="checkbox" class="link-target-cb" value="${cIdStr}" ${isChecked ? 'checked' : ''} onchange="syncCollectionCheckboxes(this)" style="width:16px; height:16px; accent-color:var(--brand);">
                             <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
                         </label>
                     `;
@@ -1485,12 +1536,10 @@ function openLinkModal() {
         });
 
         if (!hasFoundAny) {
-            html += `<div style="padding:20px; color:var(--text-muted); text-align:center;">No writable collections found (or all available collections are already listed).</div>`;
+            html += `<div style="padding:20px; color:var(--text-muted); text-align:center;">No writable collections found.</div>`;
         }
 
-        html += `</div>`;
-        html += `</div>`;
-
+        html += `</div></div>`;
         container.innerHTML = html;
         lucide.createIcons();
 
@@ -1506,56 +1555,50 @@ function openLinkModal() {
 
 function saveLinkData() {
     const checkboxes = document.querySelectorAll('.link-target-cb:checked');
-    const targetIds = new Set(Array.from(checkboxes).map(cb => cb.value));
-    const currentUser = document.querySelector('.user-name-text').textContent.trim();
+    const selectedIds = new Set(Array.from(checkboxes).map(cb => cb.value));
 
     if (currentTable === 'project') {
-        // 1. 准备所有集合的查找表，确保引用一致
-        const allCollectionsMap = new Map();
-        rawProjects.forEach(p => p.collections.forEach(c => allCollectionsMap.set(c.id, c)));
-
-        // 2. 计算“可操作集合”的 ID 集合 (Universe of Selectable Collections)
-        // 这必须与 openLinkModal 中的显示逻辑完全一致
-        const selectableCollectionIds = new Set();
-        rawProjects.forEach(proj => {
-            const isProjCreator = proj.creator === currentUser;
-            proj.collections.forEach(c => {
-                let isSelectable = false;
-                if (isProjCreator) isSelectable = true; else if (c.creator === currentUser) isSelectable = true; else {
-                    const contrib = c.contributors.find(u => u.name === currentUser);
-                    if (contrib && ['Admin', 'Manage'].includes(contrib.role)) isSelectable = true;
-                }
-
-                if (isSelectable) {
-                    selectableCollectionIds.add(c.id);
-                }
-            });
-        });
-
-        // 3. 更新选中的项目
         selectedCrudIds.forEach(projIdStr => {
             const proj = rawProjects.find(p => String(p.id) === projIdStr);
             if (proj) {
-                // A. 保留部分：原项目中存在，但用户无权操作（未在弹窗显示）的集合
-                const keepCollections = proj.collections.filter(c => !selectableCollectionIds.has(c.id));
+                const newCollections = [];
+                // 记录当前项目已有的 Collection ID，用于快速判断
+                const existingIds = new Set(proj.collections.map(c => String(c.id)));
 
-                // B. 选中部分：用户在弹窗中打勾的集合
-                const addCollections = [];
-                targetIds.forEach(cId => {
-                    if (allCollectionsMap.has(cId)) {
-                        addCollections.push(allCollectionsMap.get(cId));
+                // 1. 处理项目中【已存在】的 Collection
+                proj.collections.forEach(c => {
+                    const cId = String(c.id);
+
+                    // Case A: 如果这个 Collection 根本没在弹窗里出现（比如没权限看），必须保留，不能误删
+                    if (!currentModalSelectableColMap.has(cId)) {
+                        newCollections.push(c);
+                        return;
+                    }
+
+                    // Case B: 如果在弹窗里出现了，只有当用户【勾选】了它，才保留
+                    // 关键：这里直接 push 原对象 c，而不使用 Map 里的对象，从而保留原始引用
+                    if (selectedIds.has(cId)) {
+                        newCollections.push(c);
                     }
                 });
 
-                // C. 合并 (A 和 B 是互斥的，不会重复)
-                proj.collections = [...keepCollections, ...addCollections];
+                // 2. 处理【新增】的 Collection (用户勾选了，但项目里原来没有)
+                selectedIds.forEach(id => {
+                    if (!existingIds.has(id)) {
+                        // 只有这种情况下，才从 Map 中获取对象引用
+                        if (currentModalSelectableColMap.has(id)) {
+                            newCollections.push(currentModalSelectableColMap.get(id));
+                        }
+                    }
+                });
+
+                proj.collections = newCollections;
             }
         });
     }
 
     renderCrudTable();
     closeCrudModal();
-    selectedCrudIds = [];
     updateToolbarState();
 
     renderTableNav();
@@ -1715,7 +1758,31 @@ function openCrudModal(mode, id = null) {
         if (col.type === 'select') {
             formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}>`;
             formHtml += `<option value="">Select...</option>`;
-            if (col.options) col.options.forEach(opt => {
+
+            let options = col.options || [];
+            if (currentTable === 'project' && col.key === 'creator_name') {
+                const currentUser = document.querySelector('.user-name-text').textContent.trim();
+
+                const oldScope = dataScope;
+                dataScope = 'all';
+                const allUsers = getDataForTable('user');
+                dataScope = oldScope;
+
+                const userObj = allUsers.find(u => u.name === currentUser);
+                const role = userObj ? userObj.role_name : 'User';
+
+                if (role === 'Manage') {
+                    options = [currentUser];
+                } else if (role === 'Admin') {
+                    const allowedNames = allUsers
+                        .filter(u => ['Admin', 'Manage'].includes(u.role_name))
+                        .map(u => u.name);
+                    options = options.filter(n => allowedNames.includes(n));
+                    if (!options.includes(currentUser)) options.push(currentUser);
+                }
+            }
+
+            options.forEach(opt => {
                 const selected = val === opt ? 'selected' : '';
                 formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
             });
