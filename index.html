@@ -2,276 +2,1975 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>ecoSignal | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ecoSignal | Network</title>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
-    <link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" rel="stylesheet"/>
-    <link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" rel="stylesheet"/>
+    <style>
+        :root {
+            --brand: #83CD20;
+            --brand-tint: rgba(131, 205, 32, 0.08);
+            --brand-hover: #72b51b;
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+            --bg-page: radial-gradient(circle at top left, #ffffff, #f8fafc);
+            --bg-nav: rgba(255, 255, 255, 0.85);
+            --bg-capsule: #f1f5f9;
+            --bg-surface: #ffffff;
+            --bg-surface-hover: #fcfcfc;
+            --bg-surface-secondary: #f8fafc;
+            --bg-input: #ffffff;
+            --bg-header-tint: rgba(255, 255, 255, 0.4);
 
-    <link href="project.css" rel="stylesheet">
+            --text-main: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+
+            --border-light: #e2e8f0;
+            --border-color: rgba(0, 0, 0, 0.06);
+
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: #ffffff;
+            --card-border: 1px solid rgba(0, 0, 0, 0.06);
+            --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08),
+            0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+
+            --nav-height: 80px;
+            --capsule-height: 48px;
+            --radius: 24px;
+
+            --anim-fade-duration: 0.3s;
+            --anim-fade-ease: ease-out;
+
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: radial-gradient(circle at top left, #0f172a, #020617);
+            --bg-nav: rgba(15, 23, 42, 0.85);
+            --bg-capsule: #334155;
+            --bg-surface: #1e293b;
+            --bg-surface-hover: #334155;
+            --bg-surface-secondary: #020617;
+            --bg-input: #0f172a;
+            --bg-header-tint: rgba(0, 0, 0, 0.2);
+
+            --text-main: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+
+            --border-light: #334155;
+            --border-color: rgba(255, 255, 255, 0.1);
+
+            --glass-bg: rgba(30, 41, 59, 0.85);
+            --card-bg: #1e293b;
+            --card-border: 1px solid rgba(255, 255, 255, 0.08);
+            --card-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
+
+        [data-theme="dark"] .leaflet-layer,
+        [data-theme="dark"] .leaflet-control-zoom-in,
+        [data-theme="dark"] .leaflet-control-zoom-out,
+        [data-theme="dark"] .leaflet-control-attribution {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        [data-theme="dark"] #map-pane {
+            background: #0f172a;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: var(--font-sans);
+            background: var(--bg-page);
+            color: var(--text-main);
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .project-nav-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            z-index: 5000;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            box-sizing: border-box;
+            gap: 16px;
+            pointer-events: none;
+        }
+
+        .nav-capsule-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--bg-capsule);
+            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
+            border-radius: 60px;
+            padding: 4px;
+            height: var(--capsule-height);
+            box-sizing: border-box;
+        }
+
+        [data-theme="dark"] .nav-capsule-box {
+            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            margin-right: auto;
+            pointer-events: auto;
+        }
+
+        .nav-right {
+            display: flex;
+            justify-content: flex-end;
+            pointer-events: auto;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border-color);
+            margin: 0 6px;
+            flex-shrink: 0;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-main);
+            padding: 0 12px;
+            height: 100%;
+            border-radius: 40px;
+            margin-right: 0;
+            transition: all 0.2s ease;
+        }
+
+        .nav-logo:hover {
+            background: var(--brand);
+            color: white;
+            box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+        }
+
+        .nav-logo span,
+        .user-name-text {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+        }
+
+        .logo-icon-box {
+            width: 28px;
+            height: 28px;
+            background: var(--brand);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(131, 205, 32, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .nav-logo:hover .logo-icon-box {
+            background: white;
+            color: var(--brand);
+        }
+
+        .nav-btn-simple {
+            background: transparent;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            width: 40px;
+            height: 100%;
+            border-radius: 40px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-btn-simple:hover {
+            background: var(--brand);
+            color: white;
+            box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+        }
+
+        .user-wrapper {
+            position: relative;
+            height: 100%;
+        }
+
+        .user-capsule-btn {
+            padding: 0 16px 0 10px;
+            border-radius: 40px;
+            gap: 10px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .user-capsule-btn:hover {
+            background: var(--brand);
+            color: white;
+            box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+        }
+
+        .user-avatar-icon {
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .user-capsule-btn:hover .user-avatar-icon {
+            background: white;
+            color: var(--brand);
+            box-shadow: none;
+        }
+
+        .user-capsule-btn:hover .user-name-text {
+            color: white;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 14px);
+            right: 0;
+            width: 220px;
+            background: var(--bg-surface);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: 0.2s;
+            z-index: 5005;
+            border: var(--card-border);
+        }
+
+        .user-wrapper.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: var(--brand-tint);
+            color: var(--brand);
+        }
+
+        .dropdown-item.danger:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        [data-theme="dark"] .dropdown-item.danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 4px 10px;
+            opacity: 0.6;
+        }
+
+        .swiper {
+            width: 100%;
+            height: 100%;
+        }
+
+        .swiper-slide {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-image {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            transform: scale(1);
+            transition: transform 2s ease-out;
+        }
+
+        #page-home.swiper-slide-active .bg-image,
+        #page-project.swiper-slide-active .swiper-slide-active .bg-image,
+        #page-sponsors.swiper-slide-active .bg-image {
+            transition: transform 10s ease;
+            transform: scale(1.05);
+        }
+
+        #page-home .bg-image {
+            background-image: url('https://images.pexels.com/photos/733090/pexels-photo-733090.jpeg?auto=compress&cs=tinysrgb&w=1600');
+        }
+
+        .home-content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.4) 100%);
+        }
+
+        .brand-logo {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            color: #f0f0f0;
+        }
+
+        .brand-logo span {
+            color: var(--brand);
+        }
+
+        .hero-title {
+            font-size: clamp(40px, 6.5vw, 85px);
+            font-weight: 900;
+            line-height: 1.05;
+            max-width: 1200px;
+            margin-bottom: 25px;
+            text-shadow: 0 4px 4px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.5);
+            letter-spacing: -0.02em;
+            padding: 0 20px;
+            color: #f0f0f0;
+        }
+
+        .hero-desc {
+            font-size: 1.2rem;
+            opacity: 1;
+            color: #f0f0f0;
+            max-width: 650px;
+            margin-bottom: 50px;
+            font-weight: 600;
+            line-height: 1.6;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pill-btn {
+            background: var(--brand);
+            color: white;
+            padding: 12px 36px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(106, 176, 26, 0.3), 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pill-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(106, 176, 26, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .thumbs-container {
+            position: absolute;
+            bottom: 30px !important;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 880px;
+            width: 100%;
+            height: 90px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 50px;
+            box-sizing: border-box;
+        }
+
+        .thumbs-swiper {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .thumbs-swiper .swiper-slide {
+            width: 60px !important;
+            height: 60px !important;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            opacity: 1;
+            border: 4px solid var(--glass-bg);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            box-sizing: border-box;
+            margin-top: 15px;
+            margin-right: 20px;
+        }
+
+        .thumbs-swiper .swiper-slide-thumb-active {
+            border-color: var(--brand);
+            box-shadow: 0 0 20px rgba(131, 205, 32, 0.5);
+            transform: none;
+        }
+
+        .thumbs-swiper .swiper-slide:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .thumbs-button-next, .thumbs-button-prev {
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            margin-top: -20px;
+            z-index: 30;
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass-bg);
+            border-radius: 50%;
+            transition: 0.3s;
+            border: var(--card-border);
+            backdrop-filter: blur(5px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .thumbs-button-next:hover, .thumbs-button-prev:hover {
+            background: var(--brand);
+            color: white;
+            border-color: var(--brand);
+            box-shadow: 0 4px 12px rgba(131, 205, 32, 0.4);
+        }
+
+        .thumbs-button-next {
+            right: 0;
+        }
+
+        .thumbs-button-prev {
+            left: 0;
+        }
+
+        .project-fixed-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+        }
+
+        .search-bar {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 340px;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            background: var(--bg-capsule);
+            border-radius: 60px;
+            padding: 4px 16px;
+            height: 48px;
+            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
+            box-sizing: border-box;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        [data-theme="dark"] .search-bar {
+            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar:focus-within {
+            background: var(--bg-surface);
+            border-color: var(--brand);
+            box-shadow: 0 0 0 2px var(--brand-tint);
+        }
+
+        .search-bar i {
+            color: var(--text-secondary);
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            transition: color 0.2s;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.85rem;
+            width: 100%;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-weight: 700;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .search-results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--bg-surface);
+            border: var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 8px;
+            padding: 6px;
+            box-sizing: border-box;
+            display: none;
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .search-results-dropdown.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-capsule);
+        }
+
+        .search-result-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .search-result-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .info-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) saturate(120%);
+            padding: 35px;
+            border-radius: var(--radius);
+            width: 440px;
+            color: var(--text-main);
+            border: var(--card-border);
+            pointer-events: auto;
+            margin-top: 140px;
+            transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            display: block;
+            box-sizing: border-box;
+            box-shadow: var(--card-shadow);
+        }
+
+        .info-content-wrapper {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .info-content-wrapper.fading {
+            opacity: 0;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            opacity: 0.8;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .top-link-icon {
+            color: var(--text-main);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .top-link-icon:hover {
+            color: var(--brand);
+            transform: scale(1.1);
+        }
+
+        .project-title {
+            text-decoration: none;
+            color: var(--text-main);
+            transition: 0.3s;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .project-title h2 {
+            font-size: 2.8rem;
+            margin: 0;
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+        }
+
+        .project-title:hover {
+            color: var(--brand);
+            text-shadow: 0 0 20px rgba(131, 205, 32, 0.4);
+        }
+
+        .creator-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .creator-name {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 1.1rem;
+        }
+
+        .status-icon {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-icon.locked {
+            color: var(--text-muted);
+        }
+
+        .status-icon.unlocked {
+            color: var(--text-main);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .info-card hr {
+            border: 0;
+            border-top: 1px solid var(--border-color);
+            margin: 20px 0;
+        }
+
+        .info-card p {
+            line-height: 1.7;
+            opacity: 0.9;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            text-align: justify;
+            color: var(--text-secondary);
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .info-card p::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .info-card p::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 2px;
+        }
+
+        .info-card p::-webkit-scrollbar-thumb {
+            background: var(--brand);
+            border-radius: 2px;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .tag {
+            background: var(--brand);
+            color: #ffffff;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(131, 205, 32, 0.3);
+        }
+
+        #page-map {
+            background: var(--bg-page);
+            position: relative;
+        }
+
+        #map-pane {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .map-brand-overlay {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 500;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(120%);
+            padding: 0 35px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--card-shadow);
+            pointer-events: none;
+            border: var(--card-border);
+            height: 48px;
+            box-sizing: border-box;
+        }
+
+        .map-brand-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .map-brand-text span {
+            background: var(--brand);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-container {
+            position: absolute;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            perspective: 1000px;
+        }
+
+        .stat-card {
+            pointer-events: auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) saturate(120%);
+            border: var(--card-border);
+            width: 320px;
+            padding: 8px 20px;
+            border-radius: 20px;
+            height: 65px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: var(--card-shadow);
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .stats-container.active .stat-card {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .stats-container.active .stat-card:nth-child(2) {
+            transition-delay: 0.1s;
+        }
+
+        .stats-container.active .stat-card:nth-child(3) {
+            transition-delay: 0.2s;
+        }
+
+        .stats-container.active .stat-card:nth-child(4) {
+            transition-delay: 0.3s;
+        }
+
+        .stats-container.active .stat-card:nth-child(5) {
+            transition-delay: 0.4s;
+        }
+
+        .stats-container.active .stat-card:nth-child(6) {
+            transition-delay: 0.5s;
+        }
+
+        .stats-container.active .stat-card:nth-child(7) {
+            transition-delay: 0.6s;
+        }
+
+        .stats-container.active .stat-card:nth-child(8) {
+            transition-delay: 0.7s;
+        }
+
+        .stats-container.active .stat-card:nth-child(9) {
+            transition-delay: 0.8s;
+        }
+
+        .stat-icon {
+            color: var(--brand);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            background: rgba(131, 205, 32, 0.1);
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .stat-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .stat-info .label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .stat-info .value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+
+        .premium-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radar-ring {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--brand);
+            border-radius: 50%;
+            animation: radar-beam 2.5s infinite ease-out;
+        }
+
+        .radar-ring:nth-child(2) {
+            animation-delay: 0.8s;
+        }
+
+        .marker-core {
+            width: 14px;
+            height: 14px;
+            background: var(--brand);
+            border-radius: 50%;
+            border: 3px solid #fff;
+            animation: core-pulse 2.5s infinite ease-in-out;
+            z-index: 10;
+        }
+
+        .marker-label {
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #1f2937;
+            padding: 0;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            display: none;
+            pointer-events: none;
+            z-index: 20;
+            font-weight: 800;
+            opacity: 0;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+
+        [data-theme="dark"] .marker-label {
+            color: #f8fafc;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .marker-selected .marker-label {
+            display: block;
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+            color: #1f2937;
+        }
+
+        .marker-hover .marker-label {
+            display: block;
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        [data-theme="dark"] .marker-selected .marker-label {
+            color: white;
+        }
+
+        .marker-selected .radar-ring {
+            border-color: #ff8c00;
+        }
+
+        .marker-selected .marker-core {
+            background: #ff8c00;
+            box-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
+        }
+
+        @keyframes radar-beam {
+            0% {
+                transform: scale(0.4);
+                opacity: 0.8;
+                border-width: 3px;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+                border-width: 1px;
+            }
+        }
+
+        @keyframes core-pulse {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(131, 205, 32, 0.6);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(131, 205, 32, 0.9);
+                transform: scale(1.15);
+            }
+        }
+
+        #page-sponsors {
+            background: var(--bg-page);
+            position: relative;
+            overflow: hidden;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .aurora-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .aurora-blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: blob-float 20s infinite ease-in-out alternate;
+        }
+
+        .aurora-blob:nth-child(1) {
+            width: 500px;
+            height: 500px;
+            background: #e0f2fe;
+            top: -10%;
+            left: -10%;
+        }
+
+        .aurora-blob:nth-child(2) {
+            width: 600px;
+            height: 600px;
+            background: rgba(131, 205, 32, 0.15);
+            bottom: -10%;
+            right: -10%;
+            animation-delay: -5s;
+        }
+
+        [data-theme="dark"] .aurora-blob:nth-child(1) {
+            background: #1e3a8a;
+            opacity: 0.3;
+        }
+
+        [data-theme="dark"] .aurora-blob:nth-child(2) {
+            background: rgba(131, 205, 32, 0.1);
+            opacity: 0.2;
+        }
+
+        @keyframes blob-float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                transform: translate(50px, 50px) scale(1.1);
+            }
+        }
+
+        .sponsors-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            padding: 0 40px;
+            box-sizing: border-box;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+            margin: 0 auto;
+        }
+
+        .sponsors-header .main-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin: 0;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            color: var(--text-main);
+        }
+
+        .sponsors-header .main-title span {
+            color: var(--brand);
+        }
+
+        .sponsors-desc {
+            max-width: 600px;
+            margin: 30px auto 40px auto;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px 60px;
+            padding: 20px;
+            box-sizing: border-box;
+            align-items: center;
+        }
+
+        .sponsor-card {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+        }
+
+        .sponsor-card img {
+            height: auto;
+            width: auto;
+            max-height: 70px;
+            max-width: 100%;
+            object-fit: contain;
+            filter: grayscale(100%) opacity(0.5);
+            transition: 0.4s ease;
+        }
+
+        .sponsor-card:hover img {
+            filter: none;
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        [data-theme="dark"] .sponsor-card img {
+            filter: grayscale(100%) invert(1) opacity(0.9);
+        }
+
+        [data-theme="dark"] .sponsor-card:hover img {
+            filter: none;
+            opacity: 1;
+        }
+
+        .sponsors-footer-action {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .join-btn {
+            background: var(--brand);
+            color: white;
+            padding: 12px 36px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(106, 176, 26, 0.3), 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .join-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(106, 176, 26, 0.5);
+            filter: brightness(1.1);
+        }
+
+        #page-footer {
+            background: #050505;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer-logo {
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 900;
+        }
+
+        .footer-logo span {
+            color: var(--brand);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--brand);
+        }
+
+        .cookie-banner {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 99999;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: var(--card-border);
+            width: 420px;
+            max-width: 90%;
+            padding: 16px 24px;
+            border-radius: 16px;
+            color: var(--text-main);
+            box-shadow: var(--card-shadow);
+            transform: translateY(150%);
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cookie-banner.active {
+            transform: translateY(0);
+        }
+
+        .cookie-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .cookie-header i {
+            color: var(--brand);
+        }
+
+        .cookie-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .cookie-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 2px;
+        }
+
+        .cookie-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .cookie-btn-primary {
+            background: var(--brand);
+            color: white;
+        }
+
+        .cookie-btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .cookie-btn-secondary:hover {
+            background: var(--bg-surface-hover);
+            color: var(--text-main);
+            border-color: var(--text-secondary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.4s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-surface);
+            border: var(--card-border);
+            padding: 40px;
+            border-radius: var(--radius);
+            width: 360px;
+            max-width: 90%;
+            text-align: center;
+            transform: translateY(30px);
+            transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: var(--card-shadow);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: 0.3s;
+            color: var(--text-main);
+        }
+
+        .modal-close:hover {
+            opacity: 1;
+            color: var(--brand);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            background: var(--bg-capsule);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            outline: none;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+
+        .login-form input:focus {
+            border-color: var(--brand);
+            background: var(--bg-surface);
+        }
+
+        .login-submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--brand);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .login-submit-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(131, 205, 32, 0.3);
+        }
+
+        .leaflet-container, .leaflet-interactive, .leaflet-marker-icon, .leaflet-marker-shadow {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
 </head>
 <body>
+
 <nav class="project-nav-bar">
     <div class="nav-left">
         <div class="nav-capsule-box">
-            <a class="nav-logo" href="index.html">
+            <a href="#" class="nav-logo" onclick="location.reload()">
                 <div class="logo-icon-box"><i data-lucide="activity"></i></div>
                 <span>ecoSignal</span>
             </a>
-            <div class="nav-divider"></div>
-            <div class="breadcrumb-group">
-                <div class="crumb-wrapper" id="project-wrap">
-                    <button class="crumb-btn" onclick="toggleMenu('project-wrap')">
-                        <span class="block-anim" id="label-project">Loading...</span>
-                        <i data-lucide="chevron-down" size="14"></i>
-                    </button>
-                    <div class="crumb-dropdown" id="dropdown-project">
-                        <div class="dropdown-search-box">
-                            <div class="search-input-wrapper">
-                                <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchProject(this.value)" placeholder="Search..." type="text">
-                            </div>
-                        </div>
-                        <div class="dropdown-list-scroll" id="project-list-container"></div>
-                    </div>
-                </div>
-                <span class="crumb-separator">/</span>
-                <div class="crumb-wrapper" id="collection-wrap">
-                    <button class="crumb-btn" onclick="toggleMenu('collection-wrap')">
-                        <span class="block-anim" id="label-collection">Loading...</span>
-                        <i data-lucide="chevron-down" size="14"></i>
-                    </button>
-                    <div class="crumb-dropdown" id="dropdown-collection">
-                        <div class="dropdown-search-box">
-                            <div class="search-input-wrapper">
-                                <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchCollection(this.value)" placeholder="Search..." type="text">
-                            </div>
-                        </div>
-                        <div class="dropdown-list-scroll" id="collection-list-container"></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
-    <div class="nav-center">
-        <div class="nav-capsule-box">
-            <div class="sliding-pill" id="nav-sliding-pill"></div>
-            <button class="nav-item active" onclick="switchTab(this, 'desc')">Description</button>
-            <button class="nav-item" onclick="switchTab(this, 'summary')">Summary</button>
-            <button class="nav-item" onclick="switchTab(this, 'media')">Media</button>
-            <button class="nav-item" onclick="switchTab(this, 'map')">Map</button>
-            <button class="nav-item" onclick="switchTab(this, 'timeline')">Timeline</button>
-            <button class="nav-item" onclick="switchTab(this, 'data')">Data</button>
-        </div>
-    </div>
+
     <div class="nav-right">
         <div class="nav-capsule-box">
             <button class="nav-btn-simple" onclick="toggleTheme()" title="Switch Theme">
                 <i data-lucide="moon" id="theme-icon-el" size="20"></i>
             </button>
             <div class="nav-divider"></div>
+
             <button class="nav-btn-simple" title="Information"><i data-lucide="info" size="20"></i></button>
             <div class="nav-divider"></div>
-            <div class="user-wrapper" id="user-menu">
+
+            <div id="guest-nav-btn" class="user-capsule-btn" onclick="openLogin()">
+                <div class="user-avatar-icon"><i data-lucide="log-in" size="16"></i></div>
+                <span class="user-name-text">Login</span>
+            </div>
+
+            <div class="user-wrapper" id="user-menu-wrapper" style="display: none;">
                 <div class="user-capsule-btn" onclick="toggleUserMenu()">
                     <div class="user-avatar-icon"><i data-lucide="user" size="16"></i></div>
-                    <span class="user-name-text">Liudilong</span>
-                    <i class="chevron-icon" data-lucide="chevron-down" size="14"></i>
+                    <span class="user-name-text" id="display-username">User</span>
+                    <i data-lucide="chevron-down" class="chevron-icon" size="14"></i>
                 </div>
                 <div class="dropdown-menu">
-                    <a class="dropdown-item" href="#"><i data-lucide="settings" size="18"></i>Settings</a>
+                    <a href="#" class="dropdown-item"><i data-lucide="settings" size="18"></i> Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item danger" href="index.html"><i data-lucide="log-out" size="18"></i>Logout</a>
+                    <a href="#" class="dropdown-item danger" onclick="handleLogout(event)"><i data-lucide="log-out" size="18"></i> Logout</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
-<div class="content-wrapper">
-    <div class="tab-page active" id="tab-desc">
-        <div class="desc-layout" id="desc-layout-container">
-            <div class="panel-anim" id="panel-proj-desc">
-                <div class="desc-header-section block-anim">
-                    <div class="title-row">
-                        <h1 class="desc-title-text" id="desc-project-title">Loading...</h1>
-                        <a class="title-link-icon" href="#" id="meta-link" target="_blank" title="Visit Project Website"><i data-lucide="link"></i></a>
-                    </div>
-                    <div class="meta-row">
-                        <div class="meta-capsule-box">
-                            <div class="meta-item-btn" title="Creator">
-                                <div class="meta-item-icon"><i data-lucide="user" size="14"></i></div>
-                                <span id="meta-creator-name">...</span>
-                            </div>
-                            <div class="meta-divider"></div>
-                            <div class="meta-item-btn" title="Creation Date">
-                                <div class="meta-item-icon"><i data-lucide="calendar" size="14"></i></div>
-                                <span id="meta-date">...</span>
-                            </div>
-                            <div class="meta-divider"></div>
-                            <div class="meta-item-btn" title="DOI">
-                                <div class="meta-item-icon"><i data-lucide="bookmark" size="14"></i></div>
-                                <span id="meta-doi-text">...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="desc-content-area block-anim">
-                    <div id="rich-text-container">Loading...</div>
-                </div>
-            </div>
-            <div class="panel-anim" id="panel-visual">
-                <div class="desc-image-container">
-                    <img alt="Project Visual" class="desc-project-img" id="main-project-image" src="">
-                </div>
-            </div>
-            <div class="panel-anim" id="panel-col-desc"></div>
-        </div>
-    </div>
-    <div class="tab-page" id="tab-summary">
-        <div class="summary-layout">
-            <div class="summary-stats-container block-anim" id="summary-stats-grid"></div>
-            <div class="summary-contributors-card block-anim">
-                <div class="card-header">
-                    <div class="card-title" id="contrib-title"><i data-lucide="users"></i> Project Contributors</div>
-                </div>
-                <div class="card-body">
-                    <div class="contributors-list" id="summary-contributors-list"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="tab-page" id="tab-media">
-        <div class="dashboard-card" style="height: 100%;">
-            <div class="card-header media-header">
-                <div class="media-title"><i data-lucide="music" size="24"></i> Media <span class="media-count-badge" id="media-count-badge">Loading...</span></div>
-                <div class="media-controls">
-                    <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" oninput="handleSearchMedia(this.value)" placeholder="Search media or tags..." type="text"></div>
-                    <div class="view-switcher-container">
-                        <div class="view-pill" id="view-pill"></div>
-                        <button class="view-btn active" onclick="switchMediaView('gallery', this)"><i data-lucide="grid" size="14"></i>Gallery</button>
-                        <button class="view-btn" onclick="switchMediaView('list', this)"><i data-lucide="list" size="14"></i> List</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body media-scroll-area">
-                <div class="media-container view-gallery block-anim" id="media-grid-container"></div>
-            </div>
-        </div>
-    </div>
-    <div class="tab-page" id="tab-map">
-        <div class="map-wrapper">
-            <div id="full-map"></div>
-            <button class="filter-trigger-btn" id="filter-btn-main" onclick="openFilterDrawer()"><i data-lucide="sliders-horizontal" size="22"></i></button>
-            <div class="filter-drawer" id="filter-drawer">
-                <div class="fd-header">
-                    <div class="fd-title"><i color="var(--brand)" data-lucide="sliders-horizontal" size="20"></i><span>Filters</span></div>
-                    <button class="fd-close" onclick="closeFilterDrawer()"><i data-lucide="chevrons-left" size="20"></i></button>
-                </div>
-                <div class="fd-content">
-                    <div class="custom-select-wrapper" id="sel-realm">
-                        <div class="select-trigger" onclick="toggleSelect('sel-realm')"><span class="trigger-text" id="text-realm">All Realms</span><i data-lucide="chevron-down" size="16"></i></div>
-                        <div class="select-options" id="opt-realm"></div>
-                    </div>
-                    <div class="custom-select-wrapper" id="sel-biome">
-                        <div class="select-trigger disabled" id="trig-biome" onclick="toggleSelect('sel-biome')"><span class="trigger-text" id="text-biome">All Biomes</span><i data-lucide="chevron-down" size="16"></i></div>
-                        <div class="select-options" id="opt-biome"></div>
-                    </div>
-                    <div class="custom-select-wrapper" id="sel-group">
-                        <div class="select-trigger disabled" id="trig-group" onclick="toggleSelect('sel-group')"><span class="trigger-text" id="text-group">All Groups</span><i data-lucide="chevron-down" size="16"></i></div>
-                        <div class="select-options" id="opt-group"></div>
-                    </div>
-                    <button class="btn-toolbar" onclick="resetFilters()" style="width: 100%; margin-top: 12px;"><i data-lucide="rotate-ccw" size="16"></i> Reset</button>
-                </div>
-            </div>
-            <div class="sidebar" id="sidebar">
-                <div class="sb-header" id="sb-header-bg">
-                    <div class="sb-header-content"><h2 class="sb-title" id="sb-name">Site Name</h2>
-                        <div class="sb-meta-row" id="sb-meta-container"></div>
-                    </div>
-                    <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
-                </div>
-                <div class="sb-content">
-                    <div class="data-row"><span class="data-label">Realm</span><span class="data-val" id="val-realm">--</span></div>
-                    <div class="data-row"><span class="data-label">Biome</span><span class="data-val" id="val-biome">--</span></div>
-                    <div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span class="data-val" id="val-group">--</span></div>
-                    <div class="section-title"><i data-lucide="play-circle" size="16"></i> Media</div>
-                    <div class="media-scroll-container" id="media-container"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="tab-page" id="tab-timeline"></div>
-    <div class="tab-page" id="tab-data">
-        <div class="data-layout-wrapper">
-            <div class="data-sidebar">
-                <div class="data-sidebar-header"><i data-lucide="database" size="18" style="color:var(--brand);"></i> Tables</div>
-                <div class="data-table-list" id="table-nav-list"></div>
-            </div>
-            <div class="data-main-content">
-                <div class="data-toolbar">
-                    <div class="card-title" id="current-table-title"><i data-lucide="table"></i> Project</div>
-                    <div class="media-controls">
-                        <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" id="data-search-input" oninput="handleDataSearch(this.value)" placeholder="Search" type="text"></div>
-                        <button class="btn-toolbar" onclick="resetDataTable()" title="Reset"><i data-lucide="rotate-ccw" size="16"></i> Reset</button>
-                        <button class="btn-toolbar" onclick="openCrudModal('add')"><i data-lucide="plus" size="16"></i> Add</button>
-                        <button class="btn-toolbar" disabled id="btn-edit" onclick="handleToolbarEdit()"><i data-lucide="pencil" size="16"></i> Edit</button>
-                        <button class="btn-toolbar" disabled id="btn-link" onclick="handleToolbarLink()"><i data-lucide="link" size="16"></i> Link</button>
-                        <button class="btn-toolbar" disabled id="btn-reset-pwd" onclick="handleToolbarResetPassword()" style="display:none;"><i data-lucide="key" size="16"></i> Reset Pwd</button>
-                        <button class="btn-toolbar" disabled id="btn-permission" onclick="handleToolbarPermission()" style="display:none;"><i data-lucide="shield-check" size="16"></i> Permission</button>
-                        <button class="btn-toolbar" disabled id="btn-set-contrib" onclick="handleSetContributor()" style="display:none;"><i data-lucide="user-plus" size="16"></i> Set Role</button>
-                        <button class="btn-toolbar danger" disabled id="btn-delete" onclick="handleToolbarDelete()"><i data-lucide="trash-2" size="16"></i> Delete</button>
-                    </div>
-                </div>
-                <div class="data-table-container">
-                    <table class="crud-table">
-                        <thead id="crud-thead"></thead>
-                        <tbody id="crud-tbody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="crud-modal-overlay" id="crud-modal-overlay">
-        <div class="crud-modal">
-            <div class="card-title" id="modal-title">Edit Item</div>
-            <div class="form-grid" id="modal-form-container"></div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeCrudModal()">Cancel</button>
-                <button class="btn-primary" id="modal-submit-btn" onclick="saveCrudData()">Save Changes</button>
-            </div>
-        </div>
+
+<div id="cookie-banner" class="cookie-banner">
+    <div class="cookie-header"><i data-lucide="cookie" size="24"></i><span>Cookie Settings</span></div>
+    <div class="cookie-text">We use cookies to improve your experience and analyze our traffic. By clicking "Accept", you consent to our use of cookies.</div>
+    <div class="cookie-actions">
+        <button id="cookie-reject" class="cookie-btn cookie-btn-secondary">Reject</button>
+        <button id="cookie-accept" class="cookie-btn cookie-btn-primary">Accept</button>
     </div>
 </div>
-<div class="crud-modal-overlay" id="editor-modal-overlay" style="z-index: 10000;">
-    <div class="crud-modal" style="width: 800px; max-width: 90vw; transform: translateX(0); left: 50%; top: 50%; bottom: auto; right: auto; border-radius: 16px; transform: translate(-50%, -50%); border-left: none;">
-        <div class="card-title" id="editor-title">Edit Description</div>
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 400px;">
-            <div style="background: var(--bg-capsule); padding: 8px; border-radius: 8px; display: flex; gap: 8px; border: 1px solid var(--border-light);">
-                <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="bold" size="16"></i></button>
-                <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="italic" size="16"></i></button>
-                <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="list" size="16"></i></button>
-                <div class="nav-divider"></div>
-                <button class="nav-btn-simple" style="width: 32px; height: 32px;"><i data-lucide="image" size="16"></i></button>
+
+<div id="login-modal" class="modal-overlay">
+    <div class="modal-content">
+        <i data-lucide="x" class="modal-close" id="close-modal-btn"></i>
+        <h2>Welcome Back</h2>
+        <form class="login-form" id="login-form-el">
+            <input type="text" id="username-input" placeholder="Username" required>
+            <input type="password" placeholder="Password" required>
+            <button type="submit" class="login-submit-btn">Login</button>
+        </form>
+    </div>
+</div>
+
+<div class="swiper mainSwiper">
+    <div class="swiper-wrapper">
+        <div class="swiper-slide" id="page-home">
+            <div class="bg-image"></div>
+            <div class="home-content">
+                <div class="brand-logo"><i data-lucide="activity"></i> <span>ecoSignal</span></div>
+                <div class="hero-title">Open-source online<br>platform for ecoacoustics</div>
+                <div class="hero-desc">Use ecoSignal to manage, navigate, visualize, annotate, and analyze soundscape recordings.</div>
+                <div class="btn-group">
+                    <a href="#" class="pill-btn"><i data-lucide="github"></i> GitHub</a>
+                    <a href="#" class="pill-btn"><i data-lucide="file-text"></i> F1000Research</a>
+                    <a href="#" class="pill-btn"><i data-lucide="graduation-cap"></i> Scholar</a>
+                    <a href="#" class="pill-btn"><i data-lucide="mail"></i> Email</a>
+                </div>
             </div>
-            <textarea id="editor-textarea" style="flex: 1; width: 100%; padding: 16px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-surface); color: var(--text-main); font-family: monospace; line-height: 1.6; resize: none; outline: none; box-sizing: border-box;"></textarea></div>
-        <div class="modal-footer">
-            <button class="btn-secondary" onclick="closeEditorModal()">Cancel</button>
-            <button class="btn-primary" onclick="saveEditorContent()">Confirm</button>
+        </div>
+
+        <div class="swiper-slide" id="page-project">
+            <div class="project-fixed-ui">
+                <div class="search-bar">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="project-search-input" placeholder="Search projects...">
+                    <div id="search-results" class="search-results-dropdown"></div>
+                </div>
+                <div class="info-card" id="info-card-el">
+                    <div class="info-content-wrapper" id="project-info-content"></div>
+                </div>
+            </div>
+            <div class="swiper projectSwiper">
+                <div class="swiper-wrapper" id="project-slides-container"></div>
+            </div>
+            <div class="thumbs-container">
+                <div class="thumbs-button-prev"><i data-lucide="chevron-left"></i></div>
+                <div class="swiper thumbs-swiper">
+                    <div class="swiper-wrapper" id="thumbs-slides-container"></div>
+                </div>
+                <div class="thumbs-button-next"><i data-lucide="chevron-right"></i></div>
+            </div>
+        </div>
+
+        <div class="swiper-slide" id="page-map">
+            <div class="map-brand-overlay">
+                <div class="map-brand-text"><span>ecoSignal</span> Network</div>
+            </div>
+            <div class="stats-container" id="side-stats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="users" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Users</div>
+                        <div class="value" id="val-users">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="folder-kanban" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Projects</div>
+                        <div class="value" id="val-projects">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="library" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Collections</div>
+                        <div class="value" id="val-collections">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="mic" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Audio</div>
+                        <div class="value" id="val-audio">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="image" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Photos</div>
+                        <div class="value" id="val-photos">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="video" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Videos</div>
+                        <div class="value" id="val-videos">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="file-json" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Metadata</div>
+                        <div class="value" id="val-metadata">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="tags" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Tags</div>
+                        <div class="value" id="val-tags">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="map-pin" size="26"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Sites</div>
+                        <div class="value" id="val-sites">0</div>
+                    </div>
+                </div>
+            </div>
+            <div id="map-pane"></div>
+        </div>
+
+        <div class="swiper-slide" id="page-sponsors">
+            <div class="aurora-bg">
+                <div class="aurora-blob"></div>
+                <div class="aurora-blob"></div>
+            </div>
+            <div class="sponsors-wrapper">
+                <div class="sponsors-header"><h2 class="main-title">Sponsored <span>By</span></h2>
+                    <p class="sponsors-desc">Our research is made possible through the generous support of leading academic institutions and environmental organizations.</p></div>
+                <div class="logo-grid">
+                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/inrae.png" alt="INRAE"></div>
+                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/westlake_univ.png" alt="Westlake"></div>
+                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/dfg_logo.png" alt="DFG"></div>
+                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/fly_bee.png" alt="FlyBee"></div>
+                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/NFDI4Earth_logo.png" alt="NFDI"></div>
+                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/sealab_logo.png" alt="SeaLab"></div>
+                </div>
+                <div class="sponsors-footer-action"><a href="mailto:contact@ecosignal.org" class="join-btn"><i data-lucide="mail" size="18"></i> Contact Us</a></div>
+            </div>
+        </div>
+
+        <div class="swiper-slide" id="page-footer" style="height: 36vh !important;">
+            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; background:#050505; color:rgba(255,255,255,0.5);">
+                <div style="font-size:2rem; font-weight:900; color:white; margin-bottom:20px;"><span style="color: var(--brand);">ecoSignal</span></div>
+                <p>&copy; 2025 ecoSignal. All rights reserved.</p>
+            </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-<script src="data.js"></script>
-<script src="project.js"></script>
+<script>
+    lucide.createIcons();
 
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const target = current === 'dark' ? 'light' : 'dark';
+        setTheme(target);
+    }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+
+        const icon = document.getElementById('theme-icon-el');
+        if (icon) {
+            icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+    }
+
+    (function initTheme() {
+        const saved = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const defaultTheme = saved || (systemDark ? 'dark' : 'dark');
+        setTheme(defaultTheme);
+    })();
+
+    const loginModal = document.getElementById('login-modal');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const loginForm = document.getElementById('login-form-el');
+    const guestNavBtn = document.getElementById('guest-nav-btn');
+    const userMenuWrapper = document.getElementById('user-menu-wrapper');
+
+    function openLogin() {
+        loginModal.classList.add('active');
+    }
+
+    function closeModal() {
+        loginModal.classList.remove('active');
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (loginModal) loginModal.addEventListener('click', (e) => {
+        if (e.target === loginModal) closeModal();
+    });
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username-input').value;
+
+            closeModal();
+
+            if (guestNavBtn) guestNavBtn.style.display = 'none';
+            if (userMenuWrapper) userMenuWrapper.style.display = 'block';
+
+            const displayUser = document.getElementById('display-username');
+            if (displayUser) displayUser.textContent = username || "Liudilong";
+        });
+    }
+
+    function toggleUserMenu() {
+        if (!userMenuWrapper) return;
+        const isActive = userMenuWrapper.classList.contains('active');
+        userMenuWrapper.classList.remove('active');
+        if (!isActive) userMenuWrapper.classList.add('active');
+    }
+
+    document.addEventListener('click', (e) => {
+        if (userMenuWrapper && !e.target.closest('.user-wrapper')) {
+            userMenuWrapper.classList.remove('active');
+        }
+    });
+
+    function handleLogout(e) {
+        e.preventDefault();
+        if (userMenuWrapper) {
+            userMenuWrapper.classList.remove('active');
+            userMenuWrapper.style.display = 'none';
+        }
+        if (guestNavBtn) guestNavBtn.style.display = 'flex';
+    }
+
+    const cookieBanner = document.getElementById('cookie-banner');
+    const acceptBtn = document.getElementById('cookie-accept');
+    const rejectBtn = document.getElementById('cookie-reject');
+
+    function setConsent(value) {
+        try {
+            localStorage.setItem('cookieConsent', value);
+        } catch (e) {
+        }
+        cookieBanner.classList.remove('active');
+    }
+
+    function checkCookieConsent() {
+        setTimeout(() => {
+            cookieBanner.classList.add('active');
+        }, 1500);
+    }
+
+    acceptBtn.addEventListener('click', () => setConsent('accepted'));
+    rejectBtn.addEventListener('click', () => setConsent('rejected'));
+    checkCookieConsent();
+
+    document.getElementById('info-card-el').addEventListener('wheel', function (e) {
+        e.stopPropagation();
+    }, {passive: false});
+
+    var mainSwiper = new Swiper(".mainSwiper", {
+        direction: "vertical", slidesPerView: "auto", mousewheel: true, allowTouchMove: false, speed: 800,
+        on: {
+            slideChangeTransitionEnd: function () {
+                if (this.activeIndex === 2) {
+                    map.invalidateSize();
+                    updatePanel(currentSelectedNode);
+                }
+            }
+        }
+    });
+
+    const baseImages = [
+        'https://ecosound-web.de/ecosound_web/sounds/projects/108.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/117.jpeg',
+        'https://ecosound-web.de/ecosound_web/sounds/projects/121.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/105.jpeg',
+        'https://ecosound-web.de/ecosound_web/sounds/projects/114.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/123.jpeg',
+        'https://ecosound-web.de/ecosound_web/sounds/projects/124.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/109.jpeg',
+        'https://ecosound-web.de/ecosound_web/sounds/projects/118.jpeg', 'https://ecosound-web.de/ecosound_web/sounds/projects/101.jpeg',
+        'https://ecosound-web.de/ecosound_web/sounds/projects/125.jpeg'
+    ];
+
+    const mainSlidesContainer = document.getElementById('project-slides-container');
+    const thumbsSlidesContainer = document.getElementById('thumbs-slides-container');
+
+    for (let i = 0; i < 25; i++) {
+        const img = baseImages[i % baseImages.length];
+        mainSlidesContainer.innerHTML += `<div class="swiper-slide"><div class="bg-image" style="background-image: url('${img}');"></div></div>`;
+        thumbsSlidesContainer.innerHTML += `<div class="swiper-slide" style="background-image: url('${img}');"></div>`;
+    }
+
+    const projectData = [
+        {
+            id: "10.12688/f1000research", status: "lock", title: "SeabirdIslands", author: "liudilong",
+            desc: "Dry summers leave their mark on Switzerland's forests: many trees have sparse crowns and die off. These developments pose challenges for forest owners, forestry services and society - but they also offer big opportunities for the biodiversity. The Swiss Ornithological Institute is working with partners to protect forests suffering from drought stress so that they are left to decompose for 30 years. Passive acoustic monitoring (PAM) is used to record changes in the composition of breeding birds.",
+            tags: ["Arne Wenzel", "Dr. Iva", "J. Zech", "Somme Group"]
+        },
+        {
+            id: "Project ID: #8821", status: "unlock", title: "Amazon Rainfall", author: "BioTeam Alpha",
+            desc: "Monitoring the acoustic diversity of the Amazon rainforest during the rainy season to track amphibian migration patterns. This project utilizes a network of 500+ open-source sensors deployed across the canopy and forest floor to capture the symphony of life.",
+            tags: ["Dr. Silva", "Rainforest Labs", "Climate Watch"]
+        },
+        {
+            id: "dataset #902", status: "unlock", title: "Alpine Wolves", author: "Dr. Weber",
+            desc: "Audio recordings of wolf packs in the Austrian Alps. Short dataset focusing on nocturnal howls.",
+            tags: ["Canis lupus", "Austria"]
+        }
+    ];
+
+    const infoCardEl = document.getElementById('info-card-el');
+    const contentContainer = document.getElementById('project-info-content');
+
+    function renderProjectInfo(index) {
+        const data = projectData[index % projectData.length];
+        const startHeight = infoCardEl.getBoundingClientRect().height;
+        infoCardEl.style.height = startHeight + 'px';
+        contentContainer.classList.add('fading');
+
+        setTimeout(() => {
+            const tagsHtml = data.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            const lockClass = data.status === 'lock' ? 'locked' : 'unlocked';
+            contentContainer.innerHTML = `<div class="card-header"><div class="meta-left">${data.id}</div><a href="#" class="top-link-icon"><i data-lucide="link"></i></a></div><a href="#" class="project-title"><h2>${data.title}</h2></a><div class="creator-row"><span class="creator-name">${data.author}</span><div class="status-icon ${lockClass}"><i data-lucide="${data.status}"></i></div></div><hr><p>${data.desc}</p><div class="tags">${tagsHtml}</div>`;
+            lucide.createIcons();
+            infoCardEl.style.height = 'auto';
+            const targetHeight = infoCardEl.getBoundingClientRect().height;
+            if (Math.abs(startHeight - targetHeight) < 1) {
+                infoCardEl.style.height = 'auto';
+                contentContainer.classList.remove('fading');
+            } else {
+                infoCardEl.style.height = startHeight + 'px';
+                void infoCardEl.offsetHeight;
+                infoCardEl.style.height = targetHeight + 'px';
+                contentContainer.classList.remove('fading');
+                setTimeout(() => {
+                    infoCardEl.style.height = 'auto';
+                }, 400);
+            }
+        }, 300);
+    }
+
+    var thumbsSwiper = new Swiper(".thumbs-swiper", {
+        spaceBetween: 20, slidesPerView: 10, slidesPerGroup: 10, freeMode: false, allowTouchMove: true, watchSlidesProgress: true,
+        navigation: {nextEl: ".thumbs-button-next", prevEl: ".thumbs-button-prev"},
+    });
+
+    var projectSwiper = new Swiper(".projectSwiper", {
+        direction: "horizontal", loop: false, effect: 'slide', speed: 600, nested: true,
+        thumbs: {swiper: thumbsSwiper},
+        on: {
+            init: function () {
+                renderProjectInfo(0);
+            }, slideChange: function () {
+                renderProjectInfo(this.activeIndex);
+            }
+        }
+    });
+
+    const nodeData = {
+        "GWDG - EFForTS VM": {users: 142, projects: 15, collections: 48, sites: 12, audio: "4.2k", photo: "1.2k", video: "350", metadata: "15k", tags: 856, coords: [51.56, 9.95]},
+        "INRAE - Monitor PAM VM": {users: 95, projects: 8, collections: 26, sites: 5, audio: "1.8k", photo: "560", video: "120", metadata: "8.5k", tags: 432, coords: [43.59, 1.44]},
+        "INRAE - EFNO test VM": {users: 312, projects: 42, collections: 156, sites: 38, audio: "12.5k", photo: "3.8k", video: "950", metadata: "45k", tags: 2109, coords: [47.8, 2.7]}
+    };
+    let currentSelectedNode = "GWDG - EFForTS VM";
+
+    const map = L.map('map-pane', {zoomControl: false, attributionControl: false, scrollWheelZoom: false}).setView([48, 6], 5.5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {opacity: 1}).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {opacity: 0.7}).addTo(map);
+
+    const mapContainer = document.getElementById('map-pane');
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Shift') {
+            map.scrollWheelZoom.enable();
+        }
+    });
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'Shift') {
+            map.scrollWheelZoom.disable();
+        }
+    });
+    mapContainer.addEventListener('wheel', (e) => {
+        if (e.shiftKey) {
+            e.stopPropagation();
+        }
+    }, {passive: false});
+
+    const container = document.getElementById('side-stats');
+    let currentPanelNode = "";
+
+    function updatePanel(name) {
+        if (currentPanelNode === name) return;
+        currentPanelNode = name;
+        const isActive = container.classList.contains('active');
+        container.classList.remove('active');
+        setTimeout(() => {
+            const data = nodeData[name];
+            document.getElementById('val-users').innerText = data.users;
+            document.getElementById('val-projects').innerText = data.projects;
+            document.getElementById('val-sites').innerText = data.sites;
+            document.getElementById('val-collections').innerText = data.collections;
+            document.getElementById('val-audio').innerText = data.audio;
+            document.getElementById('val-photos').innerText = data.photo;
+            document.getElementById('val-videos').innerText = data.video;
+            document.getElementById('val-metadata').innerText = data.metadata;
+            document.getElementById('val-tags').innerText = data.tags;
+            container.classList.add('active');
+            if (typeof setSelectedMarker === 'function') setSelectedMarker(name);
+        }, isActive ? 500 : 100);
+    }
+
+    const markersByName = {};
+    let currentSelectedMarkerEl = null;
+
+    const createPremiumIcon = (name) => L.divIcon({className: 'premium-marker', html: `<div class="marker-label">${name}</div><div class="radar-ring"></div><div class="radar-ring"></div><div class="marker-core"></div>`, iconSize: [40, 40]});
+
+    function setSelectedMarker(name) {
+        try {
+            Object.keys(markersByName).forEach(n => {
+                const m = markersByName[n];
+                const el = m && m.getElement();
+                if (el) {
+                    el.classList.remove('marker-selected');
+                    el.classList.remove('marker-hover');
+                }
+            });
+            const marker = markersByName[name];
+            if (!marker) {
+                currentSelectedMarkerEl = null;
+                return;
+            }
+            const el = marker.getElement();
+            if (el) {
+                el.classList.add('marker-selected');
+                currentSelectedMarkerEl = el;
+            } else {
+                currentSelectedMarkerEl = null;
+            }
+        } catch (err) {
+            console.warn('setSelectedMarker error', err);
+        }
+    }
+
+    Object.keys(nodeData).forEach(name => {
+        const marker = L.marker(nodeData[name].coords, {icon: createPremiumIcon(name)}).addTo(map);
+        markersByName[name] = marker;
+        marker.on('mouseover', (e) => {
+            const el = marker.getElement();
+            if (!el) return;
+            if (el !== currentSelectedMarkerEl) el.classList.add('marker-hover');
+        });
+        marker.on('mouseout', (e) => {
+            const el = marker.getElement();
+            if (!el) return;
+            if (el !== currentSelectedMarkerEl) el.classList.remove('marker-hover');
+        });
+        marker.on('click', (e) => {
+            L.DomEvent.stopPropagation(e);
+            currentSelectedNode = name;
+            updatePanel(name);
+            setSelectedMarker(name);
+            map.flyTo(nodeData[name].coords, 6, {duration: 1});
+        });
+    });
+    setSelectedMarker(currentSelectedNode);
+
+    const searchInput = document.getElementById('project-search-input');
+    const searchDropdown = document.getElementById('search-results');
+
+    if (searchInput && searchDropdown) {
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase().trim();
+
+            if (!val) {
+                searchDropdown.classList.remove('active');
+                return;
+            }
+
+            const matches = projectData.filter(p =>
+                p.title.toLowerCase().includes(val) ||
+                p.author.toLowerCase().includes(val)
+            );
+
+            if (matches.length > 0) {
+                searchDropdown.innerHTML = matches.map(p => `
+                    <div class="search-result-item" onclick="window.location.href='project.html'">
+                        <div class="search-result-title">${p.title}</div>
+                        <div class="search-result-meta">by ${p.author}</div>
+                    </div>
+                `).join('');
+                searchDropdown.classList.add('active');
+            } else {
+                searchDropdown.innerHTML = `<div style="padding:12px; color:var(--text-muted); font-size:0.85rem;">No projects found</div>`;
+                searchDropdown.classList.add('active');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                searchDropdown.classList.remove('active');
+            }
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim() && searchDropdown.children.length > 0) {
+                searchDropdown.classList.add('active');
+            }
+        });
+    }
+</script>
 </body>
 </html>
