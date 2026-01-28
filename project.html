@@ -267,6 +267,23 @@
     </div>
 </div>
 
+<div class="permission-drawer-overlay" id="perm-drawer-overlay" onclick="closePermissionDrawer()"></div>
+<div class="permission-drawer" id="perm-drawer">
+    <div class="perm-drawer-header">
+        <div class="perm-user-info">
+            <h2 class="perm-title">Permission Configuration</h2>
+            <div class="perm-subtitle" id="perm-user-display">Loading...</div>
+        </div>
+        <button class="sb-close" onclick="closePermissionDrawer()"><i data-lucide="x" size="20"></i></button>
+    </div>
+    <div class="perm-drawer-content" id="perm-content-container">
+    </div>
+    <div class="perm-drawer-footer">
+        <button class="btn-secondary" onclick="closePermissionDrawer()">Cancel</button>
+        <button class="btn-primary" onclick="savePermissionDrawer()">Save Configuration</button>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
