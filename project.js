@@ -1735,36 +1735,27 @@ function handleToolbarPermission() {
 
     currentPermUserIds = [...selectedCrudIds];
 
-    // Single User Mode
+    // 初始化数据逻辑不变...
     if (currentPermUserIds.length === 1) {
         const userId = currentPermUserIds[0];
-        const userRow = getDataForTable('user').find(u => String(u.user_id) === String(userId));
-        currentPermDraft = initUserPermission(userId);
-
-        document.getElementById('perm-user-display').innerHTML =
-            `<i data-lucide="user" size="14"></i> ${userRow ? userRow.name : 'User'} <span style="opacity:0.5; margin:0 8px">|</span> ${userRow ? userRow.email : ''}`;
+        initUserPermission(userId); // 确保初始化
+        currentPermDraft = JSON.parse(JSON.stringify(USER_PERMISSIONS_DB[userId]));
     } else {
-        // Batch Mode
         currentPermDraft = { role: 'user', projects: {} };
-
-        document.getElementById('perm-user-display').innerHTML =
-            `<i data-lucide="users" size="14"></i> <span style="font-weight:700; color:var(--brand);">${currentPermUserIds.length} Users Selected</span> <span style="opacity:0.5; margin:0 8px">|</span> Batch Configuration`;
     }
 
     renderPermissionDrawer();
 
+    // 修改：只需要激活 Overlay，CSS 中的 .crud-modal-overlay.active .crud-modal 会处理滑动动画
     document.getElementById('perm-drawer-overlay').classList.add('active');
-    document.getElementById('perm-drawer').classList.add('active');
     lucide.createIcons();
 }
-
 function closePermissionDrawer() {
     document.getElementById('perm-drawer-overlay').classList.remove('active');
-    document.getElementById('perm-drawer').classList.remove('active');
+    // 不需要单独移除 drawer 的 active 类，因为使用了组合 CSS 选择器
     currentPermDraft = null;
     currentPermUserIds = [];
 }
-
 // Save Permissions
 function savePermissionDrawer() {
     if (currentPermUserIds.length > 0 && currentPermDraft) {
@@ -1783,40 +1774,25 @@ function savePermissionDrawer() {
         }, 800);
     }
 }
-
-// -----------------------------------------------------------------------------
-// Rendering Logic
-// -----------------------------------------------------------------------------
-
 /* ==========================================================================
-   Updated Rendering Logic (Unified Styles)
+   Updated Rendering Logic (Fix: Handle Collection 'Manage' Role in Bulk State)
    ========================================================================== */
 function renderPermissionDrawer() {
-    const container = document.getElementById('perm-content-container');
     const isGlobalAdmin = currentPermDraft.role === 'super_admin';
+    const headerContainer = document.getElementById('perm-drawer-header');
+    const contentContainer = document.getElementById('perm-content-container');
 
-    // [修复] 获取当前正在编辑的单个用户 ID（如果是批量编辑，则为 null）
-    const currentPermUserId = currentPermUserIds.length === 1 ? currentPermUserIds[0] : null;
+    // 1. 渲染 Header
+    const leftHtml = `
+        <div class="card-title" style="margin:0; padding:0;">
+            Permission Configuration
+        </div>`;
 
-    // 更新 Header 内容
-    const userRow = currentPermUserId
-        ? getDataForTable('user').find(u => String(u.user_id) === String(currentPermUserId))
-        : null;
-
-    const headerHtml = `
-        <div class="perm-user-info">
-            <h2>Permission Configuration</h2>
-            <div class="perm-user-display">
-                ${userRow
-        ? `<i data-lucide="user" size="14"></i> ${userRow.name} <span style="opacity:0.3; margin:0 6px">|</span> ${userRow.email}`
-        : `<i data-lucide="users" size="14"></i> <span style="font-weight:700; color:var(--brand);">${currentPermUserIds.length} Users Selected</span> <span style="opacity:0.5; margin:0 8px">|</span> Batch Configuration`
-    }
-            </div>
-        </div>
-        <div class="perm-header-right">
+    const rightHtml = `
+        <div style="display:flex; align-items:center;">
             <div class="perm-admin-switch ${isGlobalAdmin ? 'active' : ''}">
                 <span class="perm-admin-label">Administrator</span>
-                <label style="display:flex; align-items:center;">
+                <label style="display:flex; align-items:center; cursor:pointer;">
                     <input type="checkbox" style="display:none;" ${isGlobalAdmin ? 'checked' : ''} onchange="toggleGlobalAdmin()">
                     <div class="perm-switch-track"><div class="perm-switch-thumb"></div></div>
                 </label>
@@ -1824,29 +1800,68 @@ function renderPermissionDrawer() {
         </div>
     `;
 
-    // 动态更新 Header DOM
-    const headerEl = document.querySelector('.perm-drawer-header');
-    if (headerEl) headerEl.innerHTML = headerHtml;
+    headerContainer.innerHTML = leftHtml + rightHtml;
 
+    // 2. 渲染内容
     let html = '';
 
-    // 全局管理员遮罩提示
     html += `
-    <div class="perm-hidden-overlay ${isGlobalAdmin ? 'visible' : ''}">
-        <i data-lucide="shield-check" size="64" style="opacity:0.1; margin-bottom:20px; color:var(--brand);"></i>
-        <div style="font-weight:800; font-size:1.2rem; color:var(--text-main);">Administrator Access Enabled</div>
-        <div style="font-size:0.95rem; opacity:0.6; margin-top:8px;">This user has full access to all system resources.</div>
+    <div class="perm-hidden-overlay ${isGlobalAdmin ? 'visible' : ''}" style="position:absolute; inset:0; z-index:10; background:rgba(255,255,255,0.9); display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:0.3s;">
+        <i data-lucide="shield-check" size="48" style="opacity:0.2; margin-bottom:16px; color:var(--brand);"></i>
+        <div style="font-weight:700; font-size:1.1rem; color:var(--text-main);">Administrator Access Enabled</div>
+        <div style="font-size:0.9rem; color:var(--text-secondary);">This user has full access to all system resources.</div>
     </div>`;
 
-    // 权限树容器
-    html += `<div class="perm-tree-container" style="${isGlobalAdmin ? 'display:none;' : ''}">`;
+    html += `<div class="perm-tree-container" style="display:flex; flex-direction:column; gap:12px; ${isGlobalAdmin ? 'display:none;' : ''}">`;
 
     rawProjects.forEach(proj => {
         const pid = String(proj.id);
         const userProj = currentPermDraft.projects[pid];
         const hasAccess = !!userProj;
         const isProjAdmin = userProj?.role === 'admin';
-        const isExpanded = userProj?._expanded !== false;
+
+        // 计算批量图标状态 (bulkStates)
+        let bulkStates = {};
+
+        PERM_RESOURCES.forEach(res => {
+            let allRead = true;
+            let allWrite = true;
+
+            // 如果项目下没有集合，或者项目本身没权限，则状态为 none
+            if (!hasAccess || proj.collections.length === 0) {
+                allRead = false;
+                allWrite = false;
+            } else {
+                // 遍历该项目下所有的 Collection
+                for (const c of proj.collections) {
+                    const cid = String(c.id);
+                    const userCol = userProj?.collections?.[cid];
+
+                    // [修复] 检查集合级管理员权限
+                    // 如果集合是 Manage (admin) 权限，则默认拥有所有资源的读写权限
+                    if (userCol && userCol.role === 'admin') {
+                        continue; // 此集合满足条件，继续检查下一个
+                    }
+
+                    // 否则检查具体的细分权限
+                    const cPerms = userCol?.permissions?.[res.key];
+
+                    if (!cPerms || !cPerms.read) {
+                        allRead = false;
+                    }
+                    if (!cPerms || !cPerms.write) {
+                        allWrite = false;
+                    }
+
+                    if (!allRead && !allWrite) break;
+                }
+            }
+
+            // 确定最终状态
+            if (allWrite) bulkStates[res.key] = 'write';
+            else if (allRead) bulkStates[res.key] = 'read';
+            else bulkStates[res.key] = 'none';
+        });
 
         html += `<div class="perm-proj-group">
             <div class="perm-row is-project">
@@ -1854,37 +1869,100 @@ function renderPermissionDrawer() {
                     <div class="perm-check-wrapper">
                         <input type="checkbox" class="perm-cb" ${hasAccess ? 'checked' : ''} onchange="permToggleProject('${pid}')">
                     </div>
-                    <div style="flex:1; min-width:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="permToggleExpand('${pid}')">
-                        <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" size="16" style="opacity:0.5"></i>
+                    <div style="flex:1; min-width:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="permToggleProject('${pid}')">
                         <span class="perm-name-text">${proj.name}</span>
                     </div>
                 </div>
                 <div class="perm-controls" style="${hasAccess ? '' : 'opacity:0.3; pointer-events:none;'}">
                     <div class="perm-role-select ${isProjAdmin ? 'is-admin' : ''}" onclick="permToggleProjAdmin('${pid}', ${!isProjAdmin})">
-                        ${isProjAdmin ? '<i data-lucide="shield-check" size="12"></i> Manage' : '<i data-lucide="user" size="12"></i> User'}
+                        ${isProjAdmin ? 'Manage' : 'User'}
                     </div>
                     
                     ${!isProjAdmin ? `
-                    <div class="perm-bulk-group">
-                        <span class="perm-bulk-label">Batch</span>
-                        <div class="perm-bulk-btn" onclick="permBulkSetCols('${pid}', 'admin')">Manage</div>
-                        <div style="width:1px; height:12px; background:var(--border-color);"></div>
-                        <div class="perm-bulk-btn" onclick="permBulkSetCols('${pid}', 'member')">User</div>
-                    </div>` : '<span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Full Project Access</span>'}
+                    <div class="perm-matrix" style="margin-left:8px; border-left:1px solid var(--border-color); padding-left:12px;">
+                        ${renderBulkAtomicIcons(pid, bulkStates)}
+                    </div>
+                    ` : '<span style="font-size:0.75rem; color:var(--text-muted);">Full Project Access</span>'}
                 </div>
             </div>`;
 
-        if (hasAccess && isExpanded && !isProjAdmin) {
+        if (hasAccess && !isProjAdmin) {
             html += renderCollectionListHTML(proj, userProj);
         }
-
         html += `</div>`;
     });
 
     html += `</div>`;
 
-    container.innerHTML = html;
+    contentContainer.innerHTML = html;
     lucide.createIcons();
+}
+function renderBulkAtomicIcons(pid, currentStates) {
+    let html = '';
+    PERM_RESOURCES.forEach(res => {
+        const state = currentStates[res.key]; // 'none', 'read', 'write'
+        let btnClass = '';
+        let stateText = 'None';
+
+        if (state === 'write') {
+            btnClass = 'active-write';
+            stateText = 'Write';
+        } else if (state === 'read') {
+            btnClass = 'active';
+            stateText = 'Read';
+        }
+
+        // 计算下一个点击状态
+        let nextState = 'read';
+        if (state === 'read') nextState = 'write';
+        if (state === 'write') nextState = 'none';
+
+        // [重要] 这里去掉了 title属性，改用内部的 .perm-res-tooltip div
+        html += `
+        <div class="perm-res-btn ${btnClass}" 
+             onclick="permToggleProjectBulk('${pid}', '${res.key}', '${nextState}')">
+            <i data-lucide="${res.icon}" size="14"></i>
+            <div class="perm-res-tooltip">${res.label}: ${stateText}</div>
+        </div>`;
+    });
+    return html;
+}
+// [新增] 项目级批量切换权限函数
+function permToggleProjectBulk(pid, resKey, targetState) {
+    const projDraft = currentPermDraft.projects[pid];
+    if (!projDraft) return;
+
+    // 获取该项目的所有实际 Collection
+    const rawProj = rawProjects.find(p => String(p.id) === pid);
+    if (!rawProj) return;
+
+    rawProj.collections.forEach(c => {
+        const cid = String(c.id);
+
+        // 确保 draft 中存在该 collection 对象
+        if (!projDraft.collections[cid]) {
+            projDraft.collections[cid] = { role: 'member', permissions: {}, _expanded: false };
+        }
+        const colDraft = projDraft.collections[cid];
+        if (!colDraft.permissions) colDraft.permissions = {};
+        if (!colDraft.permissions[resKey]) colDraft.permissions[resKey] = { read: false, write: false };
+
+        const p = colDraft.permissions[resKey];
+
+        // 应用状态
+        if (targetState === 'write') {
+            p.read = true;
+            p.write = true;
+        } else if (targetState === 'read') {
+            p.read = true;
+            p.write = false;
+        } else { // none
+            p.read = false;
+            p.write = false;
+        }
+    });
+
+    renderPermissionDrawer();
 }
 function renderCollectionListHTML(proj, userProj) {
     let html = '';
@@ -1910,9 +1988,11 @@ function renderCollectionListHTML(proj, userProj) {
                     <div style="width:12px; height:1px; background:var(--border-color);"></div>
                 </div>
                 <div class="perm-check-wrapper">
-                    <input type="checkbox" class="perm-cb" ${hasColAccess ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} onchange="permToggleCollection('${proj.id}', '${cid}')">
+                    <input type="checkbox" class="perm-cb" ${hasColAccess ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} onclick="event.stopPropagation()" onchange="permToggleCollection('${proj.id}', '${cid}')">
                 </div>
-                <span class="perm-name-text" style="font-weight:500;">${col.name}</span>
+                <div style="flex:1; cursor:pointer;" onclick="${isDisabled ? '' : `permToggleCollection('${proj.id}', '${cid}')`}">
+                    <span class="perm-name-text" style="font-weight:500;">${col.name}</span>
+                </div>
             </div>
             <div class="perm-controls" style="${hasColAccess ? '' : 'opacity:0.3; pointer-events:none;'}">
                  <div class="perm-role-select ${isColAdmin ? 'is-admin' : ''}" style="${isDisabled ? 'pointer-events:none;' : ''}" onclick="permToggleColAdmin('${proj.id}', '${cid}', ${!isColAdmin})">
@@ -1926,7 +2006,6 @@ function renderCollectionListHTML(proj, userProj) {
     });
     return html;
 }
-
 function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
     let html = '';
     PERM_RESOURCES.forEach(res => {

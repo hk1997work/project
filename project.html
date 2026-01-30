@@ -267,20 +267,18 @@
     </div>
 </div>
 
-<div class="permission-drawer-overlay" id="perm-drawer-overlay" onclick="closePermissionDrawer()"></div>
-<div class="permission-drawer" id="perm-drawer">
-    <div class="perm-drawer-header">
-        <div class="perm-user-info">
-            <h2 class="perm-title">Permission Configuration</h2>
-            <div class="perm-subtitle" id="perm-user-display">Loading...</div>
+<div class="crud-modal-overlay" id="perm-drawer-overlay">
+    <div class="crud-modal" id="perm-drawer" onclick="event.stopPropagation()" style="width: 700px; max-width: 95vw;">
+        <div id="perm-drawer-header" style="display:flex; justify-content:space-between; align-items:center; height:auto; margin-bottom: 20px;">
         </div>
-        <button class="sb-close" onclick="closePermissionDrawer()"><i data-lucide="x" size="20"></i></button>
-    </div>
-    <div class="perm-drawer-content" id="perm-content-container">
-    </div>
-    <div class="perm-drawer-footer">
-        <button class="btn-secondary" onclick="closePermissionDrawer()">Cancel</button>
-        <button class="btn-primary" onclick="savePermissionDrawer()">Save Configuration</button>
+
+        <div class="form-grid" id="perm-content-container" style="display:block; padding:0;">
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closePermissionDrawer()">Cancel</button>
+            <button class="btn-primary" onclick="savePermissionDrawer()">Save</button>
+        </div>
     </div>
 </div>
 
