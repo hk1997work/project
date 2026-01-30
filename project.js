@@ -1544,7 +1544,7 @@ function openLinkModal() {
         lucide.createIcons();
 
         if (submitBtn) {
-            submitBtn.textContent = "Save Links";
+            submitBtn.textContent = "Save";
             submitBtn.style.backgroundColor = "";
             submitBtn.onclick = saveLinkData;
             submitBtn.disabled = false;
