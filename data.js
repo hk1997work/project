@@ -183,9 +183,7 @@ const dbSchema = {
         label: "Users",
         icon: "users",
         pk: "user_id",
-        columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"}, {
-            key: "role_name", label: "Role", type: "select", options: ["Admin", "Manage", "User"]
-        }, {key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true}, {key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true}, {key: "orcid", label: "ORCID", type: "text"}, {key: "active", label: "Active", type: "boolean"}]
+        columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"}, {key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true}, {key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true}, {key: "orcid", label: "ORCID", type: "text"}, {key: "active", label: "Active", type: "boolean"}]
     }, role: {
         label: "Roles", icon: "shield", pk: "role_id", columns: [{key: "role_id", label: "ID", type: "number", readonly: true}, {key: "name", label: "Role Name", type: "text"}, {key: "description", label: "Description", type: "text"}]
     }, site: {

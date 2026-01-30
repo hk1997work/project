@@ -1080,7 +1080,7 @@ function getDataForTable(tableName) {
                 isCurrent = activeCollection.contributors.some(c => c.name === u.name);
             } else isCurrent = (!!pEntry) || isInAnyCollectionOfProject;
             return {
-                user_id: u.uid, username: u.name.split(' ').join('.').toLowerCase() + (i + 1), password: "hashed_pwd_placeholder", name: u.name, orcid: u.uid, email: u.email, role_name: ["Admin", "Manage", "User"][i % 3], project_role: pRole, collection_role: cRole, active: true, _isCurrent: isCurrent
+                user_id: u.uid, username: u.name.split(' ').join('.').toLowerCase() + (i + 1), password: "hashed_pwd_placeholder", name: u.name, orcid: u.uid, email: u.email, project_role: pRole, collection_role: cRole, active: true, _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'project_contributor') {
