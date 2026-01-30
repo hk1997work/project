@@ -1792,21 +1792,26 @@ function savePermissionDrawer() {
    Updated Rendering Logic (Unified Styles)
    ========================================================================== */
 function renderPermissionDrawer() {
-    const headerContainer = document.querySelector('.perm-drawer-header'); // 注意这里是直接操作DOM，或者你可以把header HTML生成在container里
     const container = document.getElementById('perm-content-container');
     const isGlobalAdmin = currentPermDraft.role === 'super_admin';
 
-    // 更新 Header 内容 (直接修改 DOM 以避免重绘整个 drawer 导致闪烁，或者这里为了简单直接覆盖 HTML)
-    // 注意：因为你的 HTML 结构中 header 是独立的，我们需要通过 ID 或 Class 获取并更新它
-    // 为了保持一致性，我们在这里重新渲染 Header 内部的内容
-    // 假设 perm-drawer-header 里面有 .perm-user-info 和一个空的 .perm-header-right
+    // [修复] 获取当前正在编辑的单个用户 ID（如果是批量编辑，则为 null）
+    const currentPermUserId = currentPermUserIds.length === 1 ? currentPermUserIds[0] : null;
 
-    // 重新构建 Header HTML
-    const userRow = getDataForTable('user').find(u => String(u.user_id) === String(currentPermUserId));
+    // 更新 Header 内容
+    const userRow = currentPermUserId
+        ? getDataForTable('user').find(u => String(u.user_id) === String(currentPermUserId))
+        : null;
+
     const headerHtml = `
         <div class="perm-user-info">
             <h2>Permission Configuration</h2>
-            <div class="perm-user-display"><i data-lucide="user" size="14"></i> ${userRow ? userRow.name : 'Unknown'} <span style="opacity:0.3; margin:0 6px">|</span> ${userRow ? userRow.email : ''}</div>
+            <div class="perm-user-display">
+                ${userRow
+        ? `<i data-lucide="user" size="14"></i> ${userRow.name} <span style="opacity:0.3; margin:0 6px">|</span> ${userRow.email}`
+        : `<i data-lucide="users" size="14"></i> <span style="font-weight:700; color:var(--brand);">${currentPermUserIds.length} Users Selected</span> <span style="opacity:0.5; margin:0 8px">|</span> Batch Configuration`
+    }
+            </div>
         </div>
         <div class="perm-header-right">
             <div class="perm-admin-switch ${isGlobalAdmin ? 'active' : ''}">
@@ -1819,20 +1824,21 @@ function renderPermissionDrawer() {
         </div>
     `;
 
+    // 动态更新 Header DOM
     const headerEl = document.querySelector('.perm-drawer-header');
     if (headerEl) headerEl.innerHTML = headerHtml;
 
-    // 构建内容区域
     let html = '';
 
-    // 遮罩层：当 Administrator 开启时显示
+    // 全局管理员遮罩提示
     html += `
     <div class="perm-hidden-overlay ${isGlobalAdmin ? 'visible' : ''}">
-        <i data-lucide="shield-check" size="48" style="opacity:0.2; margin-bottom:16px;"></i>
-        <div style="font-weight:700; font-size:1.1rem;">Administrator Access Enabled</div>
-        <div style="font-size:0.9rem; opacity:0.7;">This user has full access to all system resources.</div>
+        <i data-lucide="shield-check" size="64" style="opacity:0.1; margin-bottom:20px; color:var(--brand);"></i>
+        <div style="font-weight:800; font-size:1.2rem; color:var(--text-main);">Administrator Access Enabled</div>
+        <div style="font-size:0.95rem; opacity:0.6; margin-top:8px;">This user has full access to all system resources.</div>
     </div>`;
 
+    // 权限树容器
     html += `<div class="perm-tree-container" style="${isGlobalAdmin ? 'display:none;' : ''}">`;
 
     rawProjects.forEach(proj => {
@@ -1864,7 +1870,7 @@ function renderPermissionDrawer() {
                         <div class="perm-bulk-btn" onclick="permBulkSetCols('${pid}', 'admin')">Manage</div>
                         <div style="width:1px; height:12px; background:var(--border-color);"></div>
                         <div class="perm-bulk-btn" onclick="permBulkSetCols('${pid}', 'member')">User</div>
-                    </div>` : '<span style="font-size:0.75rem; color:var(--text-muted);">Full Project Access</span>'}
+                    </div>` : '<span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Full Project Access</span>'}
                 </div>
             </div>`;
 
@@ -1880,7 +1886,6 @@ function renderPermissionDrawer() {
     container.innerHTML = html;
     lucide.createIcons();
 }
-
 function renderCollectionListHTML(proj, userProj) {
     let html = '';
     const isProjAdmin = userProj.role === 'admin';
