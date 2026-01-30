@@ -2736,7 +2736,6 @@ select.th-filter-input {
     opacity: 1;
     pointer-events: auto;
 }
-
 .permission-drawer {
     position: fixed;
     top: 0;
@@ -2748,9 +2747,20 @@ select.th-filter-input {
     box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);
     z-index: 9001;
     transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    /* [修改] 动画更缓和 (0.6s) */
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
     display: flex;
     flex-direction: column;
+    will-change: transform;
+}
+
+/* [新增] 确保内容区域预留滚动条位置，防止跳动 */
+.perm-drawer-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    padding-bottom: 100px; /* 底部留白 */
+    scrollbar-gutter: stable; /* 关键属性：预留滚动条空间 */
 }
 
 .permission-drawer.active {
@@ -2902,17 +2912,140 @@ select.th-filter-input {
     transform: translateX(16px);
 }
 
-/* Expandable Body */
-.perm-body {
-    border-top: 1px solid var(--border-light);
-    background: var(--bg-surface-secondary);
-    padding: 16px;
-    display: none; /* Collapsed by default */
+/* ==========================================================================
+   Permission Drawer Animation & Layout Improvements
+   ========================================================================== */
+
+/* 1. 基础卡片样式优化 */
+.perm-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden; /* 关键：用于包含展开的内容 */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.perm-body.open {
-    display: block;
-    animation: slideDown 0.2s ease-out;
+.perm-card.active {
+    border-color: var(--brand);
+    background: var(--bg-surface-secondary);
+    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.05);
+}
+
+/* 2. 统一 Header 布局 */
+.perm-header-row,
+.perm-col-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px; /* 统一内边距 */
+    cursor: default;
+    min-height: 24px;
+}
+
+/* Collection Header 特殊调整（稍微紧凑一点，但保持对齐） */
+.perm-col-header {
+    padding: 12px 20px 12px 32px; /* 左侧增加缩进体现层级 */
+    border-top: 1px solid var(--border-color);
+    background: rgba(255,255,255,0.5);
+}
+
+.perm-col-item:first-child .perm-col-header {
+    border-top: none;
+}
+
+/* 3. 统一“展开/收起”动画核心代码 */
+/* Project Body & Collection Body */
+.perm-body,
+.perm-col-body {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+    visibility: hidden;
+    /* 缓动曲线优化：展开时快速启动慢速结束，收起时快速 */
+    transition:
+            max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.3s ease,
+            transform 0.3s ease,
+            visibility 0.4s;
+    will-change: max-height, opacity, transform;
+    overflow: hidden;
+}
+
+/* 展开状态 */
+.perm-body.open,
+.perm-col-body.open {
+    max-height: 1000px; /* 足够大以容纳内容 */
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    /* 展开后加一点底部边距，呼吸感 */
+    padding-bottom: 16px;
+}
+
+/* Collection Body 额外缩进 */
+.perm-col-body {
+    padding-left: 32px;
+    padding-right: 20px;
+    background: rgba(255,255,255,0.3);
+}
+
+/* 4. Access 标签统一 */
+.perm-tag-access {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--brand);
+    background: var(--brand-tint);
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+    height: 20px;
+    line-height: 1;
+}
+
+/* 5. 复选框与文本对齐 */
+.perm-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* 增加间距 */
+    cursor: pointer;
+    flex: 1; /* 让点击区域撑满左侧 */
+}
+
+/* 6. 统一开关与图标区域 */
+.perm-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* 旋转图标统一类 */
+.icon-chevron {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.icon-chevron.rotated {
+    transform: rotate(180deg);
+    color: var(--brand); /* 展开时变色 */
+    opacity: 1;
+}
+
+/* 原子权限项布局 (Collection 内部) */
+.atomic-perm-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+.atomic-perm-item:last-child {
+    border-bottom: none;
 }
 
 /* Collection Item Styles */

@@ -1647,12 +1647,11 @@ function saveResetPassword() {
    ========================================================================== */
 
 // Mock Backend Permission Database (Key: UserID, Value: Permission Object)
-// Structure: { role: 'user'|'super_admin', projects: { [pid]: { role: 'member'|'admin', collections: { [cid]: { role:'member'|'admin', permissions: {...} } } } } }
 const USER_PERMISSIONS_DB = {};
 
 // Current permission draft being edited
 let currentPermDraft = null;
-let currentPermUserId = null;
+let currentPermUserIds = [];
 
 // Resource Definitions
 const PERM_RESOURCES = [
@@ -1666,28 +1665,91 @@ const PERM_RESOURCES = [
 function initUserPermission(userId) {
     if (!USER_PERMISSIONS_DB[userId]) {
         USER_PERMISSIONS_DB[userId] = {
-            role: 'user', // Default to standard user
+            role: 'user',
             projects: {}
         };
     }
-    // Deep copy for editing to avoid direct mutation of the "database"
+    // Deep copy for editing
     return JSON.parse(JSON.stringify(USER_PERMISSIONS_DB[userId]));
 }
 
-// Open Permission Drawer (Entry Point)
+// Update Toolbar State
+function updateToolbarState() {
+    const editBtn = document.getElementById('btn-edit');
+    const delBtn = document.getElementById('btn-delete');
+    const linkBtn = document.getElementById('btn-link');
+    const resetBtn = document.getElementById('btn-reset-pwd');
+    const permBtn = document.getElementById('btn-permission');
+    const count = selectedCrudIds.length;
+
+    if (editBtn) {
+        editBtn.disabled = (count !== 1);
+        editBtn.style.display = '';
+    }
+    if (delBtn) {
+        delBtn.disabled = (count === 0);
+        delBtn.style.display = '';
+    }
+
+    if (linkBtn) {
+        if (currentTable === 'project') {
+            linkBtn.style.display = 'inline-flex';
+            linkBtn.disabled = (count !== 1);
+        } else {
+            linkBtn.style.display = 'none';
+        }
+    }
+
+    if (resetBtn) {
+        if (currentTable === 'user') {
+            resetBtn.style.display = 'inline-flex';
+            resetBtn.disabled = (count !== 1);
+        } else {
+            resetBtn.style.display = 'none';
+        }
+    }
+
+    if (permBtn) {
+        if (currentTable === 'user') {
+            permBtn.style.display = 'inline-flex';
+            permBtn.disabled = (count === 0);
+        } else {
+            permBtn.style.display = 'none';
+        }
+    }
+
+    if (currentTable === 'project' && count === 1) {
+        const currentUser = document.querySelector('.user-name-text').textContent.trim();
+        const currentData = getDataForTable('project');
+        const selectedItem = currentData.find(p => String(p.project_id) === String(selectedCrudIds[0]));
+
+        if (selectedItem && selectedItem.creator_name !== currentUser) {
+            if (editBtn) editBtn.style.display = 'none';
+        }
+    }
+}
+
+// Open Permission Drawer
 function handleToolbarPermission() {
-    if (selectedCrudIds.length !== 1) return; // Only supports single user editing
+    if (selectedCrudIds.length === 0) return;
 
-    const userId = selectedCrudIds[0];
-    const userRow = getDataForTable('user').find(u => String(u.user_id) === String(userId));
-    if (!userRow) return;
+    currentPermUserIds = [...selectedCrudIds];
 
-    currentPermUserId = userId;
-    currentPermDraft = initUserPermission(userId);
+    // Single User Mode
+    if (currentPermUserIds.length === 1) {
+        const userId = currentPermUserIds[0];
+        const userRow = getDataForTable('user').find(u => String(u.user_id) === String(userId));
+        currentPermDraft = initUserPermission(userId);
 
-    // Update Drawer Title
-    document.getElementById('perm-user-display').innerHTML =
-        `<i data-lucide="user" size="14"></i> ${userRow.name} <span style="opacity:0.5; margin:0 8px">|</span> ${userRow.email}`;
+        document.getElementById('perm-user-display').innerHTML =
+            `<i data-lucide="user" size="14"></i> ${userRow ? userRow.name : 'User'} <span style="opacity:0.5; margin:0 8px">|</span> ${userRow ? userRow.email : ''}`;
+    } else {
+        // Batch Mode
+        currentPermDraft = { role: 'user', projects: {} };
+
+        document.getElementById('perm-user-display').innerHTML =
+            `<i data-lucide="users" size="14"></i> <span style="font-weight:700; color:var(--brand);">${currentPermUserIds.length} Users Selected</span> <span style="opacity:0.5; margin:0 8px">|</span> Batch Configuration`;
+    }
 
     renderPermissionDrawer();
 
@@ -1696,21 +1758,20 @@ function handleToolbarPermission() {
     lucide.createIcons();
 }
 
-// Close Permission Drawer
 function closePermissionDrawer() {
     document.getElementById('perm-drawer-overlay').classList.remove('active');
     document.getElementById('perm-drawer').classList.remove('active');
     currentPermDraft = null;
-    currentPermUserId = null;
+    currentPermUserIds = [];
 }
 
-// Save Permission Configuration
+// Save Permissions
 function savePermissionDrawer() {
-    if (currentPermUserId && currentPermDraft) {
-        USER_PERMISSIONS_DB[currentPermUserId] = JSON.parse(JSON.stringify(currentPermDraft));
-        console.log("Permission Saved:", USER_PERMISSIONS_DB[currentPermUserId]);
+    if (currentPermUserIds.length > 0 && currentPermDraft) {
+        currentPermUserIds.forEach(uid => {
+            USER_PERMISSIONS_DB[uid] = JSON.parse(JSON.stringify(currentPermDraft));
+        });
 
-        // Simple visual feedback
         const btn = document.querySelector('.perm-drawer-footer .btn-primary');
         const originText = btn.textContent;
         btn.textContent = "Saved!";
@@ -1724,49 +1785,51 @@ function savePermissionDrawer() {
 }
 
 // -----------------------------------------------------------------------------
-// Rendering Logic (Core)
+// Rendering Logic
 // -----------------------------------------------------------------------------
+
+/* ==========================================================================
+   Updated Rendering Logic (Unified Styles)
+   ========================================================================== */
 
 function renderPermissionDrawer() {
     const container = document.getElementById('perm-content-container');
     const isGlobalAdmin = currentPermDraft.role === 'super_admin';
 
+    // Header Admin Switch Injection (保持之前的逻辑)
+    const header = document.querySelector('.perm-drawer-header');
+    const existingCloseBtn = header.querySelector('.sb-close');
+    if (existingCloseBtn) existingCloseBtn.remove();
+
+    let adminContainer = document.getElementById('perm-admin-toggle-container');
+    if (!adminContainer) {
+        adminContainer = document.createElement('div');
+        adminContainer.id = 'perm-admin-toggle-container';
+        adminContainer.style.cssText = "margin-left: auto; display: flex; align-items: center; gap: 12px;";
+        header.appendChild(adminContainer);
+    }
+    adminContainer.innerHTML = `
+        <span style="font-size: 0.9rem; font-weight: 700; transition:color 0.2s; ${isGlobalAdmin ? 'color:var(--brand);' : 'color:var(--text-secondary);'}">Administrator</span>
+        <label class="perm-switch-label" style="margin:0;">
+            <input type="checkbox" class="perm-switch-input" ${isGlobalAdmin ? 'checked' : ''} onchange="toggleGlobalAdmin()">
+            <div class="perm-switch-track"><div class="perm-switch-thumb"></div></div>
+        </label>
+    `;
+
+    // --- Body Content ---
     let html = '';
+    const listStyle = isGlobalAdmin ? 'opacity:0.4; pointer-events:none; filter:grayscale(1);' : '';
 
-    // 1. Global Admin Card
-    html += `
-    <div class="perm-card ${isGlobalAdmin ? 'global-admin-card' : ''}">
-        <div class="perm-header-row" onclick="toggleGlobalAdmin()">
-            <div class="perm-header-left">
-                <div style="background:${isGlobalAdmin ? '#f59e0b' : 'var(--bg-capsule)'}; padding:8px; border-radius:8px; color:${isGlobalAdmin ? 'white' : 'var(--text-muted)'}">
-                    <i data-lucide="crown" size="20"></i>
-                </div>
-                <div>
-                    <div class="perm-label">Global Super Admin</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted)">Has full access to all projects system-wide</div>
-                </div>
-            </div>
-            <label class="perm-switch-label">
-                <input type="checkbox" class="perm-switch-input" ${isGlobalAdmin ? 'checked' : ''}>
-                <div class="perm-switch-track"><div class="perm-switch-thumb"></div></div>
-            </label>
-        </div>
-    </div>`;
-
-    // 2. Project List (Hidden if Global Admin)
-    const listStyle = isGlobalAdmin ? 'opacity:0.5; pointer-events:none; filter:grayscale(1);' : '';
     html += `<div style="${listStyle} transition:all 0.3s;">
-        <div style="margin:20px 0 12px 0; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:8px;">
-            <i data-lucide="layers" size="16"></i> Project Permissions
+        <div style="margin:0 0 16px 4px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+            <i data-lucide="layers" size="16"></i> Projects
         </div>`;
 
     rawProjects.forEach(proj => {
         const pid = String(proj.id);
         const userProj = currentPermDraft.projects[pid];
-        const hasAccess = !!userProj; // Is project checked?
+        const hasAccess = !!userProj;
         const isProjAdmin = userProj?.role === 'admin';
-        // Determine expansion: if accessed and not admin, or just toggled, default to expanded
-        // Using a temporary _expanded flag in the data object for UI control
         const isExpanded = userProj?._expanded === true;
 
         html += `
@@ -1774,18 +1837,19 @@ function renderPermissionDrawer() {
             <div class="perm-header-row">
                 <div class="perm-header-left" onclick="permToggleProject('${pid}')">
                     <input type="checkbox" class="perm-checkbox" ${hasAccess ? 'checked' : ''}>
-                    <span class="perm-label">${proj.name}</span>
-                    ${hasAccess ? `<span class="perm-meta" style="color:var(--brand); background:var(--brand-tint)">Access</span>` : ''}
+                    <span class="perm-label" style="font-weight:600; font-size:0.95rem;">${proj.name}</span>
+                    ${hasAccess ? `<span class="perm-tag-access">Access</span>` : ''}
                 </div>
+
                 ${hasAccess ? `
-                <div style="display:flex; align-items:center; gap:16px;">
-                    <label class="perm-switch-label" title="Set as Project Admin">
-                        <span>Project Admin</span>
+                <div class="perm-controls-right">
+                    <label class="perm-switch-label" title="Set as Project Manager">
+                        <span style="font-size:0.8rem; font-weight:500; color:var(--text-secondary);">Project Manager</span>
                         <input type="checkbox" class="perm-switch-input" ${isProjAdmin ? 'checked' : ''} onchange="permToggleProjAdmin('${pid}', this.checked)">
                         <div class="perm-switch-track"><div class="perm-switch-thumb"></div></div>
                     </label>
-                    <button class="nav-btn-simple" onclick="permToggleExpand('${pid}')" ${isProjAdmin ? 'disabled style="opacity:0;"' : ''}>
-                        <i data-lucide="chevron-down" size="16" style="transform: rotate(${isExpanded ? 180 : 0}deg); transition:transform 0.2s;"></i>
+                    <button class="nav-btn-simple" style="width:28px; height:28px;" onclick="permToggleExpand('${pid}')" ${isProjAdmin ? 'disabled style="opacity:0; cursor:default;"' : ''}>
+                        <i data-lucide="chevron-down" size="18" class="icon-chevron ${isExpanded ? 'rotated' : ''}"></i>
                     </button>
                 </div>` : ''}
             </div>
@@ -1797,15 +1861,15 @@ function renderPermissionDrawer() {
     });
 
     html += `</div>`;
-
     container.innerHTML = html;
     lucide.createIcons();
 }
 
-// Helper: Render Collection List
 function renderCollectionListHTML(proj, userProj) {
     if (!userProj) return '';
-    let html = `<div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; font-weight:700;">Collections</div>`;
+
+    // 增加一点顶部间距，让 Collection 列表和 Project Header 分开
+    let html = `<div style="margin-top:8px;">`;
 
     proj.collections.forEach(col => {
         const cid = String(col.id);
@@ -1817,18 +1881,22 @@ function renderCollectionListHTML(proj, userProj) {
         html += `
         <div class="perm-col-item">
             <div class="perm-col-header">
-                <div style="display:flex; align-items:center; gap:8px;" onclick="permToggleCollection('${proj.id}', '${cid}')">
+                <div class="perm-header-left" onclick="permToggleCollection('${proj.id}', '${cid}')">
                     <input type="checkbox" class="perm-checkbox" ${hasColAccess ? 'checked' : ''}>
-                    <span style="font-size:0.9rem; font-weight:500;">${col.name}</span>
+                    <span class="perm-label" style="font-size:0.9rem;">${col.name}</span>
+                    ${hasColAccess ? `<span class="perm-tag-access">Access</span>` : ''}
                 </div>
+
                 ${hasColAccess ? `
-                <div style="display:flex; align-items:center; gap:12px;">
+                <div class="perm-controls-right">
                     <label class="perm-switch-label" style="font-size:0.7rem;">
-                        <span>Manager</span>
+                        <span style="color:var(--text-muted);">Collection Manager</span>
                         <input type="checkbox" class="perm-switch-input" ${isColAdmin ? 'checked' : ''} onchange="permToggleColAdmin('${proj.id}', '${cid}', this.checked)">
                         <div class="perm-switch-track" style="width:28px; height:16px;"><div class="perm-switch-thumb" style="width:12px; height:12px;"></div></div>
                     </label>
-                    <i data-lucide="settings-2" size="14" style="cursor:pointer; opacity:0.6;" onclick="permToggleColExpand('${proj.id}', '${cid}')"></i>
+                    <button class="nav-btn-simple" style="width:24px; height:24px;" onclick="permToggleColExpand('${proj.id}', '${cid}')" ${isColAdmin ? 'disabled style="opacity:0; cursor:default;"' : ''}>
+                        <i data-lucide="chevron-down" size="16" class="icon-chevron ${isColExpanded ? 'rotated' : ''}"></i>
+                    </button>
                 </div>` : ''}
             </div>
             
@@ -1837,10 +1905,11 @@ function renderCollectionListHTML(proj, userProj) {
             </div>
         </div>`;
     });
+
+    html += `</div>`;
     return html;
 }
-
-// Helper: Render Atomic Permissions
+// 确保这个函数的结构简单干净，样式由 CSS 控制
 function renderAtomicPermsHTML(pid, cid, userCol) {
     if (!userCol) return '';
     let html = '';
@@ -1848,12 +1917,14 @@ function renderAtomicPermsHTML(pid, cid, userCol) {
         const p = (userCol.permissions && userCol.permissions[res.key]) || { read: false, write: false };
         html += `
         <div class="atomic-perm-item">
-            <div class="atomic-label"><i data-lucide="${res.icon}" size="14"></i> ${res.label}</div>
-            <div class="atomic-controls">
-                <label class="atomic-cb-label">
+            <div class="atomic-label" style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-secondary);">
+                <i data-lucide="${res.icon}" size="14" style="opacity:0.7"></i> ${res.label}
+            </div>
+            <div class="atomic-controls" style="display:flex; gap:16px;">
+                <label class="atomic-cb-label" style="font-size:0.8rem; display:flex; align-items:center; gap:4px; cursor:pointer;">
                     <input type="checkbox" ${p.read ? 'checked' : ''} onchange="permUpdateAtomic('${pid}', '${cid}', '${res.key}', 'read', this.checked)"> Read
                 </label>
-                <label class="atomic-cb-label">
+                <label class="atomic-cb-label" style="font-size:0.8rem; display:flex; align-items:center; gap:4px; cursor:pointer;">
                     <input type="checkbox" ${p.write ? 'checked' : ''} onchange="permUpdateAtomic('${pid}', '${cid}', '${res.key}', 'write', this.checked)"> Write
                 </label>
             </div>
@@ -1873,10 +1944,8 @@ function toggleGlobalAdmin() {
 
 function permToggleProject(pid) {
     if (currentPermDraft.projects[pid]) {
-        // Uncheck: Remove permissions
         delete currentPermDraft.projects[pid];
     } else {
-        // Check: Init as member and expand by default
         currentPermDraft.projects[pid] = { role: 'member', collections: {}, _expanded: true };
     }
     renderPermissionDrawer();
@@ -1885,7 +1954,6 @@ function permToggleProject(pid) {
 function permToggleProjAdmin(pid, isAdmin) {
     if (currentPermDraft.projects[pid]) {
         currentPermDraft.projects[pid].role = isAdmin ? 'admin' : 'member';
-        // If set to admin, collapse details (implies full access)
         if (isAdmin) currentPermDraft.projects[pid]._expanded = false;
         else currentPermDraft.projects[pid]._expanded = true;
     }
@@ -1906,7 +1974,6 @@ function permToggleCollection(pid, cid) {
     if (proj.collections[cid]) {
         delete proj.collections[cid];
     } else {
-        // Init as member and expand atomic permissions
         proj.collections[cid] = { role: 'member', permissions: {}, _expanded: true };
     }
     renderPermissionDrawer();
@@ -1916,7 +1983,7 @@ function permToggleColAdmin(pid, cid, isAdmin) {
     const col = currentPermDraft.projects[pid]?.collections[cid];
     if (col) {
         col.role = isAdmin ? 'admin' : 'member';
-        col._expanded = !isAdmin; // Admin doesn't need to see fine-grained permissions
+        col._expanded = !isAdmin;
     }
     renderPermissionDrawer();
 }
@@ -1935,17 +2002,17 @@ function permUpdateAtomic(pid, cid, resKey, type, val) {
 
     const p = col.permissions[resKey];
 
-    // Coupling logic
     if (type === 'write') {
         p.write = val;
-        if (val) p.read = true; // Write implies Read
+        if (val) p.read = true;
     } else {
         p.read = val;
-        if (!val) p.write = false; // No Read implies No Write
+        if (!val) p.write = false;
     }
 
     renderPermissionDrawer();
 }
+
 function handleToolbarDelete() {
     if (selectedCrudIds.length > 0) openDeleteModal();
 }
