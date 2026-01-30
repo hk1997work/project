@@ -2718,7 +2718,7 @@ select.th-filter-input {
     padding-right: 24px;
 }
 
-/* --- Permission Drawer Styles --- */
+
 .permission-drawer-overlay {
     position: fixed;
     top: 0;
@@ -2736,31 +2736,21 @@ select.th-filter-input {
     opacity: 1;
     pointer-events: auto;
 }
+
 .permission-drawer {
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
-    width: 600px;
-    max-width: 90vw;
+    width: 700px;
+    max-width: 95vw;
     background: var(--bg-surface);
     box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);
     z-index: 9001;
     transform: translateX(100%);
-    /* [修改] 动画更缓和 (0.6s) */
-    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     display: flex;
     flex-direction: column;
-    will-change: transform;
-}
-
-/* [新增] 确保内容区域预留滚动条位置，防止跳动 */
-.perm-drawer-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px;
-    padding-bottom: 100px; /* 底部留白 */
-    scrollbar-gutter: stable; /* 关键属性：预留滚动条空间 */
 }
 
 .permission-drawer.active {
@@ -2774,29 +2764,108 @@ select.th-filter-input {
     justify-content: space-between;
     align-items: center;
     background: var(--bg-surface);
+    flex-shrink: 0;
+    height: 80px;
+    box-sizing: border-box;
 }
 
-.perm-title {
+.perm-user-info h2 {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-main);
-    margin: 0;
+    margin: 0 0 4px 0;
 }
 
-.perm-subtitle {
+.perm-user-display {
     font-size: 0.85rem;
     color: var(--text-muted);
-    margin-top: 4px;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
+.perm-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Administrator Switch Styling */
+.perm-admin-switch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--bg-capsule);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+}
+
+.perm-admin-switch.active {
+    background: #fffbeb;
+    border-color: #fcd34d;
+}
+
+[data-theme="dark"] .perm-admin-switch.active {
+    background: #451a03;
+    border-color: #d97706;
+}
+
+.perm-admin-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.perm-admin-switch.active .perm-admin-label {
+    color: #b45309;
+}
+
+[data-theme="dark"] .perm-admin-switch.active .perm-admin-label {
+    color: #fbbf24;
+}
+
+.perm-switch-track {
+    width: 40px;
+    height: 22px;
+    background: var(--border-color);
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.perm-switch-thumb {
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+input:checked + .perm-switch-track {
+    background: var(--brand);
+}
+
+.perm-admin-switch.active input:checked + .perm-switch-track {
+    background: #f59e0b;
+}
+
+input:checked + .perm-switch-track .perm-switch-thumb {
+    transform: translateX(18px);
+}
+
 .perm-drawer-content {
     flex: 1;
     overflow-y: auto;
-    padding: 24px;
-    background: var(--bg-main);
+    padding: 0;
+    background: var(--bg-page);
+    position: relative;
 }
 
 .perm-drawer-footer {
@@ -2806,336 +2875,241 @@ select.th-filter-input {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+    flex-shrink: 0;
 }
 
-/* Permission Card Component */
-.perm-card {
+.perm-tree-container {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: opacity 0.3s;
+}
+
+.perm-hidden-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-surface);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.perm-hidden-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.perm-proj-group {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 16px;
-    transition: all 0.2s;
+    transition: box-shadow 0.2s;
 }
 
-.perm-card.active {
-    border-color: var(--brand);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+.perm-proj-group:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border-color: var(--border-light);
 }
 
-.perm-card.disabled {
-    opacity: 0.6;
-    pointer-events: none;
-    filter: grayscale(1);
+.perm-row {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    min-height: 56px;
 }
 
-/* Header Row (Project/Collection) */
-.perm-header-row {
-    padding: 16px;
+.perm-row.is-project {
+    background: var(--bg-surface-secondary);
+}
+
+.perm-row:last-child {
+    border-bottom: none;
+}
+
+.perm-col-info {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 100%;
+    box-sizing: border-box;
+    border-right: 1px solid var(--border-color);
+}
+
+.perm-indent {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+.perm-name-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.perm-controls {
+    padding: 8px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    cursor: pointer;
-    user-select: none;
-}
-
-.perm-header-row:hover {
-    background: var(--bg-hover);
-}
-
-.perm-header-left {
-    display: flex;
-    align-items: center;
     gap: 12px;
 }
 
-.perm-checkbox {
+.perm-role-select {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-capsule);
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    transition: 0.2s;
+    user-select: none;
+    min-width: 80px;
+    justify-content: center;
+}
+
+.perm-role-select:hover {
+    background: var(--bg-surface);
+    border-color: var(--brand);
+    color: var(--brand);
+}
+
+.perm-role-select.is-admin {
+    background: var(--brand);
+    color: white;
+}
+
+.perm-role-select.is-admin:hover {
+    background: var(--brand-hover);
+}
+
+/* Bulk Actions Group */
+.perm-bulk-group {
+    display: flex;
+    align-items: center;
+    background: var(--bg-capsule);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+}
+
+.perm-bulk-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 0 6px;
+    text-transform: uppercase;
+}
+
+.perm-bulk-btn {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.perm-bulk-btn:hover {
+    background: var(--bg-surface);
+    color: var(--brand);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.perm-matrix {
+    display: flex;
+    gap: 4px;
+}
+
+.perm-res-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+}
+
+.perm-res-btn:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+}
+
+.perm-res-btn.active {
+    background: var(--brand-tint);
+    border-color: var(--brand);
+    color: var(--brand);
+}
+
+.perm-res-btn.active-write {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: white;
+}
+
+.perm-res-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.2s;
+    margin-bottom: 6px;
+    z-index: 10;
+}
+
+.perm-res-btn:hover .perm-res-tooltip {
+    opacity: 1;
+}
+
+.perm-check-wrapper {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.perm-cb {
     width: 18px;
     height: 18px;
     accent-color: var(--brand);
     cursor: pointer;
-}
-
-.perm-label {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--text-main);
-}
-
-.perm-meta {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: var(--bg-capsule);
-    color: var(--text-muted);
-}
-
-/* Switch Component */
-.perm-switch-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    cursor: pointer;
-}
-
-.perm-switch-input {
-    display: none;
-}
-
-.perm-switch-track {
-    width: 36px;
-    height: 20px;
-    background: var(--border-color);
-    border-radius: 10px;
-    position: relative;
-    transition: background 0.2s;
-}
-
-.perm-switch-input:checked + .perm-switch-track {
-    background: var(--brand);
-}
-
-.perm-switch-thumb {
-    width: 16px;
-    height: 16px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.perm-switch-input:checked + .perm-switch-track .perm-switch-thumb {
-    transform: translateX(16px);
-}
-
-/* ==========================================================================
-   Permission Drawer Animation & Layout Improvements
-   ========================================================================== */
-
-/* 1. 基础卡片样式优化 */
-.perm-card {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    margin-bottom: 12px;
-    overflow: hidden; /* 关键：用于包含展开的内容 */
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.perm-card.active {
-    border-color: var(--brand);
-    background: var(--bg-surface-secondary);
-    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.05);
-}
-
-/* 2. 统一 Header 布局 */
-.perm-header-row,
-.perm-col-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px; /* 统一内边距 */
-    cursor: default;
-    min-height: 24px;
-}
-
-/* Collection Header 特殊调整（稍微紧凑一点，但保持对齐） */
-.perm-col-header {
-    padding: 12px 20px 12px 32px; /* 左侧增加缩进体现层级 */
-    border-top: 1px solid var(--border-color);
-    background: rgba(255,255,255,0.5);
-}
-
-.perm-col-item:first-child .perm-col-header {
-    border-top: none;
-}
-
-/* 3. 统一“展开/收起”动画核心代码 */
-/* Project Body & Collection Body */
-.perm-body,
-.perm-col-body {
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(-10px);
-    visibility: hidden;
-    /* 缓动曲线优化：展开时快速启动慢速结束，收起时快速 */
-    transition:
-            max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-            opacity 0.3s ease,
-            transform 0.3s ease,
-            visibility 0.4s;
-    will-change: max-height, opacity, transform;
-    overflow: hidden;
-}
-
-/* 展开状态 */
-.perm-body.open,
-.perm-col-body.open {
-    max-height: 1000px; /* 足够大以容纳内容 */
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-    /* 展开后加一点底部边距，呼吸感 */
-    padding-bottom: 16px;
-}
-
-/* Collection Body 额外缩进 */
-.perm-col-body {
-    padding-left: 32px;
-    padding-right: 20px;
-    background: rgba(255,255,255,0.3);
-}
-
-/* 4. Access 标签统一 */
-.perm-tag-access {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--brand);
-    background: var(--brand-tint);
-    padding: 2px 8px;
-    border-radius: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-left: 8px;
-    height: 20px;
-    line-height: 1;
-}
-
-/* 5. 复选框与文本对齐 */
-.perm-header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px; /* 增加间距 */
-    cursor: pointer;
-    flex: 1; /* 让点击区域撑满左侧 */
-}
-
-/* 6. 统一开关与图标区域 */
-.perm-controls-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-/* 旋转图标统一类 */
-.icon-chevron {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: var(--text-secondary);
-    opacity: 0.7;
-}
-
-.icon-chevron.rotated {
-    transform: rotate(180deg);
-    color: var(--brand); /* 展开时变色 */
-    opacity: 1;
-}
-
-/* 原子权限项布局 (Collection 内部) */
-.atomic-perm-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px dashed var(--border-color);
-}
-.atomic-perm-item:last-child {
-    border-bottom: none;
-}
-
-/* Collection Item Styles */
-.perm-col-item {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-bottom: 8px;
-    overflow: hidden;
-}
-
-.perm-col-header {
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-}
-
-.perm-col-body {
-    padding: 12px;
-    border-top: 1px dashed var(--border-color);
-    display: none;
-}
-
-.perm-col-body.open {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-/* Atomic Permission Item */
-.atomic-perm-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    background: var(--bg-main);
-    border-radius: 6px;
-    border: 1px solid var(--border-light);
-}
-
-.atomic-label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.atomic-controls {
-    display: flex;
-    gap: 8px;
-}
-
-.atomic-cb-label {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.7rem;
-    cursor: pointer;
-}
-
-/* Animations */
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Global Admin Special Styles */
-.global-admin-card {
-    border: 2px solid #f59e0b;
-    background: #fffbeb;
-}
-
-.global-admin-card .perm-label {
-    color: #92400e;
-}
-
-[data-theme="dark"] .global-admin-card {
-    background: #451a03;
-    border-color: #d97706;
-}
-
-[data-theme="dark"] .global-admin-card .perm-label {
-    color: #fbbf24;
 }

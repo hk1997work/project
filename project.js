@@ -1791,148 +1791,219 @@ function savePermissionDrawer() {
 /* ==========================================================================
    Updated Rendering Logic (Unified Styles)
    ========================================================================== */
-
 function renderPermissionDrawer() {
+    const headerContainer = document.querySelector('.perm-drawer-header'); // 注意这里是直接操作DOM，或者你可以把header HTML生成在container里
     const container = document.getElementById('perm-content-container');
     const isGlobalAdmin = currentPermDraft.role === 'super_admin';
 
-    // Header Admin Switch Injection (保持之前的逻辑)
-    const header = document.querySelector('.perm-drawer-header');
-    const existingCloseBtn = header.querySelector('.sb-close');
-    if (existingCloseBtn) existingCloseBtn.remove();
+    // 更新 Header 内容 (直接修改 DOM 以避免重绘整个 drawer 导致闪烁，或者这里为了简单直接覆盖 HTML)
+    // 注意：因为你的 HTML 结构中 header 是独立的，我们需要通过 ID 或 Class 获取并更新它
+    // 为了保持一致性，我们在这里重新渲染 Header 内部的内容
+    // 假设 perm-drawer-header 里面有 .perm-user-info 和一个空的 .perm-header-right
 
-    let adminContainer = document.getElementById('perm-admin-toggle-container');
-    if (!adminContainer) {
-        adminContainer = document.createElement('div');
-        adminContainer.id = 'perm-admin-toggle-container';
-        adminContainer.style.cssText = "margin-left: auto; display: flex; align-items: center; gap: 12px;";
-        header.appendChild(adminContainer);
-    }
-    adminContainer.innerHTML = `
-        <span style="font-size: 0.9rem; font-weight: 700; transition:color 0.2s; ${isGlobalAdmin ? 'color:var(--brand);' : 'color:var(--text-secondary);'}">Administrator</span>
-        <label class="perm-switch-label" style="margin:0;">
-            <input type="checkbox" class="perm-switch-input" ${isGlobalAdmin ? 'checked' : ''} onchange="toggleGlobalAdmin()">
-            <div class="perm-switch-track"><div class="perm-switch-thumb"></div></div>
-        </label>
+    // 重新构建 Header HTML
+    const userRow = getDataForTable('user').find(u => String(u.user_id) === String(currentPermUserId));
+    const headerHtml = `
+        <div class="perm-user-info">
+            <h2>Permission Configuration</h2>
+            <div class="perm-user-display"><i data-lucide="user" size="14"></i> ${userRow ? userRow.name : 'Unknown'} <span style="opacity:0.3; margin:0 6px">|</span> ${userRow ? userRow.email : ''}</div>
+        </div>
+        <div class="perm-header-right">
+            <div class="perm-admin-switch ${isGlobalAdmin ? 'active' : ''}">
+                <span class="perm-admin-label">Administrator</span>
+                <label style="display:flex; align-items:center;">
+                    <input type="checkbox" style="display:none;" ${isGlobalAdmin ? 'checked' : ''} onchange="toggleGlobalAdmin()">
+                    <div class="perm-switch-track"><div class="perm-switch-thumb"></div></div>
+                </label>
+            </div>
+        </div>
     `;
 
-    // --- Body Content ---
-    let html = '';
-    const listStyle = isGlobalAdmin ? 'opacity:0.4; pointer-events:none; filter:grayscale(1);' : '';
+    const headerEl = document.querySelector('.perm-drawer-header');
+    if (headerEl) headerEl.innerHTML = headerHtml;
 
-    html += `<div style="${listStyle} transition:all 0.3s;">
-        <div style="margin:0 0 16px 4px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:8px;">
-            <i data-lucide="layers" size="16"></i> Projects
-        </div>`;
+    // 构建内容区域
+    let html = '';
+
+    // 遮罩层：当 Administrator 开启时显示
+    html += `
+    <div class="perm-hidden-overlay ${isGlobalAdmin ? 'visible' : ''}">
+        <i data-lucide="shield-check" size="48" style="opacity:0.2; margin-bottom:16px;"></i>
+        <div style="font-weight:700; font-size:1.1rem;">Administrator Access Enabled</div>
+        <div style="font-size:0.9rem; opacity:0.7;">This user has full access to all system resources.</div>
+    </div>`;
+
+    html += `<div class="perm-tree-container" style="${isGlobalAdmin ? 'display:none;' : ''}">`;
 
     rawProjects.forEach(proj => {
         const pid = String(proj.id);
         const userProj = currentPermDraft.projects[pid];
         const hasAccess = !!userProj;
         const isProjAdmin = userProj?.role === 'admin';
-        const isExpanded = userProj?._expanded === true;
+        const isExpanded = userProj?._expanded !== false;
 
-        html += `
-        <div class="perm-card ${hasAccess ? 'active' : ''}">
-            <div class="perm-header-row">
-                <div class="perm-header-left" onclick="permToggleProject('${pid}')">
-                    <input type="checkbox" class="perm-checkbox" ${hasAccess ? 'checked' : ''}>
-                    <span class="perm-label" style="font-weight:600; font-size:0.95rem;">${proj.name}</span>
-                    ${hasAccess ? `<span class="perm-tag-access">Access</span>` : ''}
+        html += `<div class="perm-proj-group">
+            <div class="perm-row is-project">
+                <div class="perm-col-info">
+                    <div class="perm-check-wrapper">
+                        <input type="checkbox" class="perm-cb" ${hasAccess ? 'checked' : ''} onchange="permToggleProject('${pid}')">
+                    </div>
+                    <div style="flex:1; min-width:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="permToggleExpand('${pid}')">
+                        <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" size="16" style="opacity:0.5"></i>
+                        <span class="perm-name-text">${proj.name}</span>
+                    </div>
                 </div>
+                <div class="perm-controls" style="${hasAccess ? '' : 'opacity:0.3; pointer-events:none;'}">
+                    <div class="perm-role-select ${isProjAdmin ? 'is-admin' : ''}" onclick="permToggleProjAdmin('${pid}', ${!isProjAdmin})">
+                        ${isProjAdmin ? '<i data-lucide="shield-check" size="12"></i> Manage' : '<i data-lucide="user" size="12"></i> User'}
+                    </div>
+                    
+                    ${!isProjAdmin ? `
+                    <div class="perm-bulk-group">
+                        <span class="perm-bulk-label">Batch</span>
+                        <div class="perm-bulk-btn" onclick="permBulkSetCols('${pid}', 'admin')">Manage</div>
+                        <div style="width:1px; height:12px; background:var(--border-color);"></div>
+                        <div class="perm-bulk-btn" onclick="permBulkSetCols('${pid}', 'member')">User</div>
+                    </div>` : '<span style="font-size:0.75rem; color:var(--text-muted);">Full Project Access</span>'}
+                </div>
+            </div>`;
 
-                ${hasAccess ? `
-                <div class="perm-controls-right">
-                    <label class="perm-switch-label" title="Set as Project Manager">
-                        <span style="font-size:0.8rem; font-weight:500; color:var(--text-secondary);">Project Manager</span>
-                        <input type="checkbox" class="perm-switch-input" ${isProjAdmin ? 'checked' : ''} onchange="permToggleProjAdmin('${pid}', this.checked)">
-                        <div class="perm-switch-track"><div class="perm-switch-thumb"></div></div>
-                    </label>
-                    <button class="nav-btn-simple" style="width:28px; height:28px;" onclick="permToggleExpand('${pid}')" ${isProjAdmin ? 'disabled style="opacity:0; cursor:default;"' : ''}>
-                        <i data-lucide="chevron-down" size="18" class="icon-chevron ${isExpanded ? 'rotated' : ''}"></i>
-                    </button>
-                </div>` : ''}
-            </div>
+        if (hasAccess && isExpanded && !isProjAdmin) {
+            html += renderCollectionListHTML(proj, userProj);
+        }
 
-            <div class="perm-body ${hasAccess && !isProjAdmin && isExpanded ? 'open' : ''}">
-                ${isProjAdmin ? '' : renderCollectionListHTML(proj, userProj)}
-            </div>
-        </div>`;
+        html += `</div>`;
     });
 
     html += `</div>`;
+
     container.innerHTML = html;
     lucide.createIcons();
 }
 
 function renderCollectionListHTML(proj, userProj) {
-    if (!userProj) return '';
-
-    // 增加一点顶部间距，让 Collection 列表和 Project Header 分开
-    let html = `<div style="margin-top:8px;">`;
+    let html = '';
+    const isProjAdmin = userProj.role === 'admin';
 
     proj.collections.forEach(col => {
         const cid = String(col.id);
         const userCol = userProj.collections && userProj.collections[cid];
-        const hasColAccess = !!userCol;
-        const isColAdmin = userCol?.role === 'admin';
-        const isColExpanded = userCol?._expanded === true;
+        const hasColAccess = !!userCol || isProjAdmin;
+
+        let colRole = 'none';
+        if (isProjAdmin) colRole = 'admin';
+        else if (userCol) colRole = userCol.role;
+
+        const isColAdmin = colRole === 'admin';
+        const isDisabled = isProjAdmin;
 
         html += `
-        <div class="perm-col-item">
-            <div class="perm-col-header">
-                <div class="perm-header-left" onclick="permToggleCollection('${proj.id}', '${cid}')">
-                    <input type="checkbox" class="perm-checkbox" ${hasColAccess ? 'checked' : ''}>
-                    <span class="perm-label" style="font-size:0.9rem;">${col.name}</span>
-                    ${hasColAccess ? `<span class="perm-tag-access">Access</span>` : ''}
+        <div class="perm-row">
+            <div class="perm-col-info">
+                <div class="perm-indent">
+                    <div style="width:1px; height:100%; background:var(--border-color);"></div>
+                    <div style="width:12px; height:1px; background:var(--border-color);"></div>
                 </div>
-
-                ${hasColAccess ? `
-                <div class="perm-controls-right">
-                    <label class="perm-switch-label" style="font-size:0.7rem;">
-                        <span style="color:var(--text-muted);">Collection Manager</span>
-                        <input type="checkbox" class="perm-switch-input" ${isColAdmin ? 'checked' : ''} onchange="permToggleColAdmin('${proj.id}', '${cid}', this.checked)">
-                        <div class="perm-switch-track" style="width:28px; height:16px;"><div class="perm-switch-thumb" style="width:12px; height:12px;"></div></div>
-                    </label>
-                    <button class="nav-btn-simple" style="width:24px; height:24px;" onclick="permToggleColExpand('${proj.id}', '${cid}')" ${isColAdmin ? 'disabled style="opacity:0; cursor:default;"' : ''}>
-                        <i data-lucide="chevron-down" size="16" class="icon-chevron ${isColExpanded ? 'rotated' : ''}"></i>
-                    </button>
-                </div>` : ''}
+                <div class="perm-check-wrapper">
+                    <input type="checkbox" class="perm-cb" ${hasColAccess ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} onchange="permToggleCollection('${proj.id}', '${cid}')">
+                </div>
+                <span class="perm-name-text" style="font-weight:500;">${col.name}</span>
             </div>
-            
-            <div class="perm-col-body ${hasColAccess && !isColAdmin && isColExpanded ? 'open' : ''}">
-                ${renderAtomicPermsHTML(proj.id, cid, userCol)}
+            <div class="perm-controls" style="${hasColAccess ? '' : 'opacity:0.3; pointer-events:none;'}">
+                 <div class="perm-role-select ${isColAdmin ? 'is-admin' : ''}" style="${isDisabled ? 'pointer-events:none;' : ''}" onclick="permToggleColAdmin('${proj.id}', '${cid}', ${!isColAdmin})">
+                    ${isColAdmin ? 'Manage' : 'User'}
+                </div>
+                <div class="perm-matrix">
+                    ${renderAtomicPermsHTML(proj.id, cid, userCol, isColAdmin || isProjAdmin)}
+                </div>
             </div>
         </div>`;
     });
-
-    html += `</div>`;
     return html;
 }
-// 确保这个函数的结构简单干净，样式由 CSS 控制
-function renderAtomicPermsHTML(pid, cid, userCol) {
-    if (!userCol) return '';
+
+function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
     let html = '';
     PERM_RESOURCES.forEach(res => {
-        const p = (userCol.permissions && userCol.permissions[res.key]) || { read: false, write: false };
+        let read = false;
+        let write = false;
+
+        if (forceFull) {
+            read = true;
+            write = true;
+        } else if (userCol && userCol.permissions && userCol.permissions[res.key]) {
+            read = userCol.permissions[res.key].read;
+            write = userCol.permissions[res.key].write;
+        }
+
+        let stateClass = '';
+        if (write) stateClass = 'active-write';
+        else if (read) stateClass = 'active';
+
+        const iconMap = {
+            'recording': 'mic',
+            'site': 'map-pin',
+            'tag': 'tag',
+            'review': 'check-circle'
+        };
+
+        // 状态循环逻辑：None -> Read -> Write -> None
+        const nextState = write ? 'none' : (read ? 'write' : 'read');
+
         html += `
-        <div class="atomic-perm-item">
-            <div class="atomic-label" style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-secondary);">
-                <i data-lucide="${res.icon}" size="14" style="opacity:0.7"></i> ${res.label}
-            </div>
-            <div class="atomic-controls" style="display:flex; gap:16px;">
-                <label class="atomic-cb-label" style="font-size:0.8rem; display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" ${p.read ? 'checked' : ''} onchange="permUpdateAtomic('${pid}', '${cid}', '${res.key}', 'read', this.checked)"> Read
-                </label>
-                <label class="atomic-cb-label" style="font-size:0.8rem; display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" ${p.write ? 'checked' : ''} onchange="permUpdateAtomic('${pid}', '${cid}', '${res.key}', 'write', this.checked)"> Write
-                </label>
-            </div>
+        <div class="perm-res-btn ${stateClass}" 
+             onclick="${forceFull ? '' : `permToggleAtomicState('${pid}', '${cid}', '${res.key}', '${nextState}')`}"
+             style="${forceFull ? 'cursor:default;' : ''}">
+            <i data-lucide="${iconMap[res.key] || 'circle'}" size="14"></i>
+            <div class="perm-res-tooltip">${res.label}: ${write ? 'Write' : (read ? 'Read' : 'None')}</div>
         </div>`;
     });
     return html;
 }
 
+function permToggleAtomicState(pid, cid, resKey, targetState) {
+    const col = currentPermDraft.projects[pid]?.collections[cid];
+    if (!col) return;
+    if (!col.permissions) col.permissions = {};
+    if (!col.permissions[resKey]) col.permissions[resKey] = { read: false, write: false };
+
+    const p = col.permissions[resKey];
+
+    if (targetState === 'write') {
+        p.read = true;
+        p.write = true;
+    } else if (targetState === 'read') {
+        p.read = true;
+        p.write = false;
+    } else {
+        p.read = false;
+        p.write = false;
+    }
+    renderPermissionDrawer();
+}
+
+function permBulkSetCols(pid, role) {
+    // 批量设置该项目下的所有集合
+    const proj = currentPermDraft.projects[pid];
+    if (!proj) return;
+
+    // 获取该项目的所有实际 Collection ID (从原始数据 rawProjects 中查找)
+    const rawProj = rawProjects.find(p => String(p.id) === pid);
+    if (!rawProj) return;
+
+    rawProj.collections.forEach(c => {
+        const cid = String(c.id);
+        if (!proj.collections[cid]) {
+            // 如果还没权限，先初始化
+            proj.collections[cid] = { role: role, permissions: {}, _expanded: false };
+        } else {
+            // 如果已有权限，更新角色
+            proj.collections[cid].role = role;
+        }
+    });
+
+    renderPermissionDrawer();
+}
 // -----------------------------------------------------------------------------
 // Interaction Logic
 // -----------------------------------------------------------------------------
