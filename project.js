@@ -1019,8 +1019,6 @@ function getDataForTable(tableName) {
         let source = (dataScope === 'current') ? [currentProject] : rawProjects;
         if (dataScope === 'all') {
             const currentUser = document.querySelector('.user-name-text').textContent.trim();
-            // 简单的权限模拟：如果不是管理员，只看自己的
-            // 实际逻辑通常由后端处理，前端这里只是模拟视图过滤
             // source = source.filter(p => p.creator === currentUser);
         }
         return source.map(p => {
@@ -1082,7 +1080,7 @@ function getDataForTable(tableName) {
                 sphere: c.sphere || "Biosphere",
                 url: (c.url && c.url !== "#") ? c.url : mockUrl,
                 public_access: c.active !== undefined ? c.active : false,
-                public_annotations: false,
+                public_tags: false,
                 creation_date: c.date,
                 _rawId: c.id,
                 _isCurrent: isCurrent
@@ -1091,7 +1089,6 @@ function getDataForTable(tableName) {
     } else if (tableName === 'site') {
         return currentSites;
     } else if (tableName === 'media') {
-        // 确保媒体数据已生成
         if (mediaItems.length > 0 && !mediaItems[0].enriched) enrichMediaData();
 
         return mediaItems.map(m => ({
@@ -1138,7 +1135,6 @@ function getDataForTable(tableName) {
                 p.collections.forEach(c => displayUsers.push(...c.contributors));
             });
         }
-        // 去重
         displayUsers = Array.from(new Map(displayUsers.map(u => [u.name, u])).values());
 
         return displayUsers.map((u, i) => {
@@ -1169,6 +1165,48 @@ function getDataForTable(tableName) {
                 _isCurrent: isCurrent
             };
         });
+    } else if (tableName === 'project_contributor') {
+        const source = (dataScope === 'current') ? [currentProject] : rawProjects;
+        let rows = [];
+        source.forEach(p => {
+            p.contributors.forEach(c => {
+                rows.push({
+                    composite_id: `${p.id}-${c.uid}`,
+                    project_id: p.name,
+                    user_id: c.name,
+                    contribution_role: c.role,
+                    added_date: "2025-01-15"
+                });
+            });
+        });
+        return rows;
+    } else if (tableName === 'collection_contributor') {
+        let sourceCols = [];
+        if (currColIdx > 0) {
+            sourceCols = [currentProject.collections[currColIdx - 1]];
+        } else {
+            // 所有当前项目的合集，或者根据scope
+            if (dataScope === 'all') {
+                rawProjects.forEach(p => sourceCols.push(...p.collections));
+            } else {
+                sourceCols = currentProject.collections;
+            }
+        }
+
+        let rows = [];
+        sourceCols.forEach(c => {
+            c.contributors.forEach(u => {
+                rows.push({
+                    composite_id: `${c.id}-${u.uid}`,
+                    collection_id: c.name,
+                    user_id: u.name,
+                    contribution_role: u.role,
+                    added_date: "2025-01-16"
+                });
+            });
+        });
+        return rows;
+
     } else if (tableName === 'annotation') {
         return staticMockDB.annotation || [];
     } else if (tableName === 'annotation_review') {
@@ -2295,7 +2333,6 @@ function openCrudModal(mode, id = null) {
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
 
-    // 配置保存按钮
     if (submitBtn) {
         submitBtn.textContent = "Save";
         submitBtn.style.backgroundColor = "";
@@ -2306,7 +2343,6 @@ function openCrudModal(mode, id = null) {
     const itemName = schema.itemLabel || schema.label.slice(0, -1);
     title.textContent = mode === 'edit' ? `Edit ${itemName}` : `New ${itemName}`;
 
-    // 如果是编辑模式，查找当前行数据
     let currentRow = {};
     if (mode === 'edit') {
         const currentData = getDataForTable(currentTable);
@@ -2315,7 +2351,6 @@ function openCrudModal(mode, id = null) {
 
     let formHtml = "";
 
-    // 遍历列生成表单
     schema.columns.forEach(col => {
         if (col.hiddenInForm) return;
         if (col.readonly) return;
@@ -2352,7 +2387,6 @@ function openCrudModal(mode, id = null) {
                 }
             } else if (currentTable === 'annotation_review') {
                 if (col.key === 'annotation_id') {
-                    // 从当前标注表中获取ID列表 (注意：annotation表主键已改为 id)
                     const allAnnots = getDataForTable('annotation');
                     options = allAnnots.map(a => a.id);
                 }
@@ -2361,9 +2395,24 @@ function openCrudModal(mode, id = null) {
                     const allMedia = getDataForTable('media');
                     options = allMedia.map(m => m.media_id);
                 }
+            } else if (currentTable === 'project_contributor') {
+                if (col.key === 'project_id') options = rawProjects.map(p => p.name);
+                if (col.key === 'user_id') {
+                    // 模拟所有用户
+                    const allUsers = getDataForTable('user');
+                    options = allUsers.map(u => u.name);
+                }
+            } else if (currentTable === 'collection_contributor') {
+                if (col.key === 'collection_id') {
+                    const allCols = getDataForTable('collection');
+                    options = allCols.map(c => c.name);
+                }
+                if (col.key === 'user_id') {
+                    const allUsers = getDataForTable('user');
+                    options = allUsers.map(u => u.name);
+                }
             }
 
-            // 渲染选项
             options.forEach(opt => {
                 const selected = String(val) === String(opt) ? 'selected' : '';
                 formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
