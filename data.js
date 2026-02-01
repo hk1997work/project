@@ -1,6 +1,6 @@
 const generateRichText = (type, title, location, latinName) => {
     if (type === 'modern') {
-        return `<div class="style-modern"><span class="tag-label" style="display:inline-block;padding:4px 8px;background:var(--brand);color:white;border-radius:4px;font-size:0.7rem;font-weight:700;margin-bottom:10px;text-transform:uppercase;">Live Monitoring</span>
+        return `<div class="style-modern"><span class="annotation-label" style="display:inline-block;padding:4px 8px;background:var(--brand);color:white;border-radius:4px;font-size:0.7rem;font-weight:700;margin-bottom:10px;text-transform:uppercase;">Live Monitoring</span>
     <h1>${title} Digital Overview</h1>
     <p style="font-size:1.1rem;color:var(--text-secondary);">Deploying next-generation <strong>edge-computing nodes</strong> in ${location} to capture high-fidelity acoustic data.</p>
     <div class="data-grid">
@@ -99,7 +99,7 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
             url: "#",
             description: colGenerators[i % 3](`${baseName}`),
             image: getImg(startImgIdx + i + 1),
-            stats: {users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), tags: rInt(50, 300), sites: rInt(1, 5)},
+            stats: {users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), annotations: rInt(50, 300), sites: rInt(1, 5)},
             contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
         };
     });
@@ -115,7 +115,7 @@ const initialProjects = [{
     styleClass: "style-modern",
     image: getImg(0),
     collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
-    stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", tags: 4500, sites: 12},
+    stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", annotations: 4500, sites: 12},
     contributors: getContributors(4, 'project', "Liudilong")
 }, {
     id: 2,
@@ -128,7 +128,7 @@ const initialProjects = [{
     styleClass: "style-academic",
     image: getImg(1),
     collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
-    stats: {users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", tags: 2100, sites: 5},
+    stats: {users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", annotations: 2100, sites: 5},
     contributors: getContributors(3, 'project', "Prof. Ocean")
 }, {
     id: 3,
@@ -141,7 +141,7 @@ const initialProjects = [{
     styleClass: "style-editorial",
     image: getImg(2),
     collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
-    stats: {users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", tags: 1200, sites: 8},
+    stats: {users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", annotations: 1200, sites: 8},
     contributors: getContributors(5, 'project', "K. Mbeki")
 }];
 
@@ -159,10 +159,10 @@ const TAXONOMY = {
     "Unknown": {"Unclassified": ["Region A", "Region B"], "Pending": ["Survey 1", "Survey 2"]}
 };
 
-const taxonTags = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
-const getRandomTags = () => {
+const taxonAnnotations = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
+const getRandomAnnotations = () => {
     const count = rInt(1, 3);
-    const shuffled = taxonTags.sort(() => 0.5 - Math.random());
+    const shuffled = taxonAnnotations.sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
 };
 
@@ -184,7 +184,7 @@ const dbSchema = {
         pk: "collection_id",
         columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
             key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
-        }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_tags", label: "Public Tags", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
+        }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, "user": {
         label: "Users",
         icon: "users",

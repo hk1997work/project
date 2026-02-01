@@ -2,11 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>ecoSignal | Network</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet"/>
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -589,7 +589,7 @@
             background: var(--bg-surface);
             border: var(--card-border);
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             margin-top: 8px;
             padding: 6px;
             box-sizing: border-box;
@@ -756,14 +756,14 @@
             border-radius: 2px;
         }
 
-        .tags {
+        .annotations {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
             margin-top: 20px;
         }
 
-        .tag {
+        .annotation {
             background: var(--brand);
             color: #ffffff;
             padding: 6px 16px;
@@ -1413,7 +1413,7 @@
 <nav class="project-nav-bar">
     <div class="nav-left">
         <div class="nav-capsule-box">
-            <a href="#" class="nav-logo" onclick="location.reload()">
+            <a class="nav-logo" href="#" onclick="location.reload()">
                 <div class="logo-icon-box"><i data-lucide="activity"></i></div>
                 <span>ecoSignal</span>
             </a>
@@ -1430,7 +1430,7 @@
             <button class="nav-btn-simple" title="Information"><i data-lucide="info" size="20"></i></button>
             <div class="nav-divider"></div>
 
-            <div id="guest-nav-btn" class="user-capsule-btn" onclick="openLogin()">
+            <div class="user-capsule-btn" id="guest-nav-btn" onclick="openLogin()">
                 <div class="user-avatar-icon"><i data-lucide="log-in" size="16"></i></div>
                 <span class="user-name-text">Login</span>
             </div>
@@ -1439,35 +1439,35 @@
                 <div class="user-capsule-btn" onclick="toggleUserMenu()">
                     <div class="user-avatar-icon"><i data-lucide="user" size="16"></i></div>
                     <span class="user-name-text" id="display-username">User</span>
-                    <i data-lucide="chevron-down" class="chevron-icon" size="14"></i>
+                    <i class="chevron-icon" data-lucide="chevron-down" size="14"></i>
                 </div>
                 <div class="dropdown-menu">
-                    <a href="#" class="dropdown-item"><i data-lucide="settings" size="18"></i> Settings</a>
+                    <a class="dropdown-item" href="#"><i data-lucide="settings" size="18"></i> Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item danger" onclick="handleLogout(event)"><i data-lucide="log-out" size="18"></i> Logout</a>
+                    <a class="dropdown-item danger" href="#" onclick="handleLogout(event)"><i data-lucide="log-out" size="18"></i> Logout</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
 
-<div id="cookie-banner" class="cookie-banner">
+<div class="cookie-banner" id="cookie-banner">
     <div class="cookie-header"><i data-lucide="cookie" size="24"></i><span>Cookie Settings</span></div>
     <div class="cookie-text">We use cookies to improve your experience and analyze our traffic. By clicking "Accept", you consent to our use of cookies.</div>
     <div class="cookie-actions">
-        <button id="cookie-reject" class="cookie-btn cookie-btn-secondary">Reject</button>
-        <button id="cookie-accept" class="cookie-btn cookie-btn-primary">Accept</button>
+        <button class="cookie-btn cookie-btn-secondary" id="cookie-reject">Reject</button>
+        <button class="cookie-btn cookie-btn-primary" id="cookie-accept">Accept</button>
     </div>
 </div>
 
-<div id="login-modal" class="modal-overlay">
+<div class="modal-overlay" id="login-modal">
     <div class="modal-content">
-        <i data-lucide="x" class="modal-close" id="close-modal-btn"></i>
+        <i class="modal-close" data-lucide="x" id="close-modal-btn"></i>
         <h2>Welcome Back</h2>
         <form class="login-form" id="login-form-el">
-            <input type="text" id="username-input" placeholder="Username" required>
-            <input type="password" placeholder="Password" required>
-            <button type="submit" class="login-submit-btn">Login</button>
+            <input id="username-input" placeholder="Username" required type="text">
+            <input placeholder="Password" required type="password">
+            <button class="login-submit-btn" type="submit">Login</button>
         </form>
     </div>
 </div>
@@ -1481,10 +1481,10 @@
                 <div class="hero-title">Open-source online<br>platform for ecoacoustics</div>
                 <div class="hero-desc">Use ecoSignal to manage, navigate, visualize, annotate, and analyze soundscape recordings.</div>
                 <div class="btn-group">
-                    <a href="#" class="pill-btn"><i data-lucide="github"></i> GitHub</a>
-                    <a href="#" class="pill-btn"><i data-lucide="file-text"></i> F1000Research</a>
-                    <a href="#" class="pill-btn"><i data-lucide="graduation-cap"></i> Scholar</a>
-                    <a href="#" class="pill-btn"><i data-lucide="mail"></i> Email</a>
+                    <a class="pill-btn" href="#"><i data-lucide="github"></i> GitHub</a>
+                    <a class="pill-btn" href="#"><i data-lucide="file-text"></i> F1000Research</a>
+                    <a class="pill-btn" href="#"><i data-lucide="graduation-cap"></i> Scholar</a>
+                    <a class="pill-btn" href="#"><i data-lucide="mail"></i> Email</a>
                 </div>
             </div>
         </div>
@@ -1493,8 +1493,8 @@
             <div class="project-fixed-ui">
                 <div class="search-bar">
                     <i data-lucide="search"></i>
-                    <input type="text" id="project-search-input" placeholder="Search projects...">
-                    <div id="search-results" class="search-results-dropdown"></div>
+                    <input id="project-search-input" placeholder="Search projects..." type="text">
+                    <div class="search-results-dropdown" id="search-results"></div>
                 </div>
                 <div class="info-card" id="info-card-el">
                     <div class="info-content-wrapper" id="project-info-content"></div>
@@ -1567,10 +1567,10 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="tags" size="26"></i></div>
+                    <div class="stat-icon"><i data-lucide="annotations" size="26"></i></div>
                     <div class="stat-info">
-                        <div class="label">Tags</div>
-                        <div class="value" id="val-tags">0</div>
+                        <div class="label">Annotations</div>
+                        <div class="value" id="val-annotations">0</div>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -1593,14 +1593,14 @@
                 <div class="sponsors-header"><h2 class="main-title">Sponsored <span>By</span></h2>
                     <p class="sponsors-desc">Our research is made possible through the generous support of leading academic institutions and environmental organizations.</p></div>
                 <div class="logo-grid">
-                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/inrae.png" alt="INRAE"></div>
-                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/westlake_univ.png" alt="Westlake"></div>
-                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/dfg_logo.png" alt="DFG"></div>
-                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/fly_bee.png" alt="FlyBee"></div>
-                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/NFDI4Earth_logo.png" alt="NFDI"></div>
-                    <div class="sponsor-card"><img src="https://ecosound-web.de/ecosound_web/assets/images/project/sealab_logo.png" alt="SeaLab"></div>
+                    <div class="sponsor-card"><img alt="INRAE" src="https://ecosound-web.de/ecosound_web/assets/images/project/inrae.png"></div>
+                    <div class="sponsor-card"><img alt="Westlake" src="https://ecosound-web.de/ecosound_web/assets/images/project/westlake_univ.png"></div>
+                    <div class="sponsor-card"><img alt="DFG" src="https://ecosound-web.de/ecosound_web/assets/images/project/dfg_logo.png"></div>
+                    <div class="sponsor-card"><img alt="FlyBee" src="https://ecosound-web.de/ecosound_web/assets/images/project/fly_bee.png"></div>
+                    <div class="sponsor-card"><img alt="NFDI" src="https://ecosound-web.de/ecosound_web/assets/images/project/NFDI4Earth_logo.png"></div>
+                    <div class="sponsor-card"><img alt="SeaLab" src="https://ecosound-web.de/ecosound_web/assets/images/project/sealab_logo.png"></div>
                 </div>
-                <div class="sponsors-footer-action"><a href="mailto:contact@ecosignal.org" class="join-btn"><i data-lucide="mail" size="18"></i> Contact Us</a></div>
+                <div class="sponsors-footer-action"><a class="join-btn" href="mailto:contact@ecosignal.org"><i data-lucide="mail" size="18"></i> Contact Us</a></div>
             </div>
         </div>
 
@@ -1759,17 +1759,17 @@
         {
             id: "10.12688/f1000research", status: "lock", title: "SeabirdIslands", author: "liudilong",
             desc: "Dry summers leave their mark on Switzerland's forests: many trees have sparse crowns and die off. These developments pose challenges for forest owners, forestry services and society - but they also offer big opportunities for the biodiversity. The Swiss Ornithological Institute is working with partners to protect forests suffering from drought stress so that they are left to decompose for 30 years. Passive acoustic monitoring (PAM) is used to record changes in the composition of breeding birds.",
-            tags: ["Arne Wenzel", "Dr. Iva", "J. Zech", "Somme Group"]
+            annotations: ["Arne Wenzel", "Dr. Iva", "J. Zech", "Somme Group"]
         },
         {
             id: "Project ID: #8821", status: "unlock", title: "Amazon Rainfall", author: "BioTeam Alpha",
             desc: "Monitoring the acoustic diversity of the Amazon rainforest during the rainy season to track amphibian migration patterns. This project utilizes a network of 500+ open-source sensors deployed across the canopy and forest floor to capture the symphony of life.",
-            tags: ["Dr. Silva", "Rainforest Labs", "Climate Watch"]
+            annotations: ["Dr. Silva", "Rainforest Labs", "Climate Watch"]
         },
         {
             id: "dataset #902", status: "unlock", title: "Alpine Wolves", author: "Dr. Weber",
             desc: "Audio recordings of wolf packs in the Austrian Alps. Short dataset focusing on nocturnal howls.",
-            tags: ["Canis lupus", "Austria"]
+            annotations: ["Canis lupus", "Austria"]
         }
     ];
 
@@ -1783,9 +1783,9 @@
         contentContainer.classList.add('fading');
 
         setTimeout(() => {
-            const tagsHtml = data.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            const annotationsHtml = data.annotations.map(annotation => `<span class="annotation">${annotation}</span>`).join('');
             const lockClass = data.status === 'lock' ? 'locked' : 'unlocked';
-            contentContainer.innerHTML = `<div class="card-header"><div class="meta-left">${data.id}</div><a href="#" class="top-link-icon"><i data-lucide="link"></i></a></div><a href="#" class="project-title"><h2>${data.title}</h2></a><div class="creator-row"><span class="creator-name">${data.author}</span><div class="status-icon ${lockClass}"><i data-lucide="${data.status}"></i></div></div><hr><p>${data.desc}</p><div class="tags">${tagsHtml}</div>`;
+            contentContainer.innerHTML = `<div class="card-header"><div class="meta-left">${data.id}</div><a href="#" class="top-link-icon"><i data-lucide="link"></i></a></div><a href="#" class="project-title"><h2>${data.title}</h2></a><div class="creator-row"><span class="creator-name">${data.author}</span><div class="status-icon ${lockClass}"><i data-lucide="${data.status}"></i></div></div><hr><p>${data.desc}</p><div class="annotations">${annotationsHtml}</div>`;
             lucide.createIcons();
             infoCardEl.style.height = 'auto';
             const targetHeight = infoCardEl.getBoundingClientRect().height;
@@ -1822,9 +1822,9 @@
     });
 
     const nodeData = {
-        "GWDG - EFForTS VM": {users: 142, projects: 15, collections: 48, sites: 12, audio: "4.2k", photo: "1.2k", video: "350", metadata: "15k", tags: 856, coords: [51.56, 9.95]},
-        "INRAE - Monitor PAM VM": {users: 95, projects: 8, collections: 26, sites: 5, audio: "1.8k", photo: "560", video: "120", metadata: "8.5k", tags: 432, coords: [43.59, 1.44]},
-        "INRAE - EFNO test VM": {users: 312, projects: 42, collections: 156, sites: 38, audio: "12.5k", photo: "3.8k", video: "950", metadata: "45k", tags: 2109, coords: [47.8, 2.7]}
+        "GWDG - EFForTS VM": {users: 142, projects: 15, collections: 48, sites: 12, audio: "4.2k", photo: "1.2k", video: "350", metadata: "15k", annotations: 856, coords: [51.56, 9.95]},
+        "INRAE - Monitor PAM VM": {users: 95, projects: 8, collections: 26, sites: 5, audio: "1.8k", photo: "560", video: "120", metadata: "8.5k", annotations: 432, coords: [43.59, 1.44]},
+        "INRAE - EFNO test VM": {users: 312, projects: 42, collections: 156, sites: 38, audio: "12.5k", photo: "3.8k", video: "950", metadata: "45k", annotations: 2109, coords: [47.8, 2.7]}
     };
     let currentSelectedNode = "GWDG - EFForTS VM";
 
@@ -1867,7 +1867,7 @@
             document.getElementById('val-photos').innerText = data.photo;
             document.getElementById('val-videos').innerText = data.video;
             document.getElementById('val-metadata').innerText = data.metadata;
-            document.getElementById('val-tags').innerText = data.tags;
+            document.getElementById('val-annotations').innerText = data.annotations;
             container.classList.add('active');
             if (typeof setSelectedMarker === 'function') setSelectedMarker(name);
         }, isActive ? 500 : 100);

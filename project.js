@@ -97,11 +97,11 @@ function initMap() {
                 totalMedia += m.options.customData.mediaCount;
             });
             let gradientParts = [];
-            let currentPercentage = 0;
+            let currentPercenannotatione = 0;
             Object.keys(realmCounts).sort((a, b) => realmCounts[b] - realmCounts[a]).forEach(r => {
                 const pct = (realmCounts[r] / n) * 100;
-                gradientParts.push(`${getRealmColor(r)} ${currentPercentage}% ${currentPercentage + pct}%`);
-                currentPercentage += pct;
+                gradientParts.push(`${getRealmColor(r)} ${currentPercenannotatione}% ${currentPercenannotatione + pct}%`);
+                currentPercenannotatione += pct;
             });
             return L.divIcon({
                 html: `<div class="donut-cluster" style="background: conic-gradient(${gradientParts.join(', ')});"><div class="donut-center"><span class="dc-num">${totalMedia}</span><span class="dc-label">MEDIA</span></div></div>`, className: 'custom-cluster-icon', iconSize: L.point(50, 50), iconAnchor: [25, 25]
@@ -158,7 +158,7 @@ function openSidebar(site) {
     if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
     const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
     const mediaHtml = site.media.map((m) => {
-        const mockTagsHtml = `<span class="media-tag">Bio</span><span class="media-tag">Aves</span>`;
+        const mockAnnotationsHtml = `<span class="media-annotation">Bio</span><span class="media-annotation">Aves</span>`;
         const mockTime = "14:30:00";
         const mockSize = "2.4 MB";
         return `<div class="media-item-card" onclick="event.stopPropagation();">
@@ -169,7 +169,7 @@ function openSidebar(site) {
     <div class="duration-badge">${m.duration}</div>
 </div>
 <div class="media-card-info"><a href="#" class="media-name" title="${m.name}" onclick="return false;">${m.name}</a>
-    <div class="tags-row">${mockTagsHtml}</div>
+    <div class="annotations-row">${mockAnnotationsHtml}</div>
     <div class="media-meta-row">
         <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
         <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${mockTime}</div>
@@ -368,7 +368,7 @@ const generateMediaForContext = (proj, col) => {
             md5_hash: "d41d8cd98f00b204e9800998ecf8427e",
             doi: `10.ECO/${numId}`,
             creation_date: new Date().toISOString(),
-            tags: getRandomTags(),
+            annotations: getRandomAnnotations(),
             sr: "48kHz",
             spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
             fullDate: `${fullDate} ${h}:${m}`,
@@ -402,7 +402,7 @@ function renderMedia() {
     const container = document.getElementById('media-grid-container');
     const badge = document.getElementById('media-count-badge');
     const isGallery = container.classList.contains('view-gallery');
-    const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.tags.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
+    const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.annotations.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
     badge.textContent = `${filteredItems.length} Items`;
     if (filteredItems.length === 0) {
         container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
@@ -411,7 +411,7 @@ function renderMedia() {
     }
     let html = '';
     filteredItems.forEach(item => {
-        const tagsHtml = item.tags.map(t => `<span class="media-tag">${t}</span>`).join('');
+        const annotationsHtml = item.annotations.map(t => `<span class="media-annotation">${t}</span>`).join('');
         if (isGallery) {
             html += `<div class="media-item-card">
 <div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec">
@@ -421,7 +421,7 @@ function renderMedia() {
     <div class="duration-badge">${item.duration}</div>
 </div>
 <div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a>
-    <div class="tags-row">${tagsHtml}</div>
+    <div class="annotations-row">${annotationsHtml}</div>
     <div class="media-meta-row">
         <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
         <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div>
@@ -437,7 +437,7 @@ function renderMedia() {
     <div class="duration-badge">${item.duration}</div>
 </div>
 <div class="row-basic-info"><a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a>
-    <div class="tags-row">${tagsHtml}</div>
+    <div class="annotations-row">${annotationsHtml}</div>
     <div class="row-meta-list">
         <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
         <div class="row-meta-item"><i data-lucide="clock" size="14"></i> ${item.time}</div>
@@ -519,7 +519,7 @@ function enrichMediaData() {
 }
 
 function getIconForStat(key) {
-    const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Tags': 'tags', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
+    const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Annotations': 'annotations', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
     return map[key] || 'activity';
 }
 
@@ -536,14 +536,14 @@ function renderSummary() {
         const proj = rawProjects[currProjIdx];
         type = "Project";
         statsObj = proj.stats;
-        order = ['Users', 'Collections', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites'];
+        order = ['Users', 'Collections', 'Audio', 'Photos', 'Videos', 'Metadata', 'Annotations', 'Sites'];
         contributorsArr = proj.contributors;
         contribBgIconName = 'folder-kanban';
     } else {
         const col = rawProjects[currProjIdx].collections[currColIdx - 1];
         type = "Collection";
         statsObj = col.stats;
-        order = ['Users', 'Projects', 'Audio', 'Photos', 'Videos', 'Metadata', 'Tags', 'Sites'];
+        order = ['Users', 'Projects', 'Audio', 'Photos', 'Videos', 'Metadata', 'Annotations', 'Sites'];
         contributorsArr = col.contributors;
         contribBgIconName = 'library';
     }
@@ -1082,7 +1082,7 @@ function getDataForTable(tableName) {
                 sphere: c.sphere || "Biosphere",
                 url: (c.url && c.url !== "#") ? c.url : mockUrl,
                 public_access: c.active !== undefined ? c.active : false,
-                public_tags: false,
+                public_annotations: false,
                 creation_date: c.date,
                 _rawId: c.id,
                 _isCurrent: isCurrent
@@ -1734,7 +1734,7 @@ let currentPermUserIds = [];
 const PERM_RESOURCES = [
     {key: 'recording', label: 'Recording', icon: 'mic'},
     {key: 'site', label: 'Site', icon: 'map-pin'},
-    {key: 'tag', label: 'Tag', icon: 'tag'},
+    {key: 'annotation', label: 'Annotation', icon: 'annotation'},
     {key: 'review', label: 'Review', icon: 'check-circle'}
 ];
 
@@ -2111,7 +2111,7 @@ function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
         const iconMap = {
             'recording': 'mic',
             'site': 'map-pin',
-            'tag': 'tag',
+            'annotation': 'annotation',
             'review': 'check-circle'
         };
 
@@ -2461,7 +2461,7 @@ function saveCrudData() {
                 mappedProject.id = Math.max(...rawProjects.map(p => p.id)) + 1;
             } else mappedProject.id = 1;
             mappedProject.collections = [];
-            mappedProject.stats = {users: 0, collections: 0, audio: "0", photos: 0, videos: 0, metadata: "0", tags: 0, sites: 0};
+            mappedProject.stats = {users: 0, collections: 0, audio: "0", photos: 0, videos: 0, metadata: "0", annotations: 0, sites: 0};
             mappedProject.contributors = [];
             if (!mappedProject.date) mappedProject.date = new Date().toISOString().split('T')[0];
             rawProjects.push(mappedProject);
@@ -2475,7 +2475,7 @@ function saveCrudData() {
             if (proj.collections[colIndex]) Object.assign(proj.collections[colIndex], mappedCol);
         } else {
             mappedCol.id = `c${proj.collections.length + Date.now()}`;
-            mappedCol.stats = {users: 0, projects: 1, audio: 0, photos: 0, videos: 0, metadata: 0, tags: 0, sites: 0};
+            mappedCol.stats = {users: 0, projects: 1, audio: 0, photos: 0, videos: 0, metadata: 0, annotations: 0, sites: 0};
             mappedCol.contributors = [];
             proj.collections.push(mappedCol);
         }

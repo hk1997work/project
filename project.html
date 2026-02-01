@@ -13,7 +13,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
-    <link rel="stylesheet" href="project.css">
+    <link href="project.css" rel="stylesheet">
 </head>
 <body>
 <nav class="project-nav-bar">
@@ -151,7 +151,7 @@
             <div class="card-header media-header">
                 <div class="media-title"><i data-lucide="music" size="24"></i> Media <span class="media-count-badge" id="media-count-badge">Loading...</span></div>
                 <div class="media-controls">
-                    <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" oninput="handleSearchMedia(this.value)" placeholder="Search media or tags..." type="text"></div>
+                    <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" oninput="handleSearchMedia(this.value)" placeholder="Search media or annotations..." type="text"></div>
                     <div class="view-switcher-container">
                         <div class="view-pill" id="view-pill"></div>
                         <button class="view-btn active" onclick="switchMediaView('gallery', this)"><i data-lucide="grid" size="14"></i>Gallery</button>
