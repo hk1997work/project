@@ -56,6 +56,14 @@ const rInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 const mockNames = ["Liudilong", "A. Schmidt", "B. Cohen", "C. Kim", "D. Mwangi", "E. Rossi", "F. Yamamoto", "G. Dubois", "H. Petrov", "I. Al-Fayed", "J. Smith", "K. Gupta", "L. Wei"];
 const projRoles = ["Principal Investigator", "Lead Researcher", "Field Technician", "Data Analyst", "Project Manager", "Ecologist"];
 const colRoles = ["Field Recorder", "Annotator", "Reviewer", "Data Curator", "Metadata Specialist", "Logistics"];
+const mockLicenses = ["CC BY 4.0", "CC BY-NC 4.0", "CC0 1.0", "All Rights Reserved"];
+const mockAudioSettings = ["Default Audio", "High Res 96kHz", "Low Power 16kHz", "Duty Cycle A"];
+const mockPhotoSettings = ["Standard Photo", "Time Lapse 1min", "Motion Trigger", "Video 1080p"];
+const mockSoundClasses = ["Biophony", "Geophony", "Anthropophony", "Unknown"];
+const mockTaxons = ["Aves", "Amphibia", "Insecta", "Mammalia", "Chiroptera"];
+const mockReviewStatuses = ["Pending", "Approved", "Rejected", "Unsure"];
+const mockIndexTypes = ["ACI", "ADI", "AEI", "BI", "NDSI", "H", "M"];
+
 const getContributors = (count, type, leadName = null) => {
     const list = [];
     const rolePool = type === 'project' ? projRoles : colRoles;
@@ -68,7 +76,6 @@ const getContributors = (count, type, leadName = null) => {
             name = mockNames[Math.floor(Math.random() * mockNames.length)];
             role = rolePool[Math.floor(Math.random() * (rolePool.length - 1)) + 1];
         }
-        // [修改] 生成纯数字 UID
         const numUid = Math.floor(100000000 + Math.random() * 900000000);
         list.push({
             name: name, role: role, email: name.toLowerCase().replace('. ', '.').replace(' ', '.') + "@lab.edu", uid: String(numUid)
@@ -80,7 +87,6 @@ const getContributors = (count, type, leadName = null) => {
 const createCollections = (baseName, count, startImgIdx, creatorName) => {
     return Array.from({length: count}, (_, i) => {
         const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
-        // [修改] 生成纯数字 Collection ID
         const colId = 10000 + (startImgIdx * 100) + i;
         return {
             id: String(colId),
@@ -183,23 +189,111 @@ const dbSchema = {
         label: "Users",
         icon: "users",
         pk: "user_id",
-        columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"}, {key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true}, {key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true}, {key: "orcid", label: "ORCID", type: "text"}, {key: "active", label: "Active", type: "boolean"}]
-    }, role: {
-        label: "Roles", icon: "shield", pk: "role_id", columns: [{key: "role_id", label: "ID", type: "number", readonly: true}, {key: "name", label: "Role Name", type: "text"}, {key: "description", label: "Description", type: "text"}]
-    }, site: {
-        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "Site ID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "text"}, {key: "biome", label: "Biome", type: "text"}, {key: "group", label: "Group", type: "text"}, {key: "topography_m", label: "Elevation (m)", type: "number"}, {key: "mediaCount", label: "Media Count", type: "number", readonly: true}]
+        columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"}, {
+            key: "project_role",
+            label: "Proj. Contrib.",
+            type: "select",
+            options: projRoles,
+            readonly: true
+        }, {key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true}, {key: "orcid", label: "ORCID", type: "text"}, {key: "active", label: "Active", type: "boolean"}]
     }, media: {
-        label: "Media Files", icon: "file-audio", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "name", label: "Filename", type: "text"}, {key: "site", label: "Site Name", type: "text"}, {key: "date", label: "Date", type: "text"}, {key: "duration", label: "Duration", type: "text"}, {key: "sensor", label: "Sensor", type: "text"}, {key: "size", label: "Size", type: "text"}]
-    }, sensor: {
-        label: "Sensors (Ref)", icon: "cpu", pk: "sensor_id", columns: [{key: "sensor_id", label: "ID", type: "number", readonly: true}, {key: "name", label: "Model Name", type: "text"}, {key: "sensor_type", label: "Type", type: "select", options: ["audio", "photo"]}]
-    }, project_contributor: {
-        label: "Proj. Contributors", itemLabel: "Contributor", icon: "user-cog", pk: "uid", columns: [{key: "uid", label: "ID", type: "text", readonly: true, hiddenInTable: true}, {key: "name", label: "User Name", type: "text", readonly: true}, {key: "role", label: "Project Role", type: "text"}, {key: "email", label: "Email", type: "text", readonly: true}, {key: "added_date", label: "Date Added", type: "text", readonly: true}]
-    }, collection_contributor: {
-        label: "Coll. Contributors", itemLabel: "Contributor", icon: "users-2", pk: "uid", columns: [{key: "uid", label: "ID", type: "text", readonly: true, hiddenInTable: true}, {key: "name", label: "User Name", type: "text", readonly: true}, {key: "role", label: "Collection Role", type: "text"}, {key: "email", label: "Email", type: "text", readonly: true}, {key: "added_date", label: "Date Added", type: "text", readonly: true}]
+        label: "Medias", icon: "file-audio", pk: "media_id",
+        columns: [
+            {key: "media_id", label: "ID", type: "number", readonly: true},
+            {key: "uuid", label: "UUID", type: "text", readonly: true},
+            {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video", "metadata"]},
+            {key: "name", label: "Name", type: "text"},
+            {key: "filename", label: "Filename", type: "text"},
+            {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true},
+            {key: "uploader_id", label: "Uploader", type: "select", options: mockNames},
+            {key: "creator_id", label: "Creator", type: "select", options: mockNames},
+            {key: "site_id", label: "Site", type: "select", options: []},
+            {key: "sensor_id", label: "Sensor", type: "select", options: []},
+            {key: "license_id", label: "License", type: "select", options: mockLicenses},
+            {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true},
+            {key: "photo_setting_id", label: "Photo Setting", type: "select", options: mockPhotoSettings, hiddenInTable: true},
+            {key: "medium", label: "Medium", type: "text"},
+            {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", hiddenInTable: true},
+            {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", hiddenInTable: true},
+            {key: "note", label: "Note", type: "text"},
+            {key: "date_time", label: "Date Time", type: "text"},
+            {key: "size_B", label: "Size (Bytes)", type: "number", hiddenInTable: true},
+            {key: "md5_hash", label: "MD5", type: "text", hiddenInTable: true},
+            {key: "doi", label: "DOI", type: "text"},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
+    }, site: {
+        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "text"}, {key: "biome", label: "Biome", type: "text"}, {key: "group", label: "Group", type: "text"}, {key: "topography_m", label: "Elevation (m)", type: "number"}, {key: "mediaCount", label: "Media Count", type: "number", readonly: true}]
+    },
+    annotation: {
+        label: "Annotations", icon: "scan-line", pk: "id",
+        columns: [
+            {key: "id", label: "ID", type: "number", readonly: true},
+            {key: "uuid", label: "UUID", type: "text", readonly: true},
+            {key: "sound_id", label: "Sound Class", type: "select", options: mockSoundClasses},
+            {key: "media_id", label: "Media ID", type: "select", options: []},
+            {key: "creator_id", label: "Creator", type: "select", options: mockNames},
+            {key: "creator_type", label: "Creator Type", type: "select", options: ["user", "model", "automated"]},
+            {key: "confidence", label: "Confidence", type: "number"},
+            {key: "min_x", label: "Min X", type: "number"},
+            {key: "max_x", label: "Max X", type: "number"},
+            {key: "min_y", label: "Min Y", type: "number"},
+            {key: "max_y", label: "Max Y", type: "number"},
+            {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons},
+            {key: "uncertain", label: "Uncertain", type: "boolean"},
+            {key: "sound_distance_m", label: "Distance (m)", type: "number"},
+            {key: "distance_not_estimable", label: "Dist. Unknown", type: "boolean"},
+            {key: "individual_num", label: "Indiv. Num", type: "number"},
+            {key: "animal_sound_type", label: "Sound Type", type: "text"},
+            {key: "reference", label: "Reference", type: "boolean"},
+            {key: "comments", label: "Comments", type: "text", hiddenInTable: true},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
+    },
+    annotation_review: {
+        label: "Reviews", icon: "check-square", pk: "id",
+        columns: [
+            {key: "id", label: "ID", type: "text", readonly: true, hiddenInTable: true},
+            {key: "annotation_id", label: "Annotation ID", type: "select", options: []},
+            {key: "reviewer_id", label: "Reviewer", type: "select", options: mockNames},
+            {key: "annotation_review_status_id", label: "Status", type: "select", options: mockReviewStatuses},
+            {key: "taxon_id", label: "Suggested Taxon", type: "select", options: mockTaxons},
+            {key: "note", label: "Note", type: "text"},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
+    },
+    index_log: {
+        label: "Index Logs", icon: "bar-chart-2", pk: "log_id",
+        columns: [
+            {key: "log_id", label: "ID", type: "number", readonly: true},
+            {key: "media_id", label: "Media ID", type: "select", options: []},
+            {key: "user_id", label: "User", type: "select", options: mockNames},
+            {key: "index_id", label: "Index Type", type: "select", options: mockIndexTypes},
+            {key: "version", label: "Version", type: "text"},
+            {key: "min_time", label: "Min T", type: "text"},
+            {key: "max_time", label: "Max T", type: "text"},
+            {key: "min_frequency", label: "Min F", type: "text"},
+            {key: "max_frequency", label: "Max F", type: "text"},
+            {key: "variable_type", label: "Var Type", type: "text"},
+            {key: "variable_value", label: "Value", type: "text"},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
     }
 };
 
 const staticMockDB = {
-    sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}, {sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo"}]
+    sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}, {sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo"}],
+    license: mockLicenses.map((l, i) => ({license_id: i + 1, name: l})),
+    audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})),
+    photo_setting: mockPhotoSettings.map((s, i) => ({photo_setting_id: i + 1, name: s})),
+    annotation: [
+        {id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", sound_id: "Biophony", media_id: 20250001, creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "Aves", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Call", reference: true, comments: "Clear bird call", creation_date: "2025-01-20"}
+    ],
+    annotation_review: [
+        {id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "Aves", note: "Agreed.", creation_date: "2025-01-21"}
+    ],
+    index_log: [
+        {log_id: 1, media_id: 20250001, user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "result", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22"}
+    ]
 };
 const PERMISSIONS = [{id: 1, code: 'collection:read', label: 'Collection: Read'}, {id: 2, code: 'collection:write', label: 'Collection: Write'}, {id: 3, code: 'user:read', label: 'User: Read'}, {id: 4, code: 'user:write', label: 'User: Write'}];

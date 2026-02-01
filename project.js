@@ -313,7 +313,6 @@ let mediaItems = [];
 let mediaSearchQuery = "";
 
 const generateMediaForContext = (proj, col) => {
-    // [修改] 生成纯数字前缀和 ID
     const pId = Number(proj.id);
     const cId = col ? Number(col.id) : 0;
     const basePrefix = `${pId}${cId}`;
@@ -327,25 +326,53 @@ const generateMediaForContext = (proj, col) => {
         const month = Math.floor(Math.random() * 12) + 1;
         const day = Math.floor(Math.random() * 28) + 1;
         const fullDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const timeStr = `${h}:${m}:${s}`;
 
-        // [修改] 纯数字 ID
-        const recId = `${basePrefix}${20250000 + i}`;
+        const recId = 20250000 + i;
+        const numId = Number(basePrefix + recId);
+
+        const typePool = ["audio", "audio", "audio", "photo"];
+        const mediaType = typePool[rInt(0, 3)];
+        const isAudio = mediaType === 'audio';
+
+        const ext = isAudio ? "wav" : "jpg";
+        const fileName = `REC_${basePrefix}_${recId}.${ext}`;
+
+        const uploader = mockNames[rInt(0, mockNames.length - 1)];
+        const sizeBytes = Math.floor(Math.random() * 1024 * 1024 * (isAudio ? 50 : 5));
 
         return {
-            id: recId,
-            name: `REC_${recId}.wav`,
-            date: fullDate,
-            time: `${h}:${m}:${s}`,
-            fullDate: `${fullDate} ${h}:${m}`,
-            duration: `00:${rInt(10, 59)}`,
-            tags: getRandomTags(),
-            size: `${(Math.random() * 5 + 0.5).toFixed(1)} MB`,
-            sr: "48kHz",
-            spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
-            creator: ["Dr. Silva", "M. Lewis", "Field Team A", "Auto-Recorder"][rInt(0, 3)],
+            id: String(numId),
+            media_id: numId,
+            uuid: `550e8400-e29b-41d4-a716-${String(numId).padStart(12, '0')}`,
+            media_type: mediaType,
+            directory: 100 + rInt(1, 10),
+            filename: fileName,
+            name: fileName,
+            uploader_id: uploader,
+            creator_id: uploader,
             site: `Site-${rInt(1, 12).toString().padStart(2, '0')}`,
             sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0, 3)],
-            license: ["CC BY 4.0", "CC BY-NC", "CC0"][rInt(0, 2)]
+            license: mockLicenses[rInt(0, mockLicenses.length - 1)],
+            audio_setting_id: isAudio ? mockAudioSettings[rInt(0, 2)] : null,
+            photo_setting_id: !isAudio ? mockPhotoSettings[rInt(0, 2)] : null,
+            medium: ['Marine', 'Freshwater'].includes(proj.sphere || 'Terrestrial') ? 'Water' : 'Air',
+            duty_cycle_recording: isAudio ? 60 : null,
+            duty_cycle_period: isAudio ? 3600 : null,
+            note: "Auto-generated record",
+            date: fullDate,
+            time: timeStr,
+            date_time: `${fullDate} ${timeStr}`,
+            size: `${(sizeBytes / 1024 / 1024).toFixed(2)} MB`,
+            size_B: sizeBytes,
+            md5_hash: "d41d8cd98f00b204e9800998ecf8427e",
+            doi: `10.ECO/${numId}`,
+            creation_date: new Date().toISOString(),
+            tags: getRandomTags(),
+            sr: "48kHz",
+            spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
+            fullDate: `${fullDate} ${h}:${m}`,
+            duration: `00:${rInt(10, 59)}`
         };
     });
 };
@@ -987,26 +1014,34 @@ function saveEditorContent() {
 
 function getDataForTable(tableName) {
     const currentProject = rawProjects[currProjIdx];
+
     if (tableName === 'project') {
         let source = (dataScope === 'current') ? [currentProject] : rawProjects;
         if (dataScope === 'all') {
             const currentUser = document.querySelector('.user-name-text').textContent.trim();
-            source = source.filter(p => p.creator === currentUser);
+            // 简单的权限模拟：如果不是管理员，只看自己的
+            // 实际逻辑通常由后端处理，前端这里只是模拟视图过滤
+            // source = source.filter(p => p.creator === currentUser);
         }
         return source.map(p => {
-            const stripHtml = (html) => {
-                let tmp = document.createElement("DIV");
-                tmp.innerHTML = html;
-                return tmp.textContent || tmp.innerText || "";
-            };
             return {
-                project_id: String(p.id), uuid: `5508400${String(p.id).padStart(6, '0')}`, name: p.name, creator_name: p.creator, url: p.externalUrl || "https://example.com", picture_url: p.image, description: p.description, description_short: p.description, doi: p.doi, public: true, active: true, creation_date: p.date
+                project_id: String(p.id),
+                uuid: `5508400${String(p.id).padStart(6, '0')}`,
+                name: p.name,
+                creator_name: p.creator,
+                url: p.externalUrl || "https://example.com",
+                picture_url: p.image,
+                description: p.description,
+                description_short: p.description,
+                doi: p.doi,
+                public: true,
+                active: true,
+                creation_date: p.date
             };
         });
     } else if (tableName === 'collection') {
         let source = [];
         if (dataScope === 'all') {
-            // [修改] 使用 Set 进行去重，防止同一个集合在因为被 Link 到多个项目而出现多次
             const seenIds = new Set();
             rawProjects.forEach(p => {
                 p.collections.forEach(c => {
@@ -1037,14 +1072,52 @@ function getDataForTable(tableName) {
             const domains = ["https://nature-data.org", "https://bio-archive.edu", "https://eco-research.net", "https://science-db.io"];
             const mockUrl = `${domains[i % domains.length]}/collection/${c.id}`;
             return {
-                collection_id: c.id, uuid: `${c.id}9999`, project_names: linkedProjs.join(", "), name: c.name, creator_id: c.creator, doi: c.doi, description: c.description, sphere: c.sphere || "Biosphere", url: (c.url && c.url !== "#") ? c.url : mockUrl, public_access: c.active !== undefined ? c.active : false, public_tags: false, creation_date: c.date, _rawId: c.id, _isCurrent: isCurrent
+                collection_id: c.id,
+                uuid: `${c.id}9999`,
+                project_names: linkedProjs.join(", "),
+                name: c.name,
+                creator_id: c.creator,
+                doi: c.doi,
+                description: c.description,
+                sphere: c.sphere || "Biosphere",
+                url: (c.url && c.url !== "#") ? c.url : mockUrl,
+                public_access: c.active !== undefined ? c.active : false,
+                public_tags: false,
+                creation_date: c.date,
+                _rawId: c.id,
+                _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'site') {
         return currentSites;
     } else if (tableName === 'media') {
+        // 确保媒体数据已生成
         if (mediaItems.length > 0 && !mediaItems[0].enriched) enrichMediaData();
-        return mediaItems;
+
+        return mediaItems.map(m => ({
+            media_id: m.media_id,
+            uuid: m.uuid,
+            media_type: m.media_type,
+            name: m.name,
+            filename: m.filename,
+            directory: m.directory,
+            uploader_id: m.uploader_id,
+            creator_id: m.creator_id,
+            site_id: m.site,
+            sensor_id: m.sensor,
+            license_id: m.license,
+            audio_setting_id: m.audio_setting_id,
+            photo_setting_id: m.photo_setting_id,
+            medium: m.medium,
+            duty_cycle_recording: m.duty_cycle_recording,
+            duty_cycle_period: m.duty_cycle_period,
+            note: m.note,
+            date_time: m.date_time,
+            size_B: m.size_B,
+            md5_hash: m.md5_hash,
+            doi: m.doi,
+            creation_date: m.creation_date
+        }));
     } else if (tableName === 'user') {
         const directProjContributors = currentProject.contributors;
         const activeCollection = (currColIdx > 0) ? currentProject.collections[currColIdx - 1] : null;
@@ -1065,7 +1138,9 @@ function getDataForTable(tableName) {
                 p.collections.forEach(c => displayUsers.push(...c.contributors));
             });
         }
+        // 去重
         displayUsers = Array.from(new Map(displayUsers.map(u => [u.name, u])).values());
+
         return displayUsers.map((u, i) => {
             const pEntry = directProjContributors.find(c => c.name === u.name);
             let pRole = pEntry ? (pEntry.role || "-") : "-";
@@ -1074,34 +1149,35 @@ function getDataForTable(tableName) {
                 const cEntry = activeCollection.contributors.find(c => c.name === u.name);
                 cRole = cEntry ? (cEntry.role || "-") : "-";
             }
+
             const isInAnyCollectionOfProject = currentProject.collections.some(col => col.contributors.some(c => c.name === u.name));
             let isCurrent = false;
             if (currColIdx > 0) {
                 isCurrent = activeCollection.contributors.some(c => c.name === u.name);
             } else isCurrent = (!!pEntry) || isInAnyCollectionOfProject;
+
             return {
-                user_id: u.uid, username: u.name.split(' ').join('.').toLowerCase() + (i + 1), password: "hashed_pwd_placeholder", name: u.name, orcid: u.uid, email: u.email, project_role: pRole, collection_role: cRole, active: true, _isCurrent: isCurrent
+                user_id: u.uid,
+                username: u.name.split(' ').join('.').toLowerCase() + (i + 1),
+                password: "hashed_pwd_placeholder",
+                name: u.name,
+                orcid: u.uid,
+                email: u.email,
+                project_role: pRole,
+                collection_role: cRole,
+                active: true,
+                _isCurrent: isCurrent
             };
         });
-    } else if (tableName === 'project_contributor') {
-        return currentProject.contributors.map(u => ({
-            uid: u.uid, name: u.name, role: u.role || "-", email: u.email, added_date: u.date || new Date().toISOString().split('T')[0]
-        }));
-    } else if (tableName === 'collection_contributor') {
-        let source = [];
-        if (currColIdx > 0) {
-            source = currentProject.collections[currColIdx - 1].contributors;
-        } else {
-            currentProject.collections.forEach(c => {
-                source = [...source, ...c.contributors];
-            });
-        }
-        return source.map((u, i) => ({
-            uid: `${u.uid}${i}`, name: u.name, role: u.role || "-", email: u.email, added_date: u.date || new Date().toISOString().split('T')[0]
-        }));
-    } else if (tableName === 'role') {
-        return [{role_id: 1, name: "Admin", description: "Full system access and configuration rights."}, {role_id: 2, name: "Manage", description: "Can create projects, upload data, and manage collections."}, {role_id: 3, name: "User", description: "Read-only access to public resources."}];
-    } else return staticMockDB[tableName] || [];
+    } else if (tableName === 'annotation') {
+        return staticMockDB.annotation || [];
+    } else if (tableName === 'annotation_review') {
+        return staticMockDB.annotation_review || [];
+    } else if (tableName === 'index_log') {
+        return staticMockDB.index_log || [];
+    } else {
+        return staticMockDB[tableName] || [];
+    }
 }
 
 function initDataTab() {
@@ -1642,6 +1718,7 @@ function saveResetPassword() {
     alert("Password has been reset successfully.");
     closeCrudModal();
 }
+
 /* ==========================================================================
    New Three-Level Permission System (Global -> Project -> Collection -> Atomic)
    ========================================================================== */
@@ -1655,10 +1732,10 @@ let currentPermUserIds = [];
 
 // Resource Definitions
 const PERM_RESOURCES = [
-    { key: 'recording', label: 'Recording', icon: 'mic' },
-    { key: 'site', label: 'Site', icon: 'map-pin' },
-    { key: 'tag', label: 'Tag', icon: 'tag' },
-    { key: 'review', label: 'Review', icon: 'check-circle' }
+    {key: 'recording', label: 'Recording', icon: 'mic'},
+    {key: 'site', label: 'Site', icon: 'map-pin'},
+    {key: 'tag', label: 'Tag', icon: 'tag'},
+    {key: 'review', label: 'Review', icon: 'check-circle'}
 ];
 
 // Initialize permissions for a user (create default if not exists)
@@ -1741,7 +1818,7 @@ function handleToolbarPermission() {
         initUserPermission(userId); // 确保初始化
         currentPermDraft = JSON.parse(JSON.stringify(USER_PERMISSIONS_DB[userId]));
     } else {
-        currentPermDraft = { role: 'user', projects: {} };
+        currentPermDraft = {role: 'user', projects: {}};
     }
 
     renderPermissionDrawer();
@@ -1750,12 +1827,14 @@ function handleToolbarPermission() {
     document.getElementById('perm-drawer-overlay').classList.add('active');
     lucide.createIcons();
 }
+
 function closePermissionDrawer() {
     document.getElementById('perm-drawer-overlay').classList.remove('active');
     // 不需要单独移除 drawer 的 active 类，因为使用了组合 CSS 选择器
     currentPermDraft = null;
     currentPermUserIds = [];
 }
+
 // Save Permissions
 function savePermissionDrawer() {
     if (currentPermUserIds.length > 0 && currentPermDraft) {
@@ -1774,6 +1853,7 @@ function savePermissionDrawer() {
         }, 800);
     }
 }
+
 /* ==========================================================================
    Updated Rendering Logic (Fix: Handle Collection 'Manage' Role in Bulk State)
    ========================================================================== */
@@ -1897,6 +1977,7 @@ function renderPermissionDrawer() {
     contentContainer.innerHTML = html;
     lucide.createIcons();
 }
+
 function renderBulkAtomicIcons(pid, currentStates) {
     let html = '';
     PERM_RESOURCES.forEach(res => {
@@ -1927,6 +2008,7 @@ function renderBulkAtomicIcons(pid, currentStates) {
     });
     return html;
 }
+
 // [新增] 项目级批量切换权限函数
 function permToggleProjectBulk(pid, resKey, targetState) {
     const projDraft = currentPermDraft.projects[pid];
@@ -1941,11 +2023,11 @@ function permToggleProjectBulk(pid, resKey, targetState) {
 
         // 确保 draft 中存在该 collection 对象
         if (!projDraft.collections[cid]) {
-            projDraft.collections[cid] = { role: 'member', permissions: {}, _expanded: false };
+            projDraft.collections[cid] = {role: 'member', permissions: {}, _expanded: false};
         }
         const colDraft = projDraft.collections[cid];
         if (!colDraft.permissions) colDraft.permissions = {};
-        if (!colDraft.permissions[resKey]) colDraft.permissions[resKey] = { read: false, write: false };
+        if (!colDraft.permissions[resKey]) colDraft.permissions[resKey] = {read: false, write: false};
 
         const p = colDraft.permissions[resKey];
 
@@ -1964,6 +2046,7 @@ function permToggleProjectBulk(pid, resKey, targetState) {
 
     renderPermissionDrawer();
 }
+
 function renderCollectionListHTML(proj, userProj) {
     let html = '';
     const isProjAdmin = userProj.role === 'admin';
@@ -2006,6 +2089,7 @@ function renderCollectionListHTML(proj, userProj) {
     });
     return html;
 }
+
 function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
     let html = '';
     PERM_RESOURCES.forEach(res => {
@@ -2049,7 +2133,7 @@ function permToggleAtomicState(pid, cid, resKey, targetState) {
     const col = currentPermDraft.projects[pid]?.collections[cid];
     if (!col) return;
     if (!col.permissions) col.permissions = {};
-    if (!col.permissions[resKey]) col.permissions[resKey] = { read: false, write: false };
+    if (!col.permissions[resKey]) col.permissions[resKey] = {read: false, write: false};
 
     const p = col.permissions[resKey];
 
@@ -2079,7 +2163,7 @@ function permBulkSetCols(pid, role) {
         const cid = String(c.id);
         if (!proj.collections[cid]) {
             // 如果还没权限，先初始化
-            proj.collections[cid] = { role: role, permissions: {}, _expanded: false };
+            proj.collections[cid] = {role: role, permissions: {}, _expanded: false};
         } else {
             // 如果已有权限，更新角色
             proj.collections[cid].role = role;
@@ -2088,6 +2172,7 @@ function permBulkSetCols(pid, role) {
 
     renderPermissionDrawer();
 }
+
 // -----------------------------------------------------------------------------
 // Interaction Logic
 // -----------------------------------------------------------------------------
@@ -2101,7 +2186,7 @@ function permToggleProject(pid) {
     if (currentPermDraft.projects[pid]) {
         delete currentPermDraft.projects[pid];
     } else {
-        currentPermDraft.projects[pid] = { role: 'member', collections: {}, _expanded: true };
+        currentPermDraft.projects[pid] = {role: 'member', collections: {}, _expanded: true};
     }
     renderPermissionDrawer();
 }
@@ -2129,7 +2214,7 @@ function permToggleCollection(pid, cid) {
     if (proj.collections[cid]) {
         delete proj.collections[cid];
     } else {
-        proj.collections[cid] = { role: 'member', permissions: {}, _expanded: true };
+        proj.collections[cid] = {role: 'member', permissions: {}, _expanded: true};
     }
     renderPermissionDrawer();
 }
@@ -2153,7 +2238,7 @@ function permUpdateAtomic(pid, cid, resKey, type, val) {
     const col = currentPermDraft.projects[pid]?.collections[cid];
     if (!col) return;
     if (!col.permissions) col.permissions = {};
-    if (!col.permissions[resKey]) col.permissions[resKey] = { read: false, write: false };
+    if (!col.permissions[resKey]) col.permissions[resKey] = {read: false, write: false};
 
     const p = col.permissions[resKey];
 
@@ -2209,72 +2294,108 @@ function openCrudModal(mode, id = null) {
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
+
+    // 配置保存按钮
     if (submitBtn) {
         submitBtn.textContent = "Save";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveCrudData;
     }
+
     editingId = id;
     const itemName = schema.itemLabel || schema.label.slice(0, -1);
     title.textContent = mode === 'edit' ? `Edit ${itemName}` : `New ${itemName}`;
+
+    // 如果是编辑模式，查找当前行数据
     let currentRow = {};
     if (mode === 'edit') {
         const currentData = getDataForTable(currentTable);
         currentRow = currentData.find(r => r[schema.pk] == id) || {};
     }
+
     let formHtml = "";
+
+    // 遍历列生成表单
     schema.columns.forEach(col => {
         if (col.hiddenInForm) return;
         if (col.readonly) return;
         if (col.onlyOnCreate && mode === 'edit') return;
+
         const val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
         const disabledAttr = (mode === 'edit' && col.readonlyOnUpdate) ? "disabled style='opacity:0.6; cursor:not-allowed;'" : "";
+
         formHtml += `<div class="form-group"><label class="form-label">${col.label}</label>`;
+
         if (col.type === 'select') {
             formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}>`;
             formHtml += `<option value="">Select...</option>`;
 
             let options = col.options || [];
+
+            // --- 动态加载下拉选项逻辑 ---
             if (currentTable === 'project' && col.key === 'creator_name') {
                 const currentUser = document.querySelector('.user-name-text').textContent.trim();
-
                 const oldScope = dataScope;
                 dataScope = 'all';
                 const allUsers = getDataForTable('user');
                 dataScope = oldScope;
-
                 const userObj = allUsers.find(u => u.name === currentUser);
-                const role = userObj ? userObj.role_name : 'User';
-
-                if (role === 'Manage') {
-                    options = [currentUser];
-                } else if (role === 'Admin') {
-                    const allowedNames = allUsers
-                        .filter(u => ['Admin', 'Manage'].includes(u.role_name))
-                        .map(u => u.name);
-                    options = options.filter(n => allowedNames.includes(n));
-                    if (!options.includes(currentUser)) options.push(currentUser);
+                const role = userObj ? (userObj.project_role || 'User') : 'User';
+                if (!options.includes(currentUser)) options.push(currentUser);
+            } else if (currentTable === 'media') {
+                if (col.key === 'site_id') options = currentSites.map(s => s.name);
+                if (col.key === 'sensor_id') options = ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"];
+            } else if (currentTable === 'annotation') {
+                if (col.key === 'media_id') {
+                    const allMedia = getDataForTable('media');
+                    options = allMedia.map(m => m.media_id);
+                }
+            } else if (currentTable === 'annotation_review') {
+                if (col.key === 'annotation_id') {
+                    // 从当前标注表中获取ID列表 (注意：annotation表主键已改为 id)
+                    const allAnnots = getDataForTable('annotation');
+                    options = allAnnots.map(a => a.id);
+                }
+            } else if (currentTable === 'index_log') {
+                if (col.key === 'media_id') {
+                    const allMedia = getDataForTable('media');
+                    options = allMedia.map(m => m.media_id);
                 }
             }
 
+            // 渲染选项
             options.forEach(opt => {
-                const selected = val === opt ? 'selected' : '';
+                const selected = String(val) === String(opt) ? 'selected' : '';
                 formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
             });
             formHtml += `</select>`;
         } else if (col.type === 'boolean') {
-            formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}> <option value="true" ${val === true ? 'selected' : ''}>True</option> <option value="false" ${val === false ? 'selected' : ''}>False</option> </select>`;
+            formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}> 
+                <option value="true" ${val === true ? 'selected' : ''}>True</option> 
+                <option value="false" ${val === false ? 'selected' : ''}>False</option> 
+            </select>`;
         } else if (col.type === 'file') {
-            formHtml += `<div style="display:flex; gap:10px; align-items:center;"> <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;"> <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button> <span id="input-${col.key}-preview"> ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'} </span> </div>`;
+            formHtml += `<div style="display:flex; gap:10px; align-items:center;"> 
+                <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;"> 
+                <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button> 
+                <span id="input-${col.key}-preview"> ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'} </span> 
+            </div>`;
         } else if (col.type === 'richtext') {
             const safeVal = String(val).replace(/'/g, "&apos;");
             const textPreview = String(val).replace(/<[^>]*>?/gm, '');
-            formHtml += ` <div style="display:flex; gap:10px; align-items:center;"> <input type="hidden" id="input-${col.key}" value='${safeVal}'> <button class="btn-secondary" onclick="openEditorForInput('input-${col.key}')" style="height:32px; font-size:0.8rem;">Edit Content</button> <span id="input-${col.key}-preview" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"> ${textPreview.substring(0, 30)}... </span> </div> `;
+            formHtml += ` <div style="display:flex; gap:10px; align-items:center;"> 
+                <input type="hidden" id="input-${col.key}" value='${safeVal}'> 
+                <button class="btn-secondary" onclick="openEditorForInput('input-${col.key}')" style="height:32px; font-size:0.8rem;">Edit Content</button> 
+                <span id="input-${col.key}-preview" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"> ${textPreview.substring(0, 30)}... </span> 
+            </div> `;
         } else if (col.type === 'password') {
             formHtml += `<input type="password" class="form-input" id="input-${col.key}" value="" ${disabledAttr}>`;
-        } else formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabledAttr}>`;
+        } else {
+            formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabledAttr}>`;
+        }
         formHtml += `</div>`;
     });
+
     container.innerHTML = formHtml;
     modal.classList.add('active');
 }
