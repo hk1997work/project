@@ -519,7 +519,7 @@ function enrichMediaData() {
 }
 
 function getIconForStat(key) {
-    const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Annotations': 'annotations', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
+    const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Annotations': 'scan-line', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
     return map[key] || 'activity';
 }
 
