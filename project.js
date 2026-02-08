@@ -2407,7 +2407,11 @@ function saveCrudData() {
 function resetDataTable() {
     crudSearchQuery = "";
     crudFilterState = {};
-    sortState = {key: null, direction: 'asc'};
+
+    // [修改] 获取当前表的主键，并设置为升序排序
+    const schema = dbSchema[currentTable];
+    sortState = {key: schema.pk, direction: 'asc'};
+
     selectedCrudIds = [];
     updateToolbarState();
     const searchInput = document.getElementById('data-search-input');
