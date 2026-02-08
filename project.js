@@ -1179,6 +1179,20 @@ function switchCrudTable(tableName) {
     currentTable = tableName;
     crudSearchQuery = "";
     selectedCrudIds = [];
+
+    // [新增] 根据表格类型切换 Add/Upload 按钮
+    const addBtn = document.getElementById('btn-add');
+    if (addBtn) {
+        if (tableName === 'media') {
+            addBtn.innerHTML = `<i data-lucide="upload" size="16"></i> Upload`;
+            addBtn.onclick = openUploadModal;
+        } else {
+            addBtn.innerHTML = `<i data-lucide="plus" size="16"></i> Add`;
+            addBtn.onclick = () => openCrudModal('add');
+        }
+        lucide.createIcons(); // 刷新图标
+    }
+
     updateToolbarState();
     const searchInput = document.getElementById('data-search-input');
     if (searchInput) {
@@ -1416,6 +1430,7 @@ window.handleSelectAll = function (checked) {
     renderCrudTable();
     updateToolbarState();
 };
+
 function handleToolbarLink() {
     if (selectedCrudIds.length !== 1) return;
     openLinkModal();
@@ -1722,6 +1737,7 @@ function updateToolbarState() {
         }
     }
 }
+
 // Open Permission Drawer
 function handleToolbarPermission() {
     if (selectedCrudIds.length === 0) return;
@@ -2199,6 +2215,11 @@ function confirmDeleteData() {
 function openCrudModal(mode, id = null) {
     const schema = dbSchema[currentTable];
     const modal = document.getElementById('crud-modal-overlay');
+
+    // [新增] 重置 modal 宽度为默认值，防止受 Upload 弹窗影响
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '';
+
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
@@ -2307,7 +2328,6 @@ function openCrudModal(mode, id = null) {
     container.innerHTML = formHtml;
     modal.classList.add('active');
 }
-
 function closeCrudModal() {
     document.getElementById('crud-modal-overlay').classList.remove('active');
 }
@@ -2330,11 +2350,16 @@ function saveCrudData() {
     const isProject = currentTable === 'project';
     const isCollection = currentTable === 'collection';
     const currentData = getDataForTable(currentTable);
+
+    // [Updated] Get current user for auto-filling creator
+    const currentUser = document.querySelector('.user-name-text').textContent.trim();
+
     let existingRow = null;
     if (editingId !== null) existingRow = currentData.find(r => r[schema.pk] == editingId);
     schema.columns.forEach(col => {
         const input = document.getElementById(`input-${col.key}`);
         if (!input && col.type !== 'file' && col.type !== 'richtext') {
+            // [Updated] If input is missing (e.g. hidden), preserve existing value if editing
             if (existingRow && existingRow[col.key] !== undefined) newRow[col.key] = existingRow[col.key];
             return;
         }
@@ -2356,6 +2381,11 @@ function saveCrudData() {
         }
         newRow[col.key] = val;
     });
+
+    // [Updated] Auto-fill creator if missing (e.g. on Create)
+    if (isProject && !newRow.creator_name) newRow.creator_name = currentUser;
+    if (isCollection && !newRow.creator_id) newRow.creator_id = currentUser;
+
     if (isProject) {
         const mappedProject = {id: newRow.project_id, name: newRow.name, creator: newRow.creator_name, externalUrl: newRow.url, image: newRow.picture_url, description: newRow.description, doi: newRow.doi, date: newRow.creation_date};
         if (editingId !== null) {
@@ -2403,7 +2433,6 @@ function saveCrudData() {
     renderCrudTable();
     closeCrudModal();
 }
-
 function resetDataTable() {
     crudSearchQuery = "";
     crudFilterState = {};
@@ -2458,6 +2487,7 @@ function handleSetContributor() {
 
     modal.classList.add('active');
 }
+
 function saveSetContributor() {
     const newRole = document.getElementById('input-set-role').value;
     const isProject = currColIdx === 0;
@@ -2482,10 +2512,7 @@ function saveSetContributor() {
             const userDetails = findUser(uid);
             if (userDetails) {
                 context.contributors.push({
-                    name: userDetails.name,
-                    email: userDetails.email,
-                    uid: userDetails.uid,
-                    role: newRole
+                    name: userDetails.name, email: userDetails.email, uid: userDetails.uid, role: newRole
                 });
             }
         }
@@ -2499,4 +2526,31 @@ function saveSetContributor() {
     }
 }
 
+function openUploadModal() {
+    const modal = document.getElementById('crud-modal-overlay');
+    const container = document.getElementById('modal-form-container');
+    const title = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit-btn');
+
+    // [新增] 设置更大的宽度 (700px)
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '1200px';
+
+    // 设置标题
+    title.textContent = "Upload Media";
+
+    // 内容暂空
+    container.innerHTML = ``;
+
+    // 设置底部按钮
+    if (submitBtn) {
+        submitBtn.textContent = "Upload";
+        submitBtn.style.backgroundColor = ""; // 重置颜色
+        submitBtn.onclick = () => {
+            closeCrudModal();
+        };
+    }
+
+    modal.classList.add('active');
+}
 init();

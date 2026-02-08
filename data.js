@@ -175,18 +175,18 @@ const dbSchema = {
         itemLabel: "Project",
         icon: "folder-kanban",
         pk: "project_id",
-        columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_name", label: "Creator", type: "select", options: mockNames}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "public", label: "Public", type: "boolean"}, {key: "active", label: "Active", type: "boolean"}, {
+        columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_name", label: "Creator", type: "select", options: mockNames, hiddenInForm: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "public", label: "Public", type: "boolean"}, {key: "active", label: "Active", type: "boolean"}, {
             key: "creation_date", label: "Created", type: "text", readonly: true
         }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, collection: {
         label: "Collections",
         icon: "library",
         pk: "collection_id",
-        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
+        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "select", options: mockNames, hiddenInForm: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
             key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
         }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, "user": {
-        label: "Users", icon: "users", pk: "user_id", columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"}, // [修改] 将 ORCID 移到 Role (Contributor) 之前
+        label: "Users", icon: "users", pk: "user_id", columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"},
             {key: "orcid", label: "ORCID", type: "text"}, {
                 key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true
             }, {key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true}, {key: "active", label: "Active", type: "boolean"}]
@@ -225,7 +225,6 @@ const dbSchema = {
         }, {key: "max_frequency", label: "Max F", type: "text"}, {key: "variable_type", label: "Var Type", type: "text"}, {key: "variable_value", label: "Value", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }
 };
-
 const staticMockDB = {
     sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}, {sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo"}],
     license: mockLicenses.map((l, i) => ({license_id: i + 1, name: l})),

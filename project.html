@@ -219,7 +219,7 @@
                     <div class="media-controls">
                         <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" id="data-search-input" oninput="handleDataSearch(this.value)" placeholder="Search" type="text"></div>
                         <button class="btn-toolbar" onclick="resetDataTable()" title="Reset"><i data-lucide="rotate-ccw" size="16"></i> Reset</button>
-                        <button class="btn-toolbar" onclick="openCrudModal('add')"><i data-lucide="plus" size="16"></i> Add</button>
+                        <button class="btn-toolbar" id="btn-add" onclick="openCrudModal('add')"><i data-lucide="plus" size="16"></i> Add</button>
                         <button class="btn-toolbar" disabled id="btn-edit" onclick="handleToolbarEdit()"><i data-lucide="pencil" size="16"></i> Edit</button>
                         <button class="btn-toolbar" disabled id="btn-link" onclick="handleToolbarLink()"><i data-lucide="link" size="16"></i> Link</button>
                         <button class="btn-toolbar" disabled id="btn-reset-pwd" onclick="handleToolbarResetPassword()" style="display:none;"><i data-lucide="key" size="16"></i> Reset Pwd</button>
