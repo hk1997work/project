@@ -1416,71 +1416,6 @@ window.handleSelectAll = function (checked) {
     renderCrudTable();
     updateToolbarState();
 };
-
-function updateToolbarState() {
-    const editBtn = document.getElementById('btn-edit');
-    const delBtn = document.getElementById('btn-delete');
-    const linkBtn = document.getElementById('btn-link');
-    const resetBtn = document.getElementById('btn-reset-pwd');
-    const permBtn = document.getElementById('btn-permission');
-    const setContribBtn = document.getElementById('btn-set-contrib');
-    const count = selectedCrudIds.length;
-
-    if (editBtn) {
-        editBtn.disabled = (count !== 1);
-        editBtn.style.display = '';
-    }
-    if (delBtn) {
-        delBtn.disabled = (count === 0);
-        delBtn.style.display = '';
-    }
-
-    if (linkBtn) {
-        if (currentTable === 'project') {
-            linkBtn.style.display = 'inline-flex';
-            linkBtn.disabled = (count !== 1);
-        } else {
-            linkBtn.style.display = 'none';
-        }
-    }
-
-    if (resetBtn) {
-        if (currentTable === 'user') {
-            resetBtn.style.display = 'inline-flex';
-            resetBtn.disabled = (count !== 1);
-        } else {
-            resetBtn.style.display = 'none';
-        }
-    }
-
-    if (permBtn) {
-        if (currentTable === 'user') {
-            permBtn.style.display = 'inline-flex';
-            permBtn.disabled = (count === 0);
-        } else {
-            permBtn.style.display = 'none';
-        }
-    }
-
-    if (setContribBtn) {
-        if (currentTable === 'user') {
-            setContribBtn.style.display = 'inline-flex';
-            setContribBtn.disabled = (count === 0);
-        } else {
-            setContribBtn.style.display = 'none';
-        }
-    }
-
-    if (currentTable === 'project' && count === 1) {
-        const currentUser = document.querySelector('.user-name-text').textContent.trim();
-        const currentData = getDataForTable('project');
-        const selectedItem = currentData.find(p => String(p.project_id) === String(selectedCrudIds[0]));
-
-        if (selectedItem && selectedItem.creator_name !== currentUser) {
-            if (editBtn) editBtn.style.display = 'none';
-        }
-    }
-}
 function handleToolbarLink() {
     if (selectedCrudIds.length !== 1) return;
     openLinkModal();
@@ -1721,12 +1656,14 @@ function initUserPermission(userId) {
 }
 
 // Update Toolbar State
+// Update Toolbar State
 function updateToolbarState() {
     const editBtn = document.getElementById('btn-edit');
     const delBtn = document.getElementById('btn-delete');
     const linkBtn = document.getElementById('btn-link');
     const resetBtn = document.getElementById('btn-reset-pwd');
     const permBtn = document.getElementById('btn-permission');
+    const setContribBtn = document.getElementById('btn-set-contrib'); // [修复] 找回丢失的按钮引用
     const count = selectedCrudIds.length;
 
     if (editBtn) {
@@ -1765,6 +1702,16 @@ function updateToolbarState() {
         }
     }
 
+    // [修复] 补回 Set Contributor 按钮的逻辑
+    if (setContribBtn) {
+        if (currentTable === 'user') {
+            setContribBtn.style.display = 'inline-flex';
+            setContribBtn.disabled = (count === 0);
+        } else {
+            setContribBtn.style.display = 'none';
+        }
+    }
+
     if (currentTable === 'project' && count === 1) {
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
         const currentData = getDataForTable('project');
@@ -1775,7 +1722,6 @@ function updateToolbarState() {
         }
     }
 }
-
 // Open Permission Drawer
 function handleToolbarPermission() {
     if (selectedCrudIds.length === 0) return;
@@ -2475,8 +2421,8 @@ function handleSetContributor() {
 
     const isProject = currColIdx === 0;
     const roles = isProject ? projRoles : colRoles;
-    const roleLabel = isProject ? "Project Role" : "Collection Role";
-    const targetName = isProject ? rawProjects[currProjIdx].name : rawProjects[currProjIdx].collections[currColIdx - 1].name;
+    // [修改] 将 Role 替换为 Contributor
+    const roleLabel = isProject ? "Project Contributor" : "Collection Contributor";
 
     const modal = document.getElementById('crud-modal-overlay');
     const container = document.getElementById('modal-form-container');
@@ -2486,16 +2432,8 @@ function handleSetContributor() {
     title.textContent = `Set ${roleLabel}`;
 
     let html = `
-        <div style="padding: 10px 0; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
-            <div style="margin-bottom:8px;">
-                Assign <strong>${roleLabel}</strong> to <strong style="color:var(--text-main)">${selectedCrudIds.length}</strong> selected user(s).
-            </div>
-            <div style="font-size:0.9rem; background:var(--bg-capsule); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
-                Target: <span style="color:var(--brand); font-weight:700;">${targetName}</span>
-            </div>
-        </div>
         <div class="form-group">
-            <label class="form-label">Select Role</label>
+            <label class="form-label">Contributor</label>
             <select class="form-input" id="input-set-role">
     `;
 
@@ -2508,14 +2446,14 @@ function handleSetContributor() {
     container.innerHTML = html;
 
     if (submitBtn) {
-        submitBtn.textContent = "Save Role";
+        // [修改] 按钮文本去掉 Role
+        submitBtn.textContent = "Save";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveSetContributor;
     }
 
     modal.classList.add('active');
 }
-
 function saveSetContributor() {
     const newRole = document.getElementById('input-set-role').value;
     const isProject = currColIdx === 0;
