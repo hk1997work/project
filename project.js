@@ -1025,18 +1025,7 @@ function getDataForTable(tableName) {
         }
         return source.map(p => {
             return {
-                project_id: String(p.id),
-                uuid: `5508400${String(p.id).padStart(6, '0')}`,
-                name: p.name,
-                creator_name: p.creator,
-                url: p.externalUrl || "https://example.com",
-                picture_url: p.image,
-                description: p.description,
-                description_short: p.description,
-                doi: p.doi,
-                public: true,
-                active: true,
-                creation_date: p.date
+                project_id: String(p.id), uuid: `5508400${String(p.id).padStart(6, '0')}`, name: p.name, creator_name: p.creator, url: p.externalUrl || "https://example.com", picture_url: p.image, description: p.description, description_short: p.description, doi: p.doi, public: true, active: true, creation_date: p.date
             };
         });
     } else if (tableName === 'collection') {
@@ -1072,20 +1061,7 @@ function getDataForTable(tableName) {
             const domains = ["https://nature-data.org", "https://bio-archive.edu", "https://eco-research.net", "https://science-db.io"];
             const mockUrl = `${domains[i % domains.length]}/collection/${c.id}`;
             return {
-                collection_id: c.id,
-                uuid: `${c.id}9999`,
-                project_names: linkedProjs.join(", "),
-                name: c.name,
-                creator_id: c.creator,
-                doi: c.doi,
-                description: c.description,
-                sphere: c.sphere || "Biosphere",
-                url: (c.url && c.url !== "#") ? c.url : mockUrl,
-                public_access: c.active !== undefined ? c.active : false,
-                public_annotations: false,
-                creation_date: c.date,
-                _rawId: c.id,
-                _isCurrent: isCurrent
+                collection_id: c.id, uuid: `${c.id}9999`, project_names: linkedProjs.join(", "), name: c.name, creator_id: c.creator, doi: c.doi, description: c.description, sphere: c.sphere || "Biosphere", url: (c.url && c.url !== "#") ? c.url : mockUrl, public_access: c.active !== undefined ? c.active : false, public_annotations: false, creation_date: c.date, _rawId: c.id, _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'site') {
@@ -1157,16 +1133,7 @@ function getDataForTable(tableName) {
             } else isCurrent = (!!pEntry) || isInAnyCollectionOfProject;
 
             return {
-                user_id: u.uid,
-                username: u.name.split(' ').join('.').toLowerCase() + (i + 1),
-                password: "hashed_pwd_placeholder",
-                name: u.name,
-                orcid: u.uid,
-                email: u.email,
-                project_role: pRole,
-                collection_role: cRole,
-                active: true,
-                _isCurrent: isCurrent
+                user_id: u.uid, username: u.name.split(' ').join('.').toLowerCase() + (i + 1), password: "hashed_pwd_placeholder", name: u.name, orcid: u.uid, email: u.email, project_role: pRole, collection_role: cRole, active: true, _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'annotation') {
@@ -1456,6 +1423,7 @@ function updateToolbarState() {
     const linkBtn = document.getElementById('btn-link');
     const resetBtn = document.getElementById('btn-reset-pwd');
     const permBtn = document.getElementById('btn-permission');
+    const setContribBtn = document.getElementById('btn-set-contrib');
     const count = selectedCrudIds.length;
 
     if (editBtn) {
@@ -1494,6 +1462,15 @@ function updateToolbarState() {
         }
     }
 
+    if (setContribBtn) {
+        if (currentTable === 'user') {
+            setContribBtn.style.display = 'inline-flex';
+            setContribBtn.disabled = (count === 0);
+        } else {
+            setContribBtn.style.display = 'none';
+        }
+    }
+
     if (currentTable === 'project' && count === 1) {
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
         const currentData = getDataForTable('project');
@@ -1504,7 +1481,6 @@ function updateToolbarState() {
         }
     }
 }
-
 function handleToolbarLink() {
     if (selectedCrudIds.length !== 1) return;
     openLinkModal();
@@ -1731,19 +1707,13 @@ let currentPermDraft = null;
 let currentPermUserIds = [];
 
 // Resource Definitions
-const PERM_RESOURCES = [
-    {key: 'recording', label: 'Recording', icon: 'mic'},
-    {key: 'site', label: 'Site', icon: 'map-pin'},
-    {key: 'annotation', label: 'Annotation', icon: 'annotation'},
-    {key: 'review', label: 'Review', icon: 'check-circle'}
-];
+const PERM_RESOURCES = [{key: 'recording', label: 'Recording', icon: 'mic'}, {key: 'site', label: 'Site', icon: 'map-pin'}, {key: 'annotation', label: 'Annotation', icon: 'scan-line'}, {key: 'review', label: 'Review', icon: 'check-circle'}];
 
 // Initialize permissions for a user (create default if not exists)
 function initUserPermission(userId) {
     if (!USER_PERMISSIONS_DB[userId]) {
         USER_PERMISSIONS_DB[userId] = {
-            role: 'user',
-            projects: {}
+            role: 'user', projects: {}
         };
     }
     // Deep copy for editing
@@ -1938,9 +1908,7 @@ function renderPermissionDrawer() {
             }
 
             // 确定最终状态
-            if (allWrite) bulkStates[res.key] = 'write';
-            else if (allRead) bulkStates[res.key] = 'read';
-            else bulkStates[res.key] = 'none';
+            if (allWrite) bulkStates[res.key] = 'write'; else if (allRead) bulkStates[res.key] = 'read'; else bulkStates[res.key] = 'none';
         });
 
         html += `<div class="perm-proj-group">
@@ -2057,8 +2025,7 @@ function renderCollectionListHTML(proj, userProj) {
         const hasColAccess = !!userCol || isProjAdmin;
 
         let colRole = 'none';
-        if (isProjAdmin) colRole = 'admin';
-        else if (userCol) colRole = userCol.role;
+        if (isProjAdmin) colRole = 'admin'; else if (userCol) colRole = userCol.role;
 
         const isColAdmin = colRole === 'admin';
         const isDisabled = isProjAdmin;
@@ -2105,14 +2072,10 @@ function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
         }
 
         let stateClass = '';
-        if (write) stateClass = 'active-write';
-        else if (read) stateClass = 'active';
+        if (write) stateClass = 'active-write'; else if (read) stateClass = 'active';
 
         const iconMap = {
-            'recording': 'mic',
-            'site': 'map-pin',
-            'annotation': 'annotation',
-            'review': 'check-circle'
+            'recording': 'mic', 'site': 'map-pin', 'annotation': 'scan-line', 'review': 'check-circle'
         };
 
         // 状态循环逻辑：None -> Read -> Write -> None
@@ -2194,8 +2157,7 @@ function permToggleProject(pid) {
 function permToggleProjAdmin(pid, isAdmin) {
     if (currentPermDraft.projects[pid]) {
         currentPermDraft.projects[pid].role = isAdmin ? 'admin' : 'member';
-        if (isAdmin) currentPermDraft.projects[pid]._expanded = false;
-        else currentPermDraft.projects[pid]._expanded = true;
+        if (isAdmin) currentPermDraft.projects[pid]._expanded = false; else currentPermDraft.projects[pid]._expanded = true;
     }
     renderPermissionDrawer();
 }
@@ -2506,6 +2468,93 @@ function resetDataTable() {
     if (searchInput) searchInput.value = "";
     renderCrudHeader();
     renderCrudTable();
+}
+
+function handleSetContributor() {
+    if (selectedCrudIds.length === 0) return;
+
+    const isProject = currColIdx === 0;
+    const roles = isProject ? projRoles : colRoles;
+    const roleLabel = isProject ? "Project Role" : "Collection Role";
+    const targetName = isProject ? rawProjects[currProjIdx].name : rawProjects[currProjIdx].collections[currColIdx - 1].name;
+
+    const modal = document.getElementById('crud-modal-overlay');
+    const container = document.getElementById('modal-form-container');
+    const title = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit-btn');
+
+    title.textContent = `Set ${roleLabel}`;
+
+    let html = `
+        <div style="padding: 10px 0; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+            <div style="margin-bottom:8px;">
+                Assign <strong>${roleLabel}</strong> to <strong style="color:var(--text-main)">${selectedCrudIds.length}</strong> selected user(s).
+            </div>
+            <div style="font-size:0.9rem; background:var(--bg-capsule); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
+                Target: <span style="color:var(--brand); font-weight:700;">${targetName}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Select Role</label>
+            <select class="form-input" id="input-set-role">
+    `;
+
+    roles.forEach(r => {
+        html += `<option value="${r}">${r}</option>`;
+    });
+
+    html += `</select></div>`;
+
+    container.innerHTML = html;
+
+    if (submitBtn) {
+        submitBtn.textContent = "Save Role";
+        submitBtn.style.backgroundColor = "";
+        submitBtn.onclick = saveSetContributor;
+    }
+
+    modal.classList.add('active');
+}
+
+function saveSetContributor() {
+    const newRole = document.getElementById('input-set-role').value;
+    const isProject = currColIdx === 0;
+    const context = isProject ? rawProjects[currProjIdx] : rawProjects[currProjIdx].collections[currColIdx - 1];
+
+    const findUser = (uid) => {
+        for (const p of rawProjects) {
+            for (const u of p.contributors) if (String(u.uid) === String(uid)) return u;
+            for (const c of p.collections) {
+                for (const u of c.contributors) if (String(u.uid) === String(uid)) return u;
+            }
+        }
+        return null;
+    };
+
+    selectedCrudIds.forEach(uid => {
+        const existingContrib = context.contributors.find(c => String(c.uid) === String(uid));
+
+        if (existingContrib) {
+            existingContrib.role = newRole;
+        } else {
+            const userDetails = findUser(uid);
+            if (userDetails) {
+                context.contributors.push({
+                    name: userDetails.name,
+                    email: userDetails.email,
+                    uid: userDetails.uid,
+                    role: newRole
+                });
+            }
+        }
+    });
+
+    renderCrudTable();
+    closeCrudModal();
+
+    if (document.getElementById('tab-summary').classList.contains('active')) {
+        renderSummary();
+    }
 }
 
 init();
