@@ -1622,7 +1622,7 @@ function handleToolbarResetPassword() {
     title.textContent = "Reset Password";
     container.innerHTML = ` <div class="form-group"> <label class="form-label">Current Admin Password</label> <input type="password" class="form-input" id="reset-admin-pwd"> </div> <div class="form-group"> <label class="form-label">New Password</label> <input type="password" class="form-input" id="reset-new-pwd"> </div> <div class="form-group"> <label class="form-label">Confirm Password</label> <input type="password" class="form-input" id="reset-confirm-pwd"> </div> `;
     if (submitBtn) {
-        submitBtn.textContent = "Confirm Reset";
+        submitBtn.textContent = "Submit";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveResetPassword;
     }
@@ -2247,11 +2247,17 @@ function openCrudModal(mode, id = null) {
     // 遍历列生成表单
     schema.columns.forEach(col => {
         if (col.hiddenInForm) return;
-        if (col.readonly) return;
+
+        // [修改] 只读字段：在“新增”模式下隐藏，在“编辑”模式下显示（但在下方会设置为 disabled）
+        if (col.readonly && mode === 'add') return;
+
         if (col.onlyOnCreate && mode === 'edit') return;
 
         const val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
-        const disabledAttr = (mode === 'edit' && col.readonlyOnUpdate) ? "disabled style='opacity:0.6; cursor:not-allowed;'" : "";
+
+        // [修改] 计算禁用状态：如果是 readonly 字段，或者在更新时只读
+        const isReadonly = col.readonly || (mode === 'edit' && col.readonlyOnUpdate);
+        const disabledAttr = isReadonly ? "disabled style='opacity:0.6; cursor:not-allowed; background:var(--bg-capsule);'" : "";
 
         formHtml += `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
@@ -2401,13 +2407,15 @@ function saveCrudData() {
             mappedProject.collections = [];
             mappedProject.stats = {users: 0, collections: 0, audio: "0", photos: 0, videos: 0, metadata: "0", annotations: 0, sites: 0};
             mappedProject.contributors = [];
-            if (!mappedProject.date) mappedProject.date = new Date().toISOString().split('T')[0];
+            // [修改] 时间格式包含时分秒
+            if (!mappedProject.date) mappedProject.date = moment().format("YYYY-MM-DD HH:mm:ss");
             rawProjects.push(mappedProject);
         }
         renderProjectList();
     } else if (isCollection) {
         const proj = rawProjects[currProjIdx];
-        const mappedCol = {name: newRow.name, creator: newRow.creator_id, doi: newRow.doi, sphere: newRow.sphere, url: newRow.url, description: newRow.description, active: newRow.public_access, date: newRow.creation_date || new Date().toISOString().split('T')[0]};
+        // [修改] 时间格式包含时分秒
+        const mappedCol = {name: newRow.name, creator: newRow.creator_id, doi: newRow.doi, sphere: newRow.sphere, url: newRow.url, description: newRow.description, active: newRow.public_access, date: newRow.creation_date || moment().format("YYYY-MM-DD HH:mm:ss")};
         if (editingId !== null) {
             const colIndex = editingId - 1;
             if (proj.collections[colIndex]) Object.assign(proj.collections[colIndex], mappedCol);

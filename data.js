@@ -88,12 +88,13 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
     return Array.from({length: count}, (_, i) => {
         const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
         const colId = 10000 + (startImgIdx * 100) + i;
+        // [Modified] Date includes time
         return {
             id: String(colId),
             name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
             active: false,
             creator: collectionCreator,
-            date: `2025-0${(i % 9) + 1}-15`,
+            date: `2025-0${(i % 9) + 1}-15 09:30:00`,
             doi: `10.ECO/col.${colId}`,
             sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
             url: "#",
@@ -105,44 +106,14 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
     });
 };
 const initialProjects = [{
-    id: 1,
-    name: "Amazon Rainforest Survey",
-    creator: "Liudilong",
-    date: "2025-01-10",
-    doi: "10.1234/amz.01",
-    externalUrl: "https://www.worldwildlife.org/places/amazon",
-    description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"),
-    styleClass: "style-modern",
-    image: getImg(0),
-    collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
-    stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", annotations: 4500, sites: 12},
-    contributors: getContributors(4, 'project', "Liudilong")
+    id: 1, name: "Amazon Rainforest Survey", creator: "Liudilong", date: "2025-01-10 14:00:00", // [Modified]
+    doi: "10.1234/amz.01", externalUrl: "https://www.worldwildlife.org/places/amazon", description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"), styleClass: "style-modern", image: getImg(0), collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"), stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", annotations: 4500, sites: 12}, contributors: getContributors(4, 'project', "Liudilong")
 }, {
-    id: 2,
-    name: "Marine Ecosystems Study",
-    creator: "Liudilong",
-    date: "2024-11-05",
-    doi: "10.5678/mar.02",
-    externalUrl: "https://www.barrierreef.org/",
-    description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"),
-    styleClass: "style-academic",
-    image: getImg(1),
-    collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
-    stats: {users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", annotations: 2100, sites: 5},
-    contributors: getContributors(3, 'project', "Prof. Ocean")
+    id: 2, name: "Marine Ecosystems Study", creator: "Liudilong", date: "2024-11-05 08:15:30", // [Modified]
+    doi: "10.5678/mar.02", externalUrl: "https://www.barrierreef.org/", description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"), styleClass: "style-academic", image: getImg(1), collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"), stats: {users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", annotations: 2100, sites: 5}, contributors: getContributors(3, 'project', "Prof. Ocean")
 }, {
-    id: 3,
-    name: "African Savanna Project",
-    creator: "K. Mbeki",
-    date: "2025-02-15",
-    doi: "10.9999/sav.03",
-    externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant",
-    description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"),
-    styleClass: "style-editorial",
-    image: getImg(2),
-    collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
-    stats: {users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", annotations: 1200, sites: 8},
-    contributors: getContributors(5, 'project', "K. Mbeki")
+    id: 3, name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15 16:45:00", // [Modified]
+    doi: "10.9999/sav.03", externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant", description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"), styleClass: "style-editorial", image: getImg(2), collections: createCollections("Seismic", 5, 2, "K. Mbeki"), stats: {users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", annotations: 1200, sites: 8}, contributors: getContributors(5, 'project', "K. Mbeki")
 }];
 
 const REALM_COLORS = {"Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316"};
@@ -171,25 +142,28 @@ const getRealmColor = (r) => {
 }
 const dbSchema = {
     project: {
-        label: "Projects",
-        itemLabel: "Project",
-        icon: "folder-kanban",
-        pk: "project_id",
-        columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_name", label: "Creator", type: "select", options: mockNames, hiddenInForm: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "public", label: "Public", type: "boolean"}, {key: "active", label: "Active", type: "boolean"}, {
-            key: "creation_date", label: "Created", type: "text", readonly: true
-        }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
+        label: "Projects", itemLabel: "Project", icon: "folder-kanban", pk: "project_id", columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, // [Modified] type text, readonly
+            {key: "creator_name", label: "Creator", type: "text", readonly: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "public", label: "Public", type: "boolean"}, {key: "active", label: "Active", type: "boolean"}, {
+                key: "creation_date", label: "Created", type: "text", readonly: true
+            }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, collection: {
-        label: "Collections",
-        icon: "library",
-        pk: "collection_id",
-        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "select", options: mockNames, hiddenInForm: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
-            key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
-        }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
+        label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, // [修改后] 改为 readonly: true，这样编辑时会显示，新建时会自动隐藏
+            {key: "creator_id", label: "Creator", type: "text", readonly: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
+                key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
+            }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, "user": {
-        label: "Users", icon: "users", pk: "user_id", columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"},
-            {key: "orcid", label: "ORCID", type: "text"}, {
-                key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true
-            }, {key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true}, {key: "active", label: "Active", type: "boolean"}]
+        label: "Users",
+        icon: "users",
+        pk: "user_id",
+        columns: [{key: "user_id", label: "ID", type: "text", readonly: true}, {key: "username", label: "Username", type: "text", readonlyOnUpdate: true}, {key: "password", label: "Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "confirm_password", label: "Confirm Password", type: "password", hiddenInTable: true, onlyOnCreate: true}, {key: "name", label: "Name", type: "text"}, {key: "email", label: "Email", type: "text"}, {
+            key: "orcid",
+            label: "ORCID",
+            type: "text"
+        }, {
+            key: "project_role", label: "Proj. Contrib.", type: "select", options: projRoles, readonly: true, hiddenInForm: true
+        }, {
+            key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true, hiddenInForm: true
+        }, {key: "active", label: "Active", type: "boolean"}]
     }, media: {
         label: "Medias", icon: "file-audio", pk: "media_id", columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video", "metadata"]}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
             key: "uploader_id", label: "Uploader", type: "select", options: mockNames
@@ -225,13 +199,14 @@ const dbSchema = {
         }, {key: "max_frequency", label: "Max F", type: "text"}, {key: "variable_type", label: "Var Type", type: "text"}, {key: "variable_value", label: "Value", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }
 };
+
 const staticMockDB = {
     sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}, {sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo"}],
     license: mockLicenses.map((l, i) => ({license_id: i + 1, name: l})),
     audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})),
     photo_setting: mockPhotoSettings.map((s, i) => ({photo_setting_id: i + 1, name: s})),
-    annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", sound_id: "Biophony", media_id: 20250001, creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "Aves", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Call", reference: true, comments: "Clear bird call", creation_date: "2025-01-20"}],
-    annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "Aves", note: "Agreed.", creation_date: "2025-01-21"}],
-    index_log: [{log_id: 1, media_id: 20250001, user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "result", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22"}]
+    annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", sound_id: "Biophony", media_id: 20250001, creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "Aves", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Call", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"}],
+    annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "Aves", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
+    index_log: [{log_id: 1, media_id: 20250001, user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "result", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}]
 };
 const PERMISSIONS = [{id: 1, code: 'collection:read', label: 'Collection: Read'}, {id: 2, code: 'collection:write', label: 'Collection: Write'}, {id: 3, code: 'user:read', label: 'User: Read'}, {id: 4, code: 'user:write', label: 'User: Write'}];
