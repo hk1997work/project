@@ -952,6 +952,30 @@ let editingId = null;
 let selectedCrudIds = [];
 let sortState = {key: null, direction: 'asc'};
 
+// [新增] Media 筛选状态
+let currentMediaFilter = 'audio';
+
+// [新增] Media 筛选切换函数
+function switchMediaFilter(filter, btn) {
+    if (currentMediaFilter === filter) return;
+    currentMediaFilter = filter;
+
+    // 更新 Pill 位置（视觉反馈）
+    const pill = document.getElementById('media-pill');
+    if (pill && btn) {
+        pill.style.width = btn.offsetWidth + 'px';
+        pill.style.left = btn.offsetLeft + 'px';
+    }
+    const container = document.getElementById('media-pill-container');
+    if (container) {
+        container.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    // 重置选择并重新渲染表格
+    selectedCrudIds = [];
+    renderCrudTable();
+}
 function switchDataScope(scope, btn) {
     if (dataScope === scope) return;
     dataScope = scope;
@@ -1180,6 +1204,11 @@ function switchCrudTable(tableName) {
     crudSearchQuery = "";
     selectedCrudIds = [];
 
+    // [新增] 如果切换到 media 表，重置筛选器为默认值
+    if (tableName === 'media') {
+        currentMediaFilter = 'audio';
+    }
+
     // [新增] 根据表格类型切换 Add/Upload 按钮
     const addBtn = document.getElementById('btn-add');
     if (addBtn) {
@@ -1207,7 +1236,6 @@ function switchCrudTable(tableName) {
     renderCrudHeader();
     renderCrudTable();
 }
-
 function handleDataSearch(val) {
     crudSearchQuery = val.toLowerCase();
     renderCrudTable();
@@ -1274,44 +1302,65 @@ function renderCrudTable() {
     const tbody = document.getElementById('crud-tbody');
     const titleEl = document.getElementById('current-table-title');
 
-    // [修改] 检查当前用户权限
+    // 检查当前用户权限
     const currentUser = document.querySelector('.user-name-text').textContent.trim();
     const currentProject = rawProjects[currProjIdx];
     const isManager = currentProject.creator === currentUser;
 
-    // [修改] 如果不是管理者且当前 scope 是 current，强制切回 all
     if (!isManager && dataScope === 'current') {
         dataScope = 'all';
     }
 
     let titleHtml = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
-    if (['project', 'collection', 'user'].includes(currentTable)) {
-        // [修改] 根据权限设置 Current 按钮的状态 (disabled 和样式)
-        const currentBtnAttr = isManager ? `onclick="switchDataScope('current', this)"` : `disabled style="font-size:0.75rem; padding:0 12px; opacity:0.5; cursor:not-allowed;"`;
 
-        // 如果是管理者，样式保持原样；如果不是，上面已经内联了 disabled 样式，这里只需要处理通用样式
+    // [修改] 渲染标题栏右侧的切换器
+    if (['project', 'collection', 'user'].includes(currentTable)) {
+        // Project/Collection/User 使用 "Current/All" 切换器
+        const currentBtnAttr = isManager ? `onclick="switchDataScope('current', this)"` : `disabled style="font-size:0.75rem; padding:0 12px; opacity:0.5; cursor:not-allowed;"`;
         const currentBtnStyle = isManager ? `style="font-size:0.75rem; padding:0 12px;"` : ``;
 
         titleHtml += ` <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;"> <div class="view-pill" id="scope-pill"></div> <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" ${currentBtnAttr} ${currentBtnStyle}>Current</button> <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button> </div>`;
+    } else if (currentTable === 'media') {
+        // [新增] Media 使用 "Audio/Photos/Videos/Metadata" 切换器，样式保持一致
+        titleHtml += ` <div class="view-switcher-container" id="media-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;">
+            <div class="view-pill" id="media-pill"></div>
+            <button class="view-btn ${currentMediaFilter === 'audio' ? 'active' : ''}" onclick="switchMediaFilter('audio', this)" style="font-size:0.75rem; padding:0 12px;">Audio</button>
+            <button class="view-btn ${currentMediaFilter === 'photo' ? 'active' : ''}" onclick="switchMediaFilter('photo', this)" style="font-size:0.75rem; padding:0 12px;">Photos</button>
+            <button class="view-btn ${currentMediaFilter === 'video' ? 'active' : ''}" onclick="switchMediaFilter('video', this)" style="font-size:0.75rem; padding:0 12px;">Videos</button>
+            <button class="view-btn ${currentMediaFilter === 'metadata' ? 'active' : ''}" onclick="switchMediaFilter('metadata', this)" style="font-size:0.75rem; padding:0 12px;">Metadata</button>
+        </div>`;
     }
+
     titleEl.innerHTML = titleHtml;
 
-    // 更新 Pill 位置的逻辑
-    if (['project', 'collection', 'user'].includes(currentTable)) {
-        setTimeout(() => {
-            const activeBtn = document.querySelector('#scope-pill-container .view-btn.active');
-            const pill = document.getElementById('scope-pill');
-            if (activeBtn && pill) {
-                pill.style.transition = 'none';
-                pill.style.width = activeBtn.offsetWidth + 'px';
-                pill.style.left = activeBtn.offsetLeft + 'px';
-                void pill.offsetWidth;
-                pill.style.transition = '';
-            }
-        }, 0);
-    }
+    // [修改] 更新 Pill 位置的逻辑
+    setTimeout(() => {
+        let activeBtn, pill;
+        if (['project', 'collection', 'user'].includes(currentTable)) {
+            activeBtn = document.querySelector('#scope-pill-container .view-btn.active');
+            pill = document.getElementById('scope-pill');
+        } else if (currentTable === 'media') {
+            activeBtn = document.querySelector('#media-pill-container .view-btn.active');
+            pill = document.getElementById('media-pill');
+        }
 
+        if (activeBtn && pill) {
+            pill.style.transition = 'none';
+            pill.style.width = activeBtn.offsetWidth + 'px';
+            pill.style.left = activeBtn.offsetLeft + 'px';
+            void pill.offsetWidth; // 强制重绘
+            pill.style.transition = '';
+        }
+    }, 0);
+
+    // [修改] 数据筛选逻辑
     let processedData = rawData.filter(row => {
+        // Media 表的特殊筛选
+        if (currentTable === 'media') {
+            if (row.media_type !== currentMediaFilter) return false;
+        }
+
+        // 通用搜索和列筛选
         const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
         if (!matchesGlobal) return false;
         return Object.keys(crudFilterState).every(key => {
@@ -1321,6 +1370,8 @@ function renderCrudTable() {
             return rowVal.includes(filterVal);
         });
     });
+
+    // 排序逻辑 (保持不变)
     if (sortState.key) {
         processedData.sort((a, b) => {
             let valA = a[sortState.key], valB = b[sortState.key];
@@ -1335,6 +1386,7 @@ function renderCrudTable() {
         });
     }
 
+    // 渲染表格内容
     let bodyHtml = "";
     const visibleCols = schema.columns.filter(c => !c.hiddenInTable);
     if (processedData.length === 0) {
@@ -1348,6 +1400,7 @@ function renderCrudTable() {
             bodyHtml += `<tr class="${rowClass}" ondblclick="openCrudModal('edit', '${row[pk]}')">`;
             bodyHtml += ` <td style="text-align:center; border-bottom:1px solid var(--border-color);"> <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleRowSelection('${rowIdStr}', this)" ondblclick="event.stopPropagation()"> </td>`;
             visibleCols.forEach(col => {
+                // 排除特定条件下的列
                 if (currentTable === 'user') {
                     if (currColIdx === 0 && col.key === 'collection_role') return;
                     if (currColIdx > 0 && col.key === 'project_role') return;
@@ -1355,13 +1408,15 @@ function renderCrudTable() {
                 let val = row[col.key];
                 if (val === undefined || val === null) val = "";
 
-                // [修改] 确保 project_id 比较使用 String 转换
+                // Current 标记逻辑
                 if (currentTable === 'project' && col.key === 'project_id') {
                     const currentProjId = rawProjects[currProjIdx] ? rawProjects[currProjIdx].id : null;
                     if (dataScope === 'all' && String(row.project_id) === String(currentProjId)) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
                 }
                 if (currentTable === 'collection' && col.key === 'collection_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
                 if (currentTable === 'user' && col.key === 'user_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
+
+                // 类型渲染
                 if (col.type === 'image' || col.type === 'file') val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img" onerror="this.style.display='none'">`;
                 if (col.type === 'boolean') val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;
                 if (col.type === 'richtext') {
@@ -1379,7 +1434,6 @@ function renderCrudTable() {
     updateHeaderCheckbox(processedData);
     window.currentVisibleData = processedData;
 }
-
 function updateHeaderCheckbox(visibleData) {
     const checkbox = document.getElementById('header-select-all');
     if (!checkbox) return;
