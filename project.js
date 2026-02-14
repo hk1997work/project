@@ -2422,7 +2422,10 @@ function openCrudModal(mode, id = null) {
     const modal = document.getElementById('crud-modal-overlay');
 
     const modalEl = modal.querySelector('.crud-modal');
-    if (modalEl) modalEl.style.width = '';
+    if (modalEl) {
+        // [修改] Create 模式 480px，Edit 模式 960px
+        modalEl.style.width = (mode === 'add') ? '480px' : '960px';
+    }
 
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
@@ -2444,35 +2447,74 @@ function openCrudModal(mode, id = null) {
         currentRow = currentData.find(r => r[schema.pk] == id) || {};
     }
 
-    let formHtml = "";
+    let leftHtml = "";
+    let rightHtml = "";
 
     schema.columns.forEach(col => {
         if (col.hiddenInForm) return;
-        if (col.readonly && mode === 'add') return;
+        if (col.readonly && mode === 'add') return; // 新建时不显示只读字段
         if (col.onlyOnCreate && mode === 'edit') return;
+
+        // [保留] Audio 编辑时的字段隐藏逻辑
+        if (currentTable === 'audio' && mode === 'edit') {
+            const type = currentRow.audio_type;
+            if (type === 'Audio File') {
+                if (['duty_cycle_recording', 'duty_cycle_period'].includes(col.key)) return;
+            } else if (type === 'Metadata') {
+                if (['filename', 'size_B'].includes(col.key)) return;
+            }
+        }
 
         let val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
 
-        // 特殊处理 audio_type: 编辑模式下强制为 text input
-        let effectiveType = col.type;
-        let effectiveReadonly = col.readonly || (mode === 'edit' && col.readonlyOnUpdate);
-
-        if (col.key === 'audio_type' && mode === 'edit') {
-            effectiveType = 'text';
-            effectiveReadonly = true;
+        // [保留] 时间格式化 (YYYY-MM-DD HH:mm:ss)
+        if (col.key === 'creation_date' && val) {
+            try {
+                let dateObj = new Date(val);
+                if (!isNaN(dateObj)) {
+                    val = dateObj.toISOString().replace('T', ' ').substring(0, 19);
+                }
+            } catch (e) {
+            }
         }
 
-        const disabledAttr = effectiveReadonly ? "readonly style='opacity:0.7; cursor:not-allowed; background:var(--bg-capsule);'" : "";
+        let effectiveType = col.type;
+        let isReadOnly = col.readonly || (mode === 'edit' && col.readonlyOnUpdate);
 
-        formHtml += `<div class="form-group"><label class="form-label">${col.label}</label>`;
+        if (currentTable === 'audio') {
+            if (col.key === 'audio_type' && mode === 'edit') {
+                effectiveType = 'text';
+                isReadOnly = true;
+            }
+            // 编辑 Audio File 时，技术参数变为只读（归入右侧）
+            if (mode === 'edit' && currentRow.audio_type === 'Audio File') {
+                const audioFileReadOnlyFields = ['sampling_rate_Hz', 'bit_depth', 'channel_num', 'duration_s', 'size_B', 'filename'];
+                if (audioFileReadOnlyFields.includes(col.key)) {
+                    isReadOnly = true;
+                }
+            }
+        }
 
+        // [保留] 不可编辑字段的样式 (灰色背景)
+        let attrStr = "";
+        if (isReadOnly) {
+            const styleStr = "opacity:0.7; cursor:not-allowed; background:var(--bg-capsule);";
+            if (effectiveType === 'select' || effectiveType === 'boolean') {
+                attrStr = `disabled style="${styleStr}"`;
+            } else {
+                attrStr = `readonly style="${styleStr}"`;
+            }
+        }
+
+        let fieldHtml = `<div class="form-group"><label class="form-label">${col.label}</label>`;
+
+        // --- 生成输入控件 HTML ---
         if (effectiveType === 'select') {
             const onChangeAttr = col.key === 'audio_type' ? `onchange="handleAudioTypeChange(this.value)"` : '';
-            formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr} ${onChangeAttr}>`;
-            formHtml += `<option value="">Select...</option>`;
+            fieldHtml += `<select class="form-input" id="input-${col.key}" ${attrStr} ${onChangeAttr}>`;
+            fieldHtml += `<option value="">Select...</option>`;
 
             let options = col.options || [];
-            // ... (options 动态加载逻辑保持不变) ...
             if (currentTable === 'project' && col.key === 'creator_name') {
                 const currentUser = document.querySelector('.user-name-text').textContent.trim();
                 if (!options.includes(currentUser)) options.push(currentUser);
@@ -2504,51 +2546,78 @@ function openCrudModal(mode, id = null) {
 
             options.forEach(opt => {
                 const selected = String(val) === String(opt) ? 'selected' : '';
-                formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
+                fieldHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
             });
-            formHtml += `</select>`;
+            fieldHtml += `</select>`;
 
         } else if (effectiveType === 'datetime-local') {
-            // [修改] 支持秒：确保格式为 YYYY-MM-DDTHH:mm:ss
             let dtVal = val;
             if (val && val.includes(' ')) {
                 dtVal = val.replace(' ', 'T');
             }
-            // [关键] 增加 step="1" 允许选择秒
-            formHtml += `<input type="datetime-local" class="form-input" id="input-${col.key}" value="${dtVal}" step="1" ${disabledAttr}>`;
+            fieldHtml += `<input type="datetime-local" class="form-input" id="input-${col.key}" value="${dtVal}" step="1" ${attrStr}>`;
 
         } else if (effectiveType === 'boolean') {
-            formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}> 
+            fieldHtml += `<select class="form-input" id="input-${col.key}" ${attrStr}> 
                 <option value="true" ${val === true ? 'selected' : ''}>True</option> 
                 <option value="false" ${val === false ? 'selected' : ''}>False</option> 
             </select>`;
         } else if (effectiveType === 'file') {
-            // ... (file 逻辑保持不变) ...
-            formHtml += `<div style="display:flex; gap:10px; align-items:center;"> 
+            fieldHtml += `<div style="display:flex; gap:10px; align-items:center;"> 
                 <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;"> 
                 <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button> 
                 <span id="input-${col.key}-preview"> ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'} </span> 
             </div>`;
         } else if (effectiveType === 'richtext') {
-            // ... (richtext 逻辑保持不变) ...
             const safeVal = String(val).replace(/'/g, "&apos;");
             const textPreview = String(val).replace(/<[^>]*>?/gm, '');
-            formHtml += ` <div style="display:flex; gap:10px; align-items:center;"> 
+            fieldHtml += ` <div style="display:flex; gap:10px; align-items:center;"> 
                 <input type="hidden" id="input-${col.key}" value='${safeVal}'> 
                 <button class="btn-secondary" onclick="openEditorForInput('input-${col.key}')" style="height:32px; font-size:0.8rem;">Edit Content</button> 
                 <span id="input-${col.key}-preview" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"> ${textPreview.substring(0, 30)}... </span> 
             </div> `;
         } else {
-            formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabledAttr}>`;
+            fieldHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${attrStr}>`;
         }
-        formHtml += `</div>`;
+        fieldHtml += `</div>`;
+
+        // 分配到左右栏
+        if (isReadOnly) {
+            rightHtml += fieldHtml;
+        } else {
+            leftHtml += fieldHtml;
+        }
     });
 
-    container.innerHTML = formHtml;
-    modal.classList.add('active');
+    // [修改] 根据模式决定布局结构
+    if (mode === 'add') {
+        // Create 模式 (480px)：单栏垂直排列
+        // 注意：新建时通常没有只读字段(rightHtml为空)，直接渲染leftHtml即可
+        container.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                ${leftHtml}
+                ${rightHtml} 
+            </div>
+        `;
+    } else {
+        // Edit 模式 (960px)：双栏布局
+        container.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    ${leftHtml || '<div style="color:var(--text-muted); font-style:italic;">No editable fields</div>'}
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    ${rightHtml}
+                </div>
+            </div>
+        `;
+    }
 
-    // 初始化字段状态
-    if (currentTable === 'audio') {
+    modal.classList.add('active');
+    lucide.createIcons();
+
+    // 如果是 Audio 新建模式，初始化字段状态
+    if (currentTable === 'audio' && mode !== 'edit') {
         const typeInput = document.getElementById('input-audio_type');
         if (typeInput) {
             handleAudioTypeChange(typeInput.value);
