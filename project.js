@@ -519,7 +519,7 @@ function enrichMediaData() {
 }
 
 function getIconForStat(key) {
-    const map = {'Users': 'users', 'Collections': 'library', 'Audio': 'mic', 'Photos': 'image', 'Videos': 'video', 'Metadata': 'file-json', 'Annotations': 'scan-line', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
+    const map = {'Users': 'users', 'Collections': 'library', 'Audios': 'mic', 'Photos': 'image', 'Videos': 'video', 'Annotations': 'scan-line', 'Sites': 'map-pin', 'Projects': 'folder-kanban'};
     return map[key] || 'activity';
 }
 
@@ -536,14 +536,14 @@ function renderSummary() {
         const proj = rawProjects[currProjIdx];
         type = "Project";
         statsObj = proj.stats;
-        order = ['Users', 'Collections', 'Audio', 'Photos', 'Videos', 'Metadata', 'Annotations', 'Sites'];
+        order = ['Users', 'Collections', 'Audios', 'Photos', 'Videos', 'Annotations', 'Sites'];
         contributorsArr = proj.contributors;
         contribBgIconName = 'folder-kanban';
     } else {
         const col = rawProjects[currProjIdx].collections[currColIdx - 1];
         type = "Collection";
         statsObj = col.stats;
-        order = ['Users', 'Projects', 'Audio', 'Photos', 'Videos', 'Metadata', 'Annotations', 'Sites'];
+        order = ['Users', 'Projects', 'Audios', 'Photos', 'Videos', 'Annotations', 'Sites'];
         contributorsArr = col.contributors;
         contribBgIconName = 'library';
     }
@@ -1323,13 +1323,11 @@ function renderCrudTable() {
 
         titleHtml += ` <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;"> <div class="view-pill" id="scope-pill"></div> <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" ${currentBtnAttr} ${currentBtnStyle}>Current</button> <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button> </div>`;
     } else if (currentTable === 'media') {
-        // [新增] Media 使用 "Audio/Photos/Videos/Metadata" 切换器，样式保持一致
         titleHtml += ` <div class="view-switcher-container" id="media-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;">
             <div class="view-pill" id="media-pill"></div>
-            <button class="view-btn ${currentMediaFilter === 'audio' ? 'active' : ''}" onclick="switchMediaFilter('audio', this)" style="font-size:0.75rem; padding:0 12px;">Audio</button>
+            <button class="view-btn ${currentMediaFilter === 'audio' ? 'active' : ''}" onclick="switchMediaFilter('audio', this)" style="font-size:0.75rem; padding:0 12px;">Audios</button>
             <button class="view-btn ${currentMediaFilter === 'photo' ? 'active' : ''}" onclick="switchMediaFilter('photo', this)" style="font-size:0.75rem; padding:0 12px;">Photos</button>
             <button class="view-btn ${currentMediaFilter === 'video' ? 'active' : ''}" onclick="switchMediaFilter('video', this)" style="font-size:0.75rem; padding:0 12px;">Videos</button>
-            <button class="view-btn ${currentMediaFilter === 'metadata' ? 'active' : ''}" onclick="switchMediaFilter('metadata', this)" style="font-size:0.75rem; padding:0 12px;">Metadata</button>
         </div>`;
     }
 
@@ -2463,7 +2461,7 @@ function saveCrudData() {
                 mappedProject.id = Math.max(...rawProjects.map(p => p.id)) + 1;
             } else mappedProject.id = 1;
             mappedProject.collections = [];
-            mappedProject.stats = {users: 0, collections: 0, audios: "0", photos: 0, videos: 0, metadata: "0", annotations: 0, sites: 0};
+            mappedProject.stats = {users: 0, collections: 0, audios: "0", photos: 0, videos: 0, annotations: 0, sites: 0};
             mappedProject.contributors = [];
             // [修改] 时间格式包含时分秒
             if (!mappedProject.date) mappedProject.date = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -2479,7 +2477,7 @@ function saveCrudData() {
             if (proj.collections[colIndex]) Object.assign(proj.collections[colIndex], mappedCol);
         } else {
             mappedCol.id = `c${proj.collections.length + Date.now()}`;
-            mappedCol.stats = {users: 0, projects: 1, audios: 0, photos: 0, videos: 0, metadata: 0, annotations: 0, sites: 0};
+            mappedCol.stats = {users: 0, projects: 1, audios: 0, photos: 0, videos: 0, annotations: 0, sites: 0};
             mappedCol.contributors = [];
             proj.collections.push(mappedCol);
         }
