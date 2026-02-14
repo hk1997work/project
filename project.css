@@ -3044,3 +3044,59 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     accent-color: var(--brand);
     cursor: pointer;
 }
+
+.ext-link-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.ext-link-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    /* [修改] 调整宽度适应文字 */
+    min-width: 140px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-5px);
+    transition: all 0.2s ease;
+    z-index: 50;
+}
+
+[data-theme="dark"] .ext-link-dropdown {
+    background: var(--bg-surface);
+    border-color: var(--border-color);
+}
+
+.ext-link-wrapper:hover .ext-link-dropdown,
+.ext-link-wrapper:focus-within .ext-link-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.ext-link-item {
+    display: block; /* [修改] 纯文字块状显示 */
+    padding: 10px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+    text-align: left; /* [修改] 文字左对齐 */
+}
+
+.ext-link-item:hover {
+    background: var(--brand-tint);
+    color: var(--brand);
+}

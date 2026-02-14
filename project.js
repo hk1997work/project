@@ -341,11 +341,16 @@ const generateMediaForContext = (proj, col) => {
         const uploader = mockNames[rInt(0, mockNames.length - 1)];
         const sizeBytes = Math.floor(Math.random() * 1024 * 1024 * (isAudio ? 50 : 5));
 
+        // [新增] 随机分配 source_type
+        const sourceType = Math.random() > 0.3 ? 'uploaded' : 'metadata';
+
         return {
             id: String(numId),
             media_id: numId,
             uuid: `550e8400-e29b-41d4-a716-${String(numId).padStart(12, '0')}`,
             media_type: mediaType,
+            // [新增] 字段
+            source_type: sourceType,
             directory: 100 + rInt(1, 10),
             filename: fileName,
             name: fileName,
@@ -762,14 +767,32 @@ function selectCollection(idx) {
             const colContainer = document.getElementById('panel-col-desc');
             const colDoiShort = colData.doi.split('/')[1];
             const updateCollectionHTML = () => {
+                // [修改] 构建合并的链接 HTML
+                let externalLinksHtml = '';
+                // 检查是否有链接
+                const hasProjUrl = colData.external_project_url && colData.external_project_url !== '#';
+                const hasMediaUrl = colData.external_media_url && colData.external_media_url !== '#';
+
+                if (hasProjUrl || hasMediaUrl) {
+                    externalLinksHtml = `
+                    <div class="ext-link-wrapper">
+                        <div class="title-link-icon" style="cursor: pointer;">
+                            <i data-lucide="link" size="20"></i>
+                        </div>
+                        <div class="ext-link-dropdown">
+                            ${hasProjUrl ? `<a href="${colData.external_project_url}" target="_blank" class="ext-link-item">Ext. Project</a>` : ''}
+                            ${hasMediaUrl ? `<a href="${colData.external_media_url}" target="_blank" class="ext-link-item">Ext. Media</a>` : ''}
+                        </div>
+                    </div>`;
+                }
+
                 colContainer.innerHTML = `<div class="collection-card block-anim">
 <div class="col-header-group">
     <div class="col-badge"><i data-lucide="globe-2" size="14"></i> ${colData.sphere}</div>
     <div class="title-row">
         <h2 class="col-title smooth-text">${colData.name}</h2> 
         <div style="display:flex; gap:8px;">
-            ${colData.external_project_url && colData.external_project_url !== '#' ? `<a href="${colData.external_project_url}" target="_blank" class="title-link-icon" title="External Project"><i data-lucide="globe" size="20"></i></a>` : ''}
-            ${colData.external_media_url && colData.external_media_url !== '#' ? `<a href="${colData.external_media_url}" target="_blank" class="title-link-icon" title="External Media"><i data-lucide="link" size="20"></i></a>` : ''}
+            ${externalLinksHtml}
         </div>
     </div>
     <div class="col-meta-row smooth-text">
@@ -1067,7 +1090,6 @@ function getDataForTable(tableName) {
             } else {
                 isCurrent = currentProject.collections.includes(c);
             }
-            // [Modified] Removed mockUrl logic and url field, mapped correct external urls
             return {
                 collection_id: c.id,
                 uuid: `${c.id}9999`,
@@ -1077,7 +1099,7 @@ function getDataForTable(tableName) {
                 doi: c.doi,
                 description: c.description,
                 sphere: c.sphere || "Biosphere",
-                // [Modified] 映射新的 URL 字段
+                // [修改] 映射新的 URL 字段
                 external_project_url: c.external_project_url,
                 external_media_url: c.external_media_url,
                 public_access: c.active !== undefined ? c.active : false,
@@ -2444,7 +2466,7 @@ function saveCrudData() {
         renderProjectList();
     } else if (isCollection) {
         const proj = rawProjects[currProjIdx];
-        // [Modified] 保存新的 URL 字段
+        // [修改] 保存新的 URL 字段
         const mappedCol = {
             name: newRow.name,
             creator: newRow.creator_id,

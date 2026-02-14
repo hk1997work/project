@@ -88,7 +88,7 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
     return Array.from({length: count}, (_, i) => {
         const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
         const colId = 10000 + (startImgIdx * 100) + i;
-        // [Modified] Date includes time
+        // [Modified] 模拟真实网址，并修正字段名
         return {
             id: String(colId),
             name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
@@ -97,7 +97,7 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
             date: `2025-0${(i % 9) + 1}-15 09:30:00`,
             doi: `10.ECO/col.${colId}`,
             sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
-            // [Modified] 模拟出具体的网址，并将 resourceurl 修正为 media_url
+            // 修复：模拟出具体网址，并将 resource_url 改为 media_url
             external_project_url: `https://science-db.io/project/${colId}`,
             external_media_url: `https://nature-sounds.org/archive/${colId}/media`,
             description: colGenerators[i % 3](`${baseName}`),
