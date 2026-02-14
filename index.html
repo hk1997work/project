@@ -1560,13 +1560,6 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="file-json" size="26"></i></div>
-                    <div class="stat-info">
-                        <div class="label">Metadata</div>
-                        <div class="value" id="val-metadata">0</div>
-                    </div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-icon"><i data-lucide="scan-line" size="26"></i></div>
                     <div class="stat-info">
                         <div class="label">Annotations</div>
@@ -1822,9 +1815,9 @@
     });
 
     const nodeData = {
-        "GWDG - EFForTS VM": {users: 142, projects: 15, collections: 48, sites: 12, audios: "4.2k", photos: "1.2k", videos: "350", metadata: "15k", annotations: 856, coords: [51.56, 9.95]},
-        "INRAE - Monitor PAM VM": {users: 95, projects: 8, collections: 26, sites: 5, audios: "1.8k", photos: "560", videos: "120", metadata: "8.5k", annotations: 432, coords: [43.59, 1.44]},
-        "INRAE - EFNO test VM": {users: 312, projects: 42, collections: 156, sites: 38, audios: "12.5k", photos: "3.8k", videos: "950", metadata: "45k", annotations: 2109, coords: [47.8, 2.7]}
+        "GWDG - EFForTS VM": {users: 142, projects: 15, collections: 48, sites: 12, audios: "4.2k", photos: "1.2k", videos: "350", annotations: 856, coords: [51.56, 9.95]},
+        "INRAE - Monitor PAM VM": {users: 95, projects: 8, collections: 26, sites: 5, audios: "1.8k", photos: "560", videos: "120", annotations: 432, coords: [43.59, 1.44]},
+        "INRAE - EFNO test VM": {users: 312, projects: 42, collections: 156, sites: 38, audios: "12.5k", photos: "3.8k", videos: "950", annotations: 2109, coords: [47.8, 2.7]}
     };
     let currentSelectedNode = "GWDG - EFForTS VM";
 
@@ -1866,7 +1859,6 @@
             document.getElementById('val-audios').innerText = data.audios;
             document.getElementById('val-photos').innerText = data.photos;
             document.getElementById('val-videos').innerText = data.videos;
-            document.getElementById('val-metadata').innerText = data.metadata;
             document.getElementById('val-annotations').innerText = data.annotations;
             container.classList.add('active');
             if (typeof setSelectedMarker === 'function') setSelectedMarker(name);
