@@ -100,20 +100,20 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
             url: "#",
             description: colGenerators[i % 3](`${baseName}`),
             image: getImg(startImgIdx + i + 1),
-            stats: {users: rInt(2, 10), projects: 1, audio: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), annotations: rInt(50, 300), sites: rInt(1, 5)},
+            stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), metadata: rInt(1000, 10000), annotations: rInt(50, 300), sites: rInt(1, 5)},
             contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
         };
     });
 };
 const initialProjects = [{
     id: 1, name: "Amazon Rainforest Survey", creator: "Liudilong", date: "2025-01-10 14:00:00", // [Modified]
-    doi: "10.1234/amz.01", externalUrl: "https://www.worldwildlife.org/places/amazon", description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"), styleClass: "style-modern", image: getImg(0), collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"), stats: {users: 45, collections: 8, audio: "120k", photos: 850, videos: 120, metadata: "1.2M", annotations: 4500, sites: 12}, contributors: getContributors(4, 'project', "Liudilong")
+    doi: "10.1234/amz.01", externalUrl: "https://www.worldwildlife.org/places/amazon", description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"), styleClass: "style-modern", image: getImg(0), collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"), stats: {users: 45, collections: 8, audios: "120k", photos: 850, videos: 120, metadata: "1.2M", annotations: 4500, sites: 12}, contributors: getContributors(4, 'project', "Liudilong")
 }, {
     id: 2, name: "Marine Ecosystems Study", creator: "Liudilong", date: "2024-11-05 08:15:30", // [Modified]
-    doi: "10.5678/mar.02", externalUrl: "https://www.barrierreef.org/", description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"), styleClass: "style-academic", image: getImg(1), collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"), stats: {users: 32, collections: 6, audio: "80k", photos: 200, videos: 500, metadata: "800k", annotations: 2100, sites: 5}, contributors: getContributors(3, 'project', "Prof. Ocean")
+    doi: "10.5678/mar.02", externalUrl: "https://www.barrierreef.org/", description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"), styleClass: "style-academic", image: getImg(1), collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"), stats: {users: 32, collections: 6, audios: "80k", photos: 200, videos: 500, metadata: "800k", annotations: 2100, sites: 5}, contributors: getContributors(3, 'project', "Prof. Ocean")
 }, {
     id: 3, name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15 16:45:00", // [Modified]
-    doi: "10.9999/sav.03", externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant", description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"), styleClass: "style-editorial", image: getImg(2), collections: createCollections("Seismic", 5, 2, "K. Mbeki"), stats: {users: 28, collections: 5, audio: "45k", photos: 1200, videos: 50, metadata: "500k", annotations: 1200, sites: 8}, contributors: getContributors(5, 'project', "K. Mbeki")
+    doi: "10.9999/sav.03", externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant", description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"), styleClass: "style-editorial", image: getImg(2), collections: createCollections("Seismic", 5, 2, "K. Mbeki"), stats: {users: 28, collections: 5, audios: "45k", photos: 1200, videos: 50, metadata: "500k", annotations: 1200, sites: 8}, contributors: getContributors(5, 'project', "K. Mbeki")
 }];
 
 const REALM_COLORS = {"Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316"};
@@ -165,7 +165,7 @@ const dbSchema = {
             key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true, hiddenInForm: true
         }, {key: "active", label: "Active", type: "boolean"}]
     }, media: {
-        label: "Medias", icon: "file-audio", pk: "media_id", columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video", "metadata"], hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
+        label: "Media", icon: "file-audio", pk: "media_id", columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video", "metadata"], hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
             key: "uploader_id", label: "Uploader", type: "select", options: mockNames
         }, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "site_id", label: "Site", type: "select", options: []}, {key: "sensor_id", label: "Sensor", type: "select", options: []}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true}, {
             key: "photo_setting_id", label: "Photo Setting", type: "select", options: mockPhotoSettings, hiddenInTable: true

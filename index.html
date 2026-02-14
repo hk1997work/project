@@ -1541,8 +1541,8 @@
                 <div class="stat-card">
                     <div class="stat-icon"><i data-lucide="mic" size="26"></i></div>
                     <div class="stat-info">
-                        <div class="label">Audio</div>
-                        <div class="value" id="val-audio">0</div>
+                        <div class="label">Audios</div>
+                        <div class="value" id="val-audios">0</div>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -1822,9 +1822,9 @@
     });
 
     const nodeData = {
-        "GWDG - EFForTS VM": {users: 142, projects: 15, collections: 48, sites: 12, audio: "4.2k", photo: "1.2k", video: "350", metadata: "15k", annotations: 856, coords: [51.56, 9.95]},
-        "INRAE - Monitor PAM VM": {users: 95, projects: 8, collections: 26, sites: 5, audio: "1.8k", photo: "560", video: "120", metadata: "8.5k", annotations: 432, coords: [43.59, 1.44]},
-        "INRAE - EFNO test VM": {users: 312, projects: 42, collections: 156, sites: 38, audio: "12.5k", photo: "3.8k", video: "950", metadata: "45k", annotations: 2109, coords: [47.8, 2.7]}
+        "GWDG - EFForTS VM": {users: 142, projects: 15, collections: 48, sites: 12, audios: "4.2k", photos: "1.2k", videos: "350", metadata: "15k", annotations: 856, coords: [51.56, 9.95]},
+        "INRAE - Monitor PAM VM": {users: 95, projects: 8, collections: 26, sites: 5, audios: "1.8k", photos: "560", videos: "120", metadata: "8.5k", annotations: 432, coords: [43.59, 1.44]},
+        "INRAE - EFNO test VM": {users: 312, projects: 42, collections: 156, sites: 38, audios: "12.5k", photos: "3.8k", videos: "950", metadata: "45k", annotations: 2109, coords: [47.8, 2.7]}
     };
     let currentSelectedNode = "GWDG - EFForTS VM";
 
@@ -1863,9 +1863,9 @@
             document.getElementById('val-projects').innerText = data.projects;
             document.getElementById('val-sites').innerText = data.sites;
             document.getElementById('val-collections').innerText = data.collections;
-            document.getElementById('val-audio').innerText = data.audio;
-            document.getElementById('val-photos').innerText = data.photo;
-            document.getElementById('val-videos').innerText = data.video;
+            document.getElementById('val-audios').innerText = data.audios;
+            document.getElementById('val-photos').innerText = data.photos;
+            document.getElementById('val-videos').innerText = data.videos;
             document.getElementById('val-metadata').innerText = data.metadata;
             document.getElementById('val-annotations').innerText = data.annotations;
             container.classList.add('active');

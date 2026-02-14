@@ -976,6 +976,7 @@ function switchMediaFilter(filter, btn) {
     selectedCrudIds = [];
     renderCrudTable();
 }
+
 function switchDataScope(scope, btn) {
     if (dataScope === scope) return;
     dataScope = scope;
@@ -1236,6 +1237,7 @@ function switchCrudTable(tableName) {
     renderCrudHeader();
     renderCrudTable();
 }
+
 function handleDataSearch(val) {
     crudSearchQuery = val.toLowerCase();
     renderCrudTable();
@@ -1434,6 +1436,7 @@ function renderCrudTable() {
     updateHeaderCheckbox(processedData);
     window.currentVisibleData = processedData;
 }
+
 function updateHeaderCheckbox(visibleData) {
     const checkbox = document.getElementById('header-select-all');
     if (!checkbox) return;
@@ -2388,6 +2391,7 @@ function openCrudModal(mode, id = null) {
     container.innerHTML = formHtml;
     modal.classList.add('active');
 }
+
 function closeCrudModal() {
     document.getElementById('crud-modal-overlay').classList.remove('active');
 }
@@ -2459,7 +2463,7 @@ function saveCrudData() {
                 mappedProject.id = Math.max(...rawProjects.map(p => p.id)) + 1;
             } else mappedProject.id = 1;
             mappedProject.collections = [];
-            mappedProject.stats = {users: 0, collections: 0, audio: "0", photos: 0, videos: 0, metadata: "0", annotations: 0, sites: 0};
+            mappedProject.stats = {users: 0, collections: 0, audios: "0", photos: 0, videos: 0, metadata: "0", annotations: 0, sites: 0};
             mappedProject.contributors = [];
             // [修改] 时间格式包含时分秒
             if (!mappedProject.date) mappedProject.date = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -2475,7 +2479,7 @@ function saveCrudData() {
             if (proj.collections[colIndex]) Object.assign(proj.collections[colIndex], mappedCol);
         } else {
             mappedCol.id = `c${proj.collections.length + Date.now()}`;
-            mappedCol.stats = {users: 0, projects: 1, audio: 0, photos: 0, videos: 0, metadata: 0, annotations: 0, sites: 0};
+            mappedCol.stats = {users: 0, projects: 1, audios: 0, photos: 0, videos: 0, metadata: 0, annotations: 0, sites: 0};
             mappedCol.contributors = [];
             proj.collections.push(mappedCol);
         }
@@ -2495,6 +2499,7 @@ function saveCrudData() {
     renderCrudTable();
     closeCrudModal();
 }
+
 function resetDataTable() {
     crudSearchQuery = "";
     crudFilterState = {};
@@ -2615,4 +2620,5 @@ function openUploadModal() {
 
     modal.classList.add('active');
 }
+
 init();
