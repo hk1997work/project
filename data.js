@@ -97,8 +97,9 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
             date: `2025-0${(i % 9) + 1}-15 09:30:00`,
             doi: `10.ECO/col.${colId}`,
             sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
-            external_project_url: "#",
-            external_resource_url: "#",
+            // [Modified] 模拟出具体的网址，并将 resourceurl 修正为 media_url
+            external_project_url: `https://science-db.io/project/${colId}`,
+            external_media_url: `https://nature-sounds.org/archive/${colId}/media`,
             description: colGenerators[i % 3](`${baseName}`),
             image: getImg(startImgIdx + i + 1),
             stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), annotations: rInt(50, 300), sites: rInt(1, 5)},
@@ -151,13 +152,13 @@ const dbSchema = {
         label: "Collections",
         icon: "library",
         pk: "collection_id",
-        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true}, {key: "external_project_url", label: "Ext. Project", type: "text"}, {
-            key: "external_media_url",
-            label: "Ext. Media",
-            type: "text"
-        }, {key: "doi", label: "DOI", type: "text"}, {
-            key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
-        }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
+        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true},
+            // [Modified] 字段名变更
+            {key: "external_project_url", label: "Ext. Project", type: "text"},
+            {key: "external_media_url", label: "Ext. Media", type: "text"},
+            {key: "doi", label: "DOI", type: "text"}, {
+                key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
+            }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, "user": {
         label: "Users",
         icon: "users",

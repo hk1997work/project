@@ -765,7 +765,13 @@ function selectCollection(idx) {
                 colContainer.innerHTML = `<div class="collection-card block-anim">
 <div class="col-header-group">
     <div class="col-badge"><i data-lucide="globe-2" size="14"></i> ${colData.sphere}</div>
-    <div class="title-row"><h2 class="col-title smooth-text">${colData.name}</h2> <a href="${colData.url}" target="_blank" class="title-link-icon" title="External Media"><i data-lucide="link" size="20"></i></a></div>
+    <div class="title-row">
+        <h2 class="col-title smooth-text">${colData.name}</h2> 
+        <div style="display:flex; gap:8px;">
+            ${colData.external_project_url && colData.external_project_url !== '#' ? `<a href="${colData.external_project_url}" target="_blank" class="title-link-icon" title="External Project"><i data-lucide="globe" size="20"></i></a>` : ''}
+            ${colData.external_media_url && colData.external_media_url !== '#' ? `<a href="${colData.external_media_url}" target="_blank" class="title-link-icon" title="External Media"><i data-lucide="link" size="20"></i></a>` : ''}
+        </div>
+    </div>
     <div class="col-meta-row smooth-text">
         <div class="meta-capsule-box">
             <div class="meta-item-btn">
@@ -1061,10 +1067,24 @@ function getDataForTable(tableName) {
             } else {
                 isCurrent = currentProject.collections.includes(c);
             }
-            const domains = ["https://nature-data.org", "https://bio-archive.edu", "https://eco-research.net", "https://science-db.io"];
-            const mockUrl = `${domains[i % domains.length]}/collection/${c.id}`;
+            // [Modified] Removed mockUrl logic and url field, mapped correct external urls
             return {
-                collection_id: c.id, uuid: `${c.id}9999`, project_names: linkedProjs.join(", "), name: c.name, creator_id: c.creator, doi: c.doi, description: c.description, sphere: c.sphere || "Biosphere", url: (c.url && c.url !== "#") ? c.url : mockUrl, public_access: c.active !== undefined ? c.active : false, public_annotations: false, creation_date: c.date, _rawId: c.id, _isCurrent: isCurrent
+                collection_id: c.id,
+                uuid: `${c.id}9999`,
+                project_names: linkedProjs.join(", "),
+                name: c.name,
+                creator_id: c.creator,
+                doi: c.doi,
+                description: c.description,
+                sphere: c.sphere || "Biosphere",
+                // [Modified] 映射新的 URL 字段
+                external_project_url: c.external_project_url,
+                external_media_url: c.external_media_url,
+                public_access: c.active !== undefined ? c.active : false,
+                public_annotations: false,
+                creation_date: c.date,
+                _rawId: c.id,
+                _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'site') {
@@ -2424,8 +2444,18 @@ function saveCrudData() {
         renderProjectList();
     } else if (isCollection) {
         const proj = rawProjects[currProjIdx];
-        // [修改] 时间格式包含时分秒
-        const mappedCol = {name: newRow.name, creator: newRow.creator_id, doi: newRow.doi, sphere: newRow.sphere, url: newRow.url, description: newRow.description, active: newRow.public_access, date: newRow.creation_date || moment().format("YYYY-MM-DD HH:mm:ss")};
+        // [Modified] 保存新的 URL 字段
+        const mappedCol = {
+            name: newRow.name,
+            creator: newRow.creator_id,
+            doi: newRow.doi,
+            sphere: newRow.sphere,
+            external_project_url: newRow.external_project_url,
+            external_media_url: newRow.external_media_url,
+            description: newRow.description,
+            active: newRow.public_access,
+            date: newRow.creation_date || moment().format("YYYY-MM-DD HH:mm:ss")
+        };
         if (editingId !== null) {
             const colIndex = editingId - 1;
             if (proj.collections[colIndex]) Object.assign(proj.collections[colIndex], mappedCol);
