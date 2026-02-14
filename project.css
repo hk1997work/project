@@ -2450,6 +2450,7 @@ a.row-name:hover {
     top: 0;
     z-index: 10;
     border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 
 .crud-table td {
@@ -2676,6 +2677,7 @@ a.row-name:hover {
     color: var(--text-secondary);
     font-size: 0.8rem;
     font-weight: 700;
+    white-space: nowrap;
 }
 
 .th-header-content:hover {
@@ -2852,7 +2854,8 @@ input:checked + .perm-switch-track .perm-switch-thumb {
 
 .perm-row {
     display: grid;
-    grid-template-columns: 240px 1fr;
+    /* [修改] 将 240px 增加到 320px，防止深层缩进后文字显示空间不足 */
+    grid-template-columns: 320px 1fr;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
     min-height: 52px;
@@ -2893,6 +2896,8 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* [新增] 必须设置为 block 或 inline-block 才能让 overflow 生效 */
+    display: block;
 }
 
 .perm-controls {

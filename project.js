@@ -386,7 +386,7 @@ const generateMediaForContext = (proj, col) => {
             channel_num: isAudio ? [1, 2][rInt(0, 1)] : null,
             duration_s: isAudio ? rInt(10, 3600) : null,
             doi: `10.ECO/${numId}`,
-            creation_date: new Date().toISOString(),
+            creation_date: moment().format("YYYY-MM-DD HH:mm:ss"), // [修改] 格式化为标准日期时间
             annotations: getRandomAnnotations(),
             sr: "48kHz",
             spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
@@ -1588,6 +1588,11 @@ let currentModalSelectableColMap = new Map();
 
 function openLinkModal() {
     const modal = document.getElementById('crud-modal-overlay');
+
+    // [Fix] 显式重置宽度，防止继承 Upload 或 Edit 的宽度
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '';
+
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
@@ -1743,6 +1748,11 @@ function handleToolbarEdit() {
 function handleToolbarResetPassword() {
     if (selectedCrudIds.length !== 1) return;
     const modal = document.getElementById('crud-modal-overlay');
+
+    // [Fix] 显式重置宽度为空，使用 CSS 默认值 (480px)
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '';
+
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
@@ -2129,8 +2139,8 @@ function renderCollectionListHTML(proj, userProj) {
                 <div class="perm-check-wrapper">
                     <input type="checkbox" class="perm-cb" ${hasColAccess ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} onclick="event.stopPropagation()" onchange="permToggleCollection('${proj.id}', '${cid}')">
                 </div>
-                <div style="flex:1; cursor:pointer;" onclick="${isDisabled ? '' : `permToggleCollection('${proj.id}', '${cid}')`}">
-                    <span class="perm-name-text" style="font-weight:500;">${col.name}</span>
+                <div style="flex:1; min-width:0; cursor:pointer;" onclick="${isDisabled ? '' : `permToggleCollection('${proj.id}', '${cid}')`}">
+                    <span class="perm-name-text" style="font-weight:500;" title="${col.name}">${col.name}</span>
                 </div>
             </div>
             <div class="perm-controls" style="${hasColAccess ? '' : 'opacity:0.3; pointer-events:none;'}">
@@ -2310,6 +2320,11 @@ function handleToolbarDelete() {
 
 function openDeleteModal() {
     const modal = document.getElementById('crud-modal-overlay');
+
+    // [Fix] 显式重置宽度
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '';
+
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
@@ -2689,7 +2704,8 @@ function saveCrudData() {
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
         if (!newRow.uploader_id) newRow.uploader_id = currentUser;
         if (!newRow.creator_id) newRow.creator_id = currentUser;
-        if (!newRow.creation_date) newRow.creation_date = new Date().toISOString();
+        // [修改] 格式化为标准日期时间
+        if (!newRow.creation_date) newRow.creation_date = moment().format("YYYY-MM-DD HH:mm:ss");
     }
     // [Updated] Auto-fill creator if missing (e.g. on Create)
     if (isProject && !newRow.creator_name) newRow.creator_name = currentUser;
@@ -2776,10 +2792,14 @@ function handleSetContributor() {
 
     const isProject = currColIdx === 0;
     const roles = isProject ? projRoles : colRoles;
-    // [修改] 将 Role 替换为 Contributor
     const roleLabel = isProject ? "Project Contributor" : "Collection Contributor";
 
     const modal = document.getElementById('crud-modal-overlay');
+
+    // [Fix] 显式重置宽度
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '';
+
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
@@ -2801,7 +2821,6 @@ function handleSetContributor() {
     container.innerHTML = html;
 
     if (submitBtn) {
-        // [修改] 按钮文本去掉 Role
         submitBtn.textContent = "Save";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveSetContributor;
