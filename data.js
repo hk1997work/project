@@ -90,20 +90,8 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
         const colId = 10000 + (startImgIdx * 100) + i;
         // [Modified] 模拟真实网址，并修正字段名
         return {
-            id: String(colId),
-            name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
-            active: false,
-            creator: collectionCreator,
-            date: `2025-0${(i % 9) + 1}-15 09:30:00`,
-            doi: `10.ECO/col.${colId}`,
-            sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
-            // 修复：模拟出具体网址，并将 resource_url 改为 media_url
-            external_project_url: `https://science-db.io/project/${colId}`,
-            external_media_url: `https://nature-sounds.org/archive/${colId}/media`,
-            description: colGenerators[i % 3](`${baseName}`),
-            image: getImg(startImgIdx + i + 1),
-            stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), annotations: rInt(50, 300), sites: rInt(1, 5)},
-            contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
+            id: String(colId), name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`, active: false, creator: collectionCreator, date: `2025-0${(i % 9) + 1}-15 09:30:00`, doi: `10.ECO/col.${colId}`, sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3], // 修复：模拟出具体网址，并将 resource_url 改为 media_url
+            external_project_url: `https://science-db.io/project/${colId}`, external_media_url: `https://nature-sounds.org/archive/${colId}/media`, description: colGenerators[i % 3](`${baseName}`), image: getImg(startImgIdx + i + 1), stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), annotations: rInt(50, 300), sites: rInt(1, 5)}, contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
         };
     });
 };
@@ -149,14 +137,8 @@ const dbSchema = {
                 key: "creation_date", label: "Created", type: "text", readonly: true
             }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, collection: {
-        label: "Collections",
-        icon: "library",
-        pk: "collection_id",
-        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true},
-            // [Modified] 字段名变更
-            {key: "external_project_url", label: "Ext. Project", type: "text"},
-            {key: "external_media_url", label: "Ext. Media", type: "text"},
-            {key: "doi", label: "DOI", type: "text"}, {
+        label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true}, // [Modified] 字段名变更
+            {key: "external_project_url", label: "Ext. Project", type: "text"}, {key: "external_media_url", label: "Ext. Media", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
                 key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
             }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, "user": {
@@ -171,13 +153,23 @@ const dbSchema = {
             key: "collection_role", label: "Coll. Contrib.", type: "select", options: colRoles, readonly: true, hiddenInForm: true
         }, {key: "active", label: "Active", type: "boolean"}]
     }, audio: {
-        label: "Audios", icon: "mic", pk: "media_id", columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video"], hiddenInTable: true, hiddenInForm: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
-            key: "uploader_id", label: "Uploader", type: "select", options: mockNames
-        }, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "site_id", label: "Site", type: "select", options: []}, {key: "sensor_id", label: "Sensor", type: "select", options: []}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true}, {
-            key: "photo_setting_id", label: "Photo Setting", type: "select", options: mockPhotoSettings, hiddenInTable: true, hiddenInForm: true
-        }, {key: "medium", label: "Medium", type: "text"}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", hiddenInTable: true}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", hiddenInTable: true}, {key: "note", label: "Note", type: "text"}, {key: "date_time", label: "Date Time", type: "text"}, {key: "size_B", label: "Size (Bytes)", type: "number", hiddenInTable: true}, {key: "md5_hash", label: "MD5", type: "text", hiddenInTable: true}, {
-            key: "doi", label: "DOI", type: "text"
-        }, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        label: "Audios",
+        icon: "mic",
+        pk: "media_id",
+        columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "audio_type", label: "Data Type", type: "select", options: ["Audio", "Metadata"]}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "size_B", label: "Size (Bytes)", type: "number"}, {key: "duration_s", label: "Duration (s)", type: "number"}, {
+            key: "sampling_rate_Hz",
+            label: "Sample Rate (Hz)",
+            type: "number"
+        }, {key: "bit_depth", label: "Bit Depth", type: "number"}, {key: "channel_num", label: "Channels", type: "number"}, {key: "recording_gain_dB", label: "Gain (dB)", type: "number"}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number"}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
+            key: "uploader_id",
+            label: "Uploader",
+            type: "select",
+            options: mockNames
+        }, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "site_id", label: "Site", type: "select", options: []}, {key: "sensor_id", label: "Sensor", type: "select", options: []}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true}, {key: "medium", label: "Medium", type: "text"}, {
+            key: "note",
+            label: "Note",
+            type: "text"
+        }, {key: "date_time", label: "Date Time", type: "text"}, {key: "md5_hash", label: "MD5", type: "text", hiddenInTable: true}, {key: "doi", label: "DOI", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, photo: {
         label: "Photos", icon: "image", pk: "media_id", columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video"], hiddenInTable: true, hiddenInForm: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
             key: "uploader_id", label: "Uploader", type: "select", options: mockNames

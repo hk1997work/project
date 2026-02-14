@@ -335,22 +335,29 @@ const generateMediaForContext = (proj, col) => {
         const mediaType = typePool[rInt(0, 3)];
         const isAudio = mediaType === 'audio';
 
+        const audioSourceType = isAudio ? (Math.random() > 0.3 ? "Audio" : "Metadata") : null;
+
         const ext = isAudio ? "wav" : "jpg";
         const fileName = `REC_${basePrefix}_${recId}.${ext}`;
 
         const uploader = mockNames[rInt(0, mockNames.length - 1)];
-        const sizeBytes = Math.floor(Math.random() * 1024 * 1024 * (isAudio ? 50 : 5));
+        let sizeBytes = Math.floor(Math.random() * 1024 * 1024 * (isAudio ? 50 : 5));
 
-        // [新增] 随机分配 source_type
-        const sourceType = Math.random() > 0.3 ? 'uploaded' : 'metadata';
+        let dutyRec = null;
+        let dutyPer = null;
+
+        if (isAudio && audioSourceType === 'Metadata') {
+            sizeBytes = null;
+            dutyRec = 60;
+            dutyPer = 3600;
+        }
 
         return {
             id: String(numId),
             media_id: numId,
             uuid: `550e8400-e29b-41d4-a716-${String(numId).padStart(12, '0')}`,
             media_type: mediaType,
-            // [新增] 字段
-            source_type: sourceType,
+            audio_type: audioSourceType,
             directory: 100 + rInt(1, 10),
             filename: fileName,
             name: fileName,
@@ -362,14 +369,19 @@ const generateMediaForContext = (proj, col) => {
             audio_setting_id: isAudio ? mockAudioSettings[rInt(0, 2)] : null,
             photo_setting_id: !isAudio ? mockPhotoSettings[rInt(0, 2)] : null,
             medium: ['Marine', 'Freshwater'].includes(proj.sphere || 'Terrestrial') ? 'Water' : 'Air',
-            duty_cycle_recording: isAudio ? 60 : null,
-            duty_cycle_period: isAudio ? 3600 : null,
+            duty_cycle_recording: dutyRec,
+            duty_cycle_period: dutyPer,
             note: "Auto-generated record",
             date: fullDate,
             time: timeStr,
             date_time: `${fullDate} ${timeStr}`,
-            size: `${(sizeBytes / 1024 / 1024).toFixed(2)} MB`,
+            size: sizeBytes ? `${(sizeBytes / 1024 / 1024).toFixed(2)} MB` : "N/A",
             size_B: sizeBytes,
+            recording_gain_dB: isAudio ? rInt(0, 60) : null,
+            sampling_rate_Hz: isAudio ? [44100, 48000, 96000][rInt(0, 2)] : null,
+            bit_depth: isAudio ? [16, 24][rInt(0, 1)] : null,
+            channel_num: isAudio ? [1, 2][rInt(0, 1)] : null,
+            duration_s: isAudio ? rInt(10, 3600) : null,
             md5_hash: "d41d8cd98f00b204e9800998ecf8427e",
             doi: `10.ECO/${numId}`,
             creation_date: new Date().toISOString(),
@@ -1117,6 +1129,7 @@ function getDataForTable(tableName) {
             media_id: m.media_id,
             uuid: m.uuid,
             media_type: m.media_type,
+            audio_type: m.audio_type,
             name: m.name,
             filename: m.filename,
             directory: m.directory,
@@ -1130,6 +1143,11 @@ function getDataForTable(tableName) {
             medium: m.medium,
             duty_cycle_recording: m.duty_cycle_recording,
             duty_cycle_period: m.duty_cycle_period,
+            recording_gain_dB: m.recording_gain_dB,
+            sampling_rate_Hz: m.sampling_rate_Hz,
+            bit_depth: m.bit_depth,
+            channel_num: m.channel_num,
+            duration_s: m.duration_s,
             note: m.note,
             date_time: m.date_time,
             size_B: m.size_B,
@@ -2258,11 +2276,69 @@ function confirmDeleteData() {
     if (currentTable === 'site' && map) renderMap(false);
 }
 
+function handleAudioTypeChange(type) {
+    const inputIds = {
+        sr: 'input-sampling_rate_Hz',
+        bit: 'input-bit_depth',
+        ch: 'input-channel_num',
+        dur: 'input-duration_s',
+        dutyRec: 'input-duty_cycle_recording',
+        dutyPer: 'input-duty_cycle_period',
+        size: 'input-size_B'
+    };
+
+    const els = {};
+    Object.keys(inputIds).forEach(k => els[k] = document.getElementById(inputIds[k]));
+
+    if (type === 'Audio') {
+        [els.sr, els.bit, els.ch, els.dur].forEach(el => {
+            if (el) {
+                el.disabled = true;
+                el.style.opacity = '0.6';
+                el.style.cursor = 'not-allowed';
+            }
+        });
+        [els.dutyRec, els.dutyPer].forEach(el => {
+            if (el) {
+                el.value = '';
+                el.disabled = true;
+                el.style.opacity = '0.6';
+                el.style.cursor = 'not-allowed';
+            }
+        });
+        if (els.size) {
+            els.size.disabled = false;
+            els.size.style.opacity = '1';
+            els.size.style.cursor = 'text';
+        }
+    } else if (type === 'Metadata') {
+        [els.sr, els.bit, els.ch, els.dur].forEach(el => {
+            if (el) {
+                el.disabled = false;
+                el.style.opacity = '1';
+                el.style.cursor = 'text';
+            }
+        });
+        [els.dutyRec, els.dutyPer].forEach(el => {
+            if (el) {
+                el.disabled = false;
+                el.style.opacity = '1';
+                el.style.cursor = 'text';
+            }
+        });
+        if (els.size) {
+            els.size.value = '';
+            els.size.disabled = true;
+            els.size.style.opacity = '0.6';
+            els.size.style.cursor = 'not-allowed';
+        }
+    }
+}
+
 function openCrudModal(mode, id = null) {
     const schema = dbSchema[currentTable];
     const modal = document.getElementById('crud-modal-overlay');
 
-    // [新增] 重置 modal 宽度为默认值，防止受 Upload 弹窗影响
     const modalEl = modal.querySelector('.crud-modal');
     if (modalEl) modalEl.style.width = '';
 
@@ -2270,7 +2346,6 @@ function openCrudModal(mode, id = null) {
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
 
-    // 配置保存按钮
     if (submitBtn) {
         submitBtn.textContent = "Save";
         submitBtn.style.backgroundColor = "";
@@ -2281,7 +2356,6 @@ function openCrudModal(mode, id = null) {
     const itemName = schema.itemLabel || schema.label.slice(0, -1);
     title.textContent = mode === 'edit' ? `Edit ${itemName}` : `New ${itemName}`;
 
-    // 如果是编辑模式，查找当前行数据
     let currentRow = {};
     if (mode === 'edit') {
         const currentData = getDataForTable(currentTable);
@@ -2290,30 +2364,27 @@ function openCrudModal(mode, id = null) {
 
     let formHtml = "";
 
-    // 遍历列生成表单
     schema.columns.forEach(col => {
         if (col.hiddenInForm) return;
 
-        // [修改] 只读字段：在“新增”模式下隐藏，在“编辑”模式下显示（但在下方会设置为 disabled）
         if (col.readonly && mode === 'add') return;
 
         if (col.onlyOnCreate && mode === 'edit') return;
 
         const val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
 
-        // [修改] 计算禁用状态：如果是 readonly 字段，或者在更新时只读
         const isReadonly = col.readonly || (mode === 'edit' && col.readonlyOnUpdate);
         const disabledAttr = isReadonly ? "disabled style='opacity:0.6; cursor:not-allowed; background:var(--bg-capsule);'" : "";
 
         formHtml += `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
         if (col.type === 'select') {
-            formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}>`;
+            const onChangeAttr = col.key === 'audio_type' ? `onchange="handleAudioTypeChange(this.value)"` : '';
+            formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr} ${onChangeAttr}>`;
             formHtml += `<option value="">Select...</option>`;
 
             let options = col.options || [];
 
-            // --- 动态加载下拉选项逻辑 ---
             if (currentTable === 'project' && col.key === 'creator_name') {
                 const currentUser = document.querySelector('.user-name-text').textContent.trim();
                 const oldScope = dataScope;
@@ -2349,7 +2420,6 @@ function openCrudModal(mode, id = null) {
                 }
             }
 
-            // 渲染选项
             options.forEach(opt => {
                 const selected = String(val) === String(opt) ? 'selected' : '';
                 formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
@@ -2384,6 +2454,17 @@ function openCrudModal(mode, id = null) {
 
     container.innerHTML = formHtml;
     modal.classList.add('active');
+
+    if (currentTable === 'audio') {
+        const typeInput = document.getElementById('input-audio_type');
+        if (typeInput) {
+            handleAudioTypeChange(typeInput.value);
+            if (mode === 'add' && !typeInput.value) {
+                typeInput.value = 'Audio';
+                handleAudioTypeChange('Audio');
+            }
+        }
+    }
 }
 
 function closeCrudModal() {
