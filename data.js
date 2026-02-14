@@ -156,20 +156,35 @@ const dbSchema = {
         label: "Audios",
         icon: "mic",
         pk: "media_id",
-        columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "audio_type", label: "Data Type", type: "select", options: ["Audio", "Metadata"]}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "size_B", label: "Size (Bytes)", type: "number"}, {key: "duration_s", label: "Duration (s)", type: "number"}, {
-            key: "sampling_rate_Hz",
-            label: "Sample Rate (Hz)",
-            type: "number"
-        }, {key: "bit_depth", label: "Bit Depth", type: "number"}, {key: "channel_num", label: "Channels", type: "number"}, {key: "recording_gain_dB", label: "Gain (dB)", type: "number"}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number"}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
-            key: "uploader_id",
-            label: "Uploader",
-            type: "select",
-            options: mockNames
-        }, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "site_id", label: "Site", type: "select", options: []}, {key: "sensor_id", label: "Sensor", type: "select", options: []}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true}, {key: "medium", label: "Medium", type: "text"}, {
-            key: "note",
-            label: "Note",
-            type: "text"
-        }, {key: "date_time", label: "Date Time", type: "text"}, {key: "md5_hash", label: "MD5", type: "text", hiddenInTable: true}, {key: "doi", label: "DOI", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        columns: [
+            {key: "media_id", label: "ID", type: "number", readonly: true},
+            {key: "uuid", label: "UUID", type: "text", readonly: true},
+            {key: "audio_type", label: "Data Type", type: "select", options: ["Audio File", "Metadata"]},
+            {key: "name", label: "Name", type: "text"},
+            {key: "filename", label: "Filename", type: "text"},
+            // [修改] 添加 filterType: 'range'
+            {key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'},
+            {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'},
+            {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'},
+            {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'},
+            {key: "channel_num", label: "Channels", type: "number", filterType: 'range'},
+            {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'},
+            {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'},
+            {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'},
+            {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true},
+            {key: "uploader_id", label: "Uploader", type: "select", options: mockNames},
+            {key: "creator_id", label: "Creator", type: "select", options: mockNames},
+            {key: "site_id", label: "Site", type: "select", options: []},
+            {key: "sensor_id", label: "Sensor", type: "select", options: []},
+            {key: "license_id", label: "License", type: "select", options: mockLicenses},
+            {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true},
+            {key: "medium", label: "Medium", type: "text"},
+            {key: "note", label: "Note", type: "text"},
+            {key: "date_time", label: "Date Time", type: "text"},
+            {key: "md5_hash", label: "MD5", type: "text", hiddenInTable: true},
+            {key: "doi", label: "DOI", type: "text"},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
     }, photo: {
         label: "Photos", icon: "image", pk: "media_id", columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video"], hiddenInTable: true, hiddenInForm: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
             key: "uploader_id", label: "Uploader", type: "select", options: mockNames

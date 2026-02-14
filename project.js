@@ -316,8 +316,8 @@ const generateMediaForContext = (proj, col) => {
     const pId = Number(proj.id);
     const cId = col ? Number(col.id) : 0;
     const basePrefix = `${pId}${cId}`;
-
     const count = col ? rInt(8, 15) : rInt(24, 40);
+
     return Array.from({length: count}, (_, i) => {
         const h = Math.floor(Math.random() * 24).toString().padStart(2, '0');
         const m = Math.floor(Math.random() * 60).toString().padStart(2, '0');
@@ -335,10 +335,15 @@ const generateMediaForContext = (proj, col) => {
         const mediaType = typePool[rInt(0, 3)];
         const isAudio = mediaType === 'audio';
 
-        const audioSourceType = isAudio ? (Math.random() > 0.3 ? "Audio" : "Metadata") : null;
+        const audioSourceType = isAudio ? (Math.random() > 0.3 ? "Audio File" : "Metadata") : null;
 
         const ext = isAudio ? "wav" : "jpg";
-        const fileName = `REC_${basePrefix}_${recId}.${ext}`;
+
+        // [修改] 如果是 Metadata，文件名为空
+        let fileName = `REC_${basePrefix}_${recId}.${ext}`;
+        if (isAudio && audioSourceType === 'Metadata') {
+            fileName = "";
+        }
 
         const uploader = mockNames[rInt(0, mockNames.length - 1)];
         let sizeBytes = Math.floor(Math.random() * 1024 * 1024 * (isAudio ? 50 : 5));
@@ -1292,11 +1297,26 @@ function handleColumnFilter(key, value) {
     renderCrudTable();
 }
 
+function handleRangeFilter(key, type, val) {
+    if (!crudFilterState[key] || typeof crudFilterState[key] !== 'object') {
+        crudFilterState[key] = {min: "", max: ""};
+    }
+    crudFilterState[key][type] = val;
+
+    // 如果 min 和 max 都为空，清理该 key
+    if (crudFilterState[key].min === "" && crudFilterState[key].max === "") {
+        delete crudFilterState[key];
+    }
+
+    renderCrudTable();
+}
+
 function renderCrudHeader() {
     const schema = dbSchema[currentTable];
     const thead = document.getElementById('crud-thead');
     let headHtml = "<tr>";
     headHtml += `<th style="width: 40px; text-align:center; vertical-align:top; padding-top:14px;"><input type="checkbox" class="crud-checkbox" id="header-select-all" onclick="handleSelectAll(this.checked)"></th>`;
+
     schema.columns.forEach(col => {
         if (col.hiddenInTable) return;
         if (currentTable === 'user') {
@@ -1307,21 +1327,48 @@ function renderCrudHeader() {
         const sortIcon = isSorted ? (sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
         const activeClass = isSorted ? 'active-sort' : '';
         const iconOpacity = isSorted ? '1' : '0.3';
+
         let filterInputHtml = '';
-        const currentFilterVal = crudFilterState[col.key] || "";
-        if (col.type === 'boolean') {
-            filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${currentFilterVal === 'true' ? 'selected' : ''}>True</option><option value="false" ${currentFilterVal === 'false' ? 'selected' : ''}>False</option></select>`;
+
+        // 获取当前筛选值 (可能是字符串，也可能是对象 {min, max})
+        const currentFilterVal = crudFilterState[col.key];
+
+        if (col.filterType === 'range') {
+            // [新增] 范围筛选渲染
+            const minVal = (currentFilterVal && currentFilterVal.min) ? currentFilterVal.min : "";
+            const maxVal = (currentFilterVal && currentFilterVal.max) ? currentFilterVal.max : "";
+
+            filterInputHtml = `
+            <div style="display:flex; gap:4px; align-items:center;">
+                <input type="number" class="th-filter-input" placeholder="Min" style="padding:0 4px; font-size:0.75rem;" 
+                    value="${minVal}" 
+                    oninput="handleRangeFilter('${col.key}', 'min', this.value)" 
+                    onclick="event.stopPropagation()">
+                <span style="color:var(--text-muted);">-</span>
+                <input type="number" class="th-filter-input" placeholder="Max" style="padding:0 4px; font-size:0.75rem;" 
+                    value="${maxVal}" 
+                    oninput="handleRangeFilter('${col.key}', 'max', this.value)" 
+                    onclick="event.stopPropagation()">
+            </div>`;
+        } else if (col.type === 'boolean') {
+            const valStr = currentFilterVal || "";
+            filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${valStr === 'true' ? 'selected' : ''}>True</option><option value="false" ${valStr === 'false' ? 'selected' : ''}>False</option></select>`;
         } else if (col.type === 'select' && col.filterType !== 'text') {
+            const valStr = currentFilterVal || "";
             let opts = `<option value="all">All</option>`;
             const uniqueVals = getUniqueValues(getDataForTable(currentTable), col.key);
             uniqueVals.forEach(o => {
-                const isSelected = String(currentFilterVal) === String(o);
+                const isSelected = String(valStr) === String(o);
                 opts += `<option value="${o}" ${isSelected ? 'selected' : ''}>${o}</option>`;
             });
             filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">${opts}</select>`;
         } else if (col.type === 'file' || col.type === 'image' || col.type === 'richtext') {
             filterInputHtml = '';
-        } else filterInputHtml = `<input type="text" class="th-filter-input" placeholder="Filter..." value="${currentFilterVal}" oninput="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">`;
+        } else {
+            const valStr = currentFilterVal || "";
+            filterInputHtml = `<input type="text" class="th-filter-input" placeholder="Filter..." value="${valStr}" oninput="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">`;
+        }
+
         headHtml += ` <th style="min-width: 140px;"> <div class="th-header-content ${activeClass}" onclick="handleSort('${col.key}')"> <span>${col.label}</span> <i data-lucide="${sortIcon}" size="14" style="opacity:${iconOpacity}"></i> </div> ${filterInputHtml ? `<div class="th-filter-box">${filterInputHtml}</div>` : ''} </th>`;
     });
     headHtml += `</tr>`;
@@ -1370,13 +1417,32 @@ function renderCrudTable() {
     }, 0);
 
     let processedData = rawData.filter(row => {
+        // 全局搜索逻辑保持不变
         const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
         if (!matchesGlobal) return false;
+
+        // 列筛选逻辑更新
         return Object.keys(crudFilterState).every(key => {
-            const filterVal = crudFilterState[key].toLowerCase();
-            const rowVal = String(row[key] !== undefined ? row[key] : "").toLowerCase();
-            if (filterVal === 'true' || filterVal === 'false') return rowVal === filterVal;
-            return rowVal.includes(filterVal);
+            const filterVal = crudFilterState[key];
+            const rowVal = row[key];
+
+            // [新增] 处理范围筛选 (对象类型 {min, max})
+            if (typeof filterVal === 'object' && (filterVal.min !== undefined || filterVal.max !== undefined)) {
+                if (rowVal === null || rowVal === undefined || rowVal === "") return false; // 空值不参与数值范围筛选
+                const numVal = Number(rowVal);
+                if (isNaN(numVal)) return false;
+
+                if (filterVal.min !== "" && numVal < Number(filterVal.min)) return false;
+                if (filterVal.max !== "" && numVal > Number(filterVal.max)) return false;
+                return true;
+            }
+
+            // 处理常规字符串/布尔筛选
+            const strFilterVal = String(filterVal).toLowerCase();
+            const strRowVal = String(rowVal !== undefined ? rowVal : "").toLowerCase();
+
+            if (strFilterVal === 'true' || strFilterVal === 'false') return strRowVal === strFilterVal;
+            return strRowVal.includes(strFilterVal);
         });
     });
 
@@ -2284,13 +2350,15 @@ function handleAudioTypeChange(type) {
         dur: 'input-duration_s',
         dutyRec: 'input-duty_cycle_recording',
         dutyPer: 'input-duty_cycle_period',
-        size: 'input-size_B'
+        size: 'input-size_B',
+        filename: 'input-filename' // [新增]
     };
 
     const els = {};
     Object.keys(inputIds).forEach(k => els[k] = document.getElementById(inputIds[k]));
 
-    if (type === 'Audio') {
+    if (type === 'Audio File') {
+        // Audio File: 禁用元数据字段，启用 Size，启用 Filename
         [els.sr, els.bit, els.ch, els.dur].forEach(el => {
             if (el) {
                 el.disabled = true;
@@ -2311,7 +2379,15 @@ function handleAudioTypeChange(type) {
             els.size.style.opacity = '1';
             els.size.style.cursor = 'text';
         }
+        // [新增] 启用 filename
+        if (els.filename) {
+            els.filename.disabled = false;
+            els.filename.style.opacity = '1';
+            els.filename.style.cursor = 'text';
+        }
+
     } else if (type === 'Metadata') {
+        // Metadata: 启用元数据字段，禁用 Size(清空)，禁用 Filename(清空)
         [els.sr, els.bit, els.ch, els.dur].forEach(el => {
             if (el) {
                 el.disabled = false;
@@ -2331,6 +2407,13 @@ function handleAudioTypeChange(type) {
             els.size.disabled = true;
             els.size.style.opacity = '0.6';
             els.size.style.cursor = 'not-allowed';
+        }
+        // [新增] 禁用并清空 filename
+        if (els.filename) {
+            els.filename.value = '';
+            els.filename.disabled = true;
+            els.filename.style.opacity = '0.6';
+            els.filename.style.cursor = 'not-allowed';
         }
     }
 }
