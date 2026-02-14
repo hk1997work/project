@@ -953,29 +953,7 @@ let selectedCrudIds = [];
 let sortState = {key: null, direction: 'asc'};
 
 // [新增] Media 筛选状态
-let currentMediaFilter = 'audio';
 
-// [新增] Media 筛选切换函数
-function switchMediaFilter(filter, btn) {
-    if (currentMediaFilter === filter) return;
-    currentMediaFilter = filter;
-
-    // 更新 Pill 位置（视觉反馈）
-    const pill = document.getElementById('media-pill');
-    if (pill && btn) {
-        pill.style.width = btn.offsetWidth + 'px';
-        pill.style.left = btn.offsetLeft + 'px';
-    }
-    const container = document.getElementById('media-pill-container');
-    if (container) {
-        container.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    // 重置选择并重新渲染表格
-    selectedCrudIds = [];
-    renderCrudTable();
-}
 
 function switchDataScope(scope, btn) {
     if (dataScope === scope) return;
@@ -1091,11 +1069,9 @@ function getDataForTable(tableName) {
         });
     } else if (tableName === 'site') {
         return currentSites;
-    } else if (tableName === 'media') {
-        // 确保媒体数据已生成
+    } else if (['audio', 'photo', 'video'].includes(tableName)) {
         if (mediaItems.length > 0 && !mediaItems[0].enriched) enrichMediaData();
-
-        return mediaItems.map(m => ({
+        const allMedia = mediaItems.map(m => ({
             media_id: m.media_id,
             uuid: m.uuid,
             media_type: m.media_type,
@@ -1119,6 +1095,7 @@ function getDataForTable(tableName) {
             doi: m.doi,
             creation_date: m.creation_date
         }));
+        return allMedia.filter(m => m.media_type === tableName);
     } else if (tableName === 'user') {
         const directProjContributors = currentProject.contributors;
         const activeCollection = (currColIdx > 0) ? currentProject.collections[currColIdx - 1] : null;
@@ -1204,16 +1181,10 @@ function switchCrudTable(tableName) {
     currentTable = tableName;
     crudSearchQuery = "";
     selectedCrudIds = [];
-
-    // [新增] 如果切换到 media 表，重置筛选器为默认值
-    if (tableName === 'media') {
-        currentMediaFilter = 'audio';
-    }
-
-    // [新增] 根据表格类型切换 Add/Upload 按钮
+    const isMediaTable = ['audio', 'photo', 'video'].includes(tableName);
     const addBtn = document.getElementById('btn-add');
     if (addBtn) {
-        if (tableName === 'media') {
+        if (isMediaTable) {
             addBtn.innerHTML = `<i data-lucide="upload" size="16"></i> Upload`;
             addBtn.onclick = openUploadModal;
         } else {
@@ -1317,50 +1288,28 @@ function renderCrudTable() {
 
     // [修改] 渲染标题栏右侧的切换器
     if (['project', 'collection', 'user'].includes(currentTable)) {
-        // Project/Collection/User 使用 "Current/All" 切换器
         const currentBtnAttr = isManager ? `onclick="switchDataScope('current', this)"` : `disabled style="font-size:0.75rem; padding:0 12px; opacity:0.5; cursor:not-allowed;"`;
         const currentBtnStyle = isManager ? `style="font-size:0.75rem; padding:0 12px;"` : ``;
-
         titleHtml += ` <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;"> <div class="view-pill" id="scope-pill"></div> <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" ${currentBtnAttr} ${currentBtnStyle}>Current</button> <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button> </div>`;
-    } else if (currentTable === 'media') {
-        titleHtml += ` <div class="view-switcher-container" id="media-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;">
-            <div class="view-pill" id="media-pill"></div>
-            <button class="view-btn ${currentMediaFilter === 'audio' ? 'active' : ''}" onclick="switchMediaFilter('audio', this)" style="font-size:0.75rem; padding:0 12px;">Audios</button>
-            <button class="view-btn ${currentMediaFilter === 'photo' ? 'active' : ''}" onclick="switchMediaFilter('photo', this)" style="font-size:0.75rem; padding:0 12px;">Photos</button>
-            <button class="view-btn ${currentMediaFilter === 'video' ? 'active' : ''}" onclick="switchMediaFilter('video', this)" style="font-size:0.75rem; padding:0 12px;">Videos</button>
-        </div>`;
     }
-
     titleEl.innerHTML = titleHtml;
 
-    // [修改] 更新 Pill 位置的逻辑
     setTimeout(() => {
         let activeBtn, pill;
         if (['project', 'collection', 'user'].includes(currentTable)) {
             activeBtn = document.querySelector('#scope-pill-container .view-btn.active');
             pill = document.getElementById('scope-pill');
-        } else if (currentTable === 'media') {
-            activeBtn = document.querySelector('#media-pill-container .view-btn.active');
-            pill = document.getElementById('media-pill');
         }
-
         if (activeBtn && pill) {
             pill.style.transition = 'none';
             pill.style.width = activeBtn.offsetWidth + 'px';
             pill.style.left = activeBtn.offsetLeft + 'px';
-            void pill.offsetWidth; // 强制重绘
+            void pill.offsetWidth;
             pill.style.transition = '';
         }
     }, 0);
 
-    // [修改] 数据筛选逻辑
     let processedData = rawData.filter(row => {
-        // Media 表的特殊筛选
-        if (currentTable === 'media') {
-            if (row.media_type !== currentMediaFilter) return false;
-        }
-
-        // 通用搜索和列筛选
         const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
         if (!matchesGlobal) return false;
         return Object.keys(crudFilterState).every(key => {
@@ -2332,23 +2281,28 @@ function openCrudModal(mode, id = null) {
                 const userObj = allUsers.find(u => u.name === currentUser);
                 const role = userObj ? (userObj.project_role || 'User') : 'User';
                 if (!options.includes(currentUser)) options.push(currentUser);
-            } else if (currentTable === 'media') {
+            } else if (['audio', 'photo', 'video'].includes(currentTable)) {
                 if (col.key === 'site_id') options = currentSites.map(s => s.name);
                 if (col.key === 'sensor_id') options = ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"];
             } else if (currentTable === 'annotation') {
                 if (col.key === 'media_id') {
-                    const allMedia = getDataForTable('media');
+                    const audio = getDataForTable('audio');
+                    const photo = getDataForTable('photo');
+                    const video = getDataForTable('video');
+                    const allMedia = [...audio, ...photo, ...video];
                     options = allMedia.map(m => m.media_id);
                 }
             } else if (currentTable === 'annotation_review') {
                 if (col.key === 'annotation_id') {
-                    // 从当前标注表中获取ID列表 (注意：annotation表主键已改为 id)
                     const allAnnots = getDataForTable('annotation');
                     options = allAnnots.map(a => a.id);
                 }
             } else if (currentTable === 'index_log') {
                 if (col.key === 'media_id') {
-                    const allMedia = getDataForTable('media');
+                    const audio = getDataForTable('audio');
+                    const photo = getDataForTable('photo');
+                    const video = getDataForTable('video');
+                    const allMedia = [...audio, ...photo, ...video];
                     options = allMedia.map(m => m.media_id);
                 }
             }
