@@ -159,29 +159,36 @@ const dbSchema = {
         columns: [
             {key: "media_id", label: "ID", type: "number", readonly: true},
             {key: "uuid", label: "UUID", type: "text", readonly: true},
-            {key: "audio_type", label: "Data Type", type: "select", options: ["Audio File", "Metadata"]},
+            // [修改] audio_type: 编辑时不可修改 (readonlyOnUpdate: true)
+            {key: "audio_type", label: "Data Type", type: "select", options: ["Audio File", "Metadata"], readonlyOnUpdate: true},
+            // [保留] Name: 始终需要
             {key: "name", label: "Name", type: "text"},
+            // [修改] Filename: Audio File模式有值且只读，Metadata模式为空
             {key: "filename", label: "Filename", type: "text"},
-            // [修改] 添加 filterType: 'range'
+            // [修改] Size: 增加区间筛选
             {key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'},
             {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'},
             {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'},
             {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'},
             {key: "channel_num", label: "Channels", type: "number", filterType: 'range'},
             {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'},
+            // [修改] Duty Cycle: Metadata模式下显示
             {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'},
             {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'},
-            {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true},
-            {key: "uploader_id", label: "Uploader", type: "select", options: mockNames},
-            {key: "creator_id", label: "Creator", type: "select", options: mockNames},
+            // [删除] directory 字段
+            // [修改] Uploader/Creator: 只读 input
+            {key: "uploader_id", label: "Uploader", type: "text", readonly: true},
+            {key: "creator_id", label: "Creator", type: "text", readonly: true},
             {key: "site_id", label: "Site", type: "select", options: []},
             {key: "sensor_id", label: "Sensor", type: "select", options: []},
             {key: "license_id", label: "License", type: "select", options: mockLicenses},
-            {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true},
-            {key: "medium", label: "Medium", type: "text"},
+            // [删除] audio_setting_id 字段
+            // [修改] Medium: 可选 Air/Water
+            {key: "medium", label: "Medium", type: "select", options: ["Air", "Water"]},
             {key: "note", label: "Note", type: "text"},
-            {key: "date_time", label: "Date Time", type: "text"},
-            {key: "md5_hash", label: "MD5", type: "text", hiddenInTable: true},
+            // [修改] Date Time: 使用时间插件
+            {key: "date_time", label: "Date Time", type: "datetime-local"},
+            // [删除] md5_hash 字段
             {key: "doi", label: "DOI", type: "text"},
             {key: "creation_date", label: "Created", type: "text", readonly: true}
         ]

@@ -319,13 +319,11 @@ const generateMediaForContext = (proj, col) => {
     const count = col ? rInt(8, 15) : rInt(24, 40);
 
     return Array.from({length: count}, (_, i) => {
+        // ... (时间生成代码不变) ...
         const h = Math.floor(Math.random() * 24).toString().padStart(2, '0');
         const m = Math.floor(Math.random() * 60).toString().padStart(2, '0');
         const s = Math.floor(Math.random() * 60).toString().padStart(2, '0');
-        const year = 2021 + Math.floor(Math.random() * 5);
-        const month = Math.floor(Math.random() * 12) + 1;
-        const day = Math.floor(Math.random() * 28) + 1;
-        const fullDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const fullDate = `${2021 + Math.floor(Math.random() * 5)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
         const timeStr = `${h}:${m}:${s}`;
 
         const recId = 20250000 + i;
@@ -336,26 +334,27 @@ const generateMediaForContext = (proj, col) => {
         const isAudio = mediaType === 'audio';
 
         const audioSourceType = isAudio ? (Math.random() > 0.3 ? "Audio File" : "Metadata") : null;
-
         const ext = isAudio ? "wav" : "jpg";
+        const baseName = `REC_${basePrefix}_${recId}.${ext}`;
 
-        // [修改] 如果是 Metadata，文件名为空
-        let fileName = `REC_${basePrefix}_${recId}.${ext}`;
+        let fileName = baseName;
+        // [修改] 如果是 Metadata，Filename 为空
         if (isAudio && audioSourceType === 'Metadata') {
             fileName = "";
         }
 
-        const uploader = mockNames[rInt(0, mockNames.length - 1)];
         let sizeBytes = Math.floor(Math.random() * 1024 * 1024 * (isAudio ? 50 : 5));
-
         let dutyRec = null;
         let dutyPer = null;
 
         if (isAudio && audioSourceType === 'Metadata') {
+            // [修改] Metadata 模式下，列表显示的 Size 为空
             sizeBytes = null;
             dutyRec = 60;
             dutyPer = 3600;
         }
+
+        const uploader = mockNames[rInt(0, mockNames.length - 1)];
 
         return {
             id: String(numId),
@@ -363,15 +362,13 @@ const generateMediaForContext = (proj, col) => {
             uuid: `550e8400-e29b-41d4-a716-${String(numId).padStart(12, '0')}`,
             media_type: mediaType,
             audio_type: audioSourceType,
-            directory: 100 + rInt(1, 10),
             filename: fileName,
-            name: fileName,
+            name: baseName,
             uploader_id: uploader,
             creator_id: uploader,
             site: `Site-${rInt(1, 12).toString().padStart(2, '0')}`,
             sensor: ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3 + Clippy", "Sony PCM-D10"][rInt(0, 3)],
             license: mockLicenses[rInt(0, mockLicenses.length - 1)],
-            audio_setting_id: isAudio ? mockAudioSettings[rInt(0, 2)] : null,
             photo_setting_id: !isAudio ? mockPhotoSettings[rInt(0, 2)] : null,
             medium: ['Marine', 'Freshwater'].includes(proj.sphere || 'Terrestrial') ? 'Water' : 'Air',
             duty_cycle_recording: dutyRec,
@@ -379,15 +376,15 @@ const generateMediaForContext = (proj, col) => {
             note: "Auto-generated record",
             date: fullDate,
             time: timeStr,
-            date_time: `${fullDate} ${timeStr}`,
-            size: sizeBytes ? `${(sizeBytes / 1024 / 1024).toFixed(2)} MB` : "N/A",
+            date_time: `${fullDate} ${timeStr}`, // 确保包含秒
+            // [修改] 列表显示用的 size 字符串
+            size: sizeBytes ? `${(sizeBytes / 1024 / 1024).toFixed(2)} MB` : "",
             size_B: sizeBytes,
             recording_gain_dB: isAudio ? rInt(0, 60) : null,
             sampling_rate_Hz: isAudio ? [44100, 48000, 96000][rInt(0, 2)] : null,
             bit_depth: isAudio ? [16, 24][rInt(0, 1)] : null,
             channel_num: isAudio ? [1, 2][rInt(0, 1)] : null,
             duration_s: isAudio ? rInt(10, 3600) : null,
-            md5_hash: "d41d8cd98f00b204e9800998ecf8427e",
             doi: `10.ECO/${numId}`,
             creation_date: new Date().toISOString(),
             annotations: getRandomAnnotations(),
@@ -2342,6 +2339,7 @@ function confirmDeleteData() {
     if (currentTable === 'site' && map) renderMap(false);
 }
 
+// [修改] 处理 Audio 类型切换
 function handleAudioTypeChange(type) {
     const inputIds = {
         sr: 'input-sampling_rate_Hz',
@@ -2351,70 +2349,71 @@ function handleAudioTypeChange(type) {
         dutyRec: 'input-duty_cycle_recording',
         dutyPer: 'input-duty_cycle_period',
         size: 'input-size_B',
-        filename: 'input-filename' // [新增]
+        filename: 'input-filename'
     };
 
     const els = {};
     Object.keys(inputIds).forEach(k => els[k] = document.getElementById(inputIds[k]));
 
+    // 辅助函数：设置只读/样式
+    const setReadOnly = (el, isReadOnly) => {
+        if (!el) return;
+        el.readOnly = isReadOnly;
+        if (isReadOnly) {
+            el.style.opacity = '0.7';
+            el.style.backgroundColor = 'var(--bg-capsule)';
+            el.style.cursor = 'not-allowed';
+        } else {
+            el.style.opacity = '1';
+            el.style.backgroundColor = '';
+            el.style.cursor = 'text';
+        }
+    };
+
+    // 辅助函数：显示/隐藏整行
+    const setVisible = (el, isVisible) => {
+        if (!el) return;
+        const group = el.closest('.form-group');
+        if (group) {
+            group.style.display = isVisible ? 'flex' : 'none';
+        }
+    };
+
     if (type === 'Audio File') {
-        // Audio File: 禁用元数据字段，启用 Size，启用 Filename
-        [els.sr, els.bit, els.ch, els.dur].forEach(el => {
-            if (el) {
-                el.disabled = true;
-                el.style.opacity = '0.6';
-                el.style.cursor = 'not-allowed';
-            }
-        });
-        [els.dutyRec, els.dutyPer].forEach(el => {
-            if (el) {
-                el.value = '';
-                el.disabled = true;
-                el.style.opacity = '0.6';
-                el.style.cursor = 'not-allowed';
-            }
-        });
-        if (els.size) {
-            els.size.disabled = false;
-            els.size.style.opacity = '1';
-            els.size.style.cursor = 'text';
-        }
-        // [新增] 启用 filename
-        if (els.filename) {
-            els.filename.disabled = false;
-            els.filename.style.opacity = '1';
-            els.filename.style.cursor = 'text';
-        }
+        // --- Audio File 模式 ---
+        // 1. 参数不可改
+        [els.sr, els.bit, els.ch, els.dur].forEach(el => setReadOnly(el, true));
+
+        // 2. Duty Cycle: 隐藏
+        [els.dutyRec, els.dutyPer].forEach(el => setVisible(el, false));
+
+        // 3. Size: 显示 但不可改
+        setVisible(els.size, true);
+        setReadOnly(els.size, true);
+
+        // 4. Filename: 显示 但不可改
+        setVisible(els.filename, true);
+        setReadOnly(els.filename, true);
 
     } else if (type === 'Metadata') {
-        // Metadata: 启用元数据字段，禁用 Size(清空)，禁用 Filename(清空)
-        [els.sr, els.bit, els.ch, els.dur].forEach(el => {
-            if (el) {
-                el.disabled = false;
-                el.style.opacity = '1';
-                el.style.cursor = 'text';
-            }
-        });
+        // --- Metadata 模式 ---
+        // 1. 参数可改
+        [els.sr, els.bit, els.ch, els.dur].forEach(el => setReadOnly(el, false));
+
+        // 2. Duty Cycle: 显示 且可改
         [els.dutyRec, els.dutyPer].forEach(el => {
-            if (el) {
-                el.disabled = false;
-                el.style.opacity = '1';
-                el.style.cursor = 'text';
-            }
+            setVisible(el, true);
+            setReadOnly(el, false);
         });
-        if (els.size) {
-            els.size.value = '';
-            els.size.disabled = true;
-            els.size.style.opacity = '0.6';
-            els.size.style.cursor = 'not-allowed';
-        }
-        // [新增] 禁用并清空 filename
-        if (els.filename) {
-            els.filename.value = '';
-            els.filename.disabled = true;
-            els.filename.style.opacity = '0.6';
-            els.filename.style.cursor = 'not-allowed';
-        }
+
+        // 3. Size: 不显示 (隐藏)
+        setVisible(els.size, false);
+        // 为了防止提交脏数据，可以清空值
+        if (els.size) els.size.value = "";
+
+        // 4. Filename: 不显示 (隐藏)
+        setVisible(els.filename, false);
+        if (els.filename) els.filename.value = "";
     }
 }
 
@@ -2449,33 +2448,33 @@ function openCrudModal(mode, id = null) {
 
     schema.columns.forEach(col => {
         if (col.hiddenInForm) return;
-
         if (col.readonly && mode === 'add') return;
-
         if (col.onlyOnCreate && mode === 'edit') return;
 
-        const val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
+        let val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
 
-        const isReadonly = col.readonly || (mode === 'edit' && col.readonlyOnUpdate);
-        const disabledAttr = isReadonly ? "disabled style='opacity:0.6; cursor:not-allowed; background:var(--bg-capsule);'" : "";
+        // 特殊处理 audio_type: 编辑模式下强制为 text input
+        let effectiveType = col.type;
+        let effectiveReadonly = col.readonly || (mode === 'edit' && col.readonlyOnUpdate);
+
+        if (col.key === 'audio_type' && mode === 'edit') {
+            effectiveType = 'text';
+            effectiveReadonly = true;
+        }
+
+        const disabledAttr = effectiveReadonly ? "readonly style='opacity:0.7; cursor:not-allowed; background:var(--bg-capsule);'" : "";
 
         formHtml += `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
-        if (col.type === 'select') {
+        if (effectiveType === 'select') {
             const onChangeAttr = col.key === 'audio_type' ? `onchange="handleAudioTypeChange(this.value)"` : '';
             formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr} ${onChangeAttr}>`;
             formHtml += `<option value="">Select...</option>`;
 
             let options = col.options || [];
-
+            // ... (options 动态加载逻辑保持不变) ...
             if (currentTable === 'project' && col.key === 'creator_name') {
                 const currentUser = document.querySelector('.user-name-text').textContent.trim();
-                const oldScope = dataScope;
-                dataScope = 'all';
-                const allUsers = getDataForTable('user');
-                dataScope = oldScope;
-                const userObj = allUsers.find(u => u.name === currentUser);
-                const role = userObj ? (userObj.project_role || 'User') : 'User';
                 if (!options.includes(currentUser)) options.push(currentUser);
             } else if (['audio', 'photo', 'video'].includes(currentTable)) {
                 if (col.key === 'site_id') options = currentSites.map(s => s.name);
@@ -2508,18 +2507,30 @@ function openCrudModal(mode, id = null) {
                 formHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
             });
             formHtml += `</select>`;
-        } else if (col.type === 'boolean') {
+
+        } else if (effectiveType === 'datetime-local') {
+            // [修改] 支持秒：确保格式为 YYYY-MM-DDTHH:mm:ss
+            let dtVal = val;
+            if (val && val.includes(' ')) {
+                dtVal = val.replace(' ', 'T');
+            }
+            // [关键] 增加 step="1" 允许选择秒
+            formHtml += `<input type="datetime-local" class="form-input" id="input-${col.key}" value="${dtVal}" step="1" ${disabledAttr}>`;
+
+        } else if (effectiveType === 'boolean') {
             formHtml += `<select class="form-input" id="input-${col.key}" ${disabledAttr}> 
                 <option value="true" ${val === true ? 'selected' : ''}>True</option> 
                 <option value="false" ${val === false ? 'selected' : ''}>False</option> 
             </select>`;
-        } else if (col.type === 'file') {
+        } else if (effectiveType === 'file') {
+            // ... (file 逻辑保持不变) ...
             formHtml += `<div style="display:flex; gap:10px; align-items:center;"> 
                 <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;"> 
                 <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button> 
                 <span id="input-${col.key}-preview"> ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'} </span> 
             </div>`;
-        } else if (col.type === 'richtext') {
+        } else if (effectiveType === 'richtext') {
+            // ... (richtext 逻辑保持不变) ...
             const safeVal = String(val).replace(/'/g, "&apos;");
             const textPreview = String(val).replace(/<[^>]*>?/gm, '');
             formHtml += ` <div style="display:flex; gap:10px; align-items:center;"> 
@@ -2527,8 +2538,6 @@ function openCrudModal(mode, id = null) {
                 <button class="btn-secondary" onclick="openEditorForInput('input-${col.key}')" style="height:32px; font-size:0.8rem;">Edit Content</button> 
                 <span id="input-${col.key}-preview" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"> ${textPreview.substring(0, 30)}... </span> 
             </div> `;
-        } else if (col.type === 'password') {
-            formHtml += `<input type="password" class="form-input" id="input-${col.key}" value="" ${disabledAttr}>`;
         } else {
             formHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${disabledAttr}>`;
         }
@@ -2538,14 +2547,11 @@ function openCrudModal(mode, id = null) {
     container.innerHTML = formHtml;
     modal.classList.add('active');
 
+    // 初始化字段状态
     if (currentTable === 'audio') {
         const typeInput = document.getElementById('input-audio_type');
         if (typeInput) {
             handleAudioTypeChange(typeInput.value);
-            if (mode === 'add' && !typeInput.value) {
-                typeInput.value = 'Audio';
-                handleAudioTypeChange('Audio');
-            }
         }
     }
 }
@@ -2581,11 +2587,18 @@ function saveCrudData() {
     schema.columns.forEach(col => {
         const input = document.getElementById(`input-${col.key}`);
         if (!input && col.type !== 'file' && col.type !== 'richtext') {
-            // [Updated] If input is missing (e.g. hidden), preserve existing value if editing
             if (existingRow && existingRow[col.key] !== undefined) newRow[col.key] = existingRow[col.key];
             return;
         }
         let val = input ? input.value : "";
+
+        // [修改] 处理 datetime-local，确保秒不丢失
+        if (col.type === 'datetime-local' && val) {
+            val = val.replace('T', ' ');
+            // 如果只有 分 没有 秒，补 :00
+            if (val.split(':').length === 2) val += ':00';
+        }
+
         if (col.type === 'number') val = Number(val);
         if (col.type === 'boolean') val = (val === 'true');
         if (col.type === 'file') {
@@ -2603,7 +2616,12 @@ function saveCrudData() {
         }
         newRow[col.key] = val;
     });
-
+    if (currentTable === 'audio') {
+        const currentUser = document.querySelector('.user-name-text').textContent.trim();
+        if (!newRow.uploader_id) newRow.uploader_id = currentUser;
+        if (!newRow.creator_id) newRow.creator_id = currentUser;
+        if (!newRow.creation_date) newRow.creation_date = new Date().toISOString();
+    }
     // [Updated] Auto-fill creator if missing (e.g. on Create)
     if (isProject && !newRow.creator_name) newRow.creator_name = currentUser;
     if (isCollection && !newRow.creator_id) newRow.creator_id = currentUser;
