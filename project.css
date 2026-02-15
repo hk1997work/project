@@ -2631,6 +2631,11 @@ a.row-name:hover {
     flex-shrink: 0;
 }
 
+/* =========================================
+   Universal Button Styles (Updated)
+   ========================================= */
+
+/* Primary Action (Green) */
 .btn-primary {
     background: var(--brand);
     color: white;
@@ -2644,8 +2649,45 @@ a.row-name:hover {
     align-items: center;
     justify-content: center;
     gap: 6px;
+    transition: all 0.2s ease;
 }
 
+.btn-primary:hover {
+    background: var(--brand-hover);
+    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.4); /* Green Shadow */
+}
+
+.btn-primary:active {
+    box-shadow: 0 2px 6px rgba(131, 205, 32, 0.4);
+}
+
+/* Danger Action (Red - for Delete) */
+.btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+    height: var(--h-std);
+    padding: 0 24px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+    background: #dc2626; /* Darker Red */
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); /* Red Shadow */
+}
+
+.btn-danger:active {
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+/* Secondary Action (Outline/Cancel) */
 .btn-secondary {
     background: transparent;
     color: var(--text-secondary);
@@ -2658,6 +2700,18 @@ a.row-name:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border-color: var(--text-secondary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary:active {
+    background: var(--bg-capsule);
 }
 
 .crud-table th {
@@ -3106,11 +3160,100 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     color: var(--brand);
 }
 
-/* Upload Modal Layout */
+/* =========================================
+   Upload & Toolbar Dropdowns (Fixed)
+   ========================================= */
+
+/* Toolbar Add Dropdown (New) */
+.toolbar-dropdown {
+    position: fixed; /* JS dynamically positions this */
+    z-index: 5010;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 180px;
+}
+
+[data-theme="dark"] .toolbar-dropdown {
+    border-color: var(--border-light);
+    background: var(--bg-surface);
+}
+
+.toolbar-dropdown.active {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+.toolbar-drop-item {
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.1s;
+}
+
+.toolbar-drop-item:hover {
+    background: var(--bg-capsule);
+    color: var(--brand);
+}
+
+.toolbar-dropdown {
+    position: fixed;
+    z-index: 5010;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 180px;
+}
+
+[data-theme="dark"] .toolbar-dropdown {
+    border-color: var(--border-light);
+    background: var(--bg-surface);
+}
+
+.toolbar-dropdown.active {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+.toolbar-drop-item {
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.1s;
+}
+
+.toolbar-drop-item:hover {
+    background: var(--bg-capsule);
+    color: var(--brand);
+}
+
 .upload-layout {
     display: flex;
     gap: 24px;
     overflow: hidden;
+    height: 100%;
 }
 
 .upload-left {
@@ -3121,20 +3264,19 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     padding-right: 24px;
     overflow-y: auto;
     height: 100%;
+    min-width: 0;
 }
 
 .upload-right {
-    flex: 0 0 475px; /* 固定宽度 475px */
+    flex: 0 0 475px;
     overflow-y: auto;
     padding-right: 4px;
     height: 100%;
-    /* [新增] 与 Edit 页面保持一致的间距布局 */
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-/* Hide number input spinners */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -3157,36 +3299,30 @@ input[type=number] {
     background: var(--bg-surface-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    /* [修改] 减小垂直内边距 */
-    padding: 8px 10px;
-    /* [修改] 减小项之间的间距 */
+    padding: 10px 12px;
     margin-bottom: 8px;
     animation: fadeIn 0.3s ease;
 }
 
 .up-file-name {
-    /* [修改]稍微减小字号 */
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--text-main);
-    /* [修改] 减小标题与进度条的间距 */
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .up-progress-bg {
-    /* [修改] 进度条变细 */
     height: 4px;
     background: rgba(0, 0, 0, 0.05);
     border-radius: 2px;
     overflow: hidden;
-    /* [修改] 减小进度条与状态文字的间距 */
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .up-progress-fill {
@@ -3197,11 +3333,11 @@ input[type=number] {
 }
 
 .up-file-status {
-    /* [修改] 稍微减小字号 */
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     display: flex;
     justify-content: space-between;
+    font-weight: 500;
 }
 
 .up-checkbox-row {
@@ -3218,12 +3354,12 @@ input[type=number] {
     cursor: pointer;
 }
 
-/* Upload Stats */
 .upload-queue-header {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
 }
 
 .upload-stats {
@@ -3237,10 +3373,10 @@ input[type=number] {
     font-weight: 700;
 }
 
-/* Upload Dropdown */
 .upload-btn-wrapper {
     position: relative;
     width: 100%;
+    flex-shrink: 0;
 }
 
 .upload-dropdown {
@@ -3272,6 +3408,8 @@ input[type=number] {
     border-radius: 6px;
     font-weight: 500;
     transition: 0.1s;
+    display: flex;
+    align-items: center;
 }
 
 .up-drop-item:hover {
@@ -3279,7 +3417,6 @@ input[type=number] {
     color: var(--brand);
 }
 
-/* Instructions Modal Specifics */
 .instr-content {
     line-height: 1.6;
     color: var(--text-secondary);
@@ -3296,7 +3433,7 @@ input[type=number] {
 }
 
 .instr-list {
-    margin: 10px 0;
+    margin: 12px 0;
     padding-left: 20px;
 }
 
@@ -3311,9 +3448,11 @@ input[type=number] {
     color: var(--brand);
     text-decoration: none;
     font-weight: 600;
-    margin-top: 10px;
+    margin-top: 16px;
+    transition: 0.2s;
 }
 
 .template-download-link:hover {
     text-decoration: underline;
+    opacity: 0.8;
 }

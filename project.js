@@ -13,7 +13,6 @@ let currentSelectedSiteId = null;
 let filterState = {realm: "", biome: "", group: ""};
 
 function generateSitesForContext(projId, colId) {
-    // [修改] 适配纯数字 ID 的随机种子生成
     let cidNum = colId ? Number(colId) : 0;
     let seed = projId + (cidNum * 7);
     const count = 50 + (seed % 20);
@@ -47,18 +46,25 @@ function generateSitesForContext(projId, colId) {
             const r = baseRadius * (0.8 + Math.random() * 0.4);
             poly.push([lat + Math.sin(angle) * r, lng + Math.cos(angle) * r]);
         }
-        // [修改] 纯数字 ID
+
         const siteId = `${projId}${cidNum}${String(i).padStart(3, '0')}`;
+        const uuid = `550e8400-e29b-41d4-a716-SITE${siteId}`;
+        const creator = mockNames[Math.floor(Math.random() * mockNames.length)];
+        const created = "2025-01-10 12:00:00";
+
         return {
             id: siteId,
+            uuid: uuid,
             name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`,
             center: [lat, lng],
             polygon: poly,
             realm: r,
             biome: b,
-            group: g,
+            functional_type: g, // Mapped from old group logic
             topography_m: Math.floor(Math.random() * 800),
-            freshwater_depth_m: r === 'Freshwater' ? (Math.random() * 15).toFixed(1) : "N/A",
+            freshwater_depth_m: r === 'Freshwater' ? parseFloat((Math.random() * 15).toFixed(1)) : null,
+            creator_id: creator,
+            creation_date: created,
             mediaCount: Math.floor(Math.random() * 10) + 2,
             media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => ({name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.wav`, date: "2025-01-15", duration: "01:00:00"}))
         };
@@ -122,7 +128,9 @@ function renderMap(shouldZoom = false) {
     currentSites.forEach(site => {
         if (filterState.realm && site.realm !== filterState.realm) return;
         if (filterState.biome && site.biome !== filterState.biome) return;
-        if (filterState.group && site.group !== filterState.group) return;
+        // Map 'group' filter state to 'functional_type' property
+        if (filterState.group && site.functional_type !== filterState.group) return;
+
         if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true;
         visibleCount++;
         const siteColor = getRealmColor(site.realm);
@@ -151,9 +159,13 @@ function openSidebar(site) {
     document.getElementById('val-realm').textContent = site.realm;
     document.getElementById('val-realm').style.color = color;
     document.getElementById('val-biome').textContent = site.biome;
-    document.getElementById('val-group').textContent = site.group;
+    // Map to Functional Type
+    const grpVal = document.getElementById('val-group');
+    if (grpVal) grpVal.textContent = site.functional_type;
+
     const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
-    const depthHtml = site.freshwater_depth_m !== "N/A" ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>` : '';
+    // Ensure null check works
+    const depthHtml = site.freshwater_depth_m !== null ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>` : '';
     const metaContainer = document.getElementById('sb-meta-container');
     if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
     const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
@@ -224,7 +236,7 @@ function getUniqueValues(data, key) {
 function initFilters() {
     renderSelectOptions('realm');
     updateSelectOptions('biome');
-    updateSelectOptions('group');
+    updateSelectOptions('group'); // Keeps using 'group' ID for UI compatibility
 }
 
 function renderSelectOptions(targetType) {
@@ -294,7 +306,11 @@ function updateSelectOptions(targetType) {
         filteredData = currentSites.filter(s => s.realm === filterState.realm && s.biome === filterState.biome);
     }
     trigger.classList.remove('disabled');
-    const options = getUniqueValues(filteredData, targetType);
+
+    // Map targetType 'group' to data property 'functional_type'
+    const dataKey = targetType === 'group' ? 'functional_type' : targetType;
+    const options = getUniqueValues(filteredData, dataKey);
+
     const labelMap = {biome: "All Biomes", group: "All Groups"};
     let html = `<div class="select-option" onclick="applyFilter('${targetType}', '')">${labelMap[targetType]}</div>`;
     if (options.length === 0) html = `<div style="padding:10px;color:#999;font-size:0.85rem">No options</div>`; else options.forEach(opt => html += `<div class="select-option" onclick="applyFilter('${targetType}', '${opt}')">${opt}</div>`);
@@ -319,7 +335,6 @@ const generateMediaForContext = (proj, col) => {
     const count = col ? rInt(8, 15) : rInt(24, 40);
 
     return Array.from({length: count}, (_, i) => {
-        // ... (时间生成代码不变) ...
         const h = Math.floor(Math.random() * 24).toString().padStart(2, '0');
         const m = Math.floor(Math.random() * 60).toString().padStart(2, '0');
         const s = Math.floor(Math.random() * 60).toString().padStart(2, '0');
@@ -329,7 +344,7 @@ const generateMediaForContext = (proj, col) => {
         const recId = 20250000 + i;
         const numId = Number(basePrefix + recId);
 
-        const typePool = ["audio", "audio", "audio", "photo"];
+        const typePool = ["audio", "audio", "audio", "audio"];
         const mediaType = typePool[rInt(0, 3)];
         const isAudio = mediaType === 'audio';
 
@@ -338,7 +353,6 @@ const generateMediaForContext = (proj, col) => {
         const baseName = `REC_${basePrefix}_${recId}.${ext}`;
 
         let fileName = baseName;
-        // [修改] 如果是 Metadata，Filename 为空
         if (isAudio && audioSourceType === 'Metadata') {
             fileName = "";
         }
@@ -348,7 +362,6 @@ const generateMediaForContext = (proj, col) => {
         let dutyPer = null;
 
         if (isAudio && audioSourceType === 'Metadata') {
-            // [修改] Metadata 模式下，列表显示的 Size 为空
             sizeBytes = null;
             dutyRec = 60;
             dutyPer = 3600;
@@ -376,8 +389,7 @@ const generateMediaForContext = (proj, col) => {
             note: "Auto-generated record",
             date: fullDate,
             time: timeStr,
-            date_time: `${fullDate} ${timeStr}`, // 确保包含秒
-            // [修改] 列表显示用的 size 字符串
+            date_time: `${fullDate} ${timeStr}`,
             size: sizeBytes ? `${(sizeBytes / 1024 / 1024).toFixed(2)} MB` : "",
             size_B: sizeBytes,
             recording_gain_dB: isAudio ? rInt(0, 60) : null,
@@ -386,7 +398,7 @@ const generateMediaForContext = (proj, col) => {
             channel_num: isAudio ? [1, 2][rInt(0, 1)] : null,
             duration_s: isAudio ? rInt(10, 3600) : null,
             doi: `10.ECO/${numId}`,
-            creation_date: moment().format("YYYY-MM-DD HH:mm:ss"), // [修改] 格式化为标准日期时间
+            creation_date: moment().format("YYYY-MM-DD HH:mm:ss"),
             annotations: getRandomAnnotations(),
             sr: "48kHz",
             spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
@@ -450,7 +462,7 @@ function renderMedia() {
 </div>`;
         } else {
             const realmColor = getRealmColor(item.realm);
-            const depthHtml = item.freshwater_depth_m !== 'N/A' ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` : '';
+            const depthHtml = item.freshwater_depth_m !== 'N/A' && item.freshwater_depth_m !== null ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` : '';
             html += `<div class="media-item-row">
 <div class="list-spec-container"><img src="${item.spectrogram}" class="list-spec-img" alt="Spec">
     <div class="duration-badge">${item.duration}</div>
@@ -513,7 +525,6 @@ function enrichMediaData() {
     const realSites = currentSites;
     mediaItems.forEach((item, index) => {
         if (!item.enriched || !item.realSiteLinked) {
-            // 修改：直接使用 index 取模，避免因 item.id 为字符串导致计算出现 NaN
             const siteIndex = index % realSites.length;
             const linkedSite = realSites[siteIndex];
 
@@ -521,9 +532,9 @@ function enrichMediaData() {
                 item.site = linkedSite.name;
                 item.realm = linkedSite.realm;
                 item.biome = linkedSite.biome;
-                item.group = linkedSite.group;
+                item.group = linkedSite.functional_type; // Mapped
                 item.topography_m = linkedSite.topography_m;
-                item.freshwater_depth_m = linkedSite.freshwater_depth_m;
+                item.freshwater_depth_m = linkedSite.freshwater_depth_m !== null ? linkedSite.freshwater_depth_m : 'N/A';
             }
 
             item.start = moment(`${item.date} ${item.time}`, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -555,14 +566,14 @@ function renderSummary() {
         const proj = rawProjects[currProjIdx];
         type = "Project";
         statsObj = proj.stats;
-        order = ['Users', 'Collections', 'Audios', 'Photos', 'Videos', 'Annotations', 'Sites'];
+        order = ['Users', 'Collections', 'Audios', 'Annotations', 'Sites'];
         contributorsArr = proj.contributors;
         contribBgIconName = 'folder-kanban';
     } else {
         const col = rawProjects[currProjIdx].collections[currColIdx - 1];
         type = "Collection";
         statsObj = col.stats;
-        order = ['Users', 'Projects', 'Audios', 'Photos', 'Videos', 'Annotations', 'Sites'];
+        order = ['Users', 'Projects', 'Audios', 'Annotations', 'Sites'];
         contributorsArr = col.contributors;
         contribBgIconName = 'library';
     }
@@ -745,8 +756,6 @@ function selectProject(idx) {
             const currentUser = document.querySelector('.user-name-text').textContent.trim();
             const currentProject = rawProjects[currProjIdx];
 
-            // [修改] 如果不是管理者，强制 scope 为 'all'，否则默认为 'current'
-            // 移除了 switchCrudTable('collection') 的跳转逻辑
             if (currentProject.creator !== currentUser) {
                 dataScope = 'all';
             } else {
@@ -781,9 +790,7 @@ function selectCollection(idx) {
             const colContainer = document.getElementById('panel-col-desc');
             const colDoiShort = colData.doi.split('/')[1];
             const updateCollectionHTML = () => {
-                // [修改] 构建合并的链接 HTML
                 let externalLinksHtml = '';
-                // 检查是否有链接
                 const hasProjUrl = colData.external_project_url && colData.external_project_url !== '#';
                 const hasMediaUrl = colData.external_media_url && colData.external_media_url !== '#';
 
@@ -995,9 +1002,6 @@ let editingId = null;
 let selectedCrudIds = [];
 let sortState = {key: null, direction: 'asc'};
 
-// [新增] Media 筛选状态
-
-
 function switchDataScope(scope, btn) {
     if (dataScope === scope) return;
     dataScope = scope;
@@ -1065,9 +1069,6 @@ function getDataForTable(tableName) {
         let source = (dataScope === 'current') ? [currentProject] : rawProjects;
         if (dataScope === 'all') {
             const currentUser = document.querySelector('.user-name-text').textContent.trim();
-            // 简单的权限模拟：如果不是管理员，只看自己的
-            // 实际逻辑通常由后端处理，前端这里只是模拟视图过滤
-            // source = source.filter(p => p.creator === currentUser);
         }
         return source.map(p => {
             return {
@@ -1113,7 +1114,6 @@ function getDataForTable(tableName) {
                 doi: c.doi,
                 description: c.description,
                 sphere: c.sphere || "Biosphere",
-                // [修改] 映射新的 URL 字段
                 external_project_url: c.external_project_url,
                 external_media_url: c.external_media_url,
                 public_access: c.active !== undefined ? c.active : false,
@@ -1178,7 +1178,6 @@ function getDataForTable(tableName) {
                 p.collections.forEach(c => displayUsers.push(...c.contributors));
             });
         }
-        // 去重
         displayUsers = Array.from(new Map(displayUsers.map(u => [u.name, u])).values());
 
         return displayUsers.map((u, i) => {
@@ -1219,9 +1218,6 @@ function renderTableNav() {
     const navList = document.getElementById('table-nav-list');
     let html = "";
     Object.keys(dbSchema).forEach(key => {
-        // [修改] 移除了之前检查 creator !== currentUser 然后 return 的逻辑
-        // 确保 Project 始终显示在列表中
-
         const table = dbSchema[key];
         const isActive = currentTable === key ? 'active' : '';
         const data = getDataForTable(key);
@@ -1246,20 +1242,13 @@ function switchCrudTable(tableName) {
     const isMediaTable = ['audio', 'photo', 'video'].includes(tableName);
     const addBtn = document.getElementById('btn-add');
 
-    // [Modified] Button Logic
     if (addBtn) {
-        // 移除旧的 dropdown (防止切换 tab 时残留)
         const oldDrop = document.getElementById('toolbar-upload-dropdown');
         if (oldDrop) oldDrop.remove();
 
         if (isMediaTable) {
             addBtn.innerHTML = `<i data-lucide="upload" size="16"></i> Upload`;
-            // 绑定到新的 Dropdown 逻辑
             addBtn.onclick = (e) => toggleToolbarUploadDropdown(e);
-
-            // 注入 Dropdown HTML 结构到按钮内部或附近 (这里选择动态生成并定位)
-            // 为了定位方便，给 btn-add 加个相对定位的父级或者直接用 absolute
-            // 这里我们动态插入 dropdown 元素到 .media-controls 容器中
         } else {
             addBtn.innerHTML = `<i data-lucide="plus" size="16"></i> Add`;
             addBtn.onclick = () => openCrudModal('add');
@@ -1311,7 +1300,6 @@ function handleRangeFilter(key, type, val) {
     }
     crudFilterState[key][type] = val;
 
-    // 如果 min 和 max 都为空，清理该 key
     if (crudFilterState[key].min === "" && crudFilterState[key].max === "") {
         delete crudFilterState[key];
     }
@@ -1338,11 +1326,9 @@ function renderCrudHeader() {
 
         let filterInputHtml = '';
 
-        // 获取当前筛选值 (可能是字符串，也可能是对象 {min, max})
         const currentFilterVal = crudFilterState[col.key];
 
         if (col.filterType === 'range') {
-            // [新增] 范围筛选渲染
             const minVal = (currentFilterVal && currentFilterVal.min) ? currentFilterVal.min : "";
             const maxVal = (currentFilterVal && currentFilterVal.max) ? currentFilterVal.max : "";
 
@@ -1390,7 +1376,6 @@ function renderCrudTable() {
     const tbody = document.getElementById('crud-tbody');
     const titleEl = document.getElementById('current-table-title');
 
-    // 检查当前用户权限
     const currentUser = document.querySelector('.user-name-text').textContent.trim();
     const currentProject = rawProjects[currProjIdx];
     const isManager = currentProject.creator === currentUser;
@@ -1401,7 +1386,6 @@ function renderCrudTable() {
 
     let titleHtml = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
 
-    // [修改] 渲染标题栏右侧的切换器
     if (['project', 'collection', 'user'].includes(currentTable)) {
         const currentBtnAttr = isManager ? `onclick="switchDataScope('current', this)"` : `disabled style="font-size:0.75rem; padding:0 12px; opacity:0.5; cursor:not-allowed;"`;
         const currentBtnStyle = isManager ? `style="font-size:0.75rem; padding:0 12px;"` : ``;
@@ -1425,18 +1409,15 @@ function renderCrudTable() {
     }, 0);
 
     let processedData = rawData.filter(row => {
-        // 全局搜索逻辑保持不变
         const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
         if (!matchesGlobal) return false;
 
-        // 列筛选逻辑更新
         return Object.keys(crudFilterState).every(key => {
             const filterVal = crudFilterState[key];
             const rowVal = row[key];
 
-            // [新增] 处理范围筛选 (对象类型 {min, max})
             if (typeof filterVal === 'object' && (filterVal.min !== undefined || filterVal.max !== undefined)) {
-                if (rowVal === null || rowVal === undefined || rowVal === "") return false; // 空值不参与数值范围筛选
+                if (rowVal === null || rowVal === undefined || rowVal === "") return false;
                 const numVal = Number(rowVal);
                 if (isNaN(numVal)) return false;
 
@@ -1445,7 +1426,6 @@ function renderCrudTable() {
                 return true;
             }
 
-            // 处理常规字符串/布尔筛选
             const strFilterVal = String(filterVal).toLowerCase();
             const strRowVal = String(rowVal !== undefined ? rowVal : "").toLowerCase();
 
@@ -1454,7 +1434,6 @@ function renderCrudTable() {
         });
     });
 
-    // 排序逻辑 (保持不变)
     if (sortState.key) {
         processedData.sort((a, b) => {
             let valA = a[sortState.key], valB = b[sortState.key];
@@ -1469,7 +1448,6 @@ function renderCrudTable() {
         });
     }
 
-    // 渲染表格内容
     let bodyHtml = "";
     const visibleCols = schema.columns.filter(c => !c.hiddenInTable);
     if (processedData.length === 0) {
@@ -1483,7 +1461,6 @@ function renderCrudTable() {
             bodyHtml += `<tr class="${rowClass}" ondblclick="openCrudModal('edit', '${row[pk]}')">`;
             bodyHtml += ` <td style="text-align:center; border-bottom:1px solid var(--border-color);"> <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleRowSelection('${rowIdStr}', this)" ondblclick="event.stopPropagation()"> </td>`;
             visibleCols.forEach(col => {
-                // 排除特定条件下的列
                 if (currentTable === 'user') {
                     if (currColIdx === 0 && col.key === 'collection_role') return;
                     if (currColIdx > 0 && col.key === 'project_role') return;
@@ -1491,7 +1468,6 @@ function renderCrudTable() {
                 let val = row[col.key];
                 if (val === undefined || val === null) val = "";
 
-                // Current 标记逻辑
                 if (currentTable === 'project' && col.key === 'project_id') {
                     const currentProjId = rawProjects[currProjIdx] ? rawProjects[currProjIdx].id : null;
                     if (dataScope === 'all' && String(row.project_id) === String(currentProjId)) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
@@ -1499,7 +1475,6 @@ function renderCrudTable() {
                 if (currentTable === 'collection' && col.key === 'collection_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
                 if (currentTable === 'user' && col.key === 'user_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
 
-                // 类型渲染
                 if (col.type === 'image' || col.type === 'file') val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img" onerror="this.style.display='none'">`;
                 if (col.type === 'boolean') val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;
                 if (col.type === 'richtext') {
@@ -1594,13 +1569,11 @@ function syncCollectionCheckboxes(el) {
     });
 }
 
-// 全局 Map：记录当前弹窗中显示了哪些 Collection (Key: ID, Value: Collection Object)
 let currentModalSelectableColMap = new Map();
 
 function openLinkModal() {
     const modal = document.getElementById('crud-modal-overlay');
 
-    // [Fix] 显式重置宽度，防止继承 Upload 或 Edit 的宽度
     const modalEl = modal.querySelector('.crud-modal');
     if (modalEl) modalEl.style.width = '';
 
@@ -1614,7 +1587,6 @@ function openLinkModal() {
 
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
 
-        // 1. 获取当前目标项目已关联的 Collection ID (用于单选时的初始勾选状态)
         const currentLinkedColIds = new Set();
         if (!isMulti) {
             const targetProj = rawProjects.find(p => String(p.id) === selectedCrudIds[0]);
@@ -1623,7 +1595,6 @@ function openLinkModal() {
             }
         }
 
-        // 2. 清空并重新构建 Map
         currentModalSelectableColMap.clear();
         let html = `<div class="form-group"><div style="padding-right: 4px;">`;
         let hasFoundAny = false;
@@ -1634,7 +1605,6 @@ function openLinkModal() {
             return (bSelected ? 1 : 0) - (aSelected ? 1 : 0);
         });
 
-        // 3. 遍历项目，收集所有可用的 Collection，并按 ID 去重
         sortedProjects.forEach(proj => {
             const isProjCreator = proj.creator === currentUser;
 
@@ -1646,7 +1616,6 @@ function openLinkModal() {
                 return false;
             });
 
-            // 仅显示那些 ID 尚未出现的 Collection
             const uniqueCols = validCols.filter(c => !currentModalSelectableColMap.has(String(c.id)));
 
             if (uniqueCols.length > 0) {
@@ -1663,7 +1632,6 @@ function openLinkModal() {
 
                 uniqueCols.forEach(c => {
                     const cIdStr = String(c.id);
-                    // 核心：用数据中的 ID 作为 Key
                     currentModalSelectableColMap.set(cIdStr, c);
 
                     const isChecked = !isMulti && currentLinkedColIds.has(cIdStr);
@@ -1690,6 +1658,7 @@ function openLinkModal() {
 
         if (submitBtn) {
             submitBtn.textContent = "Save";
+            submitBtn.className = "btn-primary"; // Reset Style
             submitBtn.style.backgroundColor = "";
             submitBtn.onclick = saveLinkData;
             submitBtn.disabled = false;
@@ -1707,30 +1676,21 @@ function saveLinkData() {
             const proj = rawProjects.find(p => String(p.id) === projIdStr);
             if (proj) {
                 const newCollections = [];
-                // 记录当前项目已有的 Collection ID，用于快速判断
                 const existingIds = new Set(proj.collections.map(c => String(c.id)));
 
-                // 1. 处理项目中【已存在】的 Collection
                 proj.collections.forEach(c => {
                     const cId = String(c.id);
-
-                    // Case A: 如果这个 Collection 根本没在弹窗里出现（比如没权限看），必须保留，不能误删
                     if (!currentModalSelectableColMap.has(cId)) {
                         newCollections.push(c);
                         return;
                     }
-
-                    // Case B: 如果在弹窗里出现了，只有当用户【勾选】了它，才保留
-                    // 关键：这里直接 push 原对象 c，而不使用 Map 里的对象，从而保留原始引用
                     if (selectedIds.has(cId)) {
                         newCollections.push(c);
                     }
                 });
 
-                // 2. 处理【新增】的 Collection (用户勾选了，但项目里原来没有)
                 selectedIds.forEach(id => {
                     if (!existingIds.has(id)) {
-                        // 只有这种情况下，才从 Map 中获取对象引用
                         if (currentModalSelectableColMap.has(id)) {
                             newCollections.push(currentModalSelectableColMap.get(id));
                         }
@@ -1760,7 +1720,6 @@ function handleToolbarResetPassword() {
     if (selectedCrudIds.length !== 1) return;
     const modal = document.getElementById('crud-modal-overlay');
 
-    // [Fix] 显式重置宽度为空，使用 CSS 默认值 (480px)
     const modalEl = modal.querySelector('.crud-modal');
     if (modalEl) modalEl.style.width = '';
 
@@ -1771,6 +1730,7 @@ function handleToolbarResetPassword() {
     container.innerHTML = ` <div class="form-group"> <label class="form-label">Current Admin Password</label> <input type="password" class="form-input" id="reset-admin-pwd"> </div> <div class="form-group"> <label class="form-label">New Password</label> <input type="password" class="form-input" id="reset-new-pwd"> </div> <div class="form-group"> <label class="form-label">Confirm Password</label> <input type="password" class="form-input" id="reset-confirm-pwd"> </div> `;
     if (submitBtn) {
         submitBtn.textContent = "Submit";
+        submitBtn.className = "btn-primary"; // Reset Style
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveResetPassword;
     }
@@ -1793,40 +1753,29 @@ function saveResetPassword() {
     closeCrudModal();
 }
 
-/* ==========================================================================
-   New Three-Level Permission System (Global -> Project -> Collection -> Atomic)
-   ========================================================================== */
-
-// Mock Backend Permission Database (Key: UserID, Value: Permission Object)
 const USER_PERMISSIONS_DB = {};
 
-// Current permission draft being edited
 let currentPermDraft = null;
 let currentPermUserIds = [];
 
-// Resource Definitions
 const PERM_RESOURCES = [{key: 'recording', label: 'Recording', icon: 'mic'}, {key: 'site', label: 'Site', icon: 'map-pin'}, {key: 'annotation', label: 'Annotation', icon: 'scan-line'}, {key: 'review', label: 'Review', icon: 'check-circle'}];
 
-// Initialize permissions for a user (create default if not exists)
 function initUserPermission(userId) {
     if (!USER_PERMISSIONS_DB[userId]) {
         USER_PERMISSIONS_DB[userId] = {
             role: 'user', projects: {}
         };
     }
-    // Deep copy for editing
     return JSON.parse(JSON.stringify(USER_PERMISSIONS_DB[userId]));
 }
 
-// Update Toolbar State
-// Update Toolbar State
 function updateToolbarState() {
     const editBtn = document.getElementById('btn-edit');
     const delBtn = document.getElementById('btn-delete');
     const linkBtn = document.getElementById('btn-link');
     const resetBtn = document.getElementById('btn-reset-pwd');
     const permBtn = document.getElementById('btn-permission');
-    const setContribBtn = document.getElementById('btn-set-contrib'); // [修复] 找回丢失的按钮引用
+    const setContribBtn = document.getElementById('btn-set-contrib');
     const count = selectedCrudIds.length;
 
     if (editBtn) {
@@ -1865,7 +1814,6 @@ function updateToolbarState() {
         }
     }
 
-    // [修复] 补回 Set Contributor 按钮的逻辑
     if (setContribBtn) {
         if (currentTable === 'user') {
             setContribBtn.style.display = 'inline-flex';
@@ -1886,16 +1834,14 @@ function updateToolbarState() {
     }
 }
 
-// Open Permission Drawer
 function handleToolbarPermission() {
     if (selectedCrudIds.length === 0) return;
 
     currentPermUserIds = [...selectedCrudIds];
 
-    // 初始化数据逻辑不变...
     if (currentPermUserIds.length === 1) {
         const userId = currentPermUserIds[0];
-        initUserPermission(userId); // 确保初始化
+        initUserPermission(userId);
         currentPermDraft = JSON.parse(JSON.stringify(USER_PERMISSIONS_DB[userId]));
     } else {
         currentPermDraft = {role: 'user', projects: {}};
@@ -1903,19 +1849,16 @@ function handleToolbarPermission() {
 
     renderPermissionDrawer();
 
-    // 修改：只需要激活 Overlay，CSS 中的 .crud-modal-overlay.active .crud-modal 会处理滑动动画
     document.getElementById('perm-drawer-overlay').classList.add('active');
     lucide.createIcons();
 }
 
 function closePermissionDrawer() {
     document.getElementById('perm-drawer-overlay').classList.remove('active');
-    // 不需要单独移除 drawer 的 active 类，因为使用了组合 CSS 选择器
     currentPermDraft = null;
     currentPermUserIds = [];
 }
 
-// Save Permissions
 function savePermissionDrawer() {
     if (currentPermUserIds.length > 0 && currentPermDraft) {
         currentPermUserIds.forEach(uid => {
@@ -1934,15 +1877,11 @@ function savePermissionDrawer() {
     }
 }
 
-/* ==========================================================================
-   Updated Rendering Logic (Fix: Handle Collection 'Manage' Role in Bulk State)
-   ========================================================================== */
 function renderPermissionDrawer() {
     const isGlobalAdmin = currentPermDraft.role === 'super_admin';
     const headerContainer = document.getElementById('perm-drawer-header');
     const contentContainer = document.getElementById('perm-content-container');
 
-    // 1. 渲染 Header
     const leftHtml = `
         <div class="card-title" style="margin:0; padding:0;">
             Permission Configuration
@@ -1962,7 +1901,6 @@ function renderPermissionDrawer() {
 
     headerContainer.innerHTML = leftHtml + rightHtml;
 
-    // 2. 渲染内容
     let html = '';
 
     html += `
@@ -1980,30 +1918,24 @@ function renderPermissionDrawer() {
         const hasAccess = !!userProj;
         const isProjAdmin = userProj?.role === 'admin';
 
-        // 计算批量图标状态 (bulkStates)
         let bulkStates = {};
 
         PERM_RESOURCES.forEach(res => {
             let allRead = true;
             let allWrite = true;
 
-            // 如果项目下没有集合，或者项目本身没权限，则状态为 none
             if (!hasAccess || proj.collections.length === 0) {
                 allRead = false;
                 allWrite = false;
             } else {
-                // 遍历该项目下所有的 Collection
                 for (const c of proj.collections) {
                     const cid = String(c.id);
                     const userCol = userProj?.collections?.[cid];
 
-                    // [修复] 检查集合级管理员权限
-                    // 如果集合是 Manage (admin) 权限，则默认拥有所有资源的读写权限
                     if (userCol && userCol.role === 'admin') {
-                        continue; // 此集合满足条件，继续检查下一个
+                        continue;
                     }
 
-                    // 否则检查具体的细分权限
                     const cPerms = userCol?.permissions?.[res.key];
 
                     if (!cPerms || !cPerms.read) {
@@ -2017,7 +1949,6 @@ function renderPermissionDrawer() {
                 }
             }
 
-            // 确定最终状态
             if (allWrite) bulkStates[res.key] = 'write'; else if (allRead) bulkStates[res.key] = 'read'; else bulkStates[res.key] = 'none';
         });
 
@@ -2059,7 +1990,7 @@ function renderPermissionDrawer() {
 function renderBulkAtomicIcons(pid, currentStates) {
     let html = '';
     PERM_RESOURCES.forEach(res => {
-        const state = currentStates[res.key]; // 'none', 'read', 'write'
+        const state = currentStates[res.key];
         let btnClass = '';
         let stateText = 'None';
 
@@ -2071,12 +2002,10 @@ function renderBulkAtomicIcons(pid, currentStates) {
             stateText = 'Read';
         }
 
-        // 计算下一个点击状态
         let nextState = 'read';
         if (state === 'read') nextState = 'write';
         if (state === 'write') nextState = 'none';
 
-        // [重要] 这里去掉了 title属性，改用内部的 .perm-res-tooltip div
         html += `
         <div class="perm-res-btn ${btnClass}" 
              onclick="permToggleProjectBulk('${pid}', '${res.key}', '${nextState}')">
@@ -2087,19 +2016,16 @@ function renderBulkAtomicIcons(pid, currentStates) {
     return html;
 }
 
-// [新增] 项目级批量切换权限函数
 function permToggleProjectBulk(pid, resKey, targetState) {
     const projDraft = currentPermDraft.projects[pid];
     if (!projDraft) return;
 
-    // 获取该项目的所有实际 Collection
     const rawProj = rawProjects.find(p => String(p.id) === pid);
     if (!rawProj) return;
 
     rawProj.collections.forEach(c => {
         const cid = String(c.id);
 
-        // 确保 draft 中存在该 collection 对象
         if (!projDraft.collections[cid]) {
             projDraft.collections[cid] = {role: 'member', permissions: {}, _expanded: false};
         }
@@ -2109,14 +2035,13 @@ function permToggleProjectBulk(pid, resKey, targetState) {
 
         const p = colDraft.permissions[resKey];
 
-        // 应用状态
         if (targetState === 'write') {
             p.read = true;
             p.write = true;
         } else if (targetState === 'read') {
             p.read = true;
             p.write = false;
-        } else { // none
+        } else {
             p.read = false;
             p.write = false;
         }
@@ -2188,7 +2113,6 @@ function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
             'recording': 'mic', 'site': 'map-pin', 'annotation': 'scan-line', 'review': 'check-circle'
         };
 
-        // 状态循环逻辑：None -> Read -> Write -> None
         const nextState = write ? 'none' : (read ? 'write' : 'read');
 
         html += `
@@ -2224,31 +2148,23 @@ function permToggleAtomicState(pid, cid, resKey, targetState) {
 }
 
 function permBulkSetCols(pid, role) {
-    // 批量设置该项目下的所有集合
     const proj = currentPermDraft.projects[pid];
     if (!proj) return;
 
-    // 获取该项目的所有实际 Collection ID (从原始数据 rawProjects 中查找)
     const rawProj = rawProjects.find(p => String(p.id) === pid);
     if (!rawProj) return;
 
     rawProj.collections.forEach(c => {
         const cid = String(c.id);
         if (!proj.collections[cid]) {
-            // 如果还没权限，先初始化
             proj.collections[cid] = {role: role, permissions: {}, _expanded: false};
         } else {
-            // 如果已有权限，更新角色
             proj.collections[cid].role = role;
         }
     });
 
     renderPermissionDrawer();
 }
-
-// -----------------------------------------------------------------------------
-// Interaction Logic
-// -----------------------------------------------------------------------------
 
 function toggleGlobalAdmin() {
     currentPermDraft.role = (currentPermDraft.role === 'super_admin') ? 'user' : 'super_admin';
@@ -2332,7 +2248,6 @@ function handleToolbarDelete() {
 function openDeleteModal() {
     const modal = document.getElementById('crud-modal-overlay');
 
-    // [Fix] 显式重置宽度
     const modalEl = modal.querySelector('.crud-modal');
     if (modalEl) modalEl.style.width = '';
 
@@ -2347,7 +2262,8 @@ function openDeleteModal() {
     lucide.createIcons();
     if (submitBtn) {
         submitBtn.textContent = "Delete";
-        submitBtn.style.backgroundColor = "#ef4444";
+        submitBtn.className = "btn-danger"; // Danger Style
+        submitBtn.style.backgroundColor = "";
         submitBtn.onclick = confirmDeleteData;
     }
     modal.classList.add('active');
@@ -2365,7 +2281,6 @@ function confirmDeleteData() {
     if (currentTable === 'site' && map) renderMap(false);
 }
 
-// [修改] 处理 Audio 类型切换
 function handleAudioTypeChange(type) {
     const inputIds = {
         sr: 'input-sampling_rate_Hz',
@@ -2381,7 +2296,6 @@ function handleAudioTypeChange(type) {
     const els = {};
     Object.keys(inputIds).forEach(k => els[k] = document.getElementById(inputIds[k]));
 
-    // 辅助函数：设置只读/样式
     const setReadOnly = (el, isReadOnly) => {
         if (!el) return;
         el.readOnly = isReadOnly;
@@ -2396,7 +2310,6 @@ function handleAudioTypeChange(type) {
         }
     };
 
-    // 辅助函数：显示/隐藏整行
     const setVisible = (el, isVisible) => {
         if (!el) return;
         const group = el.closest('.form-group');
@@ -2406,38 +2319,21 @@ function handleAudioTypeChange(type) {
     };
 
     if (type === 'Audio File') {
-        // --- Audio File 模式 ---
-        // 1. 参数不可改
         [els.sr, els.bit, els.ch, els.dur].forEach(el => setReadOnly(el, true));
-
-        // 2. Duty Cycle: 隐藏
         [els.dutyRec, els.dutyPer].forEach(el => setVisible(el, false));
-
-        // 3. Size: 显示 但不可改
         setVisible(els.size, true);
         setReadOnly(els.size, true);
-
-        // 4. Filename: 显示 但不可改
         setVisible(els.filename, true);
         setReadOnly(els.filename, true);
 
     } else if (type === 'Metadata') {
-        // --- Metadata 模式 ---
-        // 1. 参数可改
         [els.sr, els.bit, els.ch, els.dur].forEach(el => setReadOnly(el, false));
-
-        // 2. Duty Cycle: 显示 且可改
         [els.dutyRec, els.dutyPer].forEach(el => {
             setVisible(el, true);
             setReadOnly(el, false);
         });
-
-        // 3. Size: 不显示 (隐藏)
         setVisible(els.size, false);
-        // 为了防止提交脏数据，可以清空值
         if (els.size) els.size.value = "";
-
-        // 4. Filename: 不显示 (隐藏)
         setVisible(els.filename, false);
         if (els.filename) els.filename.value = "";
     }
@@ -2449,7 +2345,6 @@ function openCrudModal(mode, id = null) {
 
     const modalEl = modal.querySelector('.crud-modal');
     if (modalEl) {
-        // [修改] Create 模式 480px，Edit 模式 960px
         modalEl.style.width = (mode === 'add') ? '480px' : '960px';
     }
 
@@ -2459,6 +2354,7 @@ function openCrudModal(mode, id = null) {
 
     if (submitBtn) {
         submitBtn.textContent = "Save";
+        submitBtn.className = "btn-primary"; // Reset Style
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveCrudData;
     }
@@ -2478,10 +2374,9 @@ function openCrudModal(mode, id = null) {
 
     schema.columns.forEach(col => {
         if (col.hiddenInForm) return;
-        if (col.readonly && mode === 'add') return; // 新建时不显示只读字段
+        if (col.readonly && mode === 'add') return;
         if (col.onlyOnCreate && mode === 'edit') return;
 
-        // [保留] Audio 编辑时的字段隐藏逻辑
         if (currentTable === 'audio' && mode === 'edit') {
             const type = currentRow.audio_type;
             if (type === 'Audio File') {
@@ -2493,7 +2388,6 @@ function openCrudModal(mode, id = null) {
 
         let val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
 
-        // [保留] 时间格式化 (YYYY-MM-DD HH:mm:ss)
         if (col.key === 'creation_date' && val) {
             try {
                 let dateObj = new Date(val);
@@ -2512,7 +2406,6 @@ function openCrudModal(mode, id = null) {
                 effectiveType = 'text';
                 isReadOnly = true;
             }
-            // 编辑 Audio File 时，技术参数变为只读（归入右侧）
             if (mode === 'edit' && currentRow.audio_type === 'Audio File') {
                 const audioFileReadOnlyFields = ['sampling_rate_Hz', 'bit_depth', 'channel_num', 'duration_s', 'size_B', 'filename'];
                 if (audioFileReadOnlyFields.includes(col.key)) {
@@ -2521,7 +2414,6 @@ function openCrudModal(mode, id = null) {
             }
         }
 
-        // [保留] 不可编辑字段的样式 (灰色背景)
         let attrStr = "";
         if (isReadOnly) {
             const styleStr = "opacity:0.7; cursor:not-allowed; background:var(--bg-capsule);";
@@ -2534,7 +2426,6 @@ function openCrudModal(mode, id = null) {
 
         let fieldHtml = `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
-        // --- 生成输入控件 HTML ---
         if (effectiveType === 'select') {
             const onChangeAttr = col.key === 'audio_type' ? `onchange="handleAudioTypeChange(this.value)"` : '';
             fieldHtml += `<select class="form-input" id="input-${col.key}" ${attrStr} ${onChangeAttr}>`;
@@ -2607,7 +2498,6 @@ function openCrudModal(mode, id = null) {
         }
         fieldHtml += `</div>`;
 
-        // 分配到左右栏
         if (isReadOnly) {
             rightHtml += fieldHtml;
         } else {
@@ -2615,10 +2505,7 @@ function openCrudModal(mode, id = null) {
         }
     });
 
-    // [修改] 根据模式决定布局结构
     if (mode === 'add') {
-        // Create 模式 (480px)：单栏垂直排列
-        // 注意：新建时通常没有只读字段(rightHtml为空)，直接渲染leftHtml即可
         container.innerHTML = `
             <div style="display: flex; flex-direction: column; gap: 16px;">
                 ${leftHtml}
@@ -2626,7 +2513,6 @@ function openCrudModal(mode, id = null) {
             </div>
         `;
     } else {
-        // Edit 模式 (960px)：双栏布局
         container.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
                 <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -2642,7 +2528,6 @@ function openCrudModal(mode, id = null) {
     modal.classList.add('active');
     lucide.createIcons();
 
-    // 如果是 Audio 新建模式，初始化字段状态
     if (currentTable === 'audio' && mode !== 'edit') {
         const typeInput = document.getElementById('input-audio_type');
         if (typeInput) {
@@ -2674,7 +2559,6 @@ function saveCrudData() {
     const isCollection = currentTable === 'collection';
     const currentData = getDataForTable(currentTable);
 
-    // [Updated] Get current user for auto-filling creator
     const currentUser = document.querySelector('.user-name-text').textContent.trim();
 
     let existingRow = null;
@@ -2687,10 +2571,8 @@ function saveCrudData() {
         }
         let val = input ? input.value : "";
 
-        // [修改] 处理 datetime-local，确保秒不丢失
         if (col.type === 'datetime-local' && val) {
             val = val.replace('T', ' ');
-            // 如果只有 分 没有 秒，补 :00
             if (val.split(':').length === 2) val += ':00';
         }
 
@@ -2715,10 +2597,8 @@ function saveCrudData() {
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
         if (!newRow.uploader_id) newRow.uploader_id = currentUser;
         if (!newRow.creator_id) newRow.creator_id = currentUser;
-        // [修改] 格式化为标准日期时间
         if (!newRow.creation_date) newRow.creation_date = moment().format("YYYY-MM-DD HH:mm:ss");
     }
-    // [Updated] Auto-fill creator if missing (e.g. on Create)
     if (isProject && !newRow.creator_name) newRow.creator_name = currentUser;
     if (isCollection && !newRow.creator_id) newRow.creator_id = currentUser;
 
@@ -2737,14 +2617,12 @@ function saveCrudData() {
             mappedProject.collections = [];
             mappedProject.stats = {users: 0, collections: 0, audios: "0", photos: 0, videos: 0, annotations: 0, sites: 0};
             mappedProject.contributors = [];
-            // [修改] 时间格式包含时分秒
             if (!mappedProject.date) mappedProject.date = moment().format("YYYY-MM-DD HH:mm:ss");
             rawProjects.push(mappedProject);
         }
         renderProjectList();
     } else if (isCollection) {
         const proj = rawProjects[currProjIdx];
-        // [修改] 保存新的 URL 字段
         const mappedCol = {
             name: newRow.name,
             creator: newRow.creator_id,
@@ -2786,7 +2664,6 @@ function resetDataTable() {
     crudSearchQuery = "";
     crudFilterState = {};
 
-    // [修改] 获取当前表的主键，并设置为升序排序
     const schema = dbSchema[currentTable];
     sortState = {key: schema.pk, direction: 'asc'};
 
@@ -2807,7 +2684,6 @@ function handleSetContributor() {
 
     const modal = document.getElementById('crud-modal-overlay');
 
-    // [Fix] 显式重置宽度
     const modalEl = modal.querySelector('.crud-modal');
     if (modalEl) modalEl.style.width = '';
 
@@ -2878,15 +2754,10 @@ function saveSetContributor() {
     }
 }
 
-let uploadFilesQueue = [];
-let uploadTimer = null;
+// ---------------------------
+// UPLOAD LOGIC
+// ---------------------------
 
-// [Replacement] 初始化上传环境（增加 Metadata input）
-/* ==========================================================================
-   New Upload Workflow Logic
-   ========================================================================== */
-
-// 1. Toolbar Dropdown Logic
 function toggleToolbarUploadDropdown(e) {
     e.stopPropagation();
     const btn = document.getElementById('btn-add');
@@ -2898,22 +2769,19 @@ function toggleToolbarUploadDropdown(e) {
         drop.className = 'toolbar-dropdown';
         drop.innerHTML = `
             <div class="toolbar-drop-item" onclick="triggerAudioUpload()">
-                <i data-lucide="file-audio" size="16"></i> Recordings
+                <i data-lucide="mic" size="16"></i> Audios
             </div>
             <div class="toolbar-drop-item" onclick="triggerMetadataUpload()">
-                <i data-lucide="file-spreadsheet" size="16"></i> Metadata
+                <i data-lucide="file-text" size="16"></i> Metadata
             </div>
             <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
             <div class="toolbar-drop-item" onclick="showMetadataInstructions()">
-                <i data-lucide="info" size="16"></i> Meta-data Instructions
+                <i data-lucide="info" size="16"></i> Metadata Instructions
             </div>
         `;
-        // 将 dropdown 插入到 button 的父容器中，以利用相对定位 (需确保父容器 style position relative)
-        // 或者简单地，插入 body 并绝对定位
         document.body.appendChild(drop);
         lucide.createIcons();
 
-        // 点击外部关闭
         document.addEventListener('click', (event) => {
             if (!drop.contains(event.target) && event.target !== btn && !btn.contains(event.target)) {
                 drop.classList.remove('active');
@@ -2921,22 +2789,18 @@ function toggleToolbarUploadDropdown(e) {
         });
     }
 
-    // 定位
     const rect = btn.getBoundingClientRect();
     drop.style.top = (rect.bottom + 4) + 'px';
-    drop.style.left = (rect.right - 200) + 'px'; // 右对齐，宽度200
+    drop.style.left = (rect.right - 200) + 'px';
 
-    // Toggle
     if (drop.classList.contains('active')) {
         drop.classList.remove('active');
     } else {
-        // 关闭其他可能的菜单
         closeAllMenus();
         drop.classList.add('active');
     }
 }
 
-// 2. File Triggers
 function triggerAudioUpload() {
     closeToolbarDropdown();
     let input = document.getElementById('hidden-upload-input');
@@ -2964,7 +2828,7 @@ function triggerMetadataUpload() {
         input.accept = '.csv';
         input.style.display = 'none';
         document.body.appendChild(input);
-        input.addEventListener('change', (e) => handleFilesSelect(e.target.files, 'csv'));
+        input.addEventListener('change', (e) => handleMetadataSelect(e.target.files));
     }
     input.value = '';
     input.click();
@@ -2975,14 +2839,22 @@ function closeToolbarDropdown() {
     if (drop) drop.classList.remove('active');
 }
 
-// 3. File Handling & Modal Opening
-let uploadFilesQueue = [];
-let uploadTimer = null;
+function handleMetadataSelect(files) {
+    if (files && files.length > 0) {
+        setTimeout(() => {
+            const success = true;
+            if (success) {
+                alert('Metadata uploaded successfully!');
+                location.reload();
+            } else {
+                alert('Metadata upload failed.');
+            }
+        }, 500);
+    }
+}
 
 function handleFilesSelect(files, type) {
     if (files.length > 0) {
-        // 如果是新的一次上传操作（模态框未打开），建议清空之前的队列？
-        // 根据需求，通常是追加。但如果模态框关了，就重置。
         if (!document.getElementById('crud-modal-overlay').classList.contains('active')) {
             uploadFilesQueue = [];
         }
@@ -2992,7 +2864,7 @@ function handleFilesSelect(files, type) {
             f.progress = 0;
             f.chunkIndex = 0;
             f.totalChunks = Math.floor(Math.random() * 5) + 3;
-            f.type = type; // 'audio' or 'csv'
+            f.type = type;
             uploadFilesQueue.push(f);
         });
 
@@ -3000,265 +2872,6 @@ function handleFilesSelect(files, type) {
     }
 }
 
-// 4. Show Upload Modal (Updated Layout)
-function showUploadModalUI() {
-    const modal = document.getElementById('crud-modal-overlay');
-    const container = document.getElementById('modal-form-container');
-    const title = document.getElementById('modal-title');
-    const submitBtn = document.getElementById('modal-submit-btn');
-
-    const modalEl = modal.querySelector('.crud-modal');
-    if (modalEl) modalEl.style.width = '1000px';
-
-    title.textContent = "Upload Media";
-
-    // 生成右侧表单选项
-    const siteOptions = currentSites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-    const licenseOptions = mockLicenses.map(l => `<option value="${l}">${l}</option>`).join('');
-    const sensorOptions = ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3", "Sony PCM-D10"].map(s => `<option value="${s}">${s}</option>`).join('');
-
-    const html = `
-    <div class="upload-layout">
-        <div class="upload-left">
-            <div class="upload-queue-header">
-                <div class="card-title" style="font-size:1rem; margin:0;">Queue</div>
-                <div class="upload-stats">
-                    Total: <span id="up-total">0</span> | Completed: <span id="up-completed">0</span>
-                </div>
-            </div>
-            
-            <div class="upload-file-list" id="upload-file-list"></div>
-            
-            <button class="btn-secondary" style="width:100%; justify-content:center;" onclick="triggerAudioUpload()">
-                <i data-lucide="plus" size="16"></i> Add More Recordings
-            </button>
-        </div>
-        
-        <div class="upload-right">
-             <div class="form-group">
-                <label class="form-label">Date Time</label>
-                <input type="datetime-local" class="form-input" id="up-datetime" disabled style="opacity:0.6; cursor:not-allowed; background:var(--bg-capsule);">
-                <div class="up-checkbox-row">
-                    <input type="checkbox" class="crud-checkbox" id="chk-dt-filename" onchange="toggleDtInput(this.checked)" checked>
-                    <label for="chk-dt-filename" class="up-checkbox-label">Date and time from filename</label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Site</label>
-                <select class="form-input" id="up-site">${siteOptions}</select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Sensor</label>
-                <select class="form-input" id="up-sensor">${sensorOptions}</select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Medium</label>
-                <select class="form-input" id="up-medium">
-                    <option value="Air">Air</option>
-                    <option value="Water">Water</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">License</label>
-                <select class="form-input" id="up-license">${licenseOptions}</select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Recording Gain (dB)</label>
-                <input type="number" class="form-input" id="up-gain">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">DOI</label>
-                <input type="text" class="form-input" id="up-doi">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Sound Name Prefix</label>
-                <input type="text" class="form-input" id="up-prefix">
-            </div>
-        </div>
-    </div>
-    `;
-
-    container.innerHTML = html;
-
-    if (submitBtn) {
-        submitBtn.textContent = "Finish";
-        submitBtn.style.backgroundColor = "";
-        submitBtn.onclick = () => {
-            clearInterval(uploadTimer);
-            closeCrudModal();
-        };
-    }
-
-    // 初始化列表
-    const list = document.getElementById('upload-file-list');
-    if (list) list.innerHTML = ''; // 清空以重绘
-
-    renderUploadFileList();
-    modal.classList.add('active');
-    lucide.createIcons();
-
-    if (uploadTimer) clearInterval(uploadTimer);
-    uploadTimer = setInterval(simulateUploadProgress, 200);
-}
-
-// 5. Render List & Stats
-function renderUploadFileList() {
-    const list = document.getElementById('upload-file-list');
-    if (!list) return;
-
-    // Update Stats
-    const total = uploadFilesQueue.length;
-    const completed = uploadFilesQueue.filter(f => f.progress >= 100).length;
-    const totalEl = document.getElementById('up-total');
-    const compEl = document.getElementById('up-completed');
-    if (totalEl) totalEl.textContent = total;
-    if (compEl) compEl.textContent = completed;
-
-    uploadFilesQueue.forEach(f => {
-        const percent = Math.round(f.progress);
-        const isDone = percent >= 100;
-        const statusText = isDone ? 'Completed' : `Uploading...`;
-
-        const iconName = f.type === 'csv' ? 'file-spreadsheet' : 'file-audio';
-
-        let itemEl = document.getElementById(`up-item-${f.uid}`);
-
-        if (!itemEl) {
-            itemEl = document.createElement('div');
-            itemEl.className = 'up-file-item';
-            itemEl.id = `up-item-${f.uid}`;
-
-            itemEl.innerHTML = `
-                <div class="up-file-name">
-                    <span id="icon-wrap-${f.uid}"><i data-lucide="${iconName}" size="14" style="color:var(--text-muted)"></i></span>
-                    ${f.name}
-                </div>
-                <div class="up-progress-bg">
-                    <div class="up-progress-fill" id="prog-${f.uid}" style="width: 0%"></div>
-                </div>
-                <div class="up-file-status" id="status-${f.uid}">
-                    <span>${statusText}</span>
-                    <span>0%</span>
-                </div>
-            `;
-            list.appendChild(itemEl);
-            lucide.createIcons();
-        } else {
-            const progEl = document.getElementById(`prog-${f.uid}`);
-            const statusEl = document.getElementById(`status-${f.uid}`);
-            const iconWrap = document.getElementById(`icon-wrap-${f.uid}`);
-
-            if (progEl) progEl.style.width = `${percent}%`;
-
-            if (statusEl) {
-                statusEl.innerHTML = `<span>${statusText}</span><span>${percent}%</span>`;
-            }
-
-            if (isDone && iconWrap && !iconWrap.classList.contains('done')) {
-                iconWrap.classList.add('done');
-                iconWrap.innerHTML = `<i data-lucide="check-circle" size="14" style="color:var(--brand)"></i>`;
-                lucide.createIcons();
-            }
-        }
-    });
-}
-
-// 6. Instructions Modal
-function showMetadataInstructions() {
-    closeToolbarDropdown();
-
-    // 复用或创建新的 modal overlay
-    let instrModal = document.getElementById('instr-modal-overlay');
-    if (!instrModal) {
-        instrModal = document.createElement('div');
-        instrModal.id = 'instr-modal-overlay';
-        instrModal.className = 'crud-modal-overlay';
-        instrModal.style.zIndex = '10050'; // Higher than others
-
-        instrModal.innerHTML = `
-        <div class="crud-modal" style="width: 600px; max-width: 90vw; height: auto;">
-            <div class="card-title">View Instructions</div>
-            <div class="instr-content">
-                <p>Recording meta-data can be uploaded with a CSV containing the following columns:</p>
-                <ul class="instr-list">
-                    <li><code>recording_start</code> (format: YYYY-MM-DD HH:MM:SS, local time)</li>
-                    <li><code>duration_s</code> (duration of recording in seconds)</li>
-                    <li><code>sampling_rate</code> (numeric value in Hz)</li>
-                    <li><code>name</code> (optional, limited to 40 characters)</li>
-                    <li><code>bit_depth</code> (optional, integer)</li>
-                    <li><code>channel_number</code> (optional, integer)</li>
-                    <li><code>duty_cycle_recording</code> (duration of duty-cycled recordings in minutes)</li>
-                    <li><code>duty_cycle_period</code> (duration of cycle - recording + pause - in minutes)</li>
-                </ul>
-                <a href="#" class="template-download-link" onclick="event.preventDefault(); alert('Template CSV downloaded.')">
-                    <i data-lucide="download" size="16"></i> Download template CSV file
-                </a>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary" onclick="document.getElementById('instr-modal-overlay').classList.remove('active')">Close</button>
-            </div>
-        </div>
-        `;
-        document.body.appendChild(instrModal);
-
-        // 点击遮罩关闭
-        instrModal.addEventListener('click', (e) => {
-            if (e.target === instrModal) instrModal.classList.remove('active');
-        });
-    }
-
-    // 显示
-    requestAnimationFrame(() => {
-        instrModal.classList.add('active');
-        lucide.createIcons();
-    });
-}
-
-// Helper: toggle datetime input (keep existing logic)
-function toggleDtInput(checked) {
-    const el = document.getElementById('up-datetime');
-    if (el) {
-        el.disabled = checked;
-        el.style.opacity = checked ? '0.6' : '1';
-        el.style.cursor = checked ? 'not-allowed' : 'text';
-        el.style.background = checked ? 'var(--bg-capsule)' : '';
-    }
-}
-
-function handleFilesSelect(files, type) {
-    if (files.length > 0) {
-        Array.from(files).forEach(f => {
-            f.uid = Math.random().toString(36).substr(2, 9);
-            f.progress = 0;
-            f.chunkIndex = 0;
-            f.totalChunks = Math.floor(Math.random() * 5) + 3;
-            f.type = type; // 标记类型
-            uploadFilesQueue.push(f);
-        });
-        // 如果 UI 没开（虽然通常是开着的），则显示 UI
-        if (!document.getElementById('crud-modal-overlay').classList.contains('active')) {
-            showUploadModalUI();
-        } else {
-            renderUploadFileList();
-        }
-    }
-}
-
-// [New] 触发添加文件
-function triggerAddFiles() {
-    const input = document.getElementById('hidden-upload-input');
-    if (input) input.click();
-}
-
-// [New] 构建并显示上传弹窗 UI
-// [Replacement] 构建并显示上传弹窗 UI
 function showUploadModalUI() {
     const modal = document.getElementById('crud-modal-overlay');
     const container = document.getElementById('modal-form-container');
@@ -3287,18 +2900,7 @@ function showUploadModalUI() {
             <div class="upload-file-list" id="upload-file-list"></div>
             
             <div class="upload-btn-wrapper">
-                <div class="upload-dropdown" id="upload-dropdown">
-                    <div class="up-drop-item" onclick="triggerRecordingsUpload()">
-                        <i data-lucide="file-audio" size="14" style="margin-right:8px; vertical-align:middle;"></i>Recordings
-                    </div>
-                    <div class="up-drop-item" onclick="triggerMetadataUpload()">
-                        <i data-lucide="file-spreadsheet" size="14" style="margin-right:8px; vertical-align:middle;"></i>Metadata
-                    </div>
-                    <div class="up-drop-item" onclick="showMetadataInstructions()">
-                        <i data-lucide="info" size="14" style="margin-right:8px; vertical-align:middle;"></i>Meta-data Instructions
-                    </div>
-                </div>
-                <button class="btn-secondary" style="width:100%; justify-content:center;" onclick="toggleUploadDropdown(event)">
+                <button class="btn-secondary" style="width:100%; justify-content:center;" onclick="triggerAudioUpload()">
                     <i data-lucide="plus" size="16"></i> Upload
                 </button>
             </div>
@@ -3366,18 +2968,16 @@ function showUploadModalUI() {
         };
     }
 
-    // 初始化列表和统计
     const list = document.getElementById('upload-file-list');
     if (list) list.innerHTML = '';
-    renderUploadFileList();
 
+    renderUploadFileList();
     modal.classList.add('active');
     lucide.createIcons();
 
     if (uploadTimer) clearInterval(uploadTimer);
     uploadTimer = setInterval(simulateUploadProgress, 200);
 
-    // 点击其他地方关闭下拉
     document.addEventListener('click', closeDropdownOnClickOutside);
 }
 
@@ -3385,7 +2985,6 @@ function renderUploadFileList() {
     const list = document.getElementById('upload-file-list');
     if (!list) return;
 
-    // 更新统计数据
     const total = uploadFilesQueue.length;
     const completed = uploadFilesQueue.filter(f => f.progress >= 100).length;
 
@@ -3397,10 +2996,9 @@ function renderUploadFileList() {
     uploadFilesQueue.forEach(f => {
         const percent = Math.round(f.progress);
         const isDone = percent >= 100;
-        const statusText = isDone ? 'Completed' : `Chunk ${f.chunkIndex}/${f.totalChunks} uploading...`;
+        const statusText = isDone ? 'Completed' : `Uploading...`;
 
-        // 区分图标：CSV 用 file-spreadsheet, 音频用 file-audio
-        const iconName = f.type === 'csv' ? 'file-spreadsheet' : 'file-audio';
+        const iconName = f.type === 'csv' ? 'file-text' : 'mic';
 
         let itemEl = document.getElementById(`up-item-${f.uid}`);
 
@@ -3460,36 +3058,18 @@ function closeDropdownOnClickOutside(e) {
     }
 }
 
-function triggerRecordingsUpload() {
-    const drop = document.getElementById('upload-dropdown');
-    if (drop) drop.classList.remove('active');
-    const input = document.getElementById('hidden-upload-input');
-    if (input) input.click();
-}
-
-function triggerMetadataUpload() {
-    const drop = document.getElementById('upload-dropdown');
-    if (drop) drop.classList.remove('active');
-    const input = document.getElementById('hidden-metadata-input');
-    if (input) input.click();
-}
-
 function showMetadataInstructions() {
-    // 关闭下拉
-    const drop = document.getElementById('upload-dropdown');
-    if (drop) drop.classList.remove('active');
+    closeToolbarDropdown();
 
-    // 创建一个新的 Modal overlay 用于说明，或者复用 editor-modal-overlay
-    // 这里我们动态创建一个简单的 modal 结构
     let instrModal = document.getElementById('instr-modal-overlay');
     if (!instrModal) {
         instrModal = document.createElement('div');
         instrModal.id = 'instr-modal-overlay';
         instrModal.className = 'crud-modal-overlay';
-        instrModal.style.zIndex = '10010'; // 比 upload modal 高
+        instrModal.style.zIndex = '10050';
 
         instrModal.innerHTML = `
-        <div class="crud-modal" style="width: 600px; max-width: 90vw; height: auto; transform: translate(0,0);">
+        <div class="crud-modal" style="width: 600px; max-width: 90vw; height: auto;">
             <div class="card-title">View Instructions</div>
             <div class="instr-content">
                 <p>Recording meta-data can be uploaded with a CSV containing the following columns:</p>
@@ -3503,7 +3083,7 @@ function showMetadataInstructions() {
                     <li><code>duty_cycle_recording</code> (duration of duty-cycled recordings in minutes)</li>
                     <li><code>duty_cycle_period</code> (duration of cycle - recording + pause - in minutes)</li>
                 </ul>
-                <a href="#" class="template-download-link" onclick="event.preventDefault(); alert('Template downloading...')">
+                <a href="#" class="template-download-link" onclick="event.preventDefault(); alert('Template CSV downloaded.')">
                     <i data-lucide="download" size="16"></i> Download template CSV file
                 </a>
             </div>
@@ -3514,21 +3094,17 @@ function showMetadataInstructions() {
         `;
         document.body.appendChild(instrModal);
 
-        // 绑定点击遮罩关闭
         instrModal.addEventListener('click', (e) => {
             if (e.target === instrModal) instrModal.classList.remove('active');
         });
     }
 
-    // 显示 Modal
-    // 强制重绘以触发 transition
-    setTimeout(() => {
+    requestAnimationFrame(() => {
         instrModal.classList.add('active');
         lucide.createIcons();
-    }, 10);
+    });
 }
 
-// [New] 模拟上传进度
 function simulateUploadProgress() {
     let allDone = true;
     let changed = false;
@@ -3536,11 +3112,9 @@ function simulateUploadProgress() {
     uploadFilesQueue.forEach(f => {
         if (f.progress < 100) {
             allDone = false;
-            // 模拟进度增长
             f.progress += Math.random() * 5;
             if (f.progress > 100) f.progress = 100;
 
-            // 模拟 chunk 索引变化
             const chunkStep = 100 / f.totalChunks;
             f.chunkIndex = Math.min(f.totalChunks, Math.ceil(f.progress / chunkStep));
 
@@ -3552,7 +3126,6 @@ function simulateUploadProgress() {
     if (allDone) clearInterval(uploadTimer);
 }
 
-// [New] 切换日期输入框状态
 function toggleDtInput(checked) {
     const el = document.getElementById('up-datetime');
     if (el) {

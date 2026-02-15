@@ -58,7 +58,6 @@ const projRoles = ["Principal Investigator", "Lead Researcher", "Field Technicia
 const colRoles = ["Field Recorder", "Annotator", "Reviewer", "Data Curator", "Metadata Specialist", "Logistics"];
 const mockLicenses = ["CC BY 4.0", "CC BY-NC 4.0", "CC0 1.0", "All Rights Reserved"];
 const mockAudioSettings = ["Default Audio", "High Res 96kHz", "Low Power 16kHz", "Duty Cycle A"];
-const mockPhotoSettings = ["Standard Photo", "Time Lapse 1min", "Motion Trigger", "Video 1080p"];
 const mockSoundClasses = ["Biophony", "Geophony", "Anthropophony", "Unknown"];
 const mockTaxons = ["Aves", "Amphibia", "Insecta", "Mammalia", "Chiroptera"];
 const mockReviewStatuses = ["Pending", "Approved", "Rejected", "Unsure"];
@@ -88,22 +87,21 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
     return Array.from({length: count}, (_, i) => {
         const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
         const colId = 10000 + (startImgIdx * 100) + i;
-        // [Modified] 模拟真实网址，并修正字段名
         return {
-            id: String(colId), name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`, active: false, creator: collectionCreator, date: `2025-0${(i % 9) + 1}-15 09:30:00`, doi: `10.ECO/col.${colId}`, sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3], // 修复：模拟出具体网址，并将 resource_url 改为 media_url
-            external_project_url: `https://science-db.io/project/${colId}`, external_media_url: `https://nature-sounds.org/archive/${colId}/media`, description: colGenerators[i % 3](`${baseName}`), image: getImg(startImgIdx + i + 1), stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), photos: rInt(10, 200), videos: rInt(0, 50), annotations: rInt(50, 300), sites: rInt(1, 5)}, contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
+            id: String(colId), name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`, active: false, creator: collectionCreator, date: `2025-0${(i % 9) + 1}-15 09:30:00`, doi: `10.ECO/col.${colId}`, sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
+            external_project_url: `https://science-db.io/project/${colId}`, external_media_url: `https://nature-sounds.org/archive/${colId}/media`, description: colGenerators[i % 3](`${baseName}`), image: getImg(startImgIdx + i + 1), stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), annotations: rInt(50, 300), sites: rInt(1, 5)}, contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
         };
     });
 };
 const initialProjects = [{
-    id: 1, name: "Amazon Rainforest Survey", creator: "Liudilong", date: "2025-01-10 14:00:00", // [Modified]
-    doi: "10.1234/amz.01", externalUrl: "https://www.worldwildlife.org/places/amazon", description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"), styleClass: "style-modern", image: getImg(0), collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"), stats: {users: 45, collections: 8, audios: "120k", photos: 850, videos: 120, annotations: 4500, sites: 12}, contributors: getContributors(4, 'project', "Liudilong")
+    id: 1, name: "Amazon Rainforest Survey", creator: "Liudilong", date: "2025-01-10 14:00:00",
+    doi: "10.1234/amz.01", externalUrl: "https://www.worldwildlife.org/places/amazon", description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"), styleClass: "style-modern", image: getImg(0), collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"), stats: {users: 45, collections: 8, audios: "120k", annotations: 4500, sites: 12}, contributors: getContributors(4, 'project', "Liudilong")
 }, {
-    id: 2, name: "Marine Ecosystems Study", creator: "Liudilong", date: "2024-11-05 08:15:30", // [Modified]
-    doi: "10.5678/mar.02", externalUrl: "https://www.barrierreef.org/", description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"), styleClass: "style-academic", image: getImg(1), collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"), stats: {users: 32, collections: 6, audios: "80k", photos: 200, videos: 500, annotations: 2100, sites: 5}, contributors: getContributors(3, 'project', "Prof. Ocean")
+    id: 2, name: "Marine Ecosystems Study", creator: "Liudilong", date: "2024-11-05 08:15:30",
+    doi: "10.5678/mar.02", externalUrl: "https://www.barrierreef.org/", description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"), styleClass: "style-academic", image: getImg(1), collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"), stats: {users: 32, collections: 6, audios: "80k", annotations: 2100, sites: 5}, contributors: getContributors(3, 'project', "Prof. Ocean")
 }, {
-    id: 3, name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15 16:45:00", // [Modified]
-    doi: "10.9999/sav.03", externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant", description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"), styleClass: "style-editorial", image: getImg(2), collections: createCollections("Seismic", 5, 2, "K. Mbeki"), stats: {users: 28, collections: 5, audios: "45k", photos: 1200, videos: 50, annotations: 1200, sites: 8}, contributors: getContributors(5, 'project', "K. Mbeki")
+    id: 3, name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15 16:45:00",
+    doi: "10.9999/sav.03", externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant", description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"), styleClass: "style-editorial", image: getImg(2), collections: createCollections("Seismic", 5, 2, "K. Mbeki"), stats: {users: 28, collections: 5, audios: "45k", annotations: 1200, sites: 8}, contributors: getContributors(5, 'project', "K. Mbeki")
 }];
 
 const REALM_COLORS = {"Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316"};
@@ -132,12 +130,12 @@ const getRealmColor = (r) => {
 }
 const dbSchema = {
     project: {
-        label: "Projects", itemLabel: "Project", icon: "folder-kanban", pk: "project_id", columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, // [Modified] type text, readonly
+        label: "Projects", itemLabel: "Project", icon: "folder-kanban", pk: "project_id", columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"},
             {key: "creator_name", label: "Creator", type: "text", readonly: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "public", label: "Public", type: "boolean"}, {key: "active", label: "Active", type: "boolean"}, {
                 key: "creation_date", label: "Created", type: "text", readonly: true
             }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
     }, collection: {
-        label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true}, // [Modified] 字段名变更
+        label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true},
             {key: "external_project_url", label: "Ext. Project", type: "text"}, {key: "external_media_url", label: "Ext. Media", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
                 key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
             }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
@@ -157,34 +155,23 @@ const dbSchema = {
         icon: "mic",
         pk: "media_id",
         columns: [
-            // --- 1. System ID & Type ---
             {key: "media_id", label: "ID", type: "number", readonly: true},
             {key: "uuid", label: "UUID", type: "text", readonly: true},
             {key: "audio_type", label: "Data Type", type: "select", options: ["Audio File", "Metadata"], readonlyOnUpdate: true},
-
-            // --- 2. Basic Identification ---
             {key: "name", label: "Name", type: "text"},
             {key: "filename", label: "Filename", type: "text"},
-
-            // --- 3. Context (Time, Space, Environment) ---
             {key: "date_time", label: "Date Time", type: "datetime-local"},
             {key: "site_id", label: "Site", type: "select", options: []},
             {key: "sensor_id", label: "Sensor", type: "select", options: []},
             {key: "medium", label: "Medium", type: "select", options: ["Air", "Water"]},
-
-            // --- 4. Technical Specifications ---
             {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'},
             {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'},
             {key: "channel_num", label: "Channels", type: "number", filterType: 'range'},
             {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'},
             {key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'},
             {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'},
-
-            // --- 5. Duty Cycle ---
             {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'},
             {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'},
-
-            // --- 6. Admin / Metadata ---
             {key: "license_id", label: "License", type: "select", options: mockLicenses},
             {key: "doi", label: "DOI", type: "text"},
             {key: "uploader_id", label: "Uploader", type: "text", readonly: true},
@@ -192,24 +179,22 @@ const dbSchema = {
             {key: "creation_date", label: "Created", type: "text", readonly: true},
             {key: "note", label: "Note", type: "text"}
         ]
-    }, photo: {
-        label: "Photos", icon: "image", pk: "media_id", columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video"], hiddenInTable: true, hiddenInForm: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
-            key: "uploader_id", label: "Uploader", type: "select", options: mockNames
-        }, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "site_id", label: "Site", type: "select", options: []}, {key: "sensor_id", label: "Sensor", type: "select", options: []}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true, hiddenInForm: true}, {
-            key: "photo_setting_id", label: "Photo Setting", type: "select", options: mockPhotoSettings, hiddenInTable: true
-        }, {key: "medium", label: "Medium", type: "text"}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", hiddenInTable: true, hiddenInForm: true}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", hiddenInTable: true, hiddenInForm: true}, {key: "note", label: "Note", type: "text"}, {key: "date_time", label: "Date Time", type: "text"}, {key: "size_B", label: "Size (Bytes)", type: "number", hiddenInTable: true}, {
-            key: "md5_hash", label: "MD5", type: "text", hiddenInTable: true
-        }, {key: "doi", label: "DOI", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
-    }, video: {
-        label: "Videos", icon: "video", pk: "media_id", columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_type", label: "Type", type: "select", options: ["audio", "photo", "video"], hiddenInTable: true, hiddenInForm: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "directory", label: "Directory ID", type: "number", hiddenInTable: true}, {
-            key: "uploader_id", label: "Uploader", type: "select", options: mockNames
-        }, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "site_id", label: "Site", type: "select", options: []}, {key: "sensor_id", label: "Sensor", type: "select", options: []}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "audio_setting_id", label: "Audio Setting", type: "select", options: mockAudioSettings, hiddenInTable: true, hiddenInForm: true}, {
-            key: "photo_setting_id", label: "Photo Setting", type: "select", options: mockPhotoSettings, hiddenInTable: true
-        }, {key: "medium", label: "Medium", type: "text"}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", hiddenInTable: true, hiddenInForm: true}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", hiddenInTable: true, hiddenInForm: true}, {key: "note", label: "Note", type: "text"}, {key: "date_time", label: "Date Time", type: "text"}, {key: "size_B", label: "Size (Bytes)", type: "number", hiddenInTable: true}, {
-            key: "md5_hash", label: "MD5", type: "text", hiddenInTable: true
-        }, {key: "doi", label: "DOI", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, site: {
-        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "text"}, {key: "biome", label: "Biome", type: "text"}, {key: "group", label: "Group", type: "text"}, {key: "topography_m", label: "Elevation (m)", type: "number"}, {key: "mediaCount", label: "Media Count", type: "number", readonly: true}]
+        label: "Sites",
+        icon: "map-pin",
+        pk: "id",
+        columns: [
+            {key: "id", label: "ID", type: "text", readonly: true},
+            {key: "uuid", label: "UUID", type: "text", readonly: true},
+            {key: "name", label: "Site Name", type: "text"},
+            {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)},
+            {key: "biome", label: "Biome", type: "text"},
+            {key: "functional_type", label: "Functional Type", type: "text"},
+            {key: "topography_m", label: "Topography (m)", type: "number"},
+            {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number"},
+            {key: "creator_id", label: "Creator", type: "select", options: mockNames},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
     }, annotation: {
         label: "Annotations",
         icon: "scan-line",
@@ -237,10 +222,9 @@ const dbSchema = {
 };
 
 const staticMockDB = {
-    sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}, {sensor_id: 3, name: "GoPro Hero 10", sensor_type: "photo"}],
+    sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}],
     license: mockLicenses.map((l, i) => ({license_id: i + 1, name: l})),
     audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})),
-    photo_setting: mockPhotoSettings.map((s, i) => ({photo_setting_id: i + 1, name: s})),
     annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", sound_id: "Biophony", media_id: 20250001, creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "Aves", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Call", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"}],
     annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "Aves", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
     index_log: [{log_id: 1, media_id: 20250001, user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "result", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}]
