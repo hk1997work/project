@@ -3105,3 +3105,215 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     background: var(--brand-tint);
     color: var(--brand);
 }
+
+/* Upload Modal Layout */
+.upload-layout {
+    display: flex;
+    gap: 24px;
+    overflow: hidden;
+}
+
+.upload-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+    padding-right: 24px;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.upload-right {
+    flex: 0 0 475px; /* 固定宽度 475px */
+    overflow-y: auto;
+    padding-right: 4px;
+    height: 100%;
+    /* [新增] 与 Edit 页面保持一致的间距布局 */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Hide number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.upload-file-list {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    padding-right: 4px;
+    min-height: 0;
+}
+
+.up-file-item {
+    background: var(--bg-surface-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    /* [修改] 减小垂直内边距 */
+    padding: 8px 10px;
+    /* [修改] 减小项之间的间距 */
+    margin-bottom: 8px;
+    animation: fadeIn 0.3s ease;
+}
+
+.up-file-name {
+    /* [修改]稍微减小字号 */
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-main);
+    /* [修改] 减小标题与进度条的间距 */
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.up-progress-bg {
+    /* [修改] 进度条变细 */
+    height: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+    /* [修改] 减小进度条与状态文字的间距 */
+    margin-bottom: 4px;
+}
+
+.up-progress-fill {
+    height: 100%;
+    background: var(--brand);
+    width: 0%;
+    transition: width 0.2s linear;
+}
+
+.up-file-status {
+    /* [修改] 稍微减小字号 */
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+}
+
+.up-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.up-checkbox-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Upload Stats */
+.upload-queue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+}
+
+.upload-stats {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.upload-stats span {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+/* Upload Dropdown */
+.upload-btn-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.upload-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    margin-bottom: 8px;
+    padding: 4px;
+    display: none;
+    z-index: 50;
+    box-sizing: border-box;
+}
+
+.upload-dropdown.active {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+.up-drop-item {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: 0.1s;
+}
+
+.up-drop-item:hover {
+    background: var(--bg-capsule);
+    color: var(--brand);
+}
+
+/* Instructions Modal Specifics */
+.instr-content {
+    line-height: 1.6;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.instr-content code {
+    background: var(--bg-capsule);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: var(--brand);
+}
+
+.instr-list {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.instr-list li {
+    margin-bottom: 6px;
+}
+
+.template-download-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--brand);
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.template-download-link:hover {
+    text-decoration: underline;
+}

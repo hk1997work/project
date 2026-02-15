@@ -1245,15 +1245,26 @@ function switchCrudTable(tableName) {
     selectedCrudIds = [];
     const isMediaTable = ['audio', 'photo', 'video'].includes(tableName);
     const addBtn = document.getElementById('btn-add');
+
+    // [Modified] Button Logic
     if (addBtn) {
+        // 移除旧的 dropdown (防止切换 tab 时残留)
+        const oldDrop = document.getElementById('toolbar-upload-dropdown');
+        if (oldDrop) oldDrop.remove();
+
         if (isMediaTable) {
             addBtn.innerHTML = `<i data-lucide="upload" size="16"></i> Upload`;
-            addBtn.onclick = openUploadModal;
+            // 绑定到新的 Dropdown 逻辑
+            addBtn.onclick = (e) => toggleToolbarUploadDropdown(e);
+
+            // 注入 Dropdown HTML 结构到按钮内部或附近 (这里选择动态生成并定位)
+            // 为了定位方便，给 btn-add 加个相对定位的父级或者直接用 absolute
+            // 这里我们动态插入 dropdown 元素到 .media-controls 容器中
         } else {
             addBtn.innerHTML = `<i data-lucide="plus" size="16"></i> Add`;
             addBtn.onclick = () => openCrudModal('add');
         }
-        lucide.createIcons(); // 刷新图标
+        lucide.createIcons();
     }
 
     updateToolbarState();
@@ -2867,32 +2878,689 @@ function saveSetContributor() {
     }
 }
 
-function openUploadModal() {
+let uploadFilesQueue = [];
+let uploadTimer = null;
+
+// [Replacement] 初始化上传环境（增加 Metadata input）
+/* ==========================================================================
+   New Upload Workflow Logic
+   ========================================================================== */
+
+// 1. Toolbar Dropdown Logic
+function toggleToolbarUploadDropdown(e) {
+    e.stopPropagation();
+    const btn = document.getElementById('btn-add');
+    let drop = document.getElementById('toolbar-upload-dropdown');
+
+    if (!drop) {
+        drop = document.createElement('div');
+        drop.id = 'toolbar-upload-dropdown';
+        drop.className = 'toolbar-dropdown';
+        drop.innerHTML = `
+            <div class="toolbar-drop-item" onclick="triggerAudioUpload()">
+                <i data-lucide="file-audio" size="16"></i> Recordings
+            </div>
+            <div class="toolbar-drop-item" onclick="triggerMetadataUpload()">
+                <i data-lucide="file-spreadsheet" size="16"></i> Metadata
+            </div>
+            <div style="height:1px; background:var(--border-color); margin:4px 0;"></div>
+            <div class="toolbar-drop-item" onclick="showMetadataInstructions()">
+                <i data-lucide="info" size="16"></i> Meta-data Instructions
+            </div>
+        `;
+        // 将 dropdown 插入到 button 的父容器中，以利用相对定位 (需确保父容器 style position relative)
+        // 或者简单地，插入 body 并绝对定位
+        document.body.appendChild(drop);
+        lucide.createIcons();
+
+        // 点击外部关闭
+        document.addEventListener('click', (event) => {
+            if (!drop.contains(event.target) && event.target !== btn && !btn.contains(event.target)) {
+                drop.classList.remove('active');
+            }
+        });
+    }
+
+    // 定位
+    const rect = btn.getBoundingClientRect();
+    drop.style.top = (rect.bottom + 4) + 'px';
+    drop.style.left = (rect.right - 200) + 'px'; // 右对齐，宽度200
+
+    // Toggle
+    if (drop.classList.contains('active')) {
+        drop.classList.remove('active');
+    } else {
+        // 关闭其他可能的菜单
+        closeAllMenus();
+        drop.classList.add('active');
+    }
+}
+
+// 2. File Triggers
+function triggerAudioUpload() {
+    closeToolbarDropdown();
+    let input = document.getElementById('hidden-upload-input');
+    if (!input) {
+        input = document.createElement('input');
+        input.type = 'file';
+        input.id = 'hidden-upload-input';
+        input.multiple = true;
+        input.accept = 'audio/*';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        input.addEventListener('change', (e) => handleFilesSelect(e.target.files, 'audio'));
+    }
+    input.value = '';
+    input.click();
+}
+
+function triggerMetadataUpload() {
+    closeToolbarDropdown();
+    let input = document.getElementById('hidden-metadata-input');
+    if (!input) {
+        input = document.createElement('input');
+        input.type = 'file';
+        input.id = 'hidden-metadata-input';
+        input.accept = '.csv';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        input.addEventListener('change', (e) => handleFilesSelect(e.target.files, 'csv'));
+    }
+    input.value = '';
+    input.click();
+}
+
+function closeToolbarDropdown() {
+    const drop = document.getElementById('toolbar-upload-dropdown');
+    if (drop) drop.classList.remove('active');
+}
+
+// 3. File Handling & Modal Opening
+let uploadFilesQueue = [];
+let uploadTimer = null;
+
+function handleFilesSelect(files, type) {
+    if (files.length > 0) {
+        // 如果是新的一次上传操作（模态框未打开），建议清空之前的队列？
+        // 根据需求，通常是追加。但如果模态框关了，就重置。
+        if (!document.getElementById('crud-modal-overlay').classList.contains('active')) {
+            uploadFilesQueue = [];
+        }
+
+        Array.from(files).forEach(f => {
+            f.uid = Math.random().toString(36).substr(2, 9);
+            f.progress = 0;
+            f.chunkIndex = 0;
+            f.totalChunks = Math.floor(Math.random() * 5) + 3;
+            f.type = type; // 'audio' or 'csv'
+            uploadFilesQueue.push(f);
+        });
+
+        showUploadModalUI();
+    }
+}
+
+// 4. Show Upload Modal (Updated Layout)
+function showUploadModalUI() {
     const modal = document.getElementById('crud-modal-overlay');
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
 
-    // [新增] 设置更大的宽度 (700px)
     const modalEl = modal.querySelector('.crud-modal');
-    if (modalEl) modalEl.style.width = '1200px';
+    if (modalEl) modalEl.style.width = '1000px';
 
-    // 设置标题
     title.textContent = "Upload Media";
 
-    // 内容暂空
-    container.innerHTML = ``;
+    // 生成右侧表单选项
+    const siteOptions = currentSites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    const licenseOptions = mockLicenses.map(l => `<option value="${l}">${l}</option>`).join('');
+    const sensorOptions = ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3", "Sony PCM-D10"].map(s => `<option value="${s}">${s}</option>`).join('');
 
-    // 设置底部按钮
+    const html = `
+    <div class="upload-layout">
+        <div class="upload-left">
+            <div class="upload-queue-header">
+                <div class="card-title" style="font-size:1rem; margin:0;">Queue</div>
+                <div class="upload-stats">
+                    Total: <span id="up-total">0</span> | Completed: <span id="up-completed">0</span>
+                </div>
+            </div>
+            
+            <div class="upload-file-list" id="upload-file-list"></div>
+            
+            <button class="btn-secondary" style="width:100%; justify-content:center;" onclick="triggerAudioUpload()">
+                <i data-lucide="plus" size="16"></i> Add More Recordings
+            </button>
+        </div>
+        
+        <div class="upload-right">
+             <div class="form-group">
+                <label class="form-label">Date Time</label>
+                <input type="datetime-local" class="form-input" id="up-datetime" disabled style="opacity:0.6; cursor:not-allowed; background:var(--bg-capsule);">
+                <div class="up-checkbox-row">
+                    <input type="checkbox" class="crud-checkbox" id="chk-dt-filename" onchange="toggleDtInput(this.checked)" checked>
+                    <label for="chk-dt-filename" class="up-checkbox-label">Date and time from filename</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Site</label>
+                <select class="form-input" id="up-site">${siteOptions}</select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Sensor</label>
+                <select class="form-input" id="up-sensor">${sensorOptions}</select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Medium</label>
+                <select class="form-input" id="up-medium">
+                    <option value="Air">Air</option>
+                    <option value="Water">Water</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">License</label>
+                <select class="form-input" id="up-license">${licenseOptions}</select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Recording Gain (dB)</label>
+                <input type="number" class="form-input" id="up-gain">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">DOI</label>
+                <input type="text" class="form-input" id="up-doi">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Sound Name Prefix</label>
+                <input type="text" class="form-input" id="up-prefix">
+            </div>
+        </div>
+    </div>
+    `;
+
+    container.innerHTML = html;
+
     if (submitBtn) {
-        submitBtn.textContent = "Upload";
-        submitBtn.style.backgroundColor = ""; // 重置颜色
+        submitBtn.textContent = "Finish";
+        submitBtn.style.backgroundColor = "";
         submitBtn.onclick = () => {
+            clearInterval(uploadTimer);
             closeCrudModal();
         };
     }
 
+    // 初始化列表
+    const list = document.getElementById('upload-file-list');
+    if (list) list.innerHTML = ''; // 清空以重绘
+
+    renderUploadFileList();
     modal.classList.add('active');
+    lucide.createIcons();
+
+    if (uploadTimer) clearInterval(uploadTimer);
+    uploadTimer = setInterval(simulateUploadProgress, 200);
+}
+
+// 5. Render List & Stats
+function renderUploadFileList() {
+    const list = document.getElementById('upload-file-list');
+    if (!list) return;
+
+    // Update Stats
+    const total = uploadFilesQueue.length;
+    const completed = uploadFilesQueue.filter(f => f.progress >= 100).length;
+    const totalEl = document.getElementById('up-total');
+    const compEl = document.getElementById('up-completed');
+    if (totalEl) totalEl.textContent = total;
+    if (compEl) compEl.textContent = completed;
+
+    uploadFilesQueue.forEach(f => {
+        const percent = Math.round(f.progress);
+        const isDone = percent >= 100;
+        const statusText = isDone ? 'Completed' : `Uploading...`;
+
+        const iconName = f.type === 'csv' ? 'file-spreadsheet' : 'file-audio';
+
+        let itemEl = document.getElementById(`up-item-${f.uid}`);
+
+        if (!itemEl) {
+            itemEl = document.createElement('div');
+            itemEl.className = 'up-file-item';
+            itemEl.id = `up-item-${f.uid}`;
+
+            itemEl.innerHTML = `
+                <div class="up-file-name">
+                    <span id="icon-wrap-${f.uid}"><i data-lucide="${iconName}" size="14" style="color:var(--text-muted)"></i></span>
+                    ${f.name}
+                </div>
+                <div class="up-progress-bg">
+                    <div class="up-progress-fill" id="prog-${f.uid}" style="width: 0%"></div>
+                </div>
+                <div class="up-file-status" id="status-${f.uid}">
+                    <span>${statusText}</span>
+                    <span>0%</span>
+                </div>
+            `;
+            list.appendChild(itemEl);
+            lucide.createIcons();
+        } else {
+            const progEl = document.getElementById(`prog-${f.uid}`);
+            const statusEl = document.getElementById(`status-${f.uid}`);
+            const iconWrap = document.getElementById(`icon-wrap-${f.uid}`);
+
+            if (progEl) progEl.style.width = `${percent}%`;
+
+            if (statusEl) {
+                statusEl.innerHTML = `<span>${statusText}</span><span>${percent}%</span>`;
+            }
+
+            if (isDone && iconWrap && !iconWrap.classList.contains('done')) {
+                iconWrap.classList.add('done');
+                iconWrap.innerHTML = `<i data-lucide="check-circle" size="14" style="color:var(--brand)"></i>`;
+                lucide.createIcons();
+            }
+        }
+    });
+}
+
+// 6. Instructions Modal
+function showMetadataInstructions() {
+    closeToolbarDropdown();
+
+    // 复用或创建新的 modal overlay
+    let instrModal = document.getElementById('instr-modal-overlay');
+    if (!instrModal) {
+        instrModal = document.createElement('div');
+        instrModal.id = 'instr-modal-overlay';
+        instrModal.className = 'crud-modal-overlay';
+        instrModal.style.zIndex = '10050'; // Higher than others
+
+        instrModal.innerHTML = `
+        <div class="crud-modal" style="width: 600px; max-width: 90vw; height: auto;">
+            <div class="card-title">View Instructions</div>
+            <div class="instr-content">
+                <p>Recording meta-data can be uploaded with a CSV containing the following columns:</p>
+                <ul class="instr-list">
+                    <li><code>recording_start</code> (format: YYYY-MM-DD HH:MM:SS, local time)</li>
+                    <li><code>duration_s</code> (duration of recording in seconds)</li>
+                    <li><code>sampling_rate</code> (numeric value in Hz)</li>
+                    <li><code>name</code> (optional, limited to 40 characters)</li>
+                    <li><code>bit_depth</code> (optional, integer)</li>
+                    <li><code>channel_number</code> (optional, integer)</li>
+                    <li><code>duty_cycle_recording</code> (duration of duty-cycled recordings in minutes)</li>
+                    <li><code>duty_cycle_period</code> (duration of cycle - recording + pause - in minutes)</li>
+                </ul>
+                <a href="#" class="template-download-link" onclick="event.preventDefault(); alert('Template CSV downloaded.')">
+                    <i data-lucide="download" size="16"></i> Download template CSV file
+                </a>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="document.getElementById('instr-modal-overlay').classList.remove('active')">Close</button>
+            </div>
+        </div>
+        `;
+        document.body.appendChild(instrModal);
+
+        // 点击遮罩关闭
+        instrModal.addEventListener('click', (e) => {
+            if (e.target === instrModal) instrModal.classList.remove('active');
+        });
+    }
+
+    // 显示
+    requestAnimationFrame(() => {
+        instrModal.classList.add('active');
+        lucide.createIcons();
+    });
+}
+
+// Helper: toggle datetime input (keep existing logic)
+function toggleDtInput(checked) {
+    const el = document.getElementById('up-datetime');
+    if (el) {
+        el.disabled = checked;
+        el.style.opacity = checked ? '0.6' : '1';
+        el.style.cursor = checked ? 'not-allowed' : 'text';
+        el.style.background = checked ? 'var(--bg-capsule)' : '';
+    }
+}
+
+function handleFilesSelect(files, type) {
+    if (files.length > 0) {
+        Array.from(files).forEach(f => {
+            f.uid = Math.random().toString(36).substr(2, 9);
+            f.progress = 0;
+            f.chunkIndex = 0;
+            f.totalChunks = Math.floor(Math.random() * 5) + 3;
+            f.type = type; // 标记类型
+            uploadFilesQueue.push(f);
+        });
+        // 如果 UI 没开（虽然通常是开着的），则显示 UI
+        if (!document.getElementById('crud-modal-overlay').classList.contains('active')) {
+            showUploadModalUI();
+        } else {
+            renderUploadFileList();
+        }
+    }
+}
+
+// [New] 触发添加文件
+function triggerAddFiles() {
+    const input = document.getElementById('hidden-upload-input');
+    if (input) input.click();
+}
+
+// [New] 构建并显示上传弹窗 UI
+// [Replacement] 构建并显示上传弹窗 UI
+function showUploadModalUI() {
+    const modal = document.getElementById('crud-modal-overlay');
+    const container = document.getElementById('modal-form-container');
+    const title = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit-btn');
+
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '1000px';
+
+    title.textContent = "Upload Audio";
+
+    const siteOptions = currentSites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    const licenseOptions = mockLicenses.map(l => `<option value="${l}">${l}</option>`).join('');
+    const sensorOptions = ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3", "Sony PCM-D10"].map(s => `<option value="${s}">${s}</option>`).join('');
+
+    const html = `
+    <div class="upload-layout">
+        <div class="upload-left">
+            <div class="upload-queue-header">
+                <div class="card-title" style="font-size:1rem; margin:0;">Queue</div>
+                <div class="upload-stats">
+                    Total: <span id="up-total">0</span> | Completed: <span id="up-completed">0</span>
+                </div>
+            </div>
+            
+            <div class="upload-file-list" id="upload-file-list"></div>
+            
+            <div class="upload-btn-wrapper">
+                <div class="upload-dropdown" id="upload-dropdown">
+                    <div class="up-drop-item" onclick="triggerRecordingsUpload()">
+                        <i data-lucide="file-audio" size="14" style="margin-right:8px; vertical-align:middle;"></i>Recordings
+                    </div>
+                    <div class="up-drop-item" onclick="triggerMetadataUpload()">
+                        <i data-lucide="file-spreadsheet" size="14" style="margin-right:8px; vertical-align:middle;"></i>Metadata
+                    </div>
+                    <div class="up-drop-item" onclick="showMetadataInstructions()">
+                        <i data-lucide="info" size="14" style="margin-right:8px; vertical-align:middle;"></i>Meta-data Instructions
+                    </div>
+                </div>
+                <button class="btn-secondary" style="width:100%; justify-content:center;" onclick="toggleUploadDropdown(event)">
+                    <i data-lucide="plus" size="16"></i> Upload
+                </button>
+            </div>
+        </div>
+        
+        <div class="upload-right">
+            <div class="form-group">
+                <label class="form-label">Date Time</label>
+                <input type="datetime-local" class="form-input" id="up-datetime" disabled style="opacity:0.6; cursor:not-allowed; background:var(--bg-capsule);">
+                <div class="up-checkbox-row">
+                    <input type="checkbox" class="crud-checkbox" id="chk-dt-filename" onchange="toggleDtInput(this.checked)" checked>
+                    <label for="chk-dt-filename" class="up-checkbox-label">Date and time from filename</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Site</label>
+                <select class="form-input" id="up-site">${siteOptions}</select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Sensor</label>
+                <select class="form-input" id="up-sensor">${sensorOptions}</select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Medium</label>
+                <select class="form-input" id="up-medium">
+                    <option value="Air">Air</option>
+                    <option value="Water">Water</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">License</label>
+                <select class="form-input" id="up-license">${licenseOptions}</select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Recording Gain (dB)</label>
+                <input type="number" class="form-input" id="up-gain">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">DOI</label>
+                <input type="text" class="form-input" id="up-doi">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Sound Name Prefix</label>
+                <input type="text" class="form-input" id="up-prefix">
+            </div>
+        </div>
+    </div>
+    `;
+
+    container.innerHTML = html;
+
+    if (submitBtn) {
+        submitBtn.textContent = "Finish";
+        submitBtn.style.backgroundColor = "";
+        submitBtn.onclick = () => {
+            clearInterval(uploadTimer);
+            closeCrudModal();
+        };
+    }
+
+    // 初始化列表和统计
+    const list = document.getElementById('upload-file-list');
+    if (list) list.innerHTML = '';
+    renderUploadFileList();
+
+    modal.classList.add('active');
+    lucide.createIcons();
+
+    if (uploadTimer) clearInterval(uploadTimer);
+    uploadTimer = setInterval(simulateUploadProgress, 200);
+
+    // 点击其他地方关闭下拉
+    document.addEventListener('click', closeDropdownOnClickOutside);
+}
+
+function renderUploadFileList() {
+    const list = document.getElementById('upload-file-list');
+    if (!list) return;
+
+    // 更新统计数据
+    const total = uploadFilesQueue.length;
+    const completed = uploadFilesQueue.filter(f => f.progress >= 100).length;
+
+    const totalEl = document.getElementById('up-total');
+    const compEl = document.getElementById('up-completed');
+    if (totalEl) totalEl.textContent = total;
+    if (compEl) compEl.textContent = completed;
+
+    uploadFilesQueue.forEach(f => {
+        const percent = Math.round(f.progress);
+        const isDone = percent >= 100;
+        const statusText = isDone ? 'Completed' : `Chunk ${f.chunkIndex}/${f.totalChunks} uploading...`;
+
+        // 区分图标：CSV 用 file-spreadsheet, 音频用 file-audio
+        const iconName = f.type === 'csv' ? 'file-spreadsheet' : 'file-audio';
+
+        let itemEl = document.getElementById(`up-item-${f.uid}`);
+
+        if (!itemEl) {
+            itemEl = document.createElement('div');
+            itemEl.className = 'up-file-item';
+            itemEl.id = `up-item-${f.uid}`;
+
+            itemEl.innerHTML = `
+                <div class="up-file-name">
+                    <span id="icon-wrap-${f.uid}"><i data-lucide="${iconName}" size="14" style="color:var(--text-muted)"></i></span>
+                    ${f.name}
+                </div>
+                <div class="up-progress-bg">
+                    <div class="up-progress-fill" id="prog-${f.uid}" style="width: 0%"></div>
+                </div>
+                <div class="up-file-status" id="status-${f.uid}">
+                    <span>${statusText}</span>
+                    <span>0%</span>
+                </div>
+            `;
+            list.appendChild(itemEl);
+            lucide.createIcons();
+        } else {
+            const progEl = document.getElementById(`prog-${f.uid}`);
+            const statusEl = document.getElementById(`status-${f.uid}`);
+            const iconWrap = document.getElementById(`icon-wrap-${f.uid}`);
+
+            if (progEl) progEl.style.width = `${percent}%`;
+
+            if (statusEl) {
+                statusEl.innerHTML = `<span>${statusText}</span><span>${percent}%</span>`;
+            }
+
+            if (isDone && iconWrap && !iconWrap.classList.contains('done')) {
+                iconWrap.classList.add('done');
+                iconWrap.innerHTML = `<i data-lucide="check-circle" size="14" style="color:var(--brand)"></i>`;
+                lucide.createIcons();
+            }
+        }
+    });
+}
+
+function toggleUploadDropdown(e) {
+    if (e) e.stopPropagation();
+    const drop = document.getElementById('upload-dropdown');
+    if (drop) drop.classList.toggle('active');
+}
+
+function closeDropdownOnClickOutside(e) {
+    const drop = document.getElementById('upload-dropdown');
+    const btn = document.querySelector('.upload-btn-wrapper');
+    if (drop && drop.classList.contains('active')) {
+        if (!btn.contains(e.target)) {
+            drop.classList.remove('active');
+        }
+    }
+}
+
+function triggerRecordingsUpload() {
+    const drop = document.getElementById('upload-dropdown');
+    if (drop) drop.classList.remove('active');
+    const input = document.getElementById('hidden-upload-input');
+    if (input) input.click();
+}
+
+function triggerMetadataUpload() {
+    const drop = document.getElementById('upload-dropdown');
+    if (drop) drop.classList.remove('active');
+    const input = document.getElementById('hidden-metadata-input');
+    if (input) input.click();
+}
+
+function showMetadataInstructions() {
+    // 关闭下拉
+    const drop = document.getElementById('upload-dropdown');
+    if (drop) drop.classList.remove('active');
+
+    // 创建一个新的 Modal overlay 用于说明，或者复用 editor-modal-overlay
+    // 这里我们动态创建一个简单的 modal 结构
+    let instrModal = document.getElementById('instr-modal-overlay');
+    if (!instrModal) {
+        instrModal = document.createElement('div');
+        instrModal.id = 'instr-modal-overlay';
+        instrModal.className = 'crud-modal-overlay';
+        instrModal.style.zIndex = '10010'; // 比 upload modal 高
+
+        instrModal.innerHTML = `
+        <div class="crud-modal" style="width: 600px; max-width: 90vw; height: auto; transform: translate(0,0);">
+            <div class="card-title">View Instructions</div>
+            <div class="instr-content">
+                <p>Recording meta-data can be uploaded with a CSV containing the following columns:</p>
+                <ul class="instr-list">
+                    <li><code>recording_start</code> (format: YYYY-MM-DD HH:MM:SS, local time)</li>
+                    <li><code>duration_s</code> (duration of recording in seconds)</li>
+                    <li><code>sampling_rate</code> (numeric value in Hz)</li>
+                    <li><code>name</code> (optional, limited to 40 characters)</li>
+                    <li><code>bit_depth</code> (optional, integer)</li>
+                    <li><code>channel_number</code> (optional, integer)</li>
+                    <li><code>duty_cycle_recording</code> (duration of duty-cycled recordings in minutes)</li>
+                    <li><code>duty_cycle_period</code> (duration of cycle - recording + pause - in minutes)</li>
+                </ul>
+                <a href="#" class="template-download-link" onclick="event.preventDefault(); alert('Template downloading...')">
+                    <i data-lucide="download" size="16"></i> Download template CSV file
+                </a>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="document.getElementById('instr-modal-overlay').classList.remove('active')">Close</button>
+            </div>
+        </div>
+        `;
+        document.body.appendChild(instrModal);
+
+        // 绑定点击遮罩关闭
+        instrModal.addEventListener('click', (e) => {
+            if (e.target === instrModal) instrModal.classList.remove('active');
+        });
+    }
+
+    // 显示 Modal
+    // 强制重绘以触发 transition
+    setTimeout(() => {
+        instrModal.classList.add('active');
+        lucide.createIcons();
+    }, 10);
+}
+
+// [New] 模拟上传进度
+function simulateUploadProgress() {
+    let allDone = true;
+    let changed = false;
+
+    uploadFilesQueue.forEach(f => {
+        if (f.progress < 100) {
+            allDone = false;
+            // 模拟进度增长
+            f.progress += Math.random() * 5;
+            if (f.progress > 100) f.progress = 100;
+
+            // 模拟 chunk 索引变化
+            const chunkStep = 100 / f.totalChunks;
+            f.chunkIndex = Math.min(f.totalChunks, Math.ceil(f.progress / chunkStep));
+
+            changed = true;
+        }
+    });
+
+    if (changed) renderUploadFileList();
+    if (allDone) clearInterval(uploadTimer);
+}
+
+// [New] 切换日期输入框状态
+function toggleDtInput(checked) {
+    const el = document.getElementById('up-datetime');
+    if (el) {
+        el.disabled = checked;
+        el.style.opacity = checked ? '0.6' : '1';
+        el.style.cursor = checked ? 'not-allowed' : 'text';
+        el.style.background = checked ? 'var(--bg-capsule)' : '';
+    }
 }
 
 init();
