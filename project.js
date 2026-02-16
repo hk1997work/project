@@ -136,7 +136,15 @@ function generateSitesForContext(projId, colId) {
             creator_id: creator,
             creation_date: created,
             mediaCount: Math.floor(Math.random() * 10) + 2,
-            media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => ({name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.wav`, date: "2025-01-15", duration: "01:00:00"}))
+            media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
+                const isMeta = Math.random() > 0.7;
+                return {
+                    type: isMeta ? 'Metadata' : 'Audio',
+                    name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`,
+                    date: "2025-01-15",
+                    duration: isMeta ? "N/A" : "01:00:00"
+                };
+            })
         };
     });
 }
@@ -239,19 +247,30 @@ function openSidebar(site) {
     const metaContainer = document.getElementById('sb-meta-container');
     if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
     const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
+
     const mediaHtml = site.media.map((m) => {
         const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}">Bio</span><span class="media-annotation" style="background:${color}">Aves</span>`;
         const mockTime = "14:30:00";
         const mockSize = "2.4 MB";
-        // Added mouseover/mouseout for border color
+
+        const isMetadata = m.type === 'Metadata';
+        const borderStyle = isMetadata ? 'style="border:none"' : '';
+
+        const visualContent = isMetadata
+            ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg-capsule);"><i data-lucide="file-spreadsheet" size="32" style="opacity:0.4; color:var(--text-secondary); margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:var(--text-secondary); opacity:0.8; letter-spacing:1px;">METADATA</span></div>`
+            : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${m.duration}</div>`;
+
+        // 修改：添加 text-decoration:none 确保无下划线
+        const nameHtml = isMetadata
+            ? `<span class="media-name" title="${m.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${m.name}</span>`
+            : `<a href="#" class="media-name" title="${m.name}" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>`;
+
         return `<div class="media-item-card" onclick="event.stopPropagation();" onmouseover="this.style.borderColor='${color}66'" onmouseout="this.style.borderColor=''">
-<div class="spectrogram-cover"><img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec">
-    <div class="play-overlay">
-        <div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div>
-    </div>
-    <div class="duration-badge">${m.duration}</div>
+<div class="spectrogram-cover" ${borderStyle}>
+    ${visualContent}
 </div>
-<div class="media-card-info"><a href="#" class="media-name" title="${m.name}" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>
+<div class="media-card-info">
+    ${nameHtml}
     <div class="annotations-row">${mockAnnotationsHtml}</div>
     <div class="media-meta-row">
         <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
@@ -261,6 +280,7 @@ function openSidebar(site) {
 </div>
 </div>`;
     }).join('');
+
     const mediaListContainer = document.getElementById('media-container');
     mediaListContainer.innerHTML = mediaHtml;
     mediaListContainer.scrollTop = 0;
@@ -512,19 +532,41 @@ function renderMedia() {
         return;
     }
     let html = '';
+
     filteredItems.forEach(item => {
         const itemRealmColor = getRealmColor(item.realm);
         const annotationsHtml = item.annotations.map(t => `<span class="media-annotation" style="background:${itemRealmColor}">${t}</span>`).join('');
+
+        const isMetadata = item.audio_type === 'Metadata';
+        const borderStyle = isMetadata ? 'style="border:none"' : '';
+
+        const metadataHtml = `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg-capsule);"><i data-lucide="file-spreadsheet" size="32" style="opacity:0.4; color:var(--text-secondary); margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:var(--text-secondary); opacity:0.8; letter-spacing:1px;">METADATA</span></div>`;
+
+        const visualContent = isMetadata
+            ? metadataHtml
+            : `<img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div>`;
+
+        const listVisualContent = isMetadata
+            ? metadataHtml
+            : `<img src="${item.spectrogram}" class="list-spec-img" alt="Spec"><div class="duration-badge">${item.duration}</div>`;
+
+        // Gallery View 名字处理：添加 text-decoration:none
+        const nameHtmlGallery = isMetadata
+            ? `<span class="media-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
+            : `<a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
+
+        // List View 名字处理：添加 text-decoration:none
+        const nameHtmlList = isMetadata
+            ? `<span class="row-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
+            : `<a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
+
         if (isGallery) {
-            // Added mouseover/mouseout to the card div for border color (with '66' for opacity ~40%)
             html += `<div class="media-item-card" onmouseover="this.style.borderColor='${itemRealmColor}66'" onmouseout="this.style.borderColor=''">
-<div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec">
-    <div class="play-overlay">
-        <div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div>
-    </div>
-    <div class="duration-badge">${item.duration}</div>
+<div class="spectrogram-cover" ${borderStyle}>
+    ${visualContent}
 </div>
-<div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>
+<div class="media-card-info">
+    ${nameHtmlGallery}
     <div class="annotations-row">${annotationsHtml}</div>
     <div class="media-meta-row">
         <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
@@ -536,12 +578,12 @@ function renderMedia() {
         } else {
             const realmColor = getRealmColor(item.realm);
             const depthHtml = item.freshwater_depth_m !== 'N/A' && item.freshwater_depth_m !== null ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` : '';
-            // Added mouseover/mouseout to the row div for border color (with '4d' for opacity ~30%)
             html += `<div class="media-item-row" onmouseover="this.style.borderColor='${realmColor}4d'" onmouseout="this.style.borderColor=''">
-<div class="list-spec-container"><img src="${item.spectrogram}" class="list-spec-img" alt="Spec">
-    <div class="duration-badge">${item.duration}</div>
+<div class="list-spec-container" ${borderStyle}>
+    ${listVisualContent}
 </div>
-<div class="row-basic-info"><a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>
+<div class="row-basic-info">
+    ${nameHtmlList}
     <div class="annotations-row">${annotationsHtml}</div>
     <div class="row-meta-list">
         <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>

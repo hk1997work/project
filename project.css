@@ -2219,7 +2219,7 @@ a.row-name:hover {
     flex: 1;
     overflow: hidden;
     background: var(--bg-surface);
-    padding: 24px 24px 0 24px;
+    padding: 24px 0 0 24px; /* 右侧 padding 改为 0 */
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -2232,6 +2232,7 @@ a.row-name:hover {
     align-items: baseline;
     border-bottom: 1px dashed var(--border-light);
     flex-shrink: 0;
+    margin-right: 24px; /* 补偿父容器移除的 padding */
 }
 
 .data-label {
@@ -2256,6 +2257,7 @@ a.row-name:hover {
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
+    margin-right: 24px; /* 补偿父容器移除的 padding */
 }
 
 .media-scroll-container {
@@ -2265,7 +2267,7 @@ a.row-name:hover {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding-right: 4px;
+    padding-right: 12px; /* 稍微增加 padding，避免内容紧贴滚动条 */
     padding-top: 10px;
     padding-bottom: 20px;
 }
