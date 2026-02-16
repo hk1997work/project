@@ -11,6 +11,76 @@ let polyLayer = null;
 let currentSites = [];
 let currentSelectedSiteId = null;
 let filterState = {realm: "", biome: "", group: ""};
+// 默认品牌色
+
+const SPHERE_COLORS = {
+    "Hydrosphere": "#0ea5e9", // 水圈 - 蓝色
+    "Cryosphere": "#06b6d4",  // 冰冻圈 - 青色
+    "Lithosphere": "#57534e", // 岩石圈 - 深灰
+    "Pedosphere": "#b45309",  // 土壤圈 - 褐色
+    "Atmosphere": "#64748b",  // 大气圈 - 蓝灰
+    "Biosphere": "#65a30d",   // 生物圈 - 绿色
+    "Anthroposphere": "#db2777" // 人类圈 - 紫红
+};
+const getSphereColor = (s) => SPHERE_COLORS[s] || SPHERE_COLORS["Biosphere"];
+const DEFAULT_BRAND_COLOR = "#83CD20";
+
+// 颜色转换辅助函数
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+// 调整颜色亮度 (用于生成 Hover 颜色)
+// 调整颜色亮度 (修复版 - 确保始终生成有效的6位Hex颜色)
+function adjustBrightness(hex, percent) {
+    hex = hex.replace(/^\s*#|\s*$/g, '');
+    if (hex.length === 3) hex = hex.replace(/(.)/g, '$1$1');
+
+    let r = parseInt(hex.substr(0, 2), 16);
+    let g = parseInt(hex.substr(2, 2), 16);
+    let b = parseInt(hex.substr(4, 2), 16);
+
+    // 计算变亮/变暗量 (基于255的百分比)
+    const amount = Math.floor(2.55 * percent);
+
+    r += amount;
+    g += amount;
+    b += amount;
+
+    // 限制在 0-255 之间
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+
+    // 补齐前导零并组合
+    const rr = (r.toString(16).length < 2 ? '0' : '') + r.toString(16);
+    const gg = (g.toString(16).length < 2 ? '0' : '') + g.toString(16);
+    const bb = (b.toString(16).length < 2 ? '0' : '') + b.toString(16);
+
+    return `#${rr}${gg}${bb}`;
+}
+
+// 更新全局主题色
+function updateThemeColors(hexColor) {
+    if (!hexColor) return;
+    const rgb = hexToRgb(hexColor);
+    if (!rgb) return;
+
+    // 设置主色
+    document.documentElement.style.setProperty('--brand', hexColor);
+    // [新增] 设置 RGB 变量，供 CSS rgba() 使用
+    document.documentElement.style.setProperty('--brand-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+    // 设置浅色背景 Tint (例如 rgba(r,g,b, 0.08))
+    document.documentElement.style.setProperty('--brand-tint', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.08)`);
+    // 设置 Hover 颜色 (稍微加深 10%)
+    const hoverColor = adjustBrightness(hexColor, -10);
+    document.documentElement.style.setProperty('--brand-hover', hoverColor);
+}
 
 function generateSitesForContext(projId, colId) {
     let cidNum = colId ? Number(colId) : 0;
@@ -736,6 +806,9 @@ function selectProject(idx) {
     const isCollectionMode = container.classList.contains('mode-collection');
     if (currProjIdx !== idx) {
         currProjIdx = idx;
+
+        // [新增] 切换项目时，重置为默认品牌色
+        updateThemeColors(DEFAULT_BRAND_COLOR);
         currColIdx = 0;
         projSearchQuery = "";
         document.querySelector('#dropdown-project input').value = "";
@@ -786,11 +859,20 @@ function selectCollection(idx) {
         document.querySelector('#dropdown-collection input').value = "";
         const container = document.getElementById('desc-layout-container');
         const project = rawProjects[currProjIdx];
+
         if (currColIdx === 0) {
+            // [新增] 切换回 "All Collections" 时，重置为默认品牌色
+            updateThemeColors(DEFAULT_BRAND_COLOR);
+
             container.classList.remove('mode-collection');
             animateTextSwap('label-collection', "All Collections");
         } else {
             const colData = project.collections[currColIdx - 1];
+
+            // [新增] 根据 Sphere 获取颜色并更新主题
+            const sphereColor = getSphereColor(colData.sphere);
+            updateThemeColors(sphereColor);
+
             const colContainer = document.getElementById('panel-col-desc');
             const colDoiShort = colData.doi.split('/')[1];
             const updateCollectionHTML = () => {
@@ -1474,10 +1556,10 @@ function renderCrudTable() {
 
                 if (currentTable === 'project' && col.key === 'project_id') {
                     const currentProjId = rawProjects[currProjIdx] ? rawProjects[currProjIdx].id : null;
-                    if (dataScope === 'all' && String(row.project_id) === String(currentProjId)) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
+                    if (dataScope === 'all' && String(row.project_id) === String(currentProjId)) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3);">Current</span> </div>`;
                 }
-                if (currentTable === 'collection' && col.key === 'collection_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
-                if (currentTable === 'user' && col.key === 'user_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(131,205,32,0.3);">Current</span> </div>`;
+                if (currentTable === 'collection' && col.key === 'collection_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3);">Current</span> </div>`;
+                if (currentTable === 'user' && col.key === 'user_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3);">Current</span> </div>`;
 
                 if (col.type === 'image' || col.type === 'file') val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img" onerror="this.style.display='none'">`;
                 if (col.type === 'boolean') val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;

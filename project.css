@@ -1,6 +1,7 @@
 :root {
     --brand: #83CD20;
-    --brand-tint: rgba(131, 205, 32, 0.08);
+    --brand-rgb: 131, 205, 32;
+    --brand-tint: rgba(var(--brand-rgb), 0.08);
     --brand-hover: #72b51b;
     --bg-page: radial-gradient(circle at top left, #ffffff, #f8fafc);
     --bg-nav: rgba(255, 255, 255, 0.85);
@@ -183,7 +184,7 @@ html {
 .nav-logo:hover {
     background: var(--brand);
     color: white;
-    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3);
 }
 
 .logo-icon-box {
@@ -195,7 +196,7 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 5px rgba(131, 205, 32, 0.4);
+    box-shadow: 0 2px 5px rgba(var(--brand-rgb), 0.4);
     transition: all 0.2s ease;
 }
 
@@ -233,7 +234,7 @@ html {
 .crumb-btn:hover {
     background: var(--brand);
     color: white;
-    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3);
 }
 
 .crumb-wrapper.active .crumb-btn {
@@ -414,7 +415,7 @@ html {
 .nav-btn-simple:hover {
     background: var(--brand);
     color: white;
-    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3);
 }
 
 .user-wrapper {
@@ -437,7 +438,7 @@ html {
 .user-capsule-btn:hover {
     background: var(--brand);
     color: white;
-    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3);
 }
 
 .user-avatar-icon {
@@ -1175,7 +1176,7 @@ html {
 
 .contrib-item:first-child .contrib-name::before {
     background: var(--brand);
-    box-shadow: 0 0 0 2px rgba(131, 205, 32, 0.2);
+    box-shadow: 0 0 0 2px rgba(var(--brand-rgb), 0.2);
 }
 
 .contrib-sub {
@@ -1407,7 +1408,7 @@ html {
 .media-item-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1);
-    border-color: rgba(131, 205, 32, 0.4);
+    border-color: rgba(var(--brand-rgb), 0.4);
 }
 
 .spectrogram-cover {
@@ -1488,7 +1489,7 @@ html {
     padding: 3px 10px;
     border-radius: 20px;
     letter-spacing: 0.2px;
-    box-shadow: 0 2px 5px rgba(131, 205, 32, 0.25);
+    box-shadow: 0 2px 5px rgba(var(--brand-rgb), 0.25);
 }
 
 .media-meta-row {
@@ -1539,7 +1540,7 @@ html {
     background: var(--bg-surface-hover);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-    border-color: rgba(131, 205, 32, 0.3);
+    border-color: rgba(var(--brand-rgb), 0.3);
 }
 
 .media-item-row .list-spec-container {
@@ -1856,7 +1857,7 @@ a.row-name:hover {
 }
 
 .select-option.selected {
-    background: rgba(131, 205, 32, 0.1);
+    background: rgba(var(--brand-rgb), 0.1);
     color: var(--brand);
     font-weight: 700;
 }
@@ -1995,7 +1996,7 @@ a.row-name:hover {
 .filter-trigger-btn:hover {
     transform: scale(1.05);
     color: var(--brand-hover);
-    box-shadow: 0 8px 20px rgba(131, 205, 32, 0.2);
+    box-shadow: 0 8px 20px rgba(var(--brand-rgb), 0.2);
 }
 
 .filter-trigger-btn.active {
@@ -2093,7 +2094,7 @@ a.row-name:hover {
     border-color: var(--brand);
     background: var(--brand);
     color: white;
-    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3);
 }
 
 .btn-toolbar.danger:hover:not(:disabled) {
@@ -2392,7 +2393,7 @@ a.row-name:hover {
 .dt-item.active {
     background: var(--brand);
     color: white;
-    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3);
 }
 
 .dt-count {
@@ -2614,9 +2615,19 @@ a.row-name:hover {
     box-sizing: border-box;
 }
 
-.form-input:focus {
+/* [修改] 排除禁用和只读状态 */
+.form-input:not(:disabled):not([readonly]):focus {
     border-color: var(--brand);
     background: var(--bg-surface);
+}
+
+/* [新增] 明确只读和禁用状态的样式，确保无边框变化 */
+.form-input:disabled,
+.form-input[readonly] {
+    border-color: var(--border-light);
+    background: var(--bg-capsule);
+    color: var(--text-muted);
+    box-shadow: none;
 }
 
 .modal-footer {
@@ -2652,11 +2663,11 @@ a.row-name:hover {
 
 .btn-primary:hover {
     background: var(--brand-hover);
-    box-shadow: 0 4px 12px rgba(131, 205, 32, 0.4); /* Green Shadow */
+    box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.4);
 }
 
 .btn-primary:active {
-    box-shadow: 0 2px 6px rgba(131, 205, 32, 0.4);
+    box-shadow: 0 2px 6px rgba(var(--brand-rgb), 0.4);
 }
 
 /* Danger Action (Red - for Delete) */
@@ -2703,9 +2714,9 @@ a.row-name:hover {
 
 .btn-secondary:hover {
     background: var(--bg-surface);
-    color: var(--text-main);
-    border-color: var(--text-secondary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    color: var(--brand); /* [修复] 悬停时使用品牌色文字 */
+    border-color: var(--brand); /* [修复] 悬停时使用品牌色边框 */
+    box-shadow: 0 2px 8px rgba(var(--brand-rgb), 0.15); /* [修复] 悬停时增加品牌色阴影 */
 }
 
 .btn-secondary:active {
@@ -2758,7 +2769,8 @@ a.row-name:hover {
     transition: 0.2s;
 }
 
-.th-filter-input:focus {
+/* [修改] 排除禁用和只读状态 */
+.th-filter-input:not(:disabled):not([readonly]):focus {
     border-color: var(--brand);
     box-shadow: 0 0 0 2px var(--brand-tint);
 }
