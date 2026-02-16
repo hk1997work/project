@@ -170,17 +170,18 @@ function openSidebar(site) {
     if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
     const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
     const mediaHtml = site.media.map((m) => {
-        const mockAnnotationsHtml = `<span class="media-annotation">Bio</span><span class="media-annotation">Aves</span>`;
+        const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}">Bio</span><span class="media-annotation" style="background:${color}">Aves</span>`;
         const mockTime = "14:30:00";
         const mockSize = "2.4 MB";
-        return `<div class="media-item-card" onclick="event.stopPropagation();">
+        // Added mouseover/mouseout for border color
+        return `<div class="media-item-card" onclick="event.stopPropagation();" onmouseover="this.style.borderColor='${color}66'" onmouseout="this.style.borderColor=''">
 <div class="spectrogram-cover"><img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec">
     <div class="play-overlay">
         <div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div>
     </div>
     <div class="duration-badge">${m.duration}</div>
 </div>
-<div class="media-card-info"><a href="#" class="media-name" title="${m.name}" onclick="return false;">${m.name}</a>
+<div class="media-card-info"><a href="#" class="media-name" title="${m.name}" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>
     <div class="annotations-row">${mockAnnotationsHtml}</div>
     <div class="media-meta-row">
         <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
@@ -436,22 +437,24 @@ function renderMedia() {
     const filteredItems = mediaItems.filter(item => item.name.toLowerCase().includes(mediaSearchQuery) || item.annotations.some(t => t.toLowerCase().includes(mediaSearchQuery)) || item.site.toLowerCase().includes(mediaSearchQuery) || item.sensor.toLowerCase().includes(mediaSearchQuery));
     badge.textContent = `${filteredItems.length} Items`;
     if (filteredItems.length === 0) {
-        container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No media matches your filter</span></div>`;
+        container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:10px;"><i data-lucide="filter" size="32" style="opacity:0.3"></i><span>No results found</span></div>`;
         lucide.createIcons();
         return;
     }
     let html = '';
     filteredItems.forEach(item => {
-        const annotationsHtml = item.annotations.map(t => `<span class="media-annotation">${t}</span>`).join('');
+        const itemRealmColor = getRealmColor(item.realm);
+        const annotationsHtml = item.annotations.map(t => `<span class="media-annotation" style="background:${itemRealmColor}">${t}</span>`).join('');
         if (isGallery) {
-            html += `<div class="media-item-card">
+            // Added mouseover/mouseout to the card div for border color (with '66' for opacity ~40%)
+            html += `<div class="media-item-card" onmouseover="this.style.borderColor='${itemRealmColor}66'" onmouseout="this.style.borderColor=''">
 <div class="spectrogram-cover"><img src="${item.spectrogram}" class="spectrogram-img" alt="Spec">
     <div class="play-overlay">
         <div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div>
     </div>
     <div class="duration-badge">${item.duration}</div>
 </div>
-<div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a>
+<div class="media-card-info"><a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>
     <div class="annotations-row">${annotationsHtml}</div>
     <div class="media-meta-row">
         <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
@@ -463,11 +466,12 @@ function renderMedia() {
         } else {
             const realmColor = getRealmColor(item.realm);
             const depthHtml = item.freshwater_depth_m !== 'N/A' && item.freshwater_depth_m !== null ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` : '';
-            html += `<div class="media-item-row">
+            // Added mouseover/mouseout to the row div for border color (with '4d' for opacity ~30%)
+            html += `<div class="media-item-row" onmouseover="this.style.borderColor='${realmColor}4d'" onmouseout="this.style.borderColor=''">
 <div class="list-spec-container"><img src="${item.spectrogram}" class="list-spec-img" alt="Spec">
     <div class="duration-badge">${item.duration}</div>
 </div>
-<div class="row-basic-info"><a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;">${item.name}</a>
+<div class="row-basic-info"><a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>
     <div class="annotations-row">${annotationsHtml}</div>
     <div class="row-meta-list">
         <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
@@ -478,7 +482,7 @@ function renderMedia() {
 <div class="row-details-col">
     <div class="rd-header-row">
         <div class="rd-site-group">
-            <div class="rd-site-name"><i data-lucide="map-pin" size="14" style="color:var(--brand);"></i>${item.site}</div>
+            <div class="rd-site-name"><i data-lucide="map-pin" size="14" style="color:${realmColor};"></i>${item.site}</div>
             <div class="rd-site-metrics"><span title="Topography"><i data-lucide="mountain" size="12"></i> ${item.topography_m}m</span> ${depthHtml}</div>
         </div>
         <div class="rd-hierarchy"><span style="color:${realmColor}">${item.realm}</span> <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span> <span>${item.biome}</span> <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span> <span>${item.group}</span></div>
@@ -1387,7 +1391,7 @@ function renderCrudTable() {
     let titleHtml = `<i data-lucide="${schema.icon}"></i> ${schema.label}`;
 
     if (['project', 'collection', 'user'].includes(currentTable)) {
-        const currentBtnAttr = isManager ? `onclick="switchDataScope('current', this)"` : `disabled style="font-size:0.75rem; padding:0 12px; opacity:0.5; cursor:not-allowed;"`;
+        const currentBtnAttr = isManager ? `onclick="switchDataScope('current', this)"` : `disabled style="font-size:0.75rem; padding:0 12px; opacity:0.5;"`;
         const currentBtnStyle = isManager ? `style="font-size:0.75rem; padding:0 12px;"` : ``;
         titleHtml += ` <div class="view-switcher-container" id="scope-pill-container" style="margin-left: 16px; height: 32px; display:inline-flex; vertical-align:middle;"> <div class="view-pill" id="scope-pill"></div> <button class="view-btn ${dataScope === 'current' ? 'active' : ''}" ${currentBtnAttr} ${currentBtnStyle}>Current</button> <button class="view-btn ${dataScope === 'all' ? 'active' : ''}" onclick="switchDataScope('all', this)" style="font-size:0.75rem; padding:0 12px;">All</button> </div>`;
     }
@@ -2302,11 +2306,9 @@ function handleAudioTypeChange(type) {
         if (isReadOnly) {
             el.style.opacity = '0.7';
             el.style.backgroundColor = 'var(--bg-capsule)';
-            el.style.cursor = 'not-allowed';
         } else {
             el.style.opacity = '1';
             el.style.backgroundColor = '';
-            el.style.cursor = 'text';
         }
     };
 
@@ -2416,7 +2418,7 @@ function openCrudModal(mode, id = null) {
 
         let attrStr = "";
         if (isReadOnly) {
-            const styleStr = "opacity:0.7; cursor:not-allowed; background:var(--bg-capsule);";
+            const styleStr = "opacity:0.7; background:var(--bg-capsule);";
             if (effectiveType === 'select' || effectiveType === 'boolean') {
                 attrStr = `disabled style="${styleStr}"`;
             } else {
@@ -2909,7 +2911,7 @@ function showUploadModalUI() {
         <div class="upload-right">
             <div class="form-group">
                 <label class="form-label">Date Time</label>
-                <input type="datetime-local" class="form-input" id="up-datetime" disabled style="opacity:0.6; cursor:not-allowed; background:var(--bg-capsule);">
+                <input type="datetime-local" class="form-input" id="up-datetime" disabled style="opacity:0.6; background:var(--bg-capsule);">
                 <div class="up-checkbox-row">
                     <input type="checkbox" class="crud-checkbox" id="chk-dt-filename" onchange="toggleDtInput(this.checked)" checked>
                     <label for="chk-dt-filename" class="up-checkbox-label">Date and time from filename</label>
@@ -3131,7 +3133,6 @@ function toggleDtInput(checked) {
     if (el) {
         el.disabled = checked;
         el.style.opacity = checked ? '0.6' : '1';
-        el.style.cursor = checked ? 'not-allowed' : 'text';
         el.style.background = checked ? 'var(--bg-capsule)' : '';
     }
 }

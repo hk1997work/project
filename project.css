@@ -1804,7 +1804,6 @@ a.row-name:hover {
 
 .select-trigger.disabled {
     opacity: 0.5;
-    cursor: not-allowed;
     background: var(--bg-capsule);
     color: var(--text-muted);
     border-color: transparent;
@@ -2106,7 +2105,6 @@ a.row-name:hover {
 
 .btn-toolbar:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
     background: var(--bg-capsule);
     color: var(--text-muted);
     border-color: transparent;
@@ -3455,4 +3453,9 @@ input[type=number] {
 .template-download-link:hover {
     text-decoration: underline;
     opacity: 0.8;
+}
+
+/* 地图侧边栏滚动条悬停颜色覆盖 */
+#media-container::-webkit-scrollbar-thumb:hover {
+    background: var(--site-color) !important;
 }
