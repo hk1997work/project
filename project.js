@@ -220,8 +220,7 @@ function renderMap(shouldZoom = false) {
         const marker = L.marker(site.center, {
             customData: {realm: site.realm, mediaCount: site.mediaCount},
             icon: L.divIcon({
-                // 修改：添加内联 box-shadow 和 hover 事件，确保阴影颜色跟随 siteColor
-                html: `<div class="site-marker-pin" 
+                html: `<div class="site-marker-pin"
                             style="border-color:${siteColor}; color:${siteColor}; box-shadow: 0 4px 10px ${siteColor}66; transition: all 0.2s ease;"
                             onmouseover="this.style.transform='scale(1.2)'; this.style.boxShadow='0 8px 20px ${siteColor}99';"
                             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px ${siteColor}66';"
@@ -230,7 +229,6 @@ function renderMap(shouldZoom = false) {
                 iconSize: [28, 28]
             })
         });
-        marker.on('click', () => openSidebar(site));
         marker.on('click', () => openSidebar(site));
         clusterGroup.addLayer(marker);
         visibleBounds.extend(site.center);
@@ -263,27 +261,27 @@ function openSidebar(site) {
         const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}">Bio</span><span class="media-annotation" style="background:${color}">Aves</span>`;
         const mockTime = "14:30:00";
 
-        // Metadata 数据逻辑
         const isMetadata = m.type === 'Metadata';
+        const borderStyle = isMetadata ? 'style="border:none"' : '';
+
+        // Metadata 数据处理
         const mockSize = "2.4 MB";
         const metaIcon = isMetadata ? 'timer' : 'hard-drive';
         const metaText = isMetadata ? "60/3600" : mockSize;
 
-        const borderStyle = isMetadata ? 'style="border:none"' : '';
-
-        // 修改：Metadata 背景色使用站点颜色 tint，图标使用站点颜色
+        // Metadata 样式处理
         const visualContent = isMetadata
             ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${color}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${color}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${color}; letter-spacing:1px;">METADATA</span></div>`
             : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${m.duration}</div>`;
 
-        // 修改：添加 text-decoration:none
+        // 名字样式处理
         const nameHtml = isMetadata
             ? `<span class="media-name" title="${m.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${m.name}</span>`
             : `<a href="#" class="media-name" title="${m.name}" style="text-decoration:none;" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>`;
 
-        // 修改：onmouseover 添加 boxShadow 设置，强制使用站点颜色阴影
-        return `<div class="media-item-card" onclick="event.stopPropagation();" 
-                     onmouseover="this.style.borderColor='${color}66'; this.style.boxShadow='0 15px 30px -5px ${color}33';" 
+        // 卡片容器：添加动态 box-shadow 覆盖
+        return `<div class="media-item-card" onclick="event.stopPropagation();"
+                     onmouseover="this.style.borderColor='${color}66'; this.style.boxShadow='0 15px 30px -5px ${color}33';"
                      onmouseout="this.style.borderColor=''; this.style.boxShadow='';">
 <div class="spectrogram-cover" ${borderStyle}>
     ${visualContent}
@@ -559,6 +557,11 @@ function renderMedia() {
         const isMetadata = item.audio_type === 'Metadata';
         const borderStyle = isMetadata ? 'style="border:none"' : '';
 
+        // Metadata 数据处理
+        const metaIcon = isMetadata ? 'timer' : 'hard-drive';
+        const metaText = isMetadata ? `${item.duty_cycle_recording}/${item.duty_cycle_period}` : item.size;
+
+        // Metadata 样式处理 (Media页面)
         const metadataHtml = `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${itemRealmColor}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${itemRealmColor}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${itemRealmColor}; letter-spacing:1px;">METADATA</span></div>`;
 
         const visualContent = isMetadata
@@ -579,11 +582,10 @@ function renderMedia() {
             ? `<span class="row-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
             : `<a href="#" class="row-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
 
-        const metaIcon = isMetadata ? 'timer' : 'hard-drive';
-        const metaText = isMetadata ? `${item.duty_cycle_recording}/${item.duty_cycle_period}` : item.size;
-
         if (isGallery) {
-            html += `<div class="media-item-card" onmouseover="this.style.borderColor='${itemRealmColor}66'" onmouseout="this.style.borderColor=''">
+            html += `<div class="media-item-card"
+                          onmouseover="this.style.borderColor='${itemRealmColor}66'; this.style.boxShadow='0 15px 30px -5px ${itemRealmColor}33';"
+                          onmouseout="this.style.borderColor=''; this.style.boxShadow='';">
 <div class="spectrogram-cover" ${borderStyle}>
     ${visualContent}
 </div>
@@ -600,7 +602,9 @@ function renderMedia() {
         } else {
             const realmColor = getRealmColor(item.realm);
             const depthHtml = item.freshwater_depth_m !== 'N/A' && item.freshwater_depth_m !== null ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` : '';
-            html += `<div class="media-item-row" onmouseover="this.style.borderColor='${realmColor}4d'" onmouseout="this.style.borderColor=''">
+            html += `<div class="media-item-row"
+                          onmouseover="this.style.borderColor='${realmColor}4d'; this.style.boxShadow='0 8px 20px -5px ${realmColor}33';"
+                          onmouseout="this.style.borderColor=''; this.style.boxShadow='';">
 <div class="list-spec-container" ${borderStyle}>
     ${listVisualContent}
 </div>
