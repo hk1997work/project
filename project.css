@@ -2259,6 +2259,11 @@ html {
     gap: 20px;
     align-content: start;
     padding-right: 12px;
+
+    /* [修复] 强制开启滚动条并限制高度 */
+    overflow-y: auto !important;
+    flex: 1; /* 确保占据 Flex 父容器的剩余空间 */
+    min-height: 0; /* 防止 Grid 撑开父容器导致无法滚动 */
 }
 
 /* [新增] 确保卡片在网格中填满高度 */

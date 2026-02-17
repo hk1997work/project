@@ -258,7 +258,7 @@ function openSidebar(site) {
     const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
 
     const mediaHtml = site.media.map((m) => {
-        // [修改] 添加 box-shadow 样式，使用 Hex 颜色 + 40 (约25%透明度)
+        // [修改] 修复 Bug: 阴影颜色现在跟随标签颜色 (color)，而不是默认 Collection 颜色
         const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">Bio</span><span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">Aves</span>`;
         const mockTime = "14:30:00";
 
@@ -270,7 +270,7 @@ function openSidebar(site) {
         const metaIcon = isMetadata ? 'timer' : 'hard-drive';
         const metaText = isMetadata ? "60/3600" : mockSize;
 
-        // Metadata 样式处理
+        // [修改] Metadata 和 音频 现在都显示 SR (左上) 和 Duration (右下)
         const visualContent = isMetadata
             ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${color}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${color}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${color}; letter-spacing:1px;">METADATA</span></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`
             : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`;
@@ -280,23 +280,23 @@ function openSidebar(site) {
             ? `<span class="media-name" title="${m.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${m.name}</span>`
             : `<a href="#" class="media-name" title="${m.name}" style="text-decoration:none;" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>`;
 
-        // 卡片容器：添加动态 box-shadow 覆盖
+        // 卡片容器
         return `<div class="media-item-card" onclick="event.stopPropagation();"
                      onmouseover="this.style.borderColor='${color}66'; this.style.boxShadow='0 15px 30px -5px ${color}33';"
                      onmouseout="this.style.borderColor=''; this.style.boxShadow='';">
-<div class="spectrogram-cover" ${borderStyle}>
-    ${visualContent}
-</div>
-<div class="media-card-info">
-    ${nameHtml}
-    <div class="annotations-row">${mockAnnotationsHtml}</div>
-    <div class="media-meta-row">
-        <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
-        <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${mockTime}</div>
-        <div class="meta-icon-text"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
-    </div>
-</div>
-</div>`;
+            <div class="spectrogram-cover" ${borderStyle}>
+                ${visualContent}
+            </div>
+            <div class="media-card-info">
+                ${nameHtml}
+                <div class="annotations-row">${mockAnnotationsHtml}</div>
+                <div class="media-meta-row">
+                    <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
+                    <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${mockTime}</div>
+                    <div class="meta-icon-text"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
+                </div>
+            </div>
+            </div>`;
     }).join('');
 
     const mediaListContainer = document.getElementById('media-container');
@@ -583,7 +583,7 @@ function renderMedia() {
 
     filteredItems.forEach(item => {
         const itemRealmColor = getRealmColor(item.realm);
-        // [修改] 添加 box-shadow 样式，使用 itemRealmColor + 40 (约25%透明度)
+        // [修改] 修复 Bug: 阴影颜色现在跟随 Tag 颜色 (itemRealmColor)
         const annotationsHtml = item.annotations.map(t => `<span class="media-annotation" style="background:${itemRealmColor}; box-shadow: 0 2px 5px ${itemRealmColor}40;">${t}</span>`).join('');
 
         const isMetadata = item.audio_type === 'Metadata';
@@ -593,11 +593,12 @@ function renderMedia() {
         const metaIcon = isMetadata ? 'timer' : 'hard-drive';
         const metaText = isMetadata ? `${item.duty_cycle_recording}/${item.duty_cycle_period}` : item.size;
 
-        // Metadata 样式处理 (Media页面)
+        // Metadata 样式处理
         const metadataHtml = `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${itemRealmColor}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${itemRealmColor}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${itemRealmColor}; letter-spacing:1px;">METADATA</span></div>`;
 
         const srText = item.sampling_rate_Hz ? (item.sampling_rate_Hz / 1000) + 'kHz' : '48kHz';
 
+        // [修改] Metadata 也会显示 SR 和 Duration
         const visualContent = isMetadata
             ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`
             : `<img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
@@ -606,12 +607,14 @@ function renderMedia() {
             ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`
             : `<img src="${item.spectrogram}" class="list-spec-img" alt="Spec"><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
 
-        // Gallery View 名字处理：添加 text-decoration:none
+        // ... (后续 Gallery/List 视图生成代码保持不变，确保使用了上面定义的 visualContent 和 listVisualContent)
+
+        // Gallery View 名字处理
         const nameHtmlGallery = isMetadata
             ? `<span class="media-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
             : `<a href="#" class="media-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
 
-        // List View 名字处理：添加 text-decoration:none
+        // List View 名字处理
         const nameHtmlList = isMetadata
             ? `<span class="row-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
             : `<a href="#" class="row-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
@@ -620,56 +623,56 @@ function renderMedia() {
             html += `<div class="media-item-card"
                           onmouseover="this.style.borderColor='${itemRealmColor}66'; this.style.boxShadow='0 15px 30px -5px ${itemRealmColor}33';"
                           onmouseout="this.style.borderColor=''; this.style.boxShadow='';">
-<div class="spectrogram-cover" ${borderStyle}>
-    ${visualContent}
-</div>
-<div class="media-card-info">
-    ${nameHtmlGallery}
-    <div class="annotations-row">${annotationsHtml}</div>
-    <div class="media-meta-row">
-        <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
-        <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div>
-        <div class="meta-icon-text"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
-    </div>
-</div>
-</div>`;
+            <div class="spectrogram-cover" ${borderStyle}>
+                ${visualContent}
+            </div>
+            <div class="media-card-info">
+                ${nameHtmlGallery}
+                <div class="annotations-row">${annotationsHtml}</div>
+                <div class="media-meta-row">
+                    <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
+                    <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div>
+                    <div class="meta-icon-text"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
+                </div>
+            </div>
+            </div>`;
         } else {
             const realmColor = getRealmColor(item.realm);
             const depthHtml = item.freshwater_depth_m !== 'N/A' && item.freshwater_depth_m !== null ? `<span title="Water Depth"><i data-lucide="waves" size="12"></i> ${item.freshwater_depth_m}m</span>` : '';
             html += `<div class="media-item-row"
                           onmouseover="this.style.borderColor='${realmColor}4d'; this.style.boxShadow='0 8px 20px -5px ${realmColor}33';"
                           onmouseout="this.style.borderColor=''; this.style.boxShadow='';">
-<div class="list-spec-container" ${borderStyle}>
-    ${listVisualContent}
-</div>
-<div class="row-basic-info">
-    ${nameHtmlList}
-    <div class="annotations-row">${annotationsHtml}</div>
-    <div class="row-meta-list">
-        <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
-        <div class="row-meta-item"><i data-lucide="clock" size="14"></i> ${item.time}</div>
-        <div class="row-meta-item"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
-    </div>
-</div>
-<div class="row-details-col">
-    <div class="rd-header-row">
-        <div class="rd-site-group">
-            <div class="rd-site-name"><i data-lucide="map-pin" size="14" style="color:${realmColor};"></i>${item.site}</div>
-            <div class="rd-site-metrics"><span title="Topography"><i data-lucide="mountain" size="12"></i> ${item.topography_m}m</span> ${depthHtml}</div>
-        </div>
-        <div class="rd-hierarchy"><span style="color:${realmColor}">${item.realm}</span> <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span> <span>${item.biome}</span> <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span> <span>${item.group}</span></div>
-    </div>
-    <div class="rd-grid">
-        <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
-        <div class="rd-item"><span class="rd-label">Sensor</span><span class="rd-val" title="${item.sensor}">${item.sensor}</span></div>
-        <div class="rd-item"><span class="rd-label">License</span><span class="rd-val" title="${item.license}">${item.license}</span></div>
-        <div class="rd-item span-v"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
-        <div class="rd-item"><span class="rd-label">Uploader</span><span class="rd-val" title="${item.uploader}">${item.uploader}</span></div>
-        <div class="rd-item"><span class="rd-label">Creator</span><span class="rd-val" title="${item.creator}">${item.creator}</span></div>
-        <div class="rd-item"><span class="rd-label">DOI</span><span class="rd-val" title="${item.doi}">${item.doi}</span></div>
-    </div>
-</div>
-</div>`;
+            <div class="list-spec-container" ${borderStyle}>
+                ${listVisualContent}
+            </div>
+            <div class="row-basic-info">
+                ${nameHtmlList}
+                <div class="annotations-row">${annotationsHtml}</div>
+                <div class="row-meta-list">
+                    <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
+                    <div class="row-meta-item"><i data-lucide="clock" size="14"></i> ${item.time}</div>
+                    <div class="row-meta-item"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
+                </div>
+            </div>
+            <div class="row-details-col">
+                <div class="rd-header-row">
+                    <div class="rd-site-group">
+                        <div class="rd-site-name"><i data-lucide="map-pin" size="14" style="color:${realmColor};"></i>${item.site}</div>
+                        <div class="rd-site-metrics"><span title="Topography"><i data-lucide="mountain" size="12"></i> ${item.topography_m}m</span> ${depthHtml}</div>
+                    </div>
+                    <div class="rd-hierarchy"><span style="color:${realmColor}">${item.realm}</span> <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span> <span>${item.biome}</span> <span class="rd-bread-sep"><i data-lucide="chevron-right" size="12"></i></span> <span>${item.group}</span></div>
+                </div>
+                <div class="rd-grid">
+                    <div class="rd-item"><span class="rd-label">Medium</span><span class="rd-val">${item.medium}</span></div>
+                    <div class="rd-item"><span class="rd-label">Sensor</span><span class="rd-val" title="${item.sensor}">${item.sensor}</span></div>
+                    <div class="rd-item"><span class="rd-label">License</span><span class="rd-val" title="${item.license}">${item.license}</span></div>
+                    <div class="rd-item span-v"><span class="rd-label">Note</span><span class="rd-val" title="${item.note}">${item.note}</span></div>
+                    <div class="rd-item"><span class="rd-label">Uploader</span><span class="rd-val" title="${item.uploader}">${item.uploader}</span></div>
+                    <div class="rd-item"><span class="rd-label">Creator</span><span class="rd-val" title="${item.creator}">${item.creator}</span></div>
+                    <div class="rd-item"><span class="rd-label">DOI</span><span class="rd-val" title="${item.doi}">${item.doi}</span></div>
+                </div>
+            </div>
+            </div>`;
         }
     });
     container.innerHTML = html;
