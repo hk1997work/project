@@ -2224,7 +2224,7 @@ html {
     backdrop-filter: blur(4px);
 }
 
-/* [新增] 展开按钮样式 */
+
 .sb-expand {
     background: rgba(255, 255, 255, 0.2);
     border: none;
@@ -2246,13 +2246,13 @@ html {
     color: var(--site-color);
 }
 
-/* [新增] 侧边栏展开状态 - 宽度调整为 1200px */
+
 .sidebar.expanded {
     width: 1200px;
-    max-width: 95vw; /* 允许占据更多屏幕宽度 */
+    max-width: 95vw;
 }
 
-/* [新增] 展开状态下的媒体列表布局 (3列网格) */
+
 .sidebar.expanded .media-scroll-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -2260,13 +2260,13 @@ html {
     align-content: start;
     padding-right: 12px;
 
-    /* [修复] 强制开启滚动条并限制高度 */
+
     overflow-y: auto !important;
-    flex: 1; /* 确保占据 Flex 父容器的剩余空间 */
-    min-height: 0; /* 防止 Grid 撑开父容器导致无法滚动 */
+    flex: 1;
+    min-height: 0;
 }
 
-/* [新增] 确保卡片在网格中填满高度 */
+
 .sidebar.expanded .media-item-card {
     height: 100%;
     width: auto;
@@ -2282,7 +2282,7 @@ html {
     flex: 1;
     overflow: hidden;
     background: var(--bg-surface);
-    padding: 24px 0 0 24px; /* 右侧 padding 改为 0 */
+    padding: 24px 0 0 24px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -2295,7 +2295,7 @@ html {
     align-items: baseline;
     border-bottom: 1px dashed var(--border-light);
     flex-shrink: 0;
-    margin-right: 24px; /* 补偿父容器移除的 padding */
+    margin-right: 24px;
 }
 
 .data-label {
@@ -2320,13 +2320,13 @@ html {
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
-    margin-right: 24px; /* 补偿父容器移除的 padding */
+    margin-right: 24px;
 }
 
 .media-scroll-container {
     flex: 1;
-    min-height: 0; /* 关键：允许容器在父Flex中正确计算高度 */
-    overflow-y: auto; /* 确保开启垂直滚动 */
+    min-height: 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -2336,8 +2336,8 @@ html {
 }
 
 .media-scroll-container .media-item-card {
-    flex-shrink: 0 !important; /* 关键：强制卡片保持原有高度，不被压缩 */
-    height: auto; /* 确保高度由内容决定 */
+    flex-shrink: 0 !important;
+    height: auto;
 }
 
 .sidebar .media-item-card .media-name {
@@ -2681,13 +2681,13 @@ html {
     box-sizing: border-box;
 }
 
-/* [修改] 排除禁用和只读状态 */
+
 .form-input:not(:disabled):not([readonly]):focus {
     border-color: var(--brand);
     background: var(--bg-surface);
 }
 
-/* [新增] 明确只读和禁用状态的样式，确保无边框变化 */
+
 .form-input:disabled,
 .form-input[readonly] {
     border-color: var(--border-light);
@@ -2706,11 +2706,7 @@ html {
     flex-shrink: 0;
 }
 
-/* =========================================
-   Universal Button Styles (Updated)
-   ========================================= */
 
-/* Primary Action (Green) */
 .btn-primary {
     background: var(--brand);
     color: white;
@@ -2736,7 +2732,7 @@ html {
     box-shadow: 0 2px 6px rgba(var(--brand-rgb), 0.4);
 }
 
-/* Danger Action (Red - for Delete) */
+
 .btn-danger {
     background: #ef4444;
     color: white;
@@ -2754,15 +2750,15 @@ html {
 }
 
 .btn-danger:hover {
-    background: #dc2626; /* Darker Red */
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); /* Red Shadow */
+    background: #dc2626;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 .btn-danger:active {
     box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
 }
 
-/* Secondary Action (Outline/Cancel) */
+
 .btn-secondary {
     background: transparent;
     color: var(--text-secondary);
@@ -2780,9 +2776,9 @@ html {
 
 .btn-secondary:hover {
     background: var(--bg-surface);
-    color: var(--brand); /* [修复] 悬停时使用品牌色文字 */
-    border-color: var(--brand); /* [修复] 悬停时使用品牌色边框 */
-    box-shadow: 0 2px 8px rgba(var(--brand-rgb), 0.15); /* [修复] 悬停时增加品牌色阴影 */
+    color: var(--brand);
+    border-color: var(--brand);
+    box-shadow: 0 2px 8px rgba(var(--brand-rgb), 0.15);
 }
 
 .btn-secondary:active {
@@ -2835,7 +2831,7 @@ html {
     transition: 0.2s;
 }
 
-/* [修改] 排除禁用和只读状态 */
+
 .th-filter-input:not(:disabled):not([readonly]):focus {
     border-color: var(--brand);
     box-shadow: 0 0 0 2px var(--brand-tint);
@@ -2850,7 +2846,7 @@ select.th-filter-input {
     padding-right: 24px;
 }
 
-/* Administrator Switch Styling */
+
 .perm-admin-switch {
     display: flex;
     align-items: center;
@@ -2949,29 +2945,28 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     pointer-events: auto;
 }
 
-/* 在 project.css 中找到并修改 */
 
 .perm-proj-group {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 8px;
 
-    /* [修改] 将 hidden 改为 visible，允许 Tooltip 显示在盒子外面 */
+
     overflow: visible;
 
     transition: box-shadow 0.2s;
-    /* [新增] 确保层级正确，防止被其他元素遮挡 */
+
     position: relative;
     z-index: 1;
 }
 
-/* [新增] 由于去掉了 overflow: hidden，需要手动给第一行加顶部圆角 */
+
 .perm-proj-group .perm-row:first-child {
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
 }
 
-/* [新增] 手动给最后一行加底部圆角 */
+
 .perm-proj-group .perm-row:last-child {
     border-bottom-left-radius: 7px;
     border-bottom-right-radius: 7px;
@@ -2984,7 +2979,7 @@ input:checked + .perm-switch-track .perm-switch-thumb {
 
 .perm-row {
     display: grid;
-    /* [修改] 将 240px 增加到 320px，防止深层缩进后文字显示空间不足 */
+
     grid-template-columns: 320px 1fr;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
@@ -3026,7 +3021,7 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* [新增] 必须设置为 block 或 inline-block 才能让 overflow 生效 */
+
     display: block;
 }
 
@@ -3071,7 +3066,7 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     background: var(--brand-hover);
 }
 
-/* Bulk Actions Group */
+
 .perm-bulk-group {
     display: flex;
     align-items: center;
@@ -3197,7 +3192,7 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    /* [修改] 调整宽度适应文字 */
+
     min-width: 140px;
     opacity: 0;
     visibility: hidden;
@@ -3219,7 +3214,7 @@ input:checked + .perm-switch-track .perm-switch-thumb {
 }
 
 .ext-link-item {
-    display: block; /* [修改] 纯文字块状显示 */
+    display: block;
     padding: 10px 14px;
     border-radius: 8px;
     text-decoration: none;
@@ -3228,7 +3223,7 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     font-weight: 600;
     transition: all 0.2s;
     white-space: nowrap;
-    text-align: left; /* [修改] 文字左对齐 */
+    text-align: left;
 }
 
 .ext-link-item:hover {
@@ -3236,13 +3231,9 @@ input:checked + .perm-switch-track .perm-switch-thumb {
     color: var(--brand);
 }
 
-/* =========================================
-   Upload & Toolbar Dropdowns (Fixed)
-   ========================================= */
 
-/* Toolbar Add Dropdown (New) */
 .toolbar-dropdown {
-    position: fixed; /* JS dynamically positions this */
+    position: fixed;
     z-index: 5010;
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
@@ -3533,12 +3524,12 @@ input[type=number] {
     opacity: 0.8;
 }
 
-/* 地图侧边栏滚动条悬停颜色覆盖 */
+
 #media-container::-webkit-scrollbar-thumb:hover {
     background: var(--site-color) !important;
 }
 
-/* [新增] 展开按钮样式 */
+
 .sb-expand {
     background: rgba(255, 255, 255, 0.2);
     border: none;

@@ -11,21 +11,21 @@ let polyLayer = null;
 let currentSites = [];
 let currentSelectedSiteId = null;
 let filterState = {realm: "", biome: "", group: ""};
-// 默认品牌色
+
 
 const SPHERE_COLORS = {
-    "Hydrosphere": "#0ea5e9", // 水圈 - 蓝色
-    "Cryosphere": "#06b6d4",  // 冰冻圈 - 青色
-    "Lithosphere": "#57534e", // 岩石圈 - 深灰
-    "Pedosphere": "#b45309",  // 土壤圈 - 褐色
-    "Atmosphere": "#64748b",  // 大气圈 - 蓝灰
-    "Biosphere": "#65a30d",   // 生物圈 - 绿色
-    "Anthroposphere": "#db2777" // 人类圈 - 紫红
+    "Hydrosphere": "#0ea5e9",
+    "Cryosphere": "#06b6d4",
+    "Lithosphere": "#57534e",
+    "Pedosphere": "#b45309",
+    "Atmosphere": "#64748b",
+    "Biosphere": "#65a30d",
+    "Anthroposphere": "#db2777"
 };
 const getSphereColor = (s) => SPHERE_COLORS[s] || SPHERE_COLORS["Biosphere"];
 const DEFAULT_BRAND_COLOR = "#83CD20";
 
-// 颜色转换辅助函数
+
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -35,8 +35,7 @@ function hexToRgb(hex) {
     } : null;
 }
 
-// 调整颜色亮度 (用于生成 Hover 颜色)
-// 调整颜色亮度 (修复版 - 确保始终生成有效的6位Hex颜色)
+
 function adjustBrightness(hex, percent) {
     hex = hex.replace(/^\s*#|\s*$/g, '');
     if (hex.length === 3) hex = hex.replace(/(.)/g, '$1$1');
@@ -45,19 +44,19 @@ function adjustBrightness(hex, percent) {
     let g = parseInt(hex.substr(2, 2), 16);
     let b = parseInt(hex.substr(4, 2), 16);
 
-    // 计算变亮/变暗量 (基于255的百分比)
+
     const amount = Math.floor(2.55 * percent);
 
     r += amount;
     g += amount;
     b += amount;
 
-    // 限制在 0-255 之间
+
     r = Math.max(0, Math.min(255, r));
     g = Math.max(0, Math.min(255, g));
     b = Math.max(0, Math.min(255, b));
 
-    // 补齐前导零并组合
+
     const rr = (r.toString(16).length < 2 ? '0' : '') + r.toString(16);
     const gg = (g.toString(16).length < 2 ? '0' : '') + g.toString(16);
     const bb = (b.toString(16).length < 2 ? '0' : '') + b.toString(16);
@@ -65,19 +64,19 @@ function adjustBrightness(hex, percent) {
     return `#${rr}${gg}${bb}`;
 }
 
-// 更新全局主题色
+
 function updateThemeColors(hexColor) {
     if (!hexColor) return;
     const rgb = hexToRgb(hexColor);
     if (!rgb) return;
 
-    // 设置主色
+
     document.documentElement.style.setProperty('--brand', hexColor);
-    // [新增] 设置 RGB 变量，供 CSS rgba() 使用
+
     document.documentElement.style.setProperty('--brand-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
-    // 设置浅色背景 Tint (例如 rgba(r,g,b, 0.08))
+
     document.documentElement.style.setProperty('--brand-tint', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.08)`);
-    // 设置 Hover 颜色 (稍微加深 10%)
+
     const hoverColor = adjustBrightness(hexColor, -10);
     document.documentElement.style.setProperty('--brand-hover', hoverColor);
 }
@@ -130,7 +129,7 @@ function generateSitesForContext(projId, colId) {
             polygon: poly,
             realm: r,
             biome: b,
-            functional_type: g, // Mapped from old group logic
+            functional_type: g,
             topography_m: Math.floor(Math.random() * 800),
             freshwater_depth_m: r === 'Freshwater' ? parseFloat((Math.random() * 15).toFixed(1)) : null,
             creator_id: creator,
@@ -206,7 +205,7 @@ function renderMap(shouldZoom = false) {
     currentSites.forEach(site => {
         if (filterState.realm && site.realm !== filterState.realm) return;
         if (filterState.biome && site.biome !== filterState.biome) return;
-        // Map 'group' filter state to 'functional_type' property
+
         if (filterState.group && site.functional_type !== filterState.group) return;
 
         if (currentSelectedSiteId && site.id === currentSelectedSiteId) isCurrentSiteVisible = true;
@@ -246,41 +245,41 @@ function openSidebar(site) {
     document.getElementById('val-realm').textContent = site.realm;
     document.getElementById('val-realm').style.color = color;
     document.getElementById('val-biome').textContent = site.biome;
-    // Map to Functional Type
+
     const grpVal = document.getElementById('val-group');
     if (grpVal) grpVal.textContent = site.functional_type;
 
     const topoHtml = `<div class="sb-meta-item" title="Topography"><i data-lucide="mountain" size="14"></i> ${site.topography_m}m</div>`;
-    // Ensure null check works
+
     const depthHtml = site.freshwater_depth_m !== null ? `<div class="sb-meta-divider"></div><div class="sb-meta-item" title="Water Depth"><i data-lucide="waves" size="14"></i> ${site.freshwater_depth_m}m</div>` : '';
     const metaContainer = document.getElementById('sb-meta-container');
     if (metaContainer) metaContainer.innerHTML = topoHtml + depthHtml;
     const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
 
     const mediaHtml = site.media.map((m) => {
-        // [修改] 修复 Bug: 阴影颜色现在跟随标签颜色 (color)，而不是默认 Collection 颜色
+
         const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">Bio</span><span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">Aves</span>`;
         const mockTime = "14:30:00";
 
         const isMetadata = m.type === 'Metadata';
         const borderStyle = isMetadata ? 'style="border:none"' : '';
 
-        // Metadata 数据处理
+
         const mockSize = "2.4 MB";
         const metaIcon = isMetadata ? 'timer' : 'hard-drive';
         const metaText = isMetadata ? "60/3600" : mockSize;
 
-        // [修改] Metadata 和 音频 现在都显示 SR (左上) 和 Duration (右下)
+
         const visualContent = isMetadata
             ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${color}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${color}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${color}; letter-spacing:1px;">METADATA</span></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`
             : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`;
 
-        // 名字样式处理
+
         const nameHtml = isMetadata
             ? `<span class="media-name" title="${m.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${m.name}</span>`
             : `<a href="#" class="media-name" title="${m.name}" style="text-decoration:none;" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>`;
 
-        // 卡片容器
+
         return `<div class="media-item-card" onclick="event.stopPropagation();"
                      onmouseover="this.style.borderColor='${color}66'; this.style.boxShadow='0 15px 30px -5px ${color}33';"
                      onmouseout="this.style.borderColor=''; this.style.boxShadow='';">
@@ -307,7 +306,7 @@ function openSidebar(site) {
     map.flyTo(site.center, 14, {duration: 0.8, easeLinearity: 0.5});
 }
 
-// [新增] 切换侧边栏展开状态
+
 function toggleSidebarExpand() {
     const sb = document.getElementById('sidebar');
     sb.classList.toggle('expanded');
@@ -315,7 +314,7 @@ function toggleSidebarExpand() {
     const btn = sb.querySelector('.sb-expand');
     const isExpanded = sb.classList.contains('expanded');
 
-    // 切换图标
+
     if (btn) {
         btn.innerHTML = isExpanded
             ? '<i data-lucide="minimize-2" size="18"></i>'
@@ -324,16 +323,16 @@ function toggleSidebarExpand() {
     }
 }
 
-// [修改] 关闭侧边栏时重置状态
+
 function closeSidebar() {
     currentSelectedSiteId = null;
     const sb = document.getElementById('sidebar');
     sb.classList.remove('active');
 
-    // 关闭时重置为默认宽度
+
     if (sb.classList.contains('expanded')) {
         sb.classList.remove('expanded');
-        // 重置图标为最大化
+
         const btn = sb.querySelector('.sb-expand');
         if (btn) {
             btn.innerHTML = '<i data-lucide="maximize-2" size="18"></i>';
@@ -375,7 +374,7 @@ function getUniqueValues(data, key) {
 function initFilters() {
     renderSelectOptions('realm');
     updateSelectOptions('biome');
-    updateSelectOptions('group'); // Keeps using 'group' ID for UI compatibility
+    updateSelectOptions('group');
 }
 
 function renderSelectOptions(targetType) {
@@ -446,7 +445,7 @@ function updateSelectOptions(targetType) {
     }
     trigger.classList.remove('disabled');
 
-    // Map targetType 'group' to data property 'functional_type'
+
     const dataKey = targetType === 'group' ? 'functional_type' : targetType;
     const options = getUniqueValues(filteredData, dataKey);
 
@@ -583,22 +582,22 @@ function renderMedia() {
 
     filteredItems.forEach(item => {
         const itemRealmColor = getRealmColor(item.realm);
-        // [修改] 修复 Bug: 阴影颜色现在跟随 Tag 颜色 (itemRealmColor)
+
         const annotationsHtml = item.annotations.map(t => `<span class="media-annotation" style="background:${itemRealmColor}; box-shadow: 0 2px 5px ${itemRealmColor}40;">${t}</span>`).join('');
 
         const isMetadata = item.audio_type === 'Metadata';
         const borderStyle = isMetadata ? 'style="border:none"' : '';
 
-        // Metadata 数据处理
+
         const metaIcon = isMetadata ? 'timer' : 'hard-drive';
         const metaText = isMetadata ? `${item.duty_cycle_recording}/${item.duty_cycle_period}` : item.size;
 
-        // Metadata 样式处理
+
         const metadataHtml = `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${itemRealmColor}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${itemRealmColor}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${itemRealmColor}; letter-spacing:1px;">METADATA</span></div>`;
 
         const srText = item.sampling_rate_Hz ? (item.sampling_rate_Hz / 1000) + 'kHz' : '48kHz';
 
-        // [修改] Metadata 也会显示 SR 和 Duration
+
         const visualContent = isMetadata
             ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`
             : `<img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
@@ -607,14 +606,12 @@ function renderMedia() {
             ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`
             : `<img src="${item.spectrogram}" class="list-spec-img" alt="Spec"><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
 
-        // ... (后续 Gallery/List 视图生成代码保持不变，确保使用了上面定义的 visualContent 和 listVisualContent)
 
-        // Gallery View 名字处理
         const nameHtmlGallery = isMetadata
             ? `<span class="media-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
             : `<a href="#" class="media-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
 
-        // List View 名字处理
+
         const nameHtmlList = isMetadata
             ? `<span class="row-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
             : `<a href="#" class="row-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
@@ -711,7 +708,7 @@ function enrichMediaData() {
                 item.site = linkedSite.name;
                 item.realm = linkedSite.realm;
                 item.biome = linkedSite.biome;
-                item.group = linkedSite.functional_type; // Mapped
+                item.group = linkedSite.functional_type;
                 item.topography_m = linkedSite.topography_m;
                 item.freshwater_depth_m = linkedSite.freshwater_depth_m !== null ? linkedSite.freshwater_depth_m : 'N/A';
             }
@@ -772,7 +769,7 @@ function renderSummary() {
         contributorsArr.forEach((p, index) => {
             const isCreator = index === 0;
             let displayRole = p.role;
-            // 强制将第一位显示为 Project Creator 或 Collection Creator，覆盖默认的 Principal Investigator
+
             if (isCreator) {
                 displayRole = `${type} Creator`;
             }
@@ -917,7 +914,7 @@ function selectProject(idx) {
     if (currProjIdx !== idx) {
         currProjIdx = idx;
 
-        // [新增] 切换项目时，重置为默认品牌色
+
         updateThemeColors(DEFAULT_BRAND_COLOR);
         currColIdx = 0;
         projSearchQuery = "";
@@ -971,7 +968,7 @@ function selectCollection(idx) {
         const project = rawProjects[currProjIdx];
 
         if (currColIdx === 0) {
-            // [新增] 切换回 "All Collections" 时，重置为默认品牌色
+
             updateThemeColors(DEFAULT_BRAND_COLOR);
 
             container.classList.remove('mode-collection');
@@ -979,7 +976,7 @@ function selectCollection(idx) {
         } else {
             const colData = project.collections[currColIdx - 1];
 
-            // [新增] 根据 Sphere 获取颜色并更新主题
+
             const sphereColor = getSphereColor(colData.sphere);
             updateThemeColors(sphereColor);
 
@@ -1854,7 +1851,7 @@ function openLinkModal() {
 
         if (submitBtn) {
             submitBtn.textContent = "Save";
-            submitBtn.className = "btn-primary"; // Reset Style
+            submitBtn.className = "btn-primary";
             submitBtn.style.backgroundColor = "";
             submitBtn.onclick = saveLinkData;
             submitBtn.disabled = false;
@@ -1926,7 +1923,7 @@ function handleToolbarResetPassword() {
     container.innerHTML = ` <div class="form-group"> <label class="form-label">Current Admin Password</label> <input type="password" class="form-input" id="reset-admin-pwd"> </div> <div class="form-group"> <label class="form-label">New Password</label> <input type="password" class="form-input" id="reset-new-pwd"> </div> <div class="form-group"> <label class="form-label">Confirm Password</label> <input type="password" class="form-input" id="reset-confirm-pwd"> </div> `;
     if (submitBtn) {
         submitBtn.textContent = "Submit";
-        submitBtn.className = "btn-primary"; // Reset Style
+        submitBtn.className = "btn-primary";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveResetPassword;
     }
@@ -2458,7 +2455,7 @@ function openDeleteModal() {
     lucide.createIcons();
     if (submitBtn) {
         submitBtn.textContent = "Delete";
-        submitBtn.className = "btn-danger"; // Danger Style
+        submitBtn.className = "btn-danger";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = confirmDeleteData;
     }
@@ -2548,7 +2545,7 @@ function openCrudModal(mode, id = null) {
 
     if (submitBtn) {
         submitBtn.textContent = "Save";
-        submitBtn.className = "btn-primary"; // Reset Style
+        submitBtn.className = "btn-primary";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveCrudData;
     }
@@ -2948,9 +2945,6 @@ function saveSetContributor() {
     }
 }
 
-// ---------------------------
-// UPLOAD LOGIC
-// ---------------------------
 
 function toggleToolbarUploadDropdown(e) {
     e.stopPropagation();
