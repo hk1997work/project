@@ -218,8 +218,19 @@ function renderMap(shouldZoom = false) {
             openSidebar(site);
         });
         const marker = L.marker(site.center, {
-            customData: {realm: site.realm, mediaCount: site.mediaCount}, icon: L.divIcon({html: `<div class="site-marker-pin" style="border-color:${siteColor}; color:${siteColor}">${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28]})
+            customData: {realm: site.realm, mediaCount: site.mediaCount},
+            icon: L.divIcon({
+                // 修改：添加内联 box-shadow 和 hover 事件，确保阴影颜色跟随 siteColor
+                html: `<div class="site-marker-pin" 
+                            style="border-color:${siteColor}; color:${siteColor}; box-shadow: 0 4px 10px ${siteColor}66; transition: all 0.2s ease;"
+                            onmouseover="this.style.transform='scale(1.2)'; this.style.boxShadow='0 8px 20px ${siteColor}99';"
+                            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px ${siteColor}66';"
+                       >${site.mediaCount}</div>`,
+                className: 'custom-cluster-icon',
+                iconSize: [28, 28]
+            })
         });
+        marker.on('click', () => openSidebar(site));
         marker.on('click', () => openSidebar(site));
         clusterGroup.addLayer(marker);
         visibleBounds.extend(site.center);
@@ -251,21 +262,29 @@ function openSidebar(site) {
     const mediaHtml = site.media.map((m) => {
         const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}">Bio</span><span class="media-annotation" style="background:${color}">Aves</span>`;
         const mockTime = "14:30:00";
-        const mockSize = "2.4 MB";
 
+        // Metadata 数据逻辑
         const isMetadata = m.type === 'Metadata';
+        const mockSize = "2.4 MB";
+        const metaIcon = isMetadata ? 'timer' : 'hard-drive';
+        const metaText = isMetadata ? "60/3600" : mockSize;
+
         const borderStyle = isMetadata ? 'style="border:none"' : '';
 
+        // 修改：Metadata 背景色使用站点颜色 tint，图标使用站点颜色
         const visualContent = isMetadata
-            ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg-capsule);"><i data-lucide="file-spreadsheet" size="32" style="opacity:0.4; color:var(--text-secondary); margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:var(--text-secondary); opacity:0.8; letter-spacing:1px;">METADATA</span></div>`
+            ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${color}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${color}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${color}; letter-spacing:1px;">METADATA</span></div>`
             : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${m.duration}</div>`;
 
-        // 修改：添加 text-decoration:none 确保无下划线
+        // 修改：添加 text-decoration:none
         const nameHtml = isMetadata
             ? `<span class="media-name" title="${m.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${m.name}</span>`
-            : `<a href="#" class="media-name" title="${m.name}" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>`;
+            : `<a href="#" class="media-name" title="${m.name}" style="text-decoration:none;" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>`;
 
-        return `<div class="media-item-card" onclick="event.stopPropagation();" onmouseover="this.style.borderColor='${color}66'" onmouseout="this.style.borderColor=''">
+        // 修改：onmouseover 添加 boxShadow 设置，强制使用站点颜色阴影
+        return `<div class="media-item-card" onclick="event.stopPropagation();" 
+                     onmouseover="this.style.borderColor='${color}66'; this.style.boxShadow='0 15px 30px -5px ${color}33';" 
+                     onmouseout="this.style.borderColor=''; this.style.boxShadow='';">
 <div class="spectrogram-cover" ${borderStyle}>
     ${visualContent}
 </div>
@@ -275,7 +294,7 @@ function openSidebar(site) {
     <div class="media-meta-row">
         <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${m.date}</div>
         <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${mockTime}</div>
-        <div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${mockSize}</div>
+        <div class="meta-icon-text"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
     </div>
 </div>
 </div>`;
@@ -540,7 +559,7 @@ function renderMedia() {
         const isMetadata = item.audio_type === 'Metadata';
         const borderStyle = isMetadata ? 'style="border:none"' : '';
 
-        const metadataHtml = `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg-capsule);"><i data-lucide="file-spreadsheet" size="32" style="opacity:0.4; color:var(--text-secondary); margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:var(--text-secondary); opacity:0.8; letter-spacing:1px;">METADATA</span></div>`;
+        const metadataHtml = `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${itemRealmColor}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${itemRealmColor}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${itemRealmColor}; letter-spacing:1px;">METADATA</span></div>`;
 
         const visualContent = isMetadata
             ? metadataHtml
@@ -553,12 +572,15 @@ function renderMedia() {
         // Gallery View 名字处理：添加 text-decoration:none
         const nameHtmlGallery = isMetadata
             ? `<span class="media-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
-            : `<a href="#" class="media-name" title="${item.name}" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
+            : `<a href="#" class="media-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
 
         // List View 名字处理：添加 text-decoration:none
         const nameHtmlList = isMetadata
             ? `<span class="row-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
-            : `<a href="#" class="row-name" title="${item.name}" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
+            : `<a href="#" class="row-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
+
+        const metaIcon = isMetadata ? 'timer' : 'hard-drive';
+        const metaText = isMetadata ? `${item.duty_cycle_recording}/${item.duty_cycle_period}` : item.size;
 
         if (isGallery) {
             html += `<div class="media-item-card" onmouseover="this.style.borderColor='${itemRealmColor}66'" onmouseout="this.style.borderColor=''">
@@ -571,7 +593,7 @@ function renderMedia() {
     <div class="media-meta-row">
         <div class="meta-icon-text"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
         <div class="meta-icon-text"><i data-lucide="clock" size="14"></i> ${item.time}</div>
-        <div class="meta-icon-text"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div>
+        <div class="meta-icon-text"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
     </div>
 </div>
 </div>`;
@@ -588,7 +610,7 @@ function renderMedia() {
     <div class="row-meta-list">
         <div class="row-meta-item"><i data-lucide="calendar" size="14"></i> ${item.date}</div>
         <div class="row-meta-item"><i data-lucide="clock" size="14"></i> ${item.time}</div>
-        <div class="row-meta-item"><i data-lucide="hard-drive" size="14"></i> ${item.size}</div>
+        <div class="row-meta-item"><i data-lucide="${metaIcon}" size="14"></i> ${metaText}</div>
     </div>
 </div>
 <div class="row-details-col">
@@ -708,7 +730,12 @@ function renderSummary() {
         let contribHTML = '';
         contributorsArr.forEach((p, index) => {
             const isCreator = index === 0;
-            contribHTML += `<div class="contrib-item"><div class="contrib-info-block"><span class="contrib-name">${p.name}</span><div class="contrib-sub"><a href="mailto:${p.email}" class="contrib-email"><i data-lucide="mail"></i>${p.email}</a><span class="contrib-divider">•</span><a href="https://orcid.org/${p.uid}" target="_blank" class="orcid-link" title="ORCID: ${p.uid}"><i data-lucide="id-card"></i><span class="cid">${p.uid}</span></a></div></div><span class="contrib-role-text ${isCreator ? 'creator-role' : ''}">${p.role}</span></div>`;
+            let displayRole = p.role;
+            // 强制将第一位显示为 Project Creator 或 Collection Creator，覆盖默认的 Principal Investigator
+            if (isCreator) {
+                displayRole = `${type} Creator`;
+            }
+            contribHTML += `<div class="contrib-item"><div class="contrib-info-block"><span class="contrib-name">${p.name}</span><div class="contrib-sub"><a href="mailto:${p.email}" class="contrib-email"><i data-lucide="mail"></i>${p.email}</a><span class="contrib-divider">•</span><a href="https://orcid.org/${p.uid}" target="_blank" class="orcid-link" title="ORCID: ${p.uid}"><i data-lucide="id-card"></i><span class="cid">${p.uid}</span></a></div></div><span class="contrib-role-text ${isCreator ? 'creator-role' : ''}">${displayRole}</span></div>`;
         });
         contribList.innerHTML = contribHTML;
         const existingIcon = contribCard.querySelector('.bg-icon-contrib');

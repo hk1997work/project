@@ -1006,7 +1006,7 @@ html {
 }
 
 .summary-stat-card:hover {
-    transform: translateY(-3px);
+    transform: none;
     box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1);
     background: var(--bg-surface);
 }
@@ -1406,7 +1406,7 @@ html {
 }
 
 .media-item-card:hover {
-    transform: translateY(-6px);
+    transform: none;
     box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1);
     border-color: rgba(var(--brand-rgb), 0.4);
 }
@@ -1470,7 +1470,7 @@ html {
 
 .media-name:hover {
     color: var(--brand);
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .annotations-row {
@@ -1538,7 +1538,7 @@ html {
 
 .media-item-row:hover {
     background: var(--bg-surface-hover);
-    transform: translateY(-2px);
+    transform: none;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
     border-color: rgba(var(--brand-rgb), 0.3);
 }
@@ -1595,7 +1595,7 @@ html {
     box-sizing: border-box;
 }
 
-a.row-name {
+.row-name {
     font-weight: 800;
     font-size: 1.15rem;
     line-height: 1.4;
@@ -1608,9 +1608,9 @@ a.row-name {
     overflow: hidden;
 }
 
-a.row-name:hover {
+.row-name:hover {
     color: var(--brand);
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .row-meta-list {
