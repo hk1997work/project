@@ -258,7 +258,8 @@ function openSidebar(site) {
     const mockSpectrogram = "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png";
 
     const mediaHtml = site.media.map((m) => {
-        const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}">Bio</span><span class="media-annotation" style="background:${color}">Aves</span>`;
+        // [修改] 添加 box-shadow 样式，使用 Hex 颜色 + 40 (约25%透明度)
+        const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">Bio</span><span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">Aves</span>`;
         const mockTime = "14:30:00";
 
         const isMetadata = m.type === 'Metadata';
@@ -271,8 +272,8 @@ function openSidebar(site) {
 
         // Metadata 样式处理
         const visualContent = isMetadata
-            ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${color}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${color}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${color}; letter-spacing:1px;">METADATA</span></div>`
-            : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${m.duration}</div>`;
+            ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${color}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${color}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${color}; letter-spacing:1px;">METADATA</span></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`
+            : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`;
 
         // 名字样式处理
         const nameHtml = isMetadata
@@ -306,9 +307,39 @@ function openSidebar(site) {
     map.flyTo(site.center, 14, {duration: 0.8, easeLinearity: 0.5});
 }
 
+// [新增] 切换侧边栏展开状态
+function toggleSidebarExpand() {
+    const sb = document.getElementById('sidebar');
+    sb.classList.toggle('expanded');
+
+    const btn = sb.querySelector('.sb-expand');
+    const isExpanded = sb.classList.contains('expanded');
+
+    // 切换图标
+    if (btn) {
+        btn.innerHTML = isExpanded
+            ? '<i data-lucide="minimize-2" size="18"></i>'
+            : '<i data-lucide="maximize-2" size="18"></i>';
+        lucide.createIcons();
+    }
+}
+
+// [修改] 关闭侧边栏时重置状态
 function closeSidebar() {
     currentSelectedSiteId = null;
-    document.getElementById('sidebar').classList.remove('active');
+    const sb = document.getElementById('sidebar');
+    sb.classList.remove('active');
+
+    // 关闭时重置为默认宽度
+    if (sb.classList.contains('expanded')) {
+        sb.classList.remove('expanded');
+        // 重置图标为最大化
+        const btn = sb.querySelector('.sb-expand');
+        if (btn) {
+            btn.innerHTML = '<i data-lucide="maximize-2" size="18"></i>';
+            lucide.createIcons();
+        }
+    }
 }
 
 function openFilterDrawer() {
@@ -552,7 +583,8 @@ function renderMedia() {
 
     filteredItems.forEach(item => {
         const itemRealmColor = getRealmColor(item.realm);
-        const annotationsHtml = item.annotations.map(t => `<span class="media-annotation" style="background:${itemRealmColor}">${t}</span>`).join('');
+        // [修改] 添加 box-shadow 样式，使用 itemRealmColor + 40 (约25%透明度)
+        const annotationsHtml = item.annotations.map(t => `<span class="media-annotation" style="background:${itemRealmColor}; box-shadow: 0 2px 5px ${itemRealmColor}40;">${t}</span>`).join('');
 
         const isMetadata = item.audio_type === 'Metadata';
         const borderStyle = isMetadata ? 'style="border:none"' : '';
@@ -564,13 +596,15 @@ function renderMedia() {
         // Metadata 样式处理 (Media页面)
         const metadataHtml = `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${itemRealmColor}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${itemRealmColor}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${itemRealmColor}; letter-spacing:1px;">METADATA</span></div>`;
 
+        const srText = item.sampling_rate_Hz ? (item.sampling_rate_Hz / 1000) + 'kHz' : '48kHz';
+
         const visualContent = isMetadata
-            ? metadataHtml
-            : `<img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="duration-badge">${item.duration}</div>`;
+            ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`
+            : `<img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
 
         const listVisualContent = isMetadata
-            ? metadataHtml
-            : `<img src="${item.spectrogram}" class="list-spec-img" alt="Spec"><div class="duration-badge">${item.duration}</div>`;
+            ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`
+            : `<img src="${item.spectrogram}" class="list-spec-img" alt="Spec"><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
 
         // Gallery View 名字处理：添加 text-decoration:none
         const nameHtmlGallery = isMetadata

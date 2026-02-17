@@ -1447,6 +1447,21 @@ html {
     pointer-events: none;
 }
 
+.sr-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    pointer-events: none;
+    z-index: 5;
+}
+
 .media-card-info {
     padding: 16px;
     display: flex;
@@ -2209,6 +2224,49 @@ html {
     backdrop-filter: blur(4px);
 }
 
+/* [新增] 展开按钮样式 */
+.sb-expand {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    color: white;
+    transition: 0.2s;
+    backdrop-filter: blur(4px);
+}
+
+.sb-expand:hover {
+    background: white;
+    color: var(--site-color);
+}
+
+/* [新增] 侧边栏展开状态 - 宽度调整为 1200px */
+.sidebar.expanded {
+    width: 1200px;
+    max-width: 95vw; /* 允许占据更多屏幕宽度 */
+}
+
+/* [新增] 展开状态下的媒体列表布局 (3列网格) */
+.sidebar.expanded .media-scroll-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-content: start;
+    padding-right: 12px;
+}
+
+/* [新增] 确保卡片在网格中填满高度 */
+.sidebar.expanded .media-item-card {
+    height: 100%;
+    width: auto;
+}
+
 .sb-close:hover {
     background: white;
     color: var(--site-color);
@@ -2261,19 +2319,20 @@ html {
 }
 
 .media-scroll-container {
+    flex: 1;
+    min-height: 0; /* 关键：允许容器在父Flex中正确计算高度 */
+    overflow-y: auto; /* 确保开启垂直滚动 */
     display: flex;
     flex-direction: column;
     gap: 10px;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding-right: 12px; /* 稍微增加 padding，避免内容紧贴滚动条 */
     padding-top: 10px;
     padding-bottom: 20px;
+    padding-right: 12px;
 }
 
 .media-scroll-container .media-item-card {
-    flex-shrink: 0;
+    flex-shrink: 0 !important; /* 关键：强制卡片保持原有高度，不被压缩 */
+    height: auto; /* 确保高度由内容决定 */
 }
 
 .sidebar .media-item-card .media-name {
@@ -3472,4 +3531,26 @@ input[type=number] {
 /* 地图侧边栏滚动条悬停颜色覆盖 */
 #media-container::-webkit-scrollbar-thumb:hover {
     background: var(--site-color) !important;
+}
+
+/* [新增] 展开按钮样式 */
+.sb-expand {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    color: white;
+    transition: 0.2s;
+    backdrop-filter: blur(4px);
+}
+
+.sb-expand:hover {
+    background: white;
+    color: var(--site-color);
 }

@@ -194,13 +194,17 @@
                     <div class="sb-header-content"><h2 class="sb-title" id="sb-name">Site Name</h2>
                         <div class="sb-meta-row" id="sb-meta-container"></div>
                     </div>
-                    <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="sb-expand" onclick="toggleSidebarExpand()" title="Expand/Collapse">
+                            <i data-lucide="maximize-2" size="18"></i>
+                        </button>
+                        <button class="sb-close" onclick="closeSidebar()"><i data-lucide="x" size="18"></i></button>
+                    </div>
                 </div>
                 <div class="sb-content">
                     <div class="data-row"><span class="data-label">Realm</span><span class="data-val" id="val-realm">--</span></div>
                     <div class="data-row"><span class="data-label">Biome</span><span class="data-val" id="val-biome">--</span></div>
                     <div class="data-row" style="border-bottom:none;"><span class="data-label">Group</span><span class="data-val" id="val-group">--</span></div>
-                    <div class="section-title"><i data-lucide="file-audio" size="16"></i> Media</div>
                     <div class="media-scroll-container" id="media-container"></div>
                 </div>
             </div>
