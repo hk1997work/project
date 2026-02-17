@@ -2260,6 +2260,7 @@ html {
     align-content: start;
     padding-right: 12px;
 
+    grid-auto-rows: max-content;
 
     overflow-y: auto !important;
     flex: 1;
@@ -2268,7 +2269,7 @@ html {
 
 
 .sidebar.expanded .media-item-card {
-    height: 100%;
+    height: auto;
     width: auto;
 }
 
