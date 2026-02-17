@@ -237,6 +237,16 @@ function renderMap(shouldZoom = false) {
 }
 
 function openSidebar(site) {
+    const sb = document.getElementById('sidebar');
+    if (currentSelectedSiteId && currentSelectedSiteId !== site.id && sb.classList.contains('expanded')) {
+        sb.classList.remove('expanded');
+        const btn = sb.querySelector('.sb-expand');
+        if (btn) {
+            btn.innerHTML = '<i data-lucide="maximize-2" size="18"></i>';
+            lucide.createIcons();
+        }
+    }
+
     currentSelectedSiteId = site.id;
     const color = getRealmColor(site.realm);
     document.documentElement.style.setProperty('--site-color', color);
