@@ -171,26 +171,19 @@ const getRealmColor = (r) => {
 }
 const dbSchema = {
     project: {
-        label: "Projects",
-        itemLabel: "Project",
-        icon: "folder-kanban",
-        pk: "project_id",
-        columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_name", label: "Creator", type: "text", readonly: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {
+        label: "Projects", itemLabel: "Project", icon: "folder-kanban", pk: "project_id", columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {
             key: "description", label: "Description", type: "richtext", hiddenInTable: true
-        }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "public", label: "Public", type: "boolean"}, {
-            key: "active", label: "Active", type: "boolean"
-        }, {
+        }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "creator_name", label: "Creator", type: "text", readonly: true}, {
             key: "creation_date", label: "Created", type: "text", readonly: true
+        }, {key: "public", label: "Public", type: "boolean"}, {
+            key: "active", label: "Active", type: "boolean"
         }]
     }, collection: {
-        label: "Collections",
-        icon: "library",
-        pk: "collection_id",
-        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true}, {key: "external_project_url", label: "Ext. Project", type: "text"}, {
-            key: "external_media_url", label: "Ext. Media", type: "text"
-        }, {key: "doi", label: "DOI", type: "text"}, {
+        label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {
             key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
-        }, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        }, {key: "external_project_url", label: "Ext. Project", type: "text"}, {
+            key: "external_media_url", label: "Ext. Media", type: "text"
+        }, {key: "doi", label: "DOI", type: "text"}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "creator_id", label: "Creator", type: "text", readonly: true}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}]
     }, "user": {
         label: "Users",
         icon: "users",
@@ -210,9 +203,14 @@ const dbSchema = {
             key: "sensor_id", label: "Sensor", type: "select", options: []
         }, {key: "medium", label: "Medium", type: "select", options: ["Air", "Water"]}, {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'}, {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'}, {key: "channel_num", label: "Channels", type: "number", filterType: 'range'}, {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'}, {
             key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'
-        }, {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "doi", label: "DOI", type: "text"}, {key: "uploader_id", label: "Uploader", type: "text", readonly: true}, {
+        }, {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "doi", label: "DOI", type: "text"}, {key: "note", label: "Note", type: "text"}, {
+            key: "uploader_id",
+            label: "Uploader",
+            type: "text",
+            readonly: true
+        }, {
             key: "creator_id", label: "Creator", type: "text", readonly: true
-        }, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "note", label: "Note", type: "text"}]
+        }, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, site: {
         label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "text"}, {key: "functional_type", label: "Functional Type", type: "text"}, {key: "topography_m", label: "Topography (m)", type: "number"}, {
             key: "freshwater_depth_m", label: "Water Depth (m)", type: "number"

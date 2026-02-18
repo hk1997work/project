@@ -2559,22 +2559,26 @@ window.filterFormSelect = function (dropdownId, query) {
     });
 };
 
-window.selectFormOption = function (key, value, label) {
-    // Update hidden input
+window.selectFormOption = function (key, value, label, element) {
     const input = document.getElementById(`input-${key}`);
     if (input) input.value = value;
 
-    // Update trigger text
     const trigger = document.getElementById(`trigger-${key}`);
     if (trigger) {
         trigger.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${label || 'Select...'}</span> <i data-lucide="chevron-down" size="16"></i>`;
         lucide.createIcons();
     }
 
-    // Close dropdowns
+    if (element) {
+        const dropdown = element.closest('.form-select-dropdown');
+        if (dropdown) {
+            dropdown.querySelectorAll('.form-select-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+    }
+
     document.querySelectorAll('.form-select-dropdown').forEach(d => d.classList.remove('active'));
 
-    // Handle special logic for audio_type
     if (key === 'audio_type') {
         handleAudioTypeChange(value);
     }
@@ -2723,12 +2727,11 @@ function openCrudModal(mode, id = null) {
             fieldHtml += `<input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-${col.key}', this.value)" onclick="event.stopPropagation()">`;
             fieldHtml += `<div class="form-select-options-list">`;
 
-            // Clear Option
-            fieldHtml += `<div class="form-select-option" onclick="selectFormOption('${col.key}', '', 'Select...')"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
+            fieldHtml += `<div class="form-select-option" onclick="selectFormOption('${col.key}', '', 'Select...', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
 
             options.forEach(opt => {
                 const isSelected = String(val) === String(opt) ? 'selected' : '';
-                fieldHtml += `<div class="form-select-option ${isSelected}" onclick="selectFormOption('${col.key}', '${opt}', '${opt}')">${opt}</div>`;
+                fieldHtml += `<div class="form-select-option ${isSelected}" onclick="selectFormOption('${col.key}', '${opt}', '${opt}', this)">${opt}</div>`;
             });
 
             fieldHtml += `</div></div></div>`;
