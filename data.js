@@ -176,7 +176,7 @@ const dbSchema = {
     project: {
         label: "Projects", itemLabel: "Project", icon: "folder-kanban", pk: "project_id", columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {
             key: "description", label: "Description", type: "richtext", hiddenInTable: true
-        }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "creator_name", label: "Creator", type: "text", readonly: true}, {
+        }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "creator_name", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {
             key: "creation_date", label: "Created", type: "text", readonly: true
         }, {key: "public", label: "Public", type: "boolean"}, {
             key: "active", label: "Active", type: "boolean"
@@ -186,7 +186,7 @@ const dbSchema = {
             key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
         }, {key: "external_project_url", label: "Ext. Project", type: "text"}, {
             key: "external_media_url", label: "Ext. Media", type: "text"
-        }, {key: "doi", label: "DOI", type: "text"}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "creator_id", label: "Creator", type: "text", readonly: true}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}]
+        }, {key: "doi", label: "DOI", type: "text"}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}]
     }, "user": {
         label: "Users",
         icon: "users",
@@ -210,9 +210,10 @@ const dbSchema = {
             key: "uploader_id",
             label: "Uploader",
             type: "text",
-            readonly: true
+            readonly: true,
+            filterType: 'select'
         }, {
-            key: "creator_id", label: "Creator", type: "text", readonly: true
+            key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'
         }, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, site: {
         label: "Sites",
@@ -222,14 +223,15 @@ const dbSchema = {
             {key: "id", label: "ID", type: "text", readonly: true},
             {key: "uuid", label: "UUID", type: "text", readonly: true},
             {key: "name", label: "Site Name", type: "text"},
-            // 新增：坐标列，只读
-            {key: "coordinates", label: "Coordinates", type: "text", readonly: true},
+            // 修改：拆分坐标为经纬度，支持范围筛选
+            {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true},
+            {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true},
             {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)},
             {key: "biome", label: "Biome", type: "select", options: []},
             {key: "functional_type", label: "Functional Type", type: "select", options: []},
             {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'},
             {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'},
-            {key: "creator_id", label: "Creator", type: "text", readonly: true},
+            {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'},
             {key: "creation_date", label: "Created", type: "text", readonly: true}
         ]
     }, annotation: {

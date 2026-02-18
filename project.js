@@ -1317,13 +1317,12 @@ function getDataForTable(tableName) {
             };
         });
     } else if (tableName === 'site') {
-        // 修改：格式化坐标数据用于展示 (Lat, Lng，保留1位小数)
+        // 修改：拆分坐标字段，保留4位小数供筛选使用
         return currentSites.map(s => {
-            const lat = s.center[0].toFixed(1);
-            const lng = s.center[1].toFixed(1);
             return {
                 ...s,
-                coordinates: `${lat}, ${lng}`
+                latitude: Number(s.center[0].toFixed(4)),
+                longitude: Number(s.center[1].toFixed(4))
             };
         });
     } else if (['audio', 'photo', 'video'].includes(tableName)) {
@@ -1567,7 +1566,7 @@ function renderCrudHeader() {
                     </div>
                 </div>
             </div>`;
-        } else if (col.type === 'select' && col.filterType !== 'text') {
+        } else if ((col.type === 'select' || col.filterType === 'select') && col.filterType !== 'text') {
             // Select 类型：使用自定义下拉框
             const valStr = currentFilterVal || "";
             const displayLabel = (valStr && valStr !== 'all') ? valStr : 'All';
