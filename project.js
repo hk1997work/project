@@ -1916,7 +1916,7 @@ function openLinkModal() {
     } else if (['audio', 'photo', 'video'].includes(currentTable)) {
         // Media: 样式完全一致，头部为折叠（Media 通常关联到 Collection）
         const isMulti = selectedCrudIds.length > 1;
-        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Items` : "Link Item to Collections";
+        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Audios` : "Link Audio to Collections";
 
         let initialColIds = new Set();
         if (!isMulti) {
