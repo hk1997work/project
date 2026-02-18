@@ -3703,3 +3703,85 @@ input[type=number] {
 .form-select-option.hidden {
     display: none;
 }
+
+/* Table Filter Dropdown Styles */
+.table-filter-wrapper {
+    position: relative;
+    width: 100%;
+    font-family: var(--font-sans);
+}
+
+.table-filter-trigger {
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-weight: normal; /* 确保触发器文字不加粗 */
+}
+
+.table-filter-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    min-width: 140px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease;
+    text-align: left;
+}
+
+.table-filter-dropdown.active {
+    display: flex;
+}
+
+.table-filter-search {
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-surface-secondary);
+    color: var(--text-main);
+    font-size: 0.8rem;
+    outline: none;
+    box-sizing: border-box;
+    font-family: var(--font-sans);
+}
+
+.table-filter-options-list {
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.table-filter-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    transition: background 0.1s;
+    display: block;
+    white-space: normal;
+    word-break: break-word;
+    font-weight: normal; /* 选项默认不加粗 */
+}
+
+.table-filter-option:hover {
+    background: var(--brand-tint);
+    color: var(--brand);
+}
+
+.table-filter-option.selected {
+    background: var(--bg-surface-secondary);
+    color: var(--brand);
+    font-weight: 500; /* 选中时稍微加重一点点，但不是 700 粗体 */
+}
+
+.table-filter-option.hidden {
+    display: none;
+}

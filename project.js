@@ -14,13 +14,7 @@ let filterState = {realm: "", biome: "", group: ""};
 
 
 const SPHERE_COLORS = {
-    "Hydrosphere": "#0ea5e9",
-    "Cryosphere": "#06b6d4",
-    "Lithosphere": "#57534e",
-    "Pedosphere": "#b45309",
-    "Atmosphere": "#64748b",
-    "Biosphere": "#65a30d",
-    "Anthroposphere": "#db2777"
+    "Hydrosphere": "#0ea5e9", "Cryosphere": "#06b6d4", "Lithosphere": "#57534e", "Pedosphere": "#b45309", "Atmosphere": "#64748b", "Biosphere": "#65a30d", "Anthroposphere": "#db2777"
 };
 const getSphereColor = (s) => SPHERE_COLORS[s] || SPHERE_COLORS["Biosphere"];
 const DEFAULT_BRAND_COLOR = "#83CD20";
@@ -29,9 +23,7 @@ const DEFAULT_BRAND_COLOR = "#83CD20";
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
+        r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16)
     } : null;
 }
 
@@ -122,26 +114,10 @@ function generateSitesForContext(projId, colId) {
         const created = "2025-01-10 12:00:00";
 
         return {
-            id: siteId,
-            uuid: uuid,
-            name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`,
-            center: [lat, lng],
-            polygon: poly,
-            realm: r,
-            biome: b,
-            functional_type: g,
-            topography_m: Math.floor(Math.random() * 800),
-            freshwater_depth_m: r === 'Freshwater' ? parseFloat((Math.random() * 15).toFixed(1)) : null,
-            creator_id: creator,
-            creation_date: created,
-            mediaCount: Math.floor(Math.random() * 10) + 2,
-            media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
+            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: Math.floor(Math.random() * 800), freshwater_depth_m: r === 'Freshwater' ? parseFloat((Math.random() * 15).toFixed(1)) : null, creator_id: creator, creation_date: created, mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
                 const isMeta = Math.random() > 0.7;
                 return {
-                    type: isMeta ? 'Metadata' : 'Audio',
-                    name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`,
-                    date: "2025-01-15",
-                    duration: "01:00:00"
+                    type: isMeta ? 'Metadata' : 'Audio', name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`, date: "2025-01-15", duration: "01:00:00"
                 };
             })
         };
@@ -217,15 +193,12 @@ function renderMap(shouldZoom = false) {
             openSidebar(site);
         });
         const marker = L.marker(site.center, {
-            customData: {realm: site.realm, mediaCount: site.mediaCount},
-            icon: L.divIcon({
+            customData: {realm: site.realm, mediaCount: site.mediaCount}, icon: L.divIcon({
                 html: `<div class="site-marker-pin"
                             style="border-color:${siteColor}; color:${siteColor}; box-shadow: 0 4px 10px ${siteColor}66; transition: all 0.2s ease;"
                             onmouseover="this.style.transform='scale(1.2)'; this.style.boxShadow='0 8px 20px ${siteColor}99';"
                             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px ${siteColor}66';"
-                       >${site.mediaCount}</div>`,
-                className: 'custom-cluster-icon',
-                iconSize: [28, 28]
+                       >${site.mediaCount}</div>`, className: 'custom-cluster-icon', iconSize: [28, 28]
             })
         });
         marker.on('click', () => openSidebar(site));
@@ -280,14 +253,10 @@ function openSidebar(site) {
         const metaText = isMetadata ? "60/3600" : mockSize;
 
 
-        const visualContent = isMetadata
-            ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${color}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${color}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${color}; letter-spacing:1px;">METADATA</span></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`
-            : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`;
+        const visualContent = isMetadata ? `<div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:${color}1f;"><i data-lucide="file-spreadsheet" size="32" style="color:${color}; margin-bottom:6px;"></i><span style="font-size:0.7rem; font-weight:700; color:${color}; letter-spacing:1px;">METADATA</span></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>` : `<img src="${mockSpectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">48kHz</div><div class="duration-badge">${m.duration}</div>`;
 
 
-        const nameHtml = isMetadata
-            ? `<span class="media-name" title="${m.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${m.name}</span>`
-            : `<a href="#" class="media-name" title="${m.name}" style="text-decoration:none;" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>`;
+        const nameHtml = isMetadata ? `<span class="media-name" title="${m.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${m.name}</span>` : `<a href="#" class="media-name" title="${m.name}" style="text-decoration:none;" onclick="return false;" onmouseover="this.style.color='${color}'" onmouseout="this.style.color=''">${m.name}</a>`;
 
 
         return `<div class="media-item-card" onclick="event.stopPropagation();"
@@ -326,9 +295,7 @@ function toggleSidebarExpand() {
 
 
     if (btn) {
-        btn.innerHTML = isExpanded
-            ? '<i data-lucide="minimize-2" size="18"></i>'
-            : '<i data-lucide="maximize-2" size="18"></i>';
+        btn.innerHTML = isExpanded ? '<i data-lucide="minimize-2" size="18"></i>' : '<i data-lucide="maximize-2" size="18"></i>';
         lucide.createIcons();
     }
 }
@@ -608,23 +575,15 @@ function renderMedia() {
         const srText = item.sampling_rate_Hz ? (item.sampling_rate_Hz / 1000) + 'kHz' : '48kHz';
 
 
-        const visualContent = isMetadata
-            ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`
-            : `<img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
+        const visualContent = isMetadata ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>` : `<img src="${item.spectrogram}" class="spectrogram-img" alt="Spec"><div class="play-overlay"><div class="play-circle"><i data-lucide="play" fill="currentColor"></i></div></div><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
 
-        const listVisualContent = isMetadata
-            ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`
-            : `<img src="${item.spectrogram}" class="list-spec-img" alt="Spec"><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
+        const listVisualContent = isMetadata ? `${metadataHtml}<div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>` : `<img src="${item.spectrogram}" class="list-spec-img" alt="Spec"><div class="sr-badge">${srText}</div><div class="duration-badge">${item.duration}</div>`;
 
 
-        const nameHtmlGallery = isMetadata
-            ? `<span class="media-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
-            : `<a href="#" class="media-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
+        const nameHtmlGallery = isMetadata ? `<span class="media-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>` : `<a href="#" class="media-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
 
 
-        const nameHtmlList = isMetadata
-            ? `<span class="row-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>`
-            : `<a href="#" class="row-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
+        const nameHtmlList = isMetadata ? `<span class="row-name" title="${item.name}" style="cursor:default; color:var(--text-main); text-decoration:none;">${item.name}</span>` : `<a href="#" class="row-name" title="${item.name}" style="text-decoration:none;" onclick="event.stopPropagation(); return false;" onmouseover="this.style.color='${itemRealmColor}'" onmouseout="this.style.color=''">${item.name}</a>`;
 
         if (isGallery) {
             html += `<div class="media-item-card"
@@ -1115,6 +1074,16 @@ document.addEventListener('click', e => {
     if (e.target.closest('.dropdown-search-box')) return;
     if (!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active'));
     if (!e.target.closest('.custom-select-wrapper')) closeSelects();
+
+    // New: Close form selects
+    if (!e.target.closest('.form-select-wrapper')) {
+        document.querySelectorAll('.form-select-dropdown').forEach(d => d.classList.remove('active'));
+    }
+
+    // New: Close table filters
+    if (!e.target.closest('.table-filter-wrapper')) {
+        document.querySelectorAll('.table-filter-dropdown').forEach(d => d.classList.remove('active'));
+    }
 });
 
 function movePill(el) {
@@ -1309,21 +1278,7 @@ function getDataForTable(tableName) {
                 isCurrent = currentProject.collections.includes(c);
             }
             return {
-                collection_id: c.id,
-                uuid: `${c.id}9999`,
-                project_names: linkedProjs.join(", "),
-                name: c.name,
-                creator_id: c.creator,
-                doi: c.doi,
-                description: c.description,
-                sphere: c.sphere || "Biosphere",
-                external_project_url: c.external_project_url,
-                external_media_url: c.external_media_url,
-                public_access: c.active !== undefined ? c.active : false,
-                public_annotations: false,
-                creation_date: c.date,
-                _rawId: c.id,
-                _isCurrent: isCurrent
+                collection_id: c.id, uuid: `${c.id}9999`, project_names: linkedProjs.join(", "), name: c.name, creator_id: c.creator, doi: c.doi, description: c.description, sphere: c.sphere || "Biosphere", external_project_url: c.external_project_url, external_media_url: c.external_media_url, public_access: c.active !== undefined ? c.active : false, public_annotations: false, creation_date: c.date, _rawId: c.id, _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'site') {
@@ -1548,17 +1503,52 @@ function renderCrudHeader() {
                     onclick="event.stopPropagation()">
             </div>`;
         } else if (col.type === 'boolean') {
-            const valStr = currentFilterVal || "";
-            filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()"><option value="all">All</option><option value="true" ${valStr === 'true' ? 'selected' : ''}>True</option><option value="false" ${valStr === 'false' ? 'selected' : ''}>False</option></select>`;
+            // Boolean 类型：改为自定义下拉框
+            const valStr = currentFilterVal || "all";
+            let displayLabel = "All";
+            if (valStr === 'true') displayLabel = "True";
+            if (valStr === 'false') displayLabel = "False";
+
+            filterInputHtml = `
+            <div class="table-filter-wrapper" style="position:relative; width:100%;">
+                <div class="table-filter-trigger th-filter-input" onclick="event.stopPropagation(); toggleTableFilterSelect('filter-dropdown-${col.key}')" style="display:flex; align-items:center; justify-content:space-between; padding-right:24px;">
+                    <span id="filter-trigger-span-${col.key}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayLabel}</span>
+                    <i data-lucide="chevron-down" size="12" style="position:absolute; right:8px; opacity:0.5;"></i>
+                </div>
+                
+                <div class="table-filter-dropdown" id="filter-dropdown-${col.key}" onclick="event.stopPropagation()">
+                    <div class="table-filter-options-list">
+                        <div class="table-filter-option ${valStr === 'all' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'all', 'All')">All</div>
+                        <div class="table-filter-option ${valStr === 'true' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'true', 'True')">True</div>
+                        <div class="table-filter-option ${valStr === 'false' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'false', 'False')">False</div>
+                    </div>
+                </div>
+            </div>`;
         } else if (col.type === 'select' && col.filterType !== 'text') {
+            // Select 类型：使用自定义下拉框
             const valStr = currentFilterVal || "";
-            let opts = `<option value="all">All</option>`;
+            const displayLabel = (valStr && valStr !== 'all') ? valStr : 'All';
             const uniqueVals = getUniqueValues(getDataForTable(currentTable), col.key);
-            uniqueVals.forEach(o => {
+
+            filterInputHtml = `
+            <div class="table-filter-wrapper" style="position:relative; width:100%;">
+                <div class="table-filter-trigger th-filter-input" onclick="event.stopPropagation(); toggleTableFilterSelect('filter-dropdown-${col.key}')" style="display:flex; align-items:center; justify-content:space-between; padding-right:24px;">
+                    <span id="filter-trigger-span-${col.key}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayLabel}</span>
+                    <i data-lucide="chevron-down" size="12" style="position:absolute; right:8px; opacity:0.5;"></i>
+                </div>
+                
+                <div class="table-filter-dropdown" id="filter-dropdown-${col.key}" onclick="event.stopPropagation()">
+                    <input type="text" class="table-filter-search" placeholder="Search..." oninput="filterTableFilterSelect('filter-dropdown-${col.key}', this.value)">
+                    <div class="table-filter-options-list">
+                        <div class="table-filter-option ${!valStr || valStr === 'all' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'all', 'All')">All</div>
+                        ${uniqueVals.map(o => {
                 const isSelected = String(valStr) === String(o);
-                opts += `<option value="${o}" ${isSelected ? 'selected' : ''}>${o}</option>`;
-            });
-            filterInputHtml = `<select class="th-filter-input" onchange="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">${opts}</select>`;
+                const safeO = String(o).replace(/'/g, "\\'");
+                return `<div class="table-filter-option ${isSelected ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', '${safeO}', '${safeO}')">${o}</div>`;
+            }).join('')}
+                    </div>
+                </div>
+            </div>`;
         } else if (col.type === 'file' || col.type === 'image' || col.type === 'richtext') {
             filterInputHtml = '';
         } else {
@@ -2486,14 +2476,7 @@ function confirmDeleteData() {
 
 function handleAudioTypeChange(type) {
     const inputIds = {
-        sr: 'input-sampling_rate_Hz',
-        bit: 'input-bit_depth',
-        ch: 'input-channel_num',
-        dur: 'input-duration_s',
-        dutyRec: 'input-duty_cycle_recording',
-        dutyPer: 'input-duty_cycle_period',
-        size: 'input-size_B',
-        filename: 'input-filename'
+        sr: 'input-sampling_rate_Hz', bit: 'input-bit_depth', ch: 'input-channel_num', dur: 'input-duration_s', dutyRec: 'input-duty_cycle_recording', dutyPer: 'input-duty_cycle_period', size: 'input-size_B', filename: 'input-filename'
     };
 
     const els = {};
@@ -2572,8 +2555,7 @@ window.filterFormSelect = function (dropdownId, query) {
     const val = query.toLowerCase();
     options.forEach(opt => {
         const text = opt.textContent.toLowerCase();
-        if (text.includes(val)) opt.classList.remove('hidden');
-        else opt.classList.add('hidden');
+        if (text.includes(val)) opt.classList.remove('hidden'); else opt.classList.add('hidden');
     });
 };
 
@@ -2597,13 +2579,6 @@ window.selectFormOption = function (key, value, label) {
         handleAudioTypeChange(value);
     }
 };
-
-// Close selects when clicking outside
-document.addEventListener('click', e => {
-    if (!e.target.closest('.form-select-wrapper')) {
-        document.querySelectorAll('.form-select-dropdown').forEach(d => d.classList.remove('active'));
-    }
-});
 
 function openCrudModal(mode, id = null) {
     const schema = dbSchema[currentTable];
@@ -2926,15 +2901,7 @@ function saveCrudData() {
     } else if (isCollection) {
         const proj = rawProjects[currProjIdx];
         const mappedCol = {
-            name: newRow.name,
-            creator: newRow.creator_id,
-            doi: newRow.doi,
-            sphere: newRow.sphere,
-            external_project_url: newRow.external_project_url,
-            external_media_url: newRow.external_media_url,
-            description: newRow.description,
-            active: newRow.public_access,
-            date: newRow.creation_date || moment().format("YYYY-MM-DD HH:mm:ss")
+            name: newRow.name, creator: newRow.creator_id, doi: newRow.doi, sphere: newRow.sphere, external_project_url: newRow.external_project_url, external_media_url: newRow.external_media_url, description: newRow.description, active: newRow.public_access, date: newRow.creation_date || moment().format("YYYY-MM-DD HH:mm:ss")
         };
         if (editingId !== null) {
             const colIndex = editingId - 1;
@@ -3457,5 +3424,58 @@ window.toggleBoolean = function (key) {
         icon.setAttribute('data-lucide', 'x');
     }
     lucide.createIcons();
+};
+// --- Table Filter Custom Select Logic ---
+
+window.toggleTableFilterSelect = function (id) {
+    const dropdown = document.getElementById(id);
+    if (!dropdown) return;
+
+    // Close other table filters
+    document.querySelectorAll('.table-filter-dropdown').forEach(d => {
+        if (d.id !== id) d.classList.remove('active');
+    });
+    // Close form selects (modal)
+    document.querySelectorAll('.form-select-dropdown').forEach(d => d.classList.remove('active'));
+
+    const isActive = dropdown.classList.contains('active');
+    if (!isActive) {
+        dropdown.classList.add('active');
+        const search = dropdown.querySelector('.table-filter-search');
+        if (search) {
+            search.value = '';
+            search.focus();
+            const list = dropdown.querySelector('.table-filter-options-list');
+            if (list) {
+                Array.from(list.children).forEach(child => child.classList.remove('hidden'));
+            }
+        }
+    } else {
+        dropdown.classList.remove('active');
+    }
+};
+
+window.filterTableFilterSelect = function (dropdownId, query) {
+    const dropdown = document.getElementById(dropdownId);
+    if (!dropdown) return;
+    const options = dropdown.querySelectorAll('.table-filter-option');
+    const val = query.toLowerCase();
+    options.forEach(opt => {
+        const text = opt.textContent.toLowerCase();
+        if (text.includes(val)) opt.classList.remove('hidden');
+        else opt.classList.add('hidden');
+    });
+};
+
+window.selectTableFilterOption = function (key, value, label) {
+    // Apply filter
+    handleColumnFilter(key, value);
+
+    // Update Header UI manually
+    const triggerSpan = document.getElementById(`filter-trigger-span-${key}`);
+    if (triggerSpan) triggerSpan.textContent = label;
+
+    const dropdown = document.getElementById(`filter-dropdown-${key}`);
+    if (dropdown) dropdown.classList.remove('active');
 };
 init();
