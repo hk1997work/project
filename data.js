@@ -88,20 +88,61 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
         const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
         const colId = 10000 + (startImgIdx * 100) + i;
         return {
-            id: String(colId), name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`, active: false, creator: collectionCreator, date: `2025-0${(i % 9) + 1}-15 09:30:00`, doi: `10.ECO/col.${colId}`, sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
-            external_project_url: `https://science-db.io/project/${colId}`, external_media_url: `https://nature-sounds.org/archive/${colId}/media`, description: colGenerators[i % 3](`${baseName}`), image: getImg(startImgIdx + i + 1), stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), annotations: rInt(50, 300), sites: rInt(1, 5)}, contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
+            id: String(colId),
+            name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
+            active: false,
+            creator: collectionCreator,
+            date: `2025-0${(i % 9) + 1}-15 09:30:00`,
+            doi: `10.ECO/col.${colId}`,
+            sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
+            external_project_url: `https://science-db.io/project/${colId}`,
+            external_media_url: `https://nature-sounds.org/archive/${colId}/media`,
+            description: colGenerators[i % 3](`${baseName}`),
+            image: getImg(startImgIdx + i + 1),
+            stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), annotations: rInt(50, 300), sites: rInt(1, 5)},
+            contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
         };
     });
 };
 const initialProjects = [{
-    id: 1, name: "Amazon Rainforest Survey", creator: "Liudilong", date: "2025-01-10 14:00:00",
-    doi: "10.1234/amz.01", externalUrl: "https://www.worldwildlife.org/places/amazon", description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"), styleClass: "style-modern", image: getImg(0), collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"), stats: {users: 45, collections: 8, audios: "120k", annotations: 4500, sites: 12}, contributors: getContributors(4, 'project', "Liudilong")
+    id: 1,
+    name: "Amazon Rainforest Survey",
+    creator: "Liudilong",
+    date: "2025-01-10 14:00:00",
+    doi: "10.1234/amz.01",
+    externalUrl: "https://www.worldwildlife.org/places/amazon",
+    description: generateRichText('modern', "Amazon Basin", "Manaus", "Panthera onca"),
+    styleClass: "style-modern",
+    image: getImg(0),
+    collections: createCollections("Canopy Audio", 8, 0, "Dr. Silva"),
+    stats: {users: 45, collections: 8, audios: "120k", annotations: 4500, sites: 12},
+    contributors: getContributors(4, 'project', "Liudilong")
 }, {
-    id: 2, name: "Marine Ecosystems Study", creator: "Liudilong", date: "2024-11-05 08:15:30",
-    doi: "10.5678/mar.02", externalUrl: "https://www.barrierreef.org/", description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"), styleClass: "style-academic", image: getImg(1), collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"), stats: {users: 32, collections: 6, audios: "80k", annotations: 2100, sites: 5}, contributors: getContributors(3, 'project', "Prof. Ocean")
+    id: 2,
+    name: "Marine Ecosystems Study",
+    creator: "Liudilong",
+    date: "2024-11-05 08:15:30",
+    doi: "10.5678/mar.02",
+    externalUrl: "https://www.barrierreef.org/",
+    description: generateRichText('academic', "Coral Reefs", "Great Barrier Reef", "Megaptera novaeangliae"),
+    styleClass: "style-academic",
+    image: getImg(1),
+    collections: createCollections("Hydrophone Data", 6, 5, "Prof. Ocean"),
+    stats: {users: 32, collections: 6, audios: "80k", annotations: 2100, sites: 5},
+    contributors: getContributors(3, 'project', "Prof. Ocean")
 }, {
-    id: 3, name: "African Savanna Project", creator: "K. Mbeki", date: "2025-02-15 16:45:00",
-    doi: "10.9999/sav.03", externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant", description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"), styleClass: "style-editorial", image: getImg(2), collections: createCollections("Seismic", 5, 2, "K. Mbeki"), stats: {users: 28, collections: 5, audios: "45k", annotations: 1200, sites: 8}, contributors: getContributors(5, 'project', "K. Mbeki")
+    id: 3,
+    name: "African Savanna Project",
+    creator: "K. Mbeki",
+    date: "2025-02-15 16:45:00",
+    doi: "10.9999/sav.03",
+    externalUrl: "https://www.awf.org/wildlife-conservation/african-elephant",
+    description: generateRichText('blog', "Serengeti", "Tanzania", "Loxodonta africana"),
+    styleClass: "style-editorial",
+    image: getImg(2),
+    collections: createCollections("Seismic", 5, 2, "K. Mbeki"),
+    stats: {users: 28, collections: 5, audios: "45k", annotations: 1200, sites: 8},
+    contributors: getContributors(5, 'project', "K. Mbeki")
 }];
 
 const REALM_COLORS = {"Terrestrial": "#65a30d", "Marine": "#0284c7", "Freshwater": "#0891b2", "Subterranean": "#71717a", "Atmospheric": "#f59e0b", "Estuarine": "#14b8a6", "Cryogenic": "#a8a29e", "Artificial": "#db2777", "Introduced": "#9333ea", "Unknown": "#f97316"};
@@ -130,19 +171,26 @@ const getRealmColor = (r) => {
 }
 const dbSchema = {
     project: {
-        label: "Projects", itemLabel: "Project", icon: "folder-kanban", pk: "project_id", columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"},
-            {key: "creator_name", label: "Creator", type: "text", readonly: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "public", label: "Public", type: "boolean"}, {
-                key: "active",
-                label: "Active",
-                type: "boolean"
-            }, {
-                key: "creation_date", label: "Created", type: "text", readonly: true
-            }]
+        label: "Projects",
+        itemLabel: "Project",
+        icon: "folder-kanban",
+        pk: "project_id",
+        columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_name", label: "Creator", type: "text", readonly: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {
+            key: "description", label: "Description", type: "richtext", hiddenInTable: true
+        }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "public", label: "Public", type: "boolean"}, {
+            key: "active", label: "Active", type: "boolean"
+        }, {
+            key: "creation_date", label: "Created", type: "text", readonly: true
+        }]
     }, collection: {
-        label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true},
-            {key: "external_project_url", label: "Ext. Project", type: "text"}, {key: "external_media_url", label: "Ext. Media", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
-                key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
-            }, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        label: "Collections",
+        icon: "library",
+        pk: "collection_id",
+        columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true}, {key: "external_project_url", label: "Ext. Project", type: "text"}, {
+            key: "external_media_url", label: "Ext. Media", type: "text"
+        }, {key: "doi", label: "DOI", type: "text"}, {
+            key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
+        }, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, "user": {
         label: "Users",
         icon: "users",
@@ -158,47 +206,17 @@ const dbSchema = {
         label: "Audios",
         icon: "mic",
         pk: "media_id",
-        columns: [
-            {key: "media_id", label: "ID", type: "number", readonly: true},
-            {key: "uuid", label: "UUID", type: "text", readonly: true},
-            {key: "audio_type", label: "Data Type", type: "select", options: ["Audio File", "Metadata"], readonlyOnUpdate: true},
-            {key: "name", label: "Name", type: "text"},
-            {key: "filename", label: "Filename", type: "text"},
-            {key: "date_time", label: "Date Time", type: "datetime-local"},
-            {key: "site_id", label: "Site", type: "select", options: []},
-            {key: "sensor_id", label: "Sensor", type: "select", options: []},
-            {key: "medium", label: "Medium", type: "select", options: ["Air", "Water"]},
-            {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'},
-            {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'},
-            {key: "channel_num", label: "Channels", type: "number", filterType: 'range'},
-            {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'},
-            {key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'},
-            {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'},
-            {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'},
-            {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'},
-            {key: "license_id", label: "License", type: "select", options: mockLicenses},
-            {key: "doi", label: "DOI", type: "text"},
-            {key: "uploader_id", label: "Uploader", type: "text", readonly: true},
-            {key: "creator_id", label: "Creator", type: "text", readonly: true},
-            {key: "creation_date", label: "Created", type: "text", readonly: true},
-            {key: "note", label: "Note", type: "text"}
-        ]
+        columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "audio_type", label: "Data Type", type: "select", options: ["Audio File", "Metadata"], readonlyOnUpdate: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "date_time", label: "Date Time", type: "datetime-local"}, {key: "site_id", label: "Site", type: "select", options: []}, {
+            key: "sensor_id", label: "Sensor", type: "select", options: []
+        }, {key: "medium", label: "Medium", type: "select", options: ["Air", "Water"]}, {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'}, {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'}, {key: "channel_num", label: "Channels", type: "number", filterType: 'range'}, {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'}, {
+            key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'
+        }, {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "doi", label: "DOI", type: "text"}, {key: "uploader_id", label: "Uploader", type: "text", readonly: true}, {
+            key: "creator_id", label: "Creator", type: "text", readonly: true
+        }, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "note", label: "Note", type: "text"}]
     }, site: {
-        label: "Sites",
-        icon: "map-pin",
-        pk: "id",
-        columns: [
-            {key: "id", label: "ID", type: "text", readonly: true},
-            {key: "uuid", label: "UUID", type: "text", readonly: true},
-            {key: "name", label: "Site Name", type: "text"},
-            {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)},
-            {key: "biome", label: "Biome", type: "text"},
-            {key: "functional_type", label: "Functional Type", type: "text"},
-            {key: "topography_m", label: "Topography (m)", type: "number"},
-            {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number"},
-            {key: "creator_id", label: "Creator", type: "select", options: mockNames},
-            {key: "creation_date", label: "Created", type: "text", readonly: true}
-        ]
+        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "text"}, {key: "functional_type", label: "Functional Type", type: "text"}, {key: "topography_m", label: "Topography (m)", type: "number"}, {
+            key: "freshwater_depth_m", label: "Water Depth (m)", type: "number"
+        }, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, annotation: {
         label: "Annotations",
         icon: "scan-line",
