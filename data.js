@@ -218,9 +218,20 @@ const dbSchema = {
         label: "Sites",
         icon: "map-pin",
         pk: "id",
-        columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "select", options: []}, {key: "functional_type", label: "Functional Type", type: "select", options: []}, {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'}, {
-            key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'
-        }, {key: "creator_id", label: "Creator", type: "text", readonly: true}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        columns: [
+            {key: "id", label: "ID", type: "text", readonly: true},
+            {key: "uuid", label: "UUID", type: "text", readonly: true},
+            {key: "name", label: "Site Name", type: "text"},
+            // 新增：坐标列，只读
+            {key: "coordinates", label: "Coordinates", type: "text", readonly: true},
+            {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)},
+            {key: "biome", label: "Biome", type: "select", options: []},
+            {key: "functional_type", label: "Functional Type", type: "select", options: []},
+            {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'},
+            {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'},
+            {key: "creator_id", label: "Creator", type: "text", readonly: true},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
     }, annotation: {
         label: "Annotations",
         icon: "scan-line",

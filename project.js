@@ -1289,7 +1289,15 @@ function getDataForTable(tableName) {
             };
         });
     } else if (tableName === 'site') {
-        return currentSites;
+        // 修改：格式化坐标数据用于展示 (Lat, Lng，保留1位小数)
+        return currentSites.map(s => {
+            const lat = s.center[0].toFixed(1);
+            const lng = s.center[1].toFixed(1);
+            return {
+                ...s,
+                coordinates: `${lat}, ${lng}`
+            };
+        });
     } else if (['audio', 'photo', 'video'].includes(tableName)) {
         if (mediaItems.length > 0 && !mediaItems[0].enriched) enrichMediaData();
         const allMedia = mediaItems.map(m => ({
@@ -1745,11 +1753,11 @@ window.handleSelectAll = function (checked) {
 };
 
 function handleToolbarLink() {
-    // 修改：Site 表格允许批量操作，Project 仍限制单选
-    if (currentTable === 'site') {
-        if (selectedCrudIds.length === 0) return;
-    } else {
+    if (currentTable === 'project') {
         if (selectedCrudIds.length !== 1) return;
+    } else {
+        // Site 和 Media 允许批量，但必须至少选中一个
+        if (selectedCrudIds.length === 0) return;
     }
     openLinkModal();
 }
@@ -1786,12 +1794,13 @@ function openLinkModal() {
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit-btn');
 
+    // 清空之前可能存在的 Map
+    currentModalSelectableColMap.clear();
+
     if (currentTable === 'project') {
         const isMulti = selectedCrudIds.length > 1;
         title.textContent = isMulti ? `Link Collections to ${selectedCrudIds.length} Projects` : "Link Collections to Project";
-
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
-
         const currentLinkedColIds = new Set();
         if (!isMulti) {
             const targetProj = rawProjects.find(p => String(p.id) === selectedCrudIds[0]);
@@ -1800,7 +1809,6 @@ function openLinkModal() {
             }
         }
 
-        currentModalSelectableColMap.clear();
         let html = `<div class="form-group"><div style="padding-right: 4px;">`;
         let hasFoundAny = false;
 
@@ -1812,7 +1820,6 @@ function openLinkModal() {
 
         sortedProjects.forEach(proj => {
             const isProjCreator = proj.creator === currentUser;
-
             const validCols = proj.collections.filter(c => {
                 if (isProjCreator) return true;
                 if (c.creator === currentUser) return true;
@@ -1838,9 +1845,7 @@ function openLinkModal() {
                 uniqueCols.forEach(c => {
                     const cIdStr = String(c.id);
                     currentModalSelectableColMap.set(cIdStr, c);
-
                     const isChecked = !isMulti && currentLinkedColIds.has(cIdStr);
-
                     html += `
                         <label style="display:flex; align-items:center; gap:10px; padding:10px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
                             <input type="checkbox" class="link-target-cb" value="${cIdStr}" ${isChecked ? 'checked' : ''} onchange="syncCollectionCheckboxes(this)" style="width:16px; height:16px; accent-color:var(--brand);">
@@ -1848,92 +1853,22 @@ function openLinkModal() {
                         </label>
                     `;
                 });
-
                 html += `</div>`;
             }
         });
 
-        if (!hasFoundAny) {
-            html += `<div style="padding:20px; color:var(--text-muted); text-align:center;">No writable collections found.</div>`;
-        }
-
+        if (!hasFoundAny) html += `<div style="padding:20px; color:var(--text-muted); text-align:center;">No writable collections found.</div>`;
         html += `</div></div>`;
         container.innerHTML = html;
-        lucide.createIcons();
 
-        if (submitBtn) {
-            submitBtn.textContent = "Save";
-            submitBtn.className = "btn-primary";
-            submitBtn.style.backgroundColor = "";
-            submitBtn.onclick = saveLinkData;
-            submitBtn.disabled = false;
-        }
-        modal.classList.add('active');
     } else if (currentTable === 'site') {
-        // 新增：Site 表格的关联弹窗逻辑
-        title.textContent = "Link Site to Projects & Collections";
-        const siteId = selectedCrudIds[0];
-        const site = currentSites.find(s => String(s.id) === siteId);
-
-        // 初始化关联数据（如果不存在）
-        if (!site.linkedProjects) site.linkedProjects = [];
-        if (!site.linkedCollections) site.linkedCollections = [];
-
-        let html = `<div class="form-group"><div style="padding-right: 4px;">`;
-
-        rawProjects.forEach(proj => {
-            const pId = String(proj.id);
-            const isProjLinked = site.linkedProjects.includes(pId);
-            const groupId = `link-group-p-${pId}`;
-
-            html += `
-            <div style="margin-bottom:8px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface-secondary); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
-                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; flex:1;">
-                        <input type="checkbox" class="link-site-proj-cb" value="${pId}" ${isProjLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
-                        <span style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${proj.name}</span>
-                    </label>
-                    <div onclick="toggleLinkGroup('${groupId}', this)" style="cursor:pointer; display:flex; align-items:center; padding:4px;">
-                         <i data-lucide="chevron-down" class="group-chevron" style="width:16px; height:16px; transition:transform 0.2s;"></i>
-                    </div>
-                </div>
-                <div id="${groupId}" style="display:block; padding-left:32px; margin-top:4px;">`;
-
-            proj.collections.forEach(c => {
-                const cId = String(c.id);
-                const isColLinked = site.linkedCollections.includes(cId);
-                html += `
-                    <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer;">
-                        <input type="checkbox" class="link-site-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} style="width:14px; height:14px; accent-color:var(--brand);">
-                        <span style="font-size:0.9rem; color:var(--text-secondary);">${c.name}</span>
-                    </label>
-                `;
-            });
-
-            html += `</div></div>`;
-        });
-
-        html += `</div></div>`;
-        container.innerHTML = html;
-        lucide.createIcons();
-
-        if (submitBtn) {
-            submitBtn.textContent = "Save";
-            submitBtn.className = "btn-primary";
-            submitBtn.style.backgroundColor = "";
-            submitBtn.onclick = saveLinkData;
-            submitBtn.disabled = false;
-        }
-        modal.classList.add('active');
-    } else if (currentTable === 'site') {
-        // Site 关联逻辑，支持批量
+        // Site: 样式保持一致，但头部包含 Checkbox 用于关联 Project
         const isMulti = selectedCrudIds.length > 1;
-        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Sites to Projects & Collections` : "Link Site to Projects & Collections";
+        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Sites` : "Link Site to Projects & Collections";
 
-        // 确定初始选中状态（仅单选时回显）
+        // 初始选中状态
         let initialProjIds = new Set();
         let initialColIds = new Set();
-
         if (!isMulti) {
             const site = currentSites.find(s => String(s.id) === selectedCrudIds[0]);
             if (site) {
@@ -1949,95 +1884,140 @@ function openLinkModal() {
             const isProjLinked = initialProjIds.has(pId);
             const groupId = `link-group-s-${pId}`;
 
+            // Header: 包含 Project Checkbox，样式模仿 Project 弹窗
             html += `
-            <div style="margin-bottom:8px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface-secondary); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
-                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; flex:1;">
-                        <input type="checkbox" class="link-site-proj-cb" value="${pId}" ${isProjLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
-                        <span style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${proj.name}</span>
-                    </label>
-                    <div onclick="toggleLinkGroup('${groupId}', this)" style="cursor:pointer; display:flex; align-items:center; padding:4px;">
-                         <i data-lucide="chevron-down" class="group-chevron" style="width:16px; height:16px; transition:transform 0.2s;"></i>
-                    </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid var(--border-light); margin-bottom:4px; margin-top:8px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; color:var(--text-main); font-size:0.95rem; user-select:none; flex:1;">
+                    <input type="checkbox" class="link-site-proj-cb" value="${pId}" ${isProjLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                    <i data-lucide="folder-kanban" style="width:16px; height:16px; color:var(--brand);"></i> 
+                    ${proj.name}
+                </label>
+                <div onclick="toggleLinkGroup('${groupId}', this)" style="cursor:pointer; padding:4px; display:flex; align-items:center;">
+                    <i data-lucide="chevron-down" class="group-chevron" style="width:16px; height:16px; transition:transform 0.2s;"></i>
                 </div>
-                <div id="${groupId}" style="display:block; padding-left:32px; margin-top:4px;">`;
+            </div>
+            <div id="${groupId}" style="display:block; padding-left:12px; margin-bottom:12px;">`;
 
             proj.collections.forEach(c => {
                 const cId = String(c.id);
                 const isColLinked = initialColIds.has(cId);
                 html += `
-                    <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer;">
-                        <input type="checkbox" class="link-site-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} style="width:14px; height:14px; accent-color:var(--brand);">
-                        <span style="font-size:0.9rem; color:var(--text-secondary);">${c.name}</span>
+                    <label style="display:flex; align-items:center; gap:10px; padding:10px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
+                        <input type="checkbox" class="link-site-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                        <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
                     </label>
                 `;
             });
-
-            html += `</div></div>`;
+            html += `</div>`;
         });
-
         html += `</div></div>`;
         container.innerHTML = html;
-        lucide.createIcons();
 
-        if (submitBtn) {
-            submitBtn.textContent = "Save";
-            submitBtn.className = "btn-primary";
-            submitBtn.style.backgroundColor = "";
-            submitBtn.onclick = saveLinkData;
-            submitBtn.disabled = false;
+    } else if (['audio', 'photo', 'video'].includes(currentTable)) {
+        // Media: 样式完全一致，头部为折叠（Media 通常关联到 Collection）
+        const isMulti = selectedCrudIds.length > 1;
+        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Items` : "Link Item to Collections";
+
+        let initialColIds = new Set();
+        if (!isMulti) {
+            const media = mediaItems.find(m => String(m.id) === selectedCrudIds[0]);
+            if (media && media.linkedCollections) {
+                media.linkedCollections.forEach(id => initialColIds.add(String(id)));
+            }
         }
-        modal.classList.add('active');
+
+        let html = `<div class="form-group"><div style="padding-right: 4px;">`;
+
+        rawProjects.forEach(proj => {
+            const groupId = `link-group-m-${proj.id}`;
+            html += `
+            <div onclick="toggleLinkGroup('${groupId}', this)" style="padding: 10px 0; font-weight:700; color:var(--text-main); border-bottom: 1px solid var(--border-light); margin-bottom:4px; margin-top:8px; font-size:0.95rem; display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;">
+                <i data-lucide="chevron-down" class="group-chevron" style="width:16px; height:16px; transition:transform 0.2s;"></i>
+                <i data-lucide="folder-kanban" style="width:16px; height:16px; color:var(--brand);"></i> 
+                ${proj.name}
+            </div>
+            <div id="${groupId}" style="display:block; padding-left:12px; margin-bottom:12px;">`;
+
+            proj.collections.forEach(c => {
+                const cId = String(c.id);
+                const isColLinked = initialColIds.has(cId);
+                html += `
+                    <label style="display:flex; align-items:center; gap:10px; padding:10px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
+                        <input type="checkbox" class="link-media-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                        <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
+                    </label>
+                `;
+            });
+            html += `</div>`;
+        });
+        html += `</div></div>`;
+        container.innerHTML = html;
     }
+
+    lucide.createIcons();
+
+    if (submitBtn) {
+        submitBtn.textContent = "Save";
+        submitBtn.className = "btn-primary";
+        submitBtn.style.backgroundColor = "";
+        submitBtn.onclick = saveLinkData;
+        submitBtn.disabled = false;
+    }
+    modal.classList.add('active');
 }
 
 function saveLinkData() {
-    const checkboxes = document.querySelectorAll('.link-target-cb:checked');
-    const selectedIds = new Set(Array.from(checkboxes).map(cb => cb.value));
-
     if (currentTable === 'project') {
+        const checkboxes = document.querySelectorAll('.link-target-cb:checked');
+        const selectedIds = new Set(Array.from(checkboxes).map(cb => cb.value));
         selectedCrudIds.forEach(projIdStr => {
             const proj = rawProjects.find(p => String(p.id) === projIdStr);
             if (proj) {
                 const newCollections = [];
                 const existingIds = new Set(proj.collections.map(c => String(c.id)));
 
+                // 保留不可选/未显示的 Collection
                 proj.collections.forEach(c => {
                     const cId = String(c.id);
                     if (!currentModalSelectableColMap.has(cId)) {
                         newCollections.push(c);
                         return;
                     }
-                    if (selectedIds.has(cId)) {
-                        newCollections.push(c);
-                    }
+                    if (selectedIds.has(cId)) newCollections.push(c);
                 });
 
+                // 添加新选中的
                 selectedIds.forEach(id => {
-                    if (!existingIds.has(id)) {
-                        if (currentModalSelectableColMap.has(id)) {
-                            newCollections.push(currentModalSelectableColMap.get(id));
-                        }
+                    if (!existingIds.has(id) && currentModalSelectableColMap.has(id)) {
+                        newCollections.push(currentModalSelectableColMap.get(id));
                     }
                 });
-
                 proj.collections = newCollections;
             }
         });
+
     } else if (currentTable === 'site') {
-        // 保存 Site 关联数据（支持批量）
         const projCheckboxes = document.querySelectorAll('.link-site-proj-cb:checked');
         const colCheckboxes = document.querySelectorAll('.link-site-col-cb:checked');
-
         const newProjIds = Array.from(projCheckboxes).map(cb => cb.value);
         const newColIds = Array.from(colCheckboxes).map(cb => cb.value);
 
         selectedCrudIds.forEach(siteId => {
             const site = currentSites.find(s => String(s.id) === String(siteId));
             if (site) {
-                // 直接覆盖为当前选中的项
                 site.linkedProjects = [...newProjIds];
                 site.linkedCollections = [...newColIds];
+            }
+        });
+
+    } else if (['audio', 'photo', 'video'].includes(currentTable)) {
+        const colCheckboxes = document.querySelectorAll('.link-media-col-cb:checked');
+        const newColIds = Array.from(colCheckboxes).map(cb => cb.value);
+
+        selectedCrudIds.forEach(id => {
+            const media = mediaItems.find(m => String(m.id) === String(id));
+            if (media) {
+                media.linkedCollections = [...newColIds];
             }
         });
     }
@@ -2047,7 +2027,7 @@ function saveLinkData() {
     updateToolbarState();
 
     renderTableNav();
-    if (currColIdx > 0 || document.getElementById('dropdown-collection').style.display !== 'none') {
+    if (currColIdx > 0 || (document.getElementById('dropdown-collection') && document.getElementById('dropdown-collection').style.display !== 'none')) {
         renderCollectionList();
     }
 }
@@ -2131,8 +2111,8 @@ function updateToolbarState() {
         if (currentTable === 'project') {
             linkBtn.style.display = 'inline-flex';
             linkBtn.disabled = (count !== 1);
-        } else if (currentTable === 'site') {
-            // Site 表格允许批量操作，只要选中数量大于 0 即可
+        } else if (currentTable === 'site' || ['audio', 'photo', 'video'].includes(currentTable)) {
+            // Site 和 Media 支持批量 Link，只要有选中项即可
             linkBtn.style.display = 'inline-flex';
             linkBtn.disabled = (count === 0);
         } else {
