@@ -131,14 +131,18 @@ const getRealmColor = (r) => {
 const dbSchema = {
     project: {
         label: "Projects", itemLabel: "Project", icon: "folder-kanban", pk: "project_id", columns: [{key: "project_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"},
-            {key: "creator_name", label: "Creator", type: "text", readonly: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "public", label: "Public", type: "boolean"}, {key: "active", label: "Active", type: "boolean"}, {
+            {key: "creator_name", label: "Creator", type: "text", readonly: true}, {key: "url", label: "URL", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "public", label: "Public", type: "boolean"}, {
+                key: "active",
+                label: "Active",
+                type: "boolean"
+            }, {
                 key: "creation_date", label: "Created", type: "text", readonly: true
-            }, {key: "picture_url", label: "Picture", type: "file", hiddenInTable: true}, {key: "description_short", label: "Short Description", type: "richtext", hiddenInTable: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
+            }]
     }, collection: {
         label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {key: "creator_id", label: "Creator", type: "text", readonly: true},
             {key: "external_project_url", label: "Ext. Project", type: "text"}, {key: "external_media_url", label: "Ext. Media", type: "text"}, {key: "doi", label: "DOI", type: "text"}, {
                 key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
-            }, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}]
+            }, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, "user": {
         label: "Users",
         icon: "users",

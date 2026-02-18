@@ -2774,19 +2774,27 @@ function openCrudModal(mode, id = null) {
             fieldHtml += `<i id="icon-bool-${col.key}" data-lucide="${isTrue ? 'check' : 'x'}" size="16"></i>`;
             fieldHtml += `</button>`;
         } else if (effectiveType === 'file') {
-            fieldHtml += `<div style="display:flex; gap:10px; align-items:center;"> 
-                <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;"> 
-                <button class="btn-secondary" onclick="document.getElementById('input-${col.key}').click()" style="height:32px; font-size:0.8rem;">Upload File</button> 
-                <span id="input-${col.key}-preview"> ${val ? `<img src="${val}" style="height:32px; border-radius:4px; border:1px solid var(--border-color); vertical-align:middle;">` : '<span style="font-size:0.8rem; color:var(--text-muted);">No file selected</span>'} </span> 
-            </div>`;
+            fieldHtml += `<input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;">`;
+            fieldHtml += `<div class="form-select-trigger" onclick="document.getElementById('input-${col.key}').click()" style="cursor:pointer;">`;
+            fieldHtml += `<span id="input-${col.key}-preview" style="display:flex; align-items:center; gap:8px; overflow:hidden;">`;
+            if (val) {
+                fieldHtml += `<img src="${val}" style="height:24px; border-radius:4px; border:1px solid var(--border-color);">`;
+            } else {
+                fieldHtml += `<span style="color:var(--text-muted); font-size:0.9rem;">Click to upload...</span>`;
+            }
+            fieldHtml += `</span>`;
+            fieldHtml += `<i data-lucide="upload" size="16"></i>`;
+            fieldHtml += `</div>`;
         } else if (effectiveType === 'richtext') {
             const safeVal = String(val).replace(/'/g, "&apos;");
             const textPreview = String(val).replace(/<[^>]*>?/gm, '');
-            fieldHtml += ` <div style="display:flex; gap:10px; align-items:center;"> 
-                <input type="hidden" id="input-${col.key}" value='${safeVal}'> 
-                <button class="btn-secondary" onclick="openEditorForInput('input-${col.key}')" style="height:32px; font-size:0.8rem;">Edit Content</button> 
-                <span id="input-${col.key}-preview" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"> ${textPreview.substring(0, 30)}... </span> 
-            </div> `;
+            fieldHtml += `<input type="hidden" id="input-${col.key}" value='${safeVal}'>`;
+            fieldHtml += `<div class="form-select-trigger" onclick="openEditorForInput('input-${col.key}')" style="cursor:pointer;">`;
+            fieldHtml += `<span id="input-${col.key}-preview" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:${textPreview ? 'var(--text-main)' : 'var(--text-muted)'}; font-size:0.9rem;">`;
+            fieldHtml += textPreview ? (textPreview.substring(0, 40) + (textPreview.length > 40 ? '...' : '')) : 'Edit content...';
+            fieldHtml += `</span>`;
+            fieldHtml += `<i data-lucide="file-edit" size="16"></i>`;
+            fieldHtml += `</div>`;
         } else {
             fieldHtml += `<input type="text" class="form-input" id="input-${col.key}" value="${val}" ${attrStr}>`;
         }
