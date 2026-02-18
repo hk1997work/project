@@ -114,7 +114,7 @@ function generateSitesForContext(projId, colId) {
         const created = "2025-01-10 12:00:00";
 
         return {
-            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: Math.floor(Math.random() * 800), freshwater_depth_m: r === 'Freshwater' ? parseFloat((Math.random() * 15).toFixed(1)) : null, creator_id: creator, creation_date: created, mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
+            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: Math.floor(Math.random() * 800), freshwater_depth_m: r === 'Freshwater' ? parseFloat((Math.random() * 15).toFixed(1)) : 0, creator_id: creator, creation_date: created, mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
                 const isMeta = Math.random() > 0.7;
                 return {
                     type: isMeta ? 'Metadata' : 'Audio', name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`, date: "2025-01-15", duration: "01:00:00"
@@ -2881,6 +2881,10 @@ function saveCrudData() {
     }
     if (isProject && !newRow.creator_name) newRow.creator_name = currentUser;
     if (isCollection && !newRow.creator_id) newRow.creator_id = currentUser;
+    if (currentTable === 'site') {
+        if (!newRow.creator_id) newRow.creator_id = currentUser;
+        if (!newRow.creation_date) newRow.creation_date = moment().format("YYYY-MM-DD HH:mm:ss");
+    }
 
     if (isProject) {
         const mappedProject = {id: newRow.project_id, name: newRow.name, creator: newRow.creator_name, externalUrl: newRow.url, image: newRow.picture_url, description: newRow.description, doi: newRow.doi, date: newRow.creation_date};

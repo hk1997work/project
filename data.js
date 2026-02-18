@@ -159,6 +159,9 @@ const TAXONOMY = {
     "Unknown": {"Unclassified": ["Region A", "Region B"], "Pending": ["Survey 1", "Survey 2"]}
 };
 
+const allBiomes = Array.from(new Set(Object.values(TAXONOMY).flatMap(r => Object.keys(r)))).sort();
+const allFunctionalTypes = Array.from(new Set(Object.values(TAXONOMY).flatMap(r => Object.values(r).flat()))).sort();
+
 const taxonAnnotations = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
 const getRandomAnnotations = () => {
     const count = rInt(1, 3);
@@ -212,9 +215,17 @@ const dbSchema = {
             key: "creator_id", label: "Creator", type: "text", readonly: true
         }, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, site: {
-        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "text"}, {key: "functional_type", label: "Functional Type", type: "text"}, {key: "topography_m", label: "Topography (m)", type: "number"}, {
-            key: "freshwater_depth_m", label: "Water Depth (m)", type: "number"
-        }, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        label: "Sites",
+        icon: "map-pin",
+        pk: "id",
+        columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "select", options: allBiomes}, {key: "functional_type", label: "Functional Type", type: "select", options: allFunctionalTypes}, {
+            key: "topography_m",
+            label: "Topography (m)",
+            type: "number",
+            filterType: 'range'
+        }, {
+            key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'
+        }, {key: "creator_id", label: "Creator", type: "text", readonly: true}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, annotation: {
         label: "Annotations",
         icon: "scan-line",
