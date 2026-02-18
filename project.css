@@ -3704,11 +3704,12 @@ input[type=number] {
     display: none;
 }
 
-/* Table Filter Dropdown Styles */
+/* --- Table Filter Dropdown Styles --- */
 .table-filter-wrapper {
     position: relative;
     width: 100%;
     font-family: var(--font-sans);
+    text-transform: none; /* 【关键修改】重置为默认，不强制大写 */
 }
 
 .table-filter-trigger {
@@ -3716,7 +3717,8 @@ input[type=number] {
     position: relative;
     display: flex;
     align-items: center;
-    font-weight: normal; /* 确保触发器文字不加粗 */
+    font-weight: normal;
+    text-transform: none; /* 【关键修改】确保触发器文字不强制大写 */
 }
 
 .table-filter-dropdown {
@@ -3768,7 +3770,8 @@ input[type=number] {
     display: block;
     white-space: normal;
     word-break: break-word;
-    font-weight: normal; /* 选项默认不加粗 */
+    font-weight: normal;
+    text-transform: none; /* 【关键修改】确保选项文字不强制大写 */
 }
 
 .table-filter-option:hover {
@@ -3779,7 +3782,7 @@ input[type=number] {
 .table-filter-option.selected {
     background: var(--bg-surface-secondary);
     color: var(--brand);
-    font-weight: 500; /* 选中时稍微加重一点点，但不是 700 粗体 */
+    font-weight: 500;
 }
 
 .table-filter-option.hidden {
