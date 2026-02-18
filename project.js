@@ -12,6 +12,10 @@ let currentSites = [];
 let currentSelectedSiteId = null;
 let filterState = {realm: "", biome: "", group: ""};
 
+// Fix: 添加缺失的全局变量，修复上传动画和表格筛选错误
+let uploadFilesQueue = [];
+let uploadTimer = null;
+let crudFilterState = {};
 
 const SPHERE_COLORS = {
     "Hydrosphere": "#0ea5e9", "Cryosphere": "#06b6d4", "Lithosphere": "#57534e", "Pedosphere": "#b45309", "Atmosphere": "#64748b", "Biosphere": "#65a30d", "Anthroposphere": "#db2777"
@@ -1741,7 +1745,12 @@ window.handleSelectAll = function (checked) {
 };
 
 function handleToolbarLink() {
-    if (selectedCrudIds.length !== 1) return;
+    // 修改：Site 表格允许批量操作，Project 仍限制单选
+    if (currentTable === 'site') {
+        if (selectedCrudIds.length === 0) return;
+    } else {
+        if (selectedCrudIds.length !== 1) return;
+    }
     openLinkModal();
 }
 
@@ -1860,6 +1869,125 @@ function openLinkModal() {
             submitBtn.disabled = false;
         }
         modal.classList.add('active');
+    } else if (currentTable === 'site') {
+        // 新增：Site 表格的关联弹窗逻辑
+        title.textContent = "Link Site to Projects & Collections";
+        const siteId = selectedCrudIds[0];
+        const site = currentSites.find(s => String(s.id) === siteId);
+
+        // 初始化关联数据（如果不存在）
+        if (!site.linkedProjects) site.linkedProjects = [];
+        if (!site.linkedCollections) site.linkedCollections = [];
+
+        let html = `<div class="form-group"><div style="padding-right: 4px;">`;
+
+        rawProjects.forEach(proj => {
+            const pId = String(proj.id);
+            const isProjLinked = site.linkedProjects.includes(pId);
+            const groupId = `link-group-p-${pId}`;
+
+            html += `
+            <div style="margin-bottom:8px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface-secondary); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; flex:1;">
+                        <input type="checkbox" class="link-site-proj-cb" value="${pId}" ${isProjLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                        <span style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${proj.name}</span>
+                    </label>
+                    <div onclick="toggleLinkGroup('${groupId}', this)" style="cursor:pointer; display:flex; align-items:center; padding:4px;">
+                         <i data-lucide="chevron-down" class="group-chevron" style="width:16px; height:16px; transition:transform 0.2s;"></i>
+                    </div>
+                </div>
+                <div id="${groupId}" style="display:block; padding-left:32px; margin-top:4px;">`;
+
+            proj.collections.forEach(c => {
+                const cId = String(c.id);
+                const isColLinked = site.linkedCollections.includes(cId);
+                html += `
+                    <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer;">
+                        <input type="checkbox" class="link-site-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} style="width:14px; height:14px; accent-color:var(--brand);">
+                        <span style="font-size:0.9rem; color:var(--text-secondary);">${c.name}</span>
+                    </label>
+                `;
+            });
+
+            html += `</div></div>`;
+        });
+
+        html += `</div></div>`;
+        container.innerHTML = html;
+        lucide.createIcons();
+
+        if (submitBtn) {
+            submitBtn.textContent = "Save";
+            submitBtn.className = "btn-primary";
+            submitBtn.style.backgroundColor = "";
+            submitBtn.onclick = saveLinkData;
+            submitBtn.disabled = false;
+        }
+        modal.classList.add('active');
+    } else if (currentTable === 'site') {
+        // Site 关联逻辑，支持批量
+        const isMulti = selectedCrudIds.length > 1;
+        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Sites to Projects & Collections` : "Link Site to Projects & Collections";
+
+        // 确定初始选中状态（仅单选时回显）
+        let initialProjIds = new Set();
+        let initialColIds = new Set();
+
+        if (!isMulti) {
+            const site = currentSites.find(s => String(s.id) === selectedCrudIds[0]);
+            if (site) {
+                if (site.linkedProjects) site.linkedProjects.forEach(id => initialProjIds.add(String(id)));
+                if (site.linkedCollections) site.linkedCollections.forEach(id => initialColIds.add(String(id)));
+            }
+        }
+
+        let html = `<div class="form-group"><div style="padding-right: 4px;">`;
+
+        rawProjects.forEach(proj => {
+            const pId = String(proj.id);
+            const isProjLinked = initialProjIds.has(pId);
+            const groupId = `link-group-s-${pId}`;
+
+            html += `
+            <div style="margin-bottom:8px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface-secondary); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; flex:1;">
+                        <input type="checkbox" class="link-site-proj-cb" value="${pId}" ${isProjLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                        <span style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${proj.name}</span>
+                    </label>
+                    <div onclick="toggleLinkGroup('${groupId}', this)" style="cursor:pointer; display:flex; align-items:center; padding:4px;">
+                         <i data-lucide="chevron-down" class="group-chevron" style="width:16px; height:16px; transition:transform 0.2s;"></i>
+                    </div>
+                </div>
+                <div id="${groupId}" style="display:block; padding-left:32px; margin-top:4px;">`;
+
+            proj.collections.forEach(c => {
+                const cId = String(c.id);
+                const isColLinked = initialColIds.has(cId);
+                html += `
+                    <label style="display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer;">
+                        <input type="checkbox" class="link-site-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} style="width:14px; height:14px; accent-color:var(--brand);">
+                        <span style="font-size:0.9rem; color:var(--text-secondary);">${c.name}</span>
+                    </label>
+                `;
+            });
+
+            html += `</div></div>`;
+        });
+
+        html += `</div></div>`;
+        container.innerHTML = html;
+        lucide.createIcons();
+
+        if (submitBtn) {
+            submitBtn.textContent = "Save";
+            submitBtn.className = "btn-primary";
+            submitBtn.style.backgroundColor = "";
+            submitBtn.onclick = saveLinkData;
+            submitBtn.disabled = false;
+        }
+        modal.classList.add('active');
     }
 }
 
@@ -1894,6 +2022,22 @@ function saveLinkData() {
                 });
 
                 proj.collections = newCollections;
+            }
+        });
+    } else if (currentTable === 'site') {
+        // 保存 Site 关联数据（支持批量）
+        const projCheckboxes = document.querySelectorAll('.link-site-proj-cb:checked');
+        const colCheckboxes = document.querySelectorAll('.link-site-col-cb:checked');
+
+        const newProjIds = Array.from(projCheckboxes).map(cb => cb.value);
+        const newColIds = Array.from(colCheckboxes).map(cb => cb.value);
+
+        selectedCrudIds.forEach(siteId => {
+            const site = currentSites.find(s => String(s.id) === String(siteId));
+            if (site) {
+                // 直接覆盖为当前选中的项
+                site.linkedProjects = [...newProjIds];
+                site.linkedCollections = [...newColIds];
             }
         });
     }
@@ -1987,6 +2131,10 @@ function updateToolbarState() {
         if (currentTable === 'project') {
             linkBtn.style.display = 'inline-flex';
             linkBtn.disabled = (count !== 1);
+        } else if (currentTable === 'site') {
+            // Site 表格允许批量操作，只要选中数量大于 0 即可
+            linkBtn.style.display = 'inline-flex';
+            linkBtn.disabled = (count === 0);
         } else {
             linkBtn.style.display = 'none';
         }
@@ -2061,15 +2209,8 @@ function savePermissionDrawer() {
             USER_PERMISSIONS_DB[uid] = JSON.parse(JSON.stringify(currentPermDraft));
         });
 
-        const btn = document.querySelector('.perm-drawer-footer .btn-primary');
-        const originText = btn.textContent;
-        btn.textContent = "Saved!";
-        btn.style.background = "#22c55e";
-        setTimeout(() => {
-            btn.textContent = originText;
-            btn.style.background = "";
-            closePermissionDrawer();
-        }, 800);
+        // 修改：直接关闭弹窗，不显示Saved动画，保持与编辑页面一致
+        closePermissionDrawer();
     }
 }
 
@@ -2667,6 +2808,7 @@ function openCrudModal(mode, id = null) {
         }
 
         let val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
+        if (val === null) val = "";
 
         if (col.key === 'creation_date' && val) {
             try {
@@ -3200,9 +3342,35 @@ function showUploadModalUI() {
 
     title.textContent = "Upload Audio";
 
-    const siteOptions = currentSites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-    const licenseOptions = mockLicenses.map(l => `<option value="${l}">${l}</option>`).join('');
-    const sensorOptions = ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3", "Sony PCM-D10"].map(s => `<option value="${s}">${s}</option>`).join('');
+    // 辅助函数：生成统一的带搜索功能的 Select HTML
+    const renderUploadSelect = (key, label, options) => {
+        let html = `<div class="form-group"><label class="form-label">${label}</label>`;
+        html += `<div class="form-select-wrapper">`;
+        html += `<input type="hidden" id="input-${key}" value="">`;
+        html += `<div class="form-select-trigger" id="trigger-${key}" onclick="toggleFormSelect('dropdown-${key}')">`;
+        html += `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span> <i data-lucide="chevron-down" size="16"></i></div>`;
+        html += `<div class="form-select-dropdown" id="dropdown-${key}">`;
+        html += `<input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-${key}', this.value)" onclick="event.stopPropagation()">`;
+        html += `<div class="form-select-options-list">`;
+
+        options.forEach(opt => {
+            const val = opt.val || opt;
+            const txt = opt.txt || opt;
+            // 使用 safe 字符串处理，防止引号导致 HTML 错误
+            const safeVal = String(val).replace(/'/g, "\\'");
+            const safeTxt = String(txt).replace(/'/g, "\\'");
+            html += `<div class="form-select-option" onclick="selectFormOption('${key}', '${safeVal}', '${safeTxt}', this)">${txt}</div>`;
+        });
+
+        html += `</div></div></div></div>`;
+        return html;
+    };
+
+    // 准备选项数据
+    const siteOpts = currentSites.map(s => ({val: s.id, txt: s.name}));
+    const sensorOpts = ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3", "Sony PCM-D10"];
+    const mediumOpts = ["Air", "Water"];
+    const licenseOpts = mockLicenses;
 
     const html = `
     <div class="upload-layout">
@@ -3233,28 +3401,10 @@ function showUploadModalUI() {
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Site</label>
-                <select class="form-input" id="up-site">${siteOptions}</select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Sensor</label>
-                <select class="form-input" id="up-sensor">${sensorOptions}</select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Medium</label>
-                <select class="form-input" id="up-medium">
-                    <option value="Air">Air</option>
-                    <option value="Water">Water</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">License</label>
-                <select class="form-input" id="up-license">${licenseOptions}</select>
-            </div>
+            ${renderUploadSelect('up-site', 'Site', siteOpts)}
+            ${renderUploadSelect('up-sensor', 'Sensor', sensorOpts)}
+            ${renderUploadSelect('up-medium', 'Medium', mediumOpts)}
+            ${renderUploadSelect('up-license', 'License', licenseOpts)}
             
             <div class="form-group">
                 <label class="form-label">Recording Gain (dB)</label>
