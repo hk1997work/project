@@ -2504,21 +2504,6 @@ html {
     font-size: 0.9rem;
 }
 
-.crud-table th {
-    text-align: left;
-    padding: 14px 20px;
-    background: var(--bg-surface-secondary);
-    color: var(--text-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border-bottom: 1px solid var(--border-color);
-    white-space: nowrap;
-}
-
 .crud-table td {
     padding: 14px 20px;
     border-bottom: 1px solid var(--border-color);
@@ -2842,7 +2827,7 @@ html {
 
 .crud-table th {
     vertical-align: top;
-    padding: 10px 12px;
+    padding: 10px;
     background: var(--bg-surface-secondary);
     border-bottom: 1px solid var(--border-color);
 }
@@ -3764,7 +3749,7 @@ input[type=number] {
 .table-filter-option {
     padding: 8px 12px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-main);
     transition: background 0.1s;
     display: block;

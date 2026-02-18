@@ -16,6 +16,7 @@ let filterState = {realm: "", biome: "", group: ""};
 let uploadFilesQueue = [];
 let uploadTimer = null;
 let crudFilterState = {};
+let generatedAnnotations = []; // 新增：用于存储动态生成的注释
 
 const SPHERE_COLORS = {
     "Hydrosphere": "#0ea5e9", "Cryosphere": "#06b6d4", "Lithosphere": "#57534e", "Pedosphere": "#b45309", "Atmosphere": "#64748b", "Biosphere": "#65a30d", "Anthroposphere": "#db2777"
@@ -487,9 +488,9 @@ const generateMediaForContext = (proj, col) => {
 
         const audioSourceType = isAudio ? (Math.random() > 0.3 ? "Audio File" : "Metadata") : null;
         const ext = isAudio ? "wav" : "jpg";
-        const baseName = `REC_${basePrefix}_${recId}.${ext}`;
+        const baseName = `REC_${basePrefix}_${recId}`;
 
-        let fileName = baseName;
+        let fileName = baseName + '.' + ext;
         if (isAudio && audioSourceType === 'Metadata') {
             fileName = "";
         }
@@ -562,6 +563,7 @@ function updateMediaContext() {
     const proj = rawProjects[currProjIdx];
     const col = currColIdx > 0 ? proj.collections[currColIdx - 1] : null;
     mediaItems = generateMediaForContext(proj, col);
+    generatedAnnotations = []; // 重置注释数据，以便基于新的 mediaItems 重新生成
     mediaSearchQuery = "";
     const searchInput = document.querySelector('.media-search-input');
     if (searchInput) searchInput.value = "";
@@ -1400,7 +1402,40 @@ function getDataForTable(tableName) {
             };
         });
     } else if (tableName === 'annotation') {
-        return staticMockDB.annotation || [];
+        if (generatedAnnotations.length === 0 && mediaItems.length > 0) {
+            // 动态生成 Annotation 数据
+            const count = 25;
+            for (let i = 0; i < count; i++) {
+                const media = mediaItems[Math.floor(Math.random() * mediaItems.length)];
+                const taxon = mockTaxons[Math.floor(Math.random() * mockTaxons.length)];
+                const soundClass = mockSoundClasses[Math.floor(Math.random() * mockSoundClasses.length)];
+
+                generatedAnnotations.push({
+                    id: i + 1,
+                    uuid: `550e8400-e29b-41d4-a716-ANNOT${String(i).padStart(4, '0')}`,
+                    sound_id: soundClass,
+                    media_name: media.name, // 直接使用 Audio 的名字
+                    creator_id: mockNames[Math.floor(Math.random() * mockNames.length)],
+                    // 修改：随机选择创建者类型
+                    creator_type: ["user", "model", "automated"][Math.floor(Math.random() * 3)],
+                    confidence: parseFloat((0.5 + Math.random() * 0.5).toFixed(2)),
+                    min_x: parseFloat((Math.random() * 10).toFixed(1)),
+                    max_x: parseFloat((10 + Math.random() * 10).toFixed(1)),
+                    min_y: Math.floor(Math.random() * 2000),
+                    max_y: Math.floor(3000 + Math.random() * 5000),
+                    taxon_id: taxon,
+                    uncertain: Math.random() > 0.8,
+                    sound_distance_m: Math.floor(Math.random() * 50),
+                    distance_not_estimable: Math.random() > 0.9,
+                    individual_num: Math.floor(Math.random() * 3) + 1,
+                    animal_sound_type: ["Call", "Song", "Drumming"][Math.floor(Math.random() * 3)],
+                    reference: Math.random() > 0.9,
+                    comments: ["Clear recording", "Background noise high", "Overlapping calls", "Interesting pattern", "Needs review"][Math.floor(Math.random() * 5)],
+                    creation_date: moment().subtract(Math.floor(Math.random() * 10), 'days').format("YYYY-MM-DD HH:mm:ss")
+                });
+            }
+        }
+        return generatedAnnotations;
     } else if (tableName === 'annotation_review') {
         return staticMockDB.annotation_review || [];
     } else if (tableName === 'index_log') {
@@ -1446,12 +1481,18 @@ function switchCrudTable(tableName) {
         const oldDrop = document.getElementById('toolbar-upload-dropdown');
         if (oldDrop) oldDrop.remove();
 
-        if (isMediaTable) {
-            addBtn.innerHTML = `<i data-lucide="upload" size="16"></i> Upload`;
-            addBtn.onclick = (e) => toggleToolbarUploadDropdown(e);
+        // 隐藏 Annotation 表的 Add 按钮
+        if (tableName === 'annotation') {
+            addBtn.style.display = 'none';
         } else {
-            addBtn.innerHTML = `<i data-lucide="plus" size="16"></i> Add`;
-            addBtn.onclick = () => openCrudModal('add');
+            addBtn.style.display = ''; // 恢复显示
+            if (isMediaTable) {
+                addBtn.innerHTML = `<i data-lucide="upload" size="16"></i> Upload`;
+                addBtn.onclick = (e) => toggleToolbarUploadDropdown(e);
+            } else {
+                addBtn.innerHTML = `<i data-lucide="plus" size="16"></i> Add`;
+                addBtn.onclick = () => openCrudModal('add');
+            }
         }
         lucide.createIcons();
     }
