@@ -113,8 +113,11 @@ function generateSitesForContext(projId, colId) {
         const creator = mockNames[Math.floor(Math.random() * mockNames.length)];
         const created = "2025-01-10 12:00:00";
 
+        const topo = Math.random() > 0.1 ? Math.floor(Math.random() * 800) : null;
+        const depth = (r === 'Freshwater' || r === 'Marine') && Math.random() > 0.1 ? parseFloat((Math.random() * 15).toFixed(1)) : null;
+
         return {
-            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: Math.floor(Math.random() * 800), freshwater_depth_m: r === 'Freshwater' ? parseFloat((Math.random() * 15).toFixed(1)) : 0, creator_id: creator, creation_date: created, mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
+            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created, mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
                 const isMeta = Math.random() > 0.7;
                 return {
                     type: isMeta ? 'Metadata' : 'Audio', name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`, date: "2025-01-15", duration: "01:00:00"
@@ -2579,10 +2582,42 @@ window.selectFormOption = function (key, value, label, element) {
 
     document.querySelectorAll('.form-select-dropdown').forEach(d => d.classList.remove('active'));
 
+    if (currentTable === 'site') {
+        if (key === 'realm') {
+            updateDependentSelect('biome', value && TAXONOMY[value] ? Object.keys(TAXONOMY[value]) : []);
+            updateDependentSelect('functional_type', []);
+        } else if (key === 'biome') {
+            const realmInput = document.getElementById('input-realm');
+            const realmVal = realmInput ? realmInput.value : null;
+            const groups = (realmVal && value && TAXONOMY[realmVal] && TAXONOMY[realmVal][value]) ? TAXONOMY[realmVal][value] : [];
+            updateDependentSelect('functional_type', groups);
+        }
+    }
+
     if (key === 'audio_type') {
         handleAudioTypeChange(value);
     }
 };
+
+function updateDependentSelect(key, options) {
+    const dropdown = document.getElementById(`dropdown-${key}`);
+    if (!dropdown) return;
+    const input = document.getElementById(`input-${key}`);
+    if (input) input.value = "";
+    const trigger = document.getElementById(`trigger-${key}`);
+    if (trigger) {
+        trigger.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span> <i data-lucide="chevron-down" size="16"></i>`;
+        lucide.createIcons();
+    }
+    const list = dropdown.querySelector('.form-select-options-list');
+    if (list) {
+        let html = `<div class="form-select-option" onclick="selectFormOption('${key}', '', 'Select...', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
+        options.forEach(opt => {
+            html += `<div class="form-select-option" onclick="selectFormOption('${key}', '${opt}', '${opt}', this)">${opt}</div>`;
+        });
+        list.innerHTML = html;
+    }
+}
 
 function openCrudModal(mode, id = null) {
     const schema = dbSchema[currentTable];
@@ -2700,6 +2735,15 @@ function openCrudModal(mode, id = null) {
                     const video = getDataForTable('video');
                     const allMedia = [...audio, ...photo, ...video];
                     options = allMedia.map(m => m.media_id);
+                }
+            } else if (currentTable === 'site') {
+                if (col.key === 'biome') {
+                    const r = currentRow['realm'];
+                    if (r && TAXONOMY[r]) options = Object.keys(TAXONOMY[r]);
+                } else if (col.key === 'functional_type') {
+                    const r = currentRow['realm'];
+                    const b = currentRow['biome'];
+                    if (r && b && TAXONOMY[r] && TAXONOMY[r][b]) options = TAXONOMY[r][b];
                 }
             }
 
