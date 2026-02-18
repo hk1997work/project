@@ -141,7 +141,7 @@ function generateSitesForContext(projId, colId) {
                     type: isMeta ? 'Metadata' : 'Audio',
                     name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`,
                     date: "2025-01-15",
-                    duration: isMeta ? "N/A" : "01:00:00"
+                    duration: "01:00:00"
                 };
             })
         };
@@ -2540,6 +2540,71 @@ function handleAudioTypeChange(type) {
     }
 }
 
+// --- Custom Searchable Select Logic ---
+
+window.toggleFormSelect = function (id) {
+    const dropdown = document.getElementById(id);
+    if (!dropdown) return;
+    const isActive = dropdown.classList.contains('active');
+
+    // Close all other dropdowns
+    document.querySelectorAll('.form-select-dropdown').forEach(d => d.classList.remove('active'));
+
+    if (!isActive) {
+        dropdown.classList.add('active');
+        const search = dropdown.querySelector('.form-select-search');
+        if (search) {
+            search.value = '';
+            search.focus();
+            // Reset filtering
+            const list = dropdown.querySelector('.form-select-options-list');
+            if (list) {
+                Array.from(list.children).forEach(child => child.classList.remove('hidden'));
+            }
+        }
+    }
+};
+
+window.filterFormSelect = function (dropdownId, query) {
+    const dropdown = document.getElementById(dropdownId);
+    if (!dropdown) return;
+    const options = dropdown.querySelectorAll('.form-select-option');
+    const val = query.toLowerCase();
+    options.forEach(opt => {
+        const text = opt.textContent.toLowerCase();
+        if (text.includes(val)) opt.classList.remove('hidden');
+        else opt.classList.add('hidden');
+    });
+};
+
+window.selectFormOption = function (key, value, label) {
+    // Update hidden input
+    const input = document.getElementById(`input-${key}`);
+    if (input) input.value = value;
+
+    // Update trigger text
+    const trigger = document.getElementById(`trigger-${key}`);
+    if (trigger) {
+        trigger.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${label || 'Select...'}</span> <i data-lucide="chevron-down" size="16"></i>`;
+        lucide.createIcons();
+    }
+
+    // Close dropdowns
+    document.querySelectorAll('.form-select-dropdown').forEach(d => d.classList.remove('active'));
+
+    // Handle special logic for audio_type
+    if (key === 'audio_type') {
+        handleAudioTypeChange(value);
+    }
+};
+
+// Close selects when clicking outside
+document.addEventListener('click', e => {
+    if (!e.target.closest('.form-select-wrapper')) {
+        document.querySelectorAll('.form-select-dropdown').forEach(d => d.classList.remove('active'));
+    }
+});
+
 function openCrudModal(mode, id = null) {
     const schema = dbSchema[currentTable];
     const modal = document.getElementById('crud-modal-overlay');
@@ -2628,10 +2693,7 @@ function openCrudModal(mode, id = null) {
         let fieldHtml = `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
         if (effectiveType === 'select') {
-            const onChangeAttr = col.key === 'audio_type' ? `onchange="handleAudioTypeChange(this.value)"` : '';
-            fieldHtml += `<select class="form-input" id="input-${col.key}" ${attrStr} ${onChangeAttr}>`;
-            fieldHtml += `<option value="">Select...</option>`;
-
+            // --- Custom Searchable Select ---
             let options = col.options || [];
             if (currentTable === 'project' && col.key === 'creator_name') {
                 const currentUser = document.querySelector('.user-name-text').textContent.trim();
@@ -2662,11 +2724,39 @@ function openCrudModal(mode, id = null) {
                 }
             }
 
+            let currentLabel = "Select...";
+            if (val) {
+                // Try to match val to an option, currently options are simple strings/numbers
+                currentLabel = val;
+            }
+
+            const isDisabled = attrStr.includes('disabled');
+            const disabledClass = isDisabled ? 'disabled' : '';
+
+            fieldHtml += `<div class="form-select-wrapper" id="wrapper-${col.key}">`;
+            // Hidden input to hold the actual value for saveCrudData
+            fieldHtml += `<input type="hidden" id="input-${col.key}" value="${val}">`;
+
+            // Trigger
+            fieldHtml += `<div class="form-select-trigger ${disabledClass}" id="trigger-${col.key}" onclick="toggleFormSelect('dropdown-${col.key}')">`;
+            fieldHtml += `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${currentLabel}</span>`;
+            fieldHtml += `<i data-lucide="chevron-down" size="16"></i>`;
+            fieldHtml += `</div>`;
+
+            // Dropdown
+            fieldHtml += `<div class="form-select-dropdown" id="dropdown-${col.key}">`;
+            fieldHtml += `<input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-${col.key}', this.value)" onclick="event.stopPropagation()">`;
+            fieldHtml += `<div class="form-select-options-list">`;
+
+            // Clear Option
+            fieldHtml += `<div class="form-select-option" onclick="selectFormOption('${col.key}', '', 'Select...')"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
+
             options.forEach(opt => {
-                const selected = String(val) === String(opt) ? 'selected' : '';
-                fieldHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
+                const isSelected = String(val) === String(opt) ? 'selected' : '';
+                fieldHtml += `<div class="form-select-option ${isSelected}" onclick="selectFormOption('${col.key}', '${opt}', '${opt}')">${opt}</div>`;
             });
-            fieldHtml += `</select>`;
+
+            fieldHtml += `</div></div></div>`;
 
         } else if (effectiveType === 'datetime-local') {
             let dtVal = val;
@@ -2676,10 +2766,13 @@ function openCrudModal(mode, id = null) {
             fieldHtml += `<input type="datetime-local" class="form-input" id="input-${col.key}" value="${dtVal}" step="1" ${attrStr}>`;
 
         } else if (effectiveType === 'boolean') {
-            fieldHtml += `<select class="form-input" id="input-${col.key}" ${attrStr}> 
-                <option value="true" ${val === true ? 'selected' : ''}>True</option> 
-                <option value="false" ${val === false ? 'selected' : ''}>False</option> 
-            </select>`;
+            const isTrue = val === true;
+            fieldHtml += `<input type="hidden" id="input-${col.key}" value="${isTrue}">`;
+            // 使用 form-bool-trigger 类，并根据值添加 is-true 类
+            fieldHtml += `<button class="form-bool-trigger ${isTrue ? 'is-true' : ''}" id="btn-bool-${col.key}" onclick="toggleBoolean('${col.key}')" ${attrStr} type="button">`;
+            fieldHtml += `<span id="lbl-bool-${col.key}">${isTrue ? 'True' : 'False'}</span>`;
+            fieldHtml += `<i id="icon-bool-${col.key}" data-lucide="${isTrue ? 'check' : 'x'}" size="16"></i>`;
+            fieldHtml += `</button>`;
         } else if (effectiveType === 'file') {
             fieldHtml += `<div style="display:flex; gap:10px; align-items:center;"> 
                 <input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;"> 
@@ -3333,4 +3426,28 @@ function toggleDtInput(checked) {
     }
 }
 
+// --- Custom Boolean Toggle Logic ---
+window.toggleBoolean = function (key) {
+    const input = document.getElementById(`input-${key}`);
+    const btn = document.getElementById(`btn-bool-${key}`);
+    const lbl = document.getElementById(`lbl-bool-${key}`);
+    const icon = document.getElementById(`icon-bool-${key}`);
+
+    if (!input || !btn || btn.disabled) return;
+
+    const currentVal = input.value === 'true';
+    const newVal = !currentVal;
+
+    input.value = newVal;
+    lbl.textContent = newVal ? 'True' : 'False';
+
+    if (newVal) {
+        btn.classList.add('is-true');
+        icon.setAttribute('data-lucide', 'check');
+    } else {
+        btn.classList.remove('is-true');
+        icon.setAttribute('data-lucide', 'x');
+    }
+    lucide.createIcons();
+};
 init();

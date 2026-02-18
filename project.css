@@ -2680,12 +2680,66 @@ html {
     font-family: var(--font-sans);
     outline: none;
     box-sizing: border-box;
+    transition: all 0.2s;
 }
 
+[data-theme="dark"] .form-input {
+    color-scheme: dark;
+}
+
+[data-theme="dark"] ::-webkit-calendar-picker-indicator {
+    filter: none;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+.form-input:not(:disabled):not([readonly]):hover {
+    background: var(--bg-surface);
+    border-color: var(--brand);
+}
 
 .form-input:not(:disabled):not([readonly]):focus {
     border-color: var(--brand);
     background: var(--bg-surface);
+    box-shadow: 0 0 0 2px var(--brand-tint);
+}
+
+/* New Boolean Trigger Style */
+.form-bool-trigger {
+    width: 100%;
+    height: var(--h-std);
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-capsule);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+    font-family: var(--font-sans);
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+
+.form-bool-trigger:hover:not(:disabled) {
+    background: var(--bg-surface);
+    border-color: var(--brand);
+}
+
+.form-bool-trigger.is-true {
+    border-color: var(--brand);
+    color: var(--brand);
+    background: var(--brand-tint);
+}
+
+.form-bool-trigger:disabled {
+    opacity: 0.7;
+    pointer-events: none;
+    background: var(--bg-capsule);
+    color: var(--text-muted);
 }
 
 
@@ -3550,4 +3604,102 @@ input[type=number] {
 .sb-expand:hover {
     background: white;
     color: var(--site-color);
+}
+
+/* Custom Searchable Select for Forms */
+.form-select-wrapper {
+    position: relative;
+    width: 100%;
+    font-family: var(--font-sans);
+}
+
+.form-select-trigger {
+    width: 100%;
+    height: var(--h-std);
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-capsule);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+
+.form-select-trigger:not(.disabled):hover {
+    background: var(--bg-surface);
+    border-color: var(--brand);
+}
+
+.form-select-trigger.disabled {
+    opacity: 0.7;
+    pointer-events: none;
+    background: var(--bg-capsule);
+    color: var(--text-muted);
+}
+
+.form-select-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 50;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease;
+}
+
+.form-select-dropdown.active {
+    display: flex;
+}
+
+.form-select-search {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-surface-secondary);
+    color: var(--text-main);
+    font-size: 0.85rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.form-select-options-list {
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.form-select-option {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    transition: background 0.1s;
+    display: block;
+}
+
+.form-select-option:hover {
+    background: var(--brand-tint);
+    color: var(--brand);
+}
+
+.form-select-option.selected {
+    background: var(--bg-surface-secondary);
+    font-weight: 700;
+    color: var(--brand);
+}
+
+.form-select-option.hidden {
+    display: none;
 }
