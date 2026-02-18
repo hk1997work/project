@@ -207,42 +207,18 @@ const dbSchema = {
         }, {key: "medium", label: "Medium", type: "select", options: ["Air", "Water"]}, {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'}, {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'}, {key: "channel_num", label: "Channels", type: "number", filterType: 'range'}, {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'}, {
             key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'
         }, {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "doi", label: "DOI", type: "text"}, {key: "note", label: "Note", type: "text"}, {
-            key: "uploader_id",
-            label: "Uploader",
-            type: "text",
-            readonly: true,
-            filterType: 'select'
+            key: "uploader_id", label: "Uploader", type: "text", readonly: true, filterType: 'select'
         }, {
             key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'
         }, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, site: {
-        label: "Sites",
-        icon: "map-pin",
-        pk: "id",
-        columns: [
-            {key: "id", label: "ID", type: "text", readonly: true},
-            {key: "uuid", label: "UUID", type: "text", readonly: true},
-            {key: "name", label: "Site Name", type: "text"},
-            // 修改：拆分坐标为经纬度，支持范围筛选
-            {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true},
-            {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true},
-            {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)},
-            {key: "biome", label: "Biome", type: "select", options: []},
-            {key: "functional_type", label: "Functional Type", type: "select", options: []},
-            {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'},
-            {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'},
-            {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'},
-            {key: "creation_date", label: "Created", type: "text", readonly: true}
-        ]
+        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Site Name", type: "text"}, // 修改：拆分坐标为经纬度，支持范围筛选
+            {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true}, {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "select", options: []}, {key: "functional_type", label: "Functional Type", type: "select", options: []}, {
+                key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'
+            }, {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'}, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, annotation: {
-        label: "Annotations",
-        icon: "scan-line",
-        pk: "id",
-        columns: [{key: "id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_name", label: "Media Name", type: "text", filterType: 'select'}, {key: "min_x", label: "Min X", type: "number"}, {key: "max_x", label: "Max X", type: "number"}, {key: "min_y", label: "Min Y", type: "number"}, {key: "max_y", label: "Max Y", type: "number"}, {
-            key: "creator_type",
-            label: "Creator Type",
-            type: "select",
-            options: ["user", "model", "automated"]
+        label: "Annotations", icon: "scan-line", pk: "id", columns: [{key: "id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_name", label: "Media Name", type: "text", filterType: 'select'}, {key: "min_x", label: "Min X", type: "number"}, {key: "max_x", label: "Max X", type: "number"}, {key: "min_y", label: "Min Y", type: "number"}, {key: "max_y", label: "Max Y", type: "number"}, {
+            key: "creator_type", label: "Creator Type", type: "select", options: ["user", "model", "automated"]
         }, {key: "sound_id", label: "Sound Class", type: "select", options: mockSoundClasses}, {key: "animal_sound_type", label: "Sound Type", type: "text"}, {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons}, {
             key: "confidence", label: "Confidence", type: "number"
         }, {key: "uncertain", label: "Uncertain", type: "boolean"}, {key: "sound_distance_m", label: "Distance (m)", type: "number"}, {key: "distance_not_estimable", label: "Dist. Unknown", type: "boolean"}, {
@@ -253,10 +229,7 @@ const dbSchema = {
         icon: "check-square",
         pk: "id",
         columns: [{key: "id", label: "ID", type: "text", readonly: true, hiddenInTable: true}, {key: "annotation_id", label: "Annotation ID", type: "select", options: []}, {key: "reviewer_id", label: "Reviewer", type: "select", options: mockNames}, {key: "annotation_review_status_id", label: "Status", type: "select", options: mockReviewStatuses}, {key: "taxon_id", label: "Suggested Taxon", type: "select", options: mockTaxons}, {key: "note", label: "Note", type: "text"}, {
-            key: "creator_id",
-            label: "Creator",
-            type: "select",
-            options: mockNames
+            key: "creator_id", label: "Creator", type: "select", options: mockNames
         }, {
             key: "creation_date", label: "Created", type: "text", readonly: true
         }]
