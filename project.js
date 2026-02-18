@@ -120,8 +120,23 @@ function generateSitesForContext(projId, colId) {
         const topo = Math.random() > 0.1 ? Math.floor(Math.random() * 800) : null;
         const depth = (r === 'Freshwater' || r === 'Marine') && Math.random() > 0.1 ? parseFloat((Math.random() * 15).toFixed(1)) : null;
 
+        // --- 初始 Link 数据 ---
+        // 默认关联当前项目
+        let linkedProjs = [String(projId)];
+        // 20% 概率额外关联另一个项目(假设项目ID为1,2,3)
+        if (Math.random() > 0.8) {
+            const otherId = (projId % 3) + 1;
+            linkedProjs.push(String(otherId));
+        }
+
+        // 默认关联当前 Collection (如果有)
+        let linkedCols = colId ? [String(colId)] : [];
+
         return {
-            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created, mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
+            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created,
+            linkedProjects: linkedProjs,
+            linkedCollections: linkedCols,
+            mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
                 const isMeta = Math.random() > 0.7;
                 return {
                     type: isMeta ? 'Metadata' : 'Audio', name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`, date: "2025-01-15", duration: "01:00:00"
@@ -491,6 +506,18 @@ const generateMediaForContext = (proj, col) => {
 
         const uploader = mockNames[rInt(0, mockNames.length - 1)];
 
+        // --- 初始 Link 数据 ---
+        // 默认关联当前 Collection (如果有)
+        let linkedCols = col ? [String(col.id)] : [];
+        // 20% 概率额外关联同项目下的另一个随机 Collection (作为演示)
+        if (proj.collections.length > 1) {
+            const randomCol = proj.collections[Math.floor(Math.random() * proj.collections.length)];
+            const rCId = String(randomCol.id);
+            if (!linkedCols.includes(rCId)) {
+                linkedCols.push(rCId);
+            }
+        }
+
         return {
             id: String(numId),
             media_id: numId,
@@ -525,7 +552,8 @@ const generateMediaForContext = (proj, col) => {
             sr: "48kHz",
             spectrogram: "https://ecosound-web.de/ecosound_web/sounds/images/51/27/6533-player_s.png",
             fullDate: `${fullDate} ${h}:${m}`,
-            duration: `00:${rInt(10, 59)}`
+            duration: `00:${rInt(10, 59)}`,
+            linkedCollections: linkedCols
         };
     });
 };
@@ -1862,13 +1890,12 @@ function openLinkModal() {
         container.innerHTML = html;
 
     } else if (currentTable === 'site') {
-        // Site: 样式保持一致，但头部包含 Checkbox 用于关联 Project
         const isMulti = selectedCrudIds.length > 1;
         title.textContent = isMulti ? `Link ${selectedCrudIds.length} Sites` : "Link Site to Projects & Collections";
 
-        // 初始选中状态
         let initialProjIds = new Set();
         let initialColIds = new Set();
+
         if (!isMulti) {
             const site = currentSites.find(s => String(s.id) === selectedCrudIds[0]);
             if (site) {
@@ -1884,7 +1911,6 @@ function openLinkModal() {
             const isProjLinked = initialProjIds.has(pId);
             const groupId = `link-group-s-${pId}`;
 
-            // Header: 包含 Project Checkbox，样式模仿 Project 弹窗
             html += `
             <div style="display:flex; align-items:center; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid var(--border-light); margin-bottom:4px; margin-top:8px;">
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; color:var(--text-main); font-size:0.95rem; user-select:none; flex:1;">
@@ -1901,9 +1927,11 @@ function openLinkModal() {
             proj.collections.forEach(c => {
                 const cId = String(c.id);
                 const isColLinked = initialColIds.has(cId);
+
+                // 修改：添加了 link-multi-col-cb 和 handleMultiParentCollectionChange
                 html += `
                     <label style="display:flex; align-items:center; gap:10px; padding:10px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
-                        <input type="checkbox" class="link-site-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                        <input type="checkbox" class="link-site-col-cb link-multi-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} onchange="handleMultiParentCollectionChange(this)" style="width:16px; height:16px; accent-color:var(--brand);">
                         <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
                     </label>
                 `;
@@ -1914,15 +1942,17 @@ function openLinkModal() {
         container.innerHTML = html;
 
     } else if (['audio', 'photo', 'video'].includes(currentTable)) {
-        // Media: 样式完全一致，头部为折叠（Media 通常关联到 Collection）
         const isMulti = selectedCrudIds.length > 1;
-        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Audios` : "Link Audio to Collections";
+        title.textContent = isMulti ? `Link ${selectedCrudIds.length} Items` : "Link Item to Collections";
 
         let initialColIds = new Set();
+
         if (!isMulti) {
             const media = mediaItems.find(m => String(m.id) === selectedCrudIds[0]);
-            if (media && media.linkedCollections) {
-                media.linkedCollections.forEach(id => initialColIds.add(String(id)));
+            if (media) {
+                if (media.linkedCollections) {
+                    media.linkedCollections.forEach(id => initialColIds.add(String(id)));
+                }
             }
         }
 
@@ -1941,9 +1971,11 @@ function openLinkModal() {
             proj.collections.forEach(c => {
                 const cId = String(c.id);
                 const isColLinked = initialColIds.has(cId);
+
+                // 修改：添加了 link-multi-col-cb 和 handleMultiParentCollectionChange
                 html += `
                     <label style="display:flex; align-items:center; gap:10px; padding:10px 0; cursor:pointer; border-bottom:1px dashed var(--border-color);">
-                        <input type="checkbox" class="link-media-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--brand);">
+                        <input type="checkbox" class="link-media-col-cb link-multi-col-cb" value="${cId}" ${isColLinked ? 'checked' : ''} onchange="handleMultiParentCollectionChange(this)" style="width:16px; height:16px; accent-color:var(--brand);">
                         <span style="font-size:0.9rem; color:var(--text-main); font-weight:500;">${c.name}</span>
                     </label>
                 `;
@@ -1963,7 +1995,11 @@ function openLinkModal() {
         submitBtn.onclick = saveLinkData;
         submitBtn.disabled = false;
     }
+
     modal.classList.add('active');
+
+    // 打开弹窗后，立刻刷新状态，将重复的 Collection 设为 disabled
+    setTimeout(refreshMultiParentStates, 0);
 }
 
 function saveLinkData() {
@@ -3659,4 +3695,71 @@ window.selectTableFilterOption = function (key, value, label) {
     const dropdown = document.getElementById(`filter-dropdown-${key}`);
     if (dropdown) dropdown.classList.remove('active');
 };
+
+window.handleMultiParentCollectionChange = function (input) {
+    const colId = input.value;
+    const isChecked = input.checked;
+
+    // 找到所有代表同一个 Collection 的 checkbox
+    const allInputs = document.querySelectorAll(`.link-multi-col-cb[value="${colId}"]`);
+
+    allInputs.forEach(el => {
+        if (el === input) {
+            // 当前点击的元素：保持启用
+            el.disabled = false;
+        } else {
+            // 其他同名元素：
+            // 如果当前是勾选，其他变为勾选且禁用（视觉上表示已关联，但在当前上下文不可更改）
+            // 如果当前是取消，其他变为未勾选且启用
+            el.checked = isChecked;
+            el.disabled = isChecked;
+        }
+    });
+};
+
+// 初始化时的刷新函数（打开弹窗时调用）
+function refreshMultiParentStates() {
+    // 获取所有复选框
+    const allInputs = document.querySelectorAll('.link-multi-col-cb');
+    const processedIds = new Set();
+
+    allInputs.forEach(input => {
+        const colId = input.value;
+        if (processedIds.has(colId)) return; // 已经处理过该 ID 组
+
+        // 获取该 ID 的所有实例
+        const sameIdInputs = document.querySelectorAll(`.link-multi-col-cb[value="${colId}"]`);
+
+        // 检查是否有任何一个是 checked
+        let hasChecked = false;
+        let activeInput = null;
+
+        // 优先保留第一个被选中的作为“主控”，或者如果没有选中的，保持全部开启
+        for (let el of sameIdInputs) {
+            if (el.checked) {
+                hasChecked = true;
+                activeInput = el;
+                break;
+            }
+        }
+
+        if (hasChecked && activeInput) {
+            sameIdInputs.forEach(el => {
+                if (el !== activeInput) {
+                    el.checked = true;
+                    el.disabled = true;
+                } else {
+                    el.disabled = false;
+                }
+            });
+        } else {
+            sameIdInputs.forEach(el => {
+                el.disabled = false;
+            });
+        }
+
+        processedIds.add(colId);
+    });
+}
+
 init();
