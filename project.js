@@ -3553,7 +3553,6 @@ function showUploadModalUI() {
 
     title.textContent = "Upload Audio";
 
-    // 辅助函数：生成统一的带搜索功能的 Select HTML
     const renderUploadSelect = (key, label, options) => {
         let html = `<div class="form-group"><label class="form-label">${label}</label>`;
         html += `<div class="form-select-wrapper">`;
@@ -3567,7 +3566,6 @@ function showUploadModalUI() {
         options.forEach(opt => {
             const val = opt.val || opt;
             const txt = opt.txt || opt;
-            // 使用 safe 字符串处理，防止引号导致 HTML 错误
             const safeVal = String(val).replace(/'/g, "\\'");
             const safeTxt = String(txt).replace(/'/g, "\\'");
             html += `<div class="form-select-option" onclick="selectFormOption('${key}', '${safeVal}', '${safeTxt}', this)">${txt}</div>`;
@@ -3577,7 +3575,6 @@ function showUploadModalUI() {
         return html;
     };
 
-    // 准备选项数据
     const siteOpts = currentSites.map(s => ({val: s.id, txt: s.name}));
     const sensorOpts = ["AudioMoth v1.2", "Song Meter Micro", "Zoom F3", "Sony PCM-D10"];
     const mediumOpts = ["Air", "Water"];
@@ -3603,13 +3600,15 @@ function showUploadModalUI() {
         </div>
         
         <div class="upload-right">
-            <div class="form-group">
+            <div class="form-group" style="position:relative;">
                 <label class="form-label">Date Time</label>
-                <input type="datetime-local" class="form-input" id="up-datetime" disabled style="opacity:0.6; background:var(--bg-capsule);">
-                <div class="up-checkbox-row">
-                    <input type="checkbox" class="crud-checkbox" id="chk-dt-filename" onchange="toggleDtInput(this.checked)" checked>
-                    <label for="chk-dt-filename" class="up-checkbox-label">Date and time from filename</label>
+                <div style="position:absolute; top:0; right:0; display:flex; align-items:center; gap:8px;">
+                    <label class="form-label" style="margin-bottom:0; font-size:0.8rem; color:var(--text-muted); cursor:pointer; font-weight:normal;" onclick="document.getElementById('btn-dt-filename').click()">From filename</label>
+                    <button id="btn-dt-filename" onclick="toggleDtInput()" type="button" style="width:36px; height:20px; background:var(--border-color); border-radius:10px; border:none; padding:2px; display:flex; justify-content:flex-start; cursor:pointer; transition:all 0.2s;">
+                        <span style="width:16px; height:16px; background:white; border-radius:50%; display:block; box-shadow:0 1px 2px rgba(0,0,0,0.2);"></span>
+                    </button>
                 </div>
+                <input type="datetime-local" class="form-input" id="up-datetime" style="width:100%;">
             </div>
 
             ${renderUploadSelect('up-site', 'Site', siteOpts)}
@@ -3630,6 +3629,11 @@ function showUploadModalUI() {
             <div class="form-group">
                 <label class="form-label">Sound Name Prefix</label>
                 <input type="text" class="form-input" id="up-prefix">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-input" id="up-note" rows="3" style="resize:vertical;"></textarea>
             </div>
         </div>
     </div>
@@ -3804,13 +3808,25 @@ function simulateUploadProgress() {
     if (allDone) clearInterval(uploadTimer);
 }
 
-function toggleDtInput(checked) {
+function toggleDtInput() {
+    const btn = document.getElementById('btn-dt-filename');
     const el = document.getElementById('up-datetime');
-    if (el) {
-        el.disabled = checked;
-        el.style.opacity = checked ? '0.6' : '1';
-        el.style.background = checked ? 'var(--bg-capsule)' : '';
+    if (!btn || !el) return;
+
+    const isChecked = btn.style.justifyContent === 'flex-end';
+    const newVal = !isChecked;
+
+    if (newVal) {
+        btn.style.backgroundColor = 'var(--brand)';
+        btn.style.justifyContent = 'flex-end';
+    } else {
+        btn.style.backgroundColor = 'var(--border-color)';
+        btn.style.justifyContent = 'flex-start';
     }
+
+    el.disabled = newVal;
+    el.style.opacity = newVal ? '0.6' : '1';
+    el.style.background = newVal ? 'var(--bg-capsule)' : '';
 }
 
 window.toggleBoolean = function (key) {
