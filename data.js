@@ -202,7 +202,7 @@ const dbSchema = {
         label: "Audios",
         icon: "mic",
         pk: "media_id",
-        columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "audio_type", label: "Data Type", type: "select", options: ["Audio File", "Metadata"], readonlyOnUpdate: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "date_time", label: "Date Time", type: "datetime-local"}, {key: "site_id", label: "Site", type: "select", options: []}, {
+        columns: [{key: "media_id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "audio_type", label: "Media Type", type: "select", options: ["Audio File", "Metadata"], readonlyOnUpdate: true}, {key: "name", label: "Name", type: "text"}, {key: "filename", label: "Filename", type: "text"}, {key: "date_time", label: "Date Time", type: "datetime-local"}, {key: "site_id", label: "Site", type: "select", options: []}, {
             key: "sensor_id", label: "Sensor", type: "select", options: []
         }, {key: "medium", label: "Medium", type: "select", options: ["Air", "Water"]}, {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'}, {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'}, {key: "channel_num", label: "Channels", type: "number", filterType: 'range'}, {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'}, {
             key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'
