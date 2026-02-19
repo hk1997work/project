@@ -219,11 +219,11 @@ const dbSchema = {
     }, annotation: {
         label: "Annotations", icon: "scan-line", pk: "id", columns: [{key: "id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "media_name", label: "Media Name", type: "text", filterType: 'select'}, {key: "min_x", label: "Min X", type: "number"}, {key: "max_x", label: "Max X", type: "number"}, {key: "min_y", label: "Min Y", type: "number"}, {key: "max_y", label: "Max Y", type: "number"}, {
             key: "creator_type", label: "Creator Type", type: "select", options: ["user", "model", "automated"]
-        }, {key: "sound_id", label: "Sound Class", type: "select", options: mockSoundClasses}, {key: "animal_sound_type", label: "Sound Type", type: "text"}, {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons}, {
+        }, {key: "sound_id", label: "Sound Class", type: "select", options: mockSoundClasses}, {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons}, {
             key: "confidence", label: "Confidence", type: "number"
         }, {key: "uncertain", label: "Uncertain", type: "boolean"}, {key: "sound_distance_m", label: "Distance (m)", type: "number"}, {key: "distance_not_estimable", label: "Dist. Unknown", type: "boolean"}, {
             key: "individual_num", label: "Indiv. Num", type: "number"
-        }, {key: "reference", label: "Reference", type: "boolean"}, {key: "comments", label: "Comments", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        }, {key: "animal_sound_type", label: "Sound Type", type: "text"}, {key: "reference", label: "Reference", type: "boolean"}, {key: "comments", label: "Comments", type: "text"}, {key: "creator_id", label: "Creator", type: "select", options: mockNames}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, annotation_review: {
         label: "Reviews",
         icon: "check-square",
