@@ -2869,51 +2869,49 @@ function openCrudModal(mode, id = null) {
         let val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
         if (val === null) val = "";
 
-        // --- 特殊处理：Distance 和 Unknown 组合成 Input Group ---
+        // --- 方案 A：标题栏开关设计 ---
         if (col.key === 'sound_distance_m') {
             const unknownKey = 'distance_not_estimable';
             const isUnknown = mode === 'edit' ? (currentRow[unknownKey] === true) : false;
 
+            // 样式逻辑
             const distDisabled = isUnknown;
-
-            // 样式：Disabled 时灰显
-            const distStyle = distDisabled ? "opacity:0.6; background:var(--bg-capsule);" : "";
+            const distStyle = distDisabled ? "opacity:0.5; background:var(--bg-capsule);" : "";
             const distAttr = distDisabled ? "disabled" : "";
 
-            // 组合样式调整：
-            // 1. Input: 右侧直角，添加相对定位和默认 z-index
-            const inputGroupStyle = "border-top-right-radius: 0; border-bottom-right-radius: 0; position: relative; z-index: 1;";
+            // 容器：相对定位
+            let groupHtml = `<div class="form-group" style="position:relative;">`;
 
-            // 2. Button: 左侧直角，负边距，移除内联边框以允许 hover 样式，添加相对定位和默认 z-index
-            const btnGroupStyle = "border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 16px; margin-left: -1px; position: relative; z-index: 1;";
-
-            // Z-Index 交互逻辑：悬停或聚焦时提高层级，使其边框覆盖在邻居之上
-            const inputZIndexEvents = `onmouseenter="this.style.zIndex=5" onmouseleave="if(document.activeElement!==this)this.style.zIndex=1" onfocus="this.style.zIndex=5" onblur="this.style.zIndex=1"`;
-            const btnZIndexEvents = `onmouseenter="this.style.zIndex=5" onmouseleave="this.style.zIndex=1"`;
-
-            let groupHtml = `<div class="form-group">`;
+            // 左侧 Label
             groupHtml += `<label class="form-label">${col.label}</label>`;
 
-            groupHtml += `<div style="display:flex; align-items:stretch;">`;
+            // 右上角开关组件：绝对定位
+            groupHtml += `<div style="position:absolute; top:0; right:0; display:flex; align-items:center; gap:8px;">`;
 
-            // 1. 左侧：Distance Input
-            groupHtml += `<div style="flex:1;">`;
-            groupHtml += `<input type="number" class="form-input" id="input-${col.key}" value="${isUnknown ? '' : val}" ${distAttr} ${inputZIndexEvents} style="${distStyle} ${inputGroupStyle} width:100%;">`;
-            groupHtml += `</div>`;
+            // 开关旁边的文字标签
+            groupHtml += `<label class="form-label" style="margin-bottom:0; font-size:0.8rem; color:var(--text-muted); cursor:pointer; font-weight:normal;" onclick="document.getElementById('btn-bool-${unknownKey}').click()">Not Estimable</label>`;
 
-            // 2. 右侧：Unknown Button
-            groupHtml += `<div style="flex:0 0 auto;">`;
+            // Toggle Button 样式
+            const toggleBg = isUnknown ? 'var(--brand)' : 'var(--border-color)';
+            const toggleAlign = isUnknown ? 'flex-end' : 'flex-start';
+
             groupHtml += `<input type="hidden" id="input-${unknownKey}" value="${isUnknown}">`;
-            groupHtml += `<button class="form-bool-trigger ${isUnknown ? 'is-true' : ''}" id="btn-bool-${unknownKey}" onclick="toggleBoolean('${unknownKey}')" type="button" ${btnZIndexEvents} style="${btnGroupStyle}">`;
-            groupHtml += `<span id="lbl-bool-${unknownKey}">Unknown</span>`;
-            groupHtml += `<i id="icon-bool-${unknownKey}" data-lucide="${isUnknown ? 'check' : 'x'}" size="16" style="margin-left:8px;"></i>`;
+            groupHtml += `<button id="btn-bool-${unknownKey}" onclick="toggleBoolean('${unknownKey}')" type="button" 
+                style="width:36px; height:20px; background:${toggleBg}; border-radius:10px; border:none; padding:2px; display:flex; justify-content:${toggleAlign}; cursor:pointer; transition:all 0.2s;">`;
+            groupHtml += `<span style="width:16px; height:16px; background:white; border-radius:50%; display:block; box-shadow:0 1px 2px rgba(0,0,0,0.2);"></span>`;
             groupHtml += `</button>`;
-            groupHtml += `</div>`;
+            groupHtml += `</div>`; // End absolute wrapper
 
-            groupHtml += `</div></div>`; // End flex & form-group
+            // 输入框 (独占一行)
+            // 注意：这里如果是在 Edit 模式下且 isUnknown 为 True，我们需要把原始值存在 dataset 中吗？
+            // 通常不需要，因为数据库里存的 Unknown=True 时 distance 应该是空的。
+            // 但如果需要在 UI 上做某种恢复，可以在这里加 data-saved-value="${val}"，前提是 val 有意义。
+            groupHtml += `<input type="number" class="form-input" id="input-${col.key}" value="${isUnknown ? '' : val}" ${distAttr} style="${distStyle} width:100%;">`;
+
+            groupHtml += `</div>`; // End form-group
 
             leftHtml += groupHtml;
-            return; // 结束当前循环
+            return;
         }
 
         // --- 标准字段渲染逻辑 ---
@@ -3703,12 +3701,50 @@ window.toggleBoolean = function (key) {
 
     input.value = newVal;
 
-    // 特殊处理：如果是 distance_not_estimable，文本始终保持 'Unknown'
+    // --- 特殊处理：distance_not_estimable (带记忆功能的开关) ---
     if (key === 'distance_not_estimable') {
-        lbl.textContent = 'Unknown';
-    } else {
-        lbl.textContent = newVal ? 'True' : 'False';
+        // 1. 更新开关样式
+        if (newVal) {
+            // 开 (True / Not Estimable)
+            btn.style.backgroundColor = 'var(--brand)';
+            btn.style.justifyContent = 'flex-end';
+        } else {
+            // 关 (False / Estimable)
+            btn.style.backgroundColor = 'var(--border-color)';
+            btn.style.justifyContent = 'flex-start';
+        }
+
+        // 2. 联动 Input 状态
+        const distInput = document.getElementById('input-sound_distance_m');
+        if (distInput) {
+            if (newVal === true) {
+                // 状态变更为：不可估测
+                // 【核心修改】：在清空前，先保存当前输入的值
+                distInput.dataset.savedValue = distInput.value;
+
+                distInput.value = ''; // 清空显示
+                distInput.disabled = true;
+                distInput.style.opacity = '0.5';
+                distInput.style.backgroundColor = 'var(--bg-capsule)';
+            } else {
+                // 状态变更为：可估测
+                // 【核心修改】：如果有保存的值，则恢复
+                if (distInput.dataset.savedValue !== undefined) {
+                    distInput.value = distInput.dataset.savedValue;
+                }
+
+                distInput.disabled = false;
+                distInput.style.opacity = '1';
+                distInput.style.backgroundColor = '';
+                distInput.style.cursor = '';
+                distInput.focus();
+            }
+        }
+        return; // 特殊处理完毕，直接返回
     }
+
+    // --- 常规 Boolean 字段逻辑 ---
+    lbl.textContent = newVal ? 'True' : 'False';
 
     if (newVal) {
         btn.classList.add('is-true');
@@ -3718,27 +3754,8 @@ window.toggleBoolean = function (key) {
         icon.setAttribute('data-lucide', 'x');
     }
     lucide.createIcons();
-
-    // --- 交互逻辑：Dist. Unknown 联动 ---
-    if (key === 'distance_not_estimable') {
-        const distInput = document.getElementById('input-sound_distance_m');
-        if (distInput) {
-            if (newVal === true) {
-                // Unknown 选中：清空 Distance 并禁用
-                distInput.value = '';
-                distInput.disabled = true;
-                distInput.style.opacity = '0.6';
-                distInput.style.backgroundColor = 'var(--bg-capsule)';
-            } else {
-                // Unknown 取消选中：恢复输入
-                distInput.disabled = false;
-                distInput.style.opacity = '1';
-                distInput.style.backgroundColor = '';
-                distInput.style.cursor = '';
-            }
-        }
-    }
 };
+
 window.toggleTableFilterSelect = function (id) {
     const dropdown = document.getElementById(id);
     if (!dropdown) return;
