@@ -282,14 +282,14 @@ const dbSchema = {
             {key: "user_id", label: "User", type: "select", options: mockNames},
             {key: "index_id", label: "Index Type", type: "select", options: mockIndexTypes},
             {key: "version", label: "Version", type: "text"},
-            {key: "min_time", label: "Min T", type: "text"},
-            {key: "max_time", label: "Max T", type: "text"},
-            {key: "min_frequency", label: "Min F", type: "text"},
-            {key: "max_frequency", label: "Max F", type: "text"},
+            {key: "min_time", label: "Min T", type: "text", filterType: 'range'},
+            {key: "max_time", label: "Max T", type: "text", filterType: 'range'},
+            {key: "min_frequency", label: "Min F", type: "text", filterType: 'range'},
+            {key: "max_frequency", label: "Max F", type: "text", filterType: 'range'},
             {key: "variable_type", label: "Var Type", type: "select", options: ["input", "output"]},
-            {key: "variable_order", label: "Var Order", type: "number"},
+            {key: "variable_order", label: "Var Order", type: "number", filterType: 'range'},
             {key: "variable_name", label: "Var Name", type: "text"},
-            {key: "variable_value", label: "Value", type: "text"},
+            {key: "variable_value", label: "Var Value", type: "text", filterType: 'range'},
             {key: "creation_date", label: "Created", type: "text", readonly: true}
         ]
     }
@@ -301,6 +301,19 @@ const staticMockDB = {
     audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})), // 更新 annotation mock 数据：使用 media_name
     annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", sound_id: "Biophony", media_name: "REC_10100020250000.wav", creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "Aves", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Call", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"}],
     annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "Aves", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
-    index_log: [{log_id: 1, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "output", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}]
+    index_log: [
+        {log_id: 1, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "output", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"},
+        {log_id: 2, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "input", variable_order: 1, variable_name: "fft_window", variable_value: "512", creation_date: "2025-01-22 15:00:10"},
+        {log_id: 3, media: "REC_10100020250001.wav", user_id: "A. Schmidt", index_id: "NDSI", version: "2.1", min_time: "10", max_time: "70", min_frequency: "1000", max_frequency: "8000", variable_type: "output", variable_order: 1, variable_name: "ndsi_score", variable_value: "0.85", creation_date: "2025-01-23 09:15:00"},
+        {log_id: 4, media: "REC_10100020250001.wav", user_id: "A. Schmidt", index_id: "NDSI", version: "2.1", min_time: "10", max_time: "70", min_frequency: "1000", max_frequency: "8000", variable_type: "input", variable_order: 1, variable_name: "anthro_max", variable_value: "2000", creation_date: "2025-01-23 09:15:00"},
+        {log_id: 5, media: "REC_10100020250001.wav", user_id: "A. Schmidt", index_id: "NDSI", version: "2.1", min_time: "10", max_time: "70", min_frequency: "1000", max_frequency: "8000", variable_type: "input", variable_order: 2, variable_name: "bio_min", variable_value: "2000", creation_date: "2025-01-23 09:15:00"},
+        {log_id: 6, media: "REC_20200020250015.wav", user_id: "Liudilong", index_id: "ADI", version: "1.2", min_time: "0", max_time: "120", min_frequency: "0", max_frequency: "24000", variable_type: "output", variable_order: 1, variable_name: "adi_index", variable_value: "2.4", creation_date: "2025-01-24 10:20:30"},
+        {log_id: 7, media: "REC_20200020250015.wav", user_id: "Liudilong", index_id: "ADI", version: "1.2", min_time: "0", max_time: "120", min_frequency: "0", max_frequency: "24000", variable_type: "input", variable_order: 1, variable_name: "max_freq", variable_value: "10000", creation_date: "2025-01-24 10:20:30"},
+        {log_id: 8, media: "REC_20200020250015.wav", user_id: "Liudilong", index_id: "ADI", version: "1.2", min_time: "0", max_time: "120", min_frequency: "0", max_frequency: "24000", variable_type: "input", variable_order: 2, variable_name: "freq_step", variable_value: "1000", creation_date: "2025-01-24 10:20:30"},
+        {log_id: 9, media: "REC_30300020250042.wav", user_id: "System", index_id: "AEI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "500", max_frequency: "10000", variable_type: "output", variable_order: 1, variable_name: "aei_val", variable_value: "0.67", creation_date: "2025-01-25 14:05:12"},
+        {log_id: 10, media: "REC_30300020250042.wav", user_id: "System", index_id: "BI", version: "3.0", min_time: "0", max_time: "60", min_frequency: "2000", max_frequency: "8000", variable_type: "output", variable_order: 1, variable_name: "bio_index", variable_value: "12.8", creation_date: "2025-01-25 14:10:00"},
+        {log_id: 11, media: "REC_30300020250042.wav", user_id: "System", index_id: "BI", version: "3.0", min_time: "0", max_time: "60", min_frequency: "2000", max_frequency: "8000", variable_type: "input", variable_order: 1, variable_name: "min_f", variable_value: "2000", creation_date: "2025-01-25 14:10:00"},
+        {log_id: 12, media: "REC_30300020250042.wav", user_id: "System", index_id: "BI", version: "3.0", min_time: "0", max_time: "60", min_frequency: "2000", max_frequency: "8000", variable_type: "input", variable_order: 2, variable_name: "max_f", variable_value: "8000", creation_date: "2025-01-25 14:10:00"}
+    ]
 };
 const PERMISSIONS = [{id: 1, code: 'collection:read', label: 'Collection: Read'}, {id: 2, code: 'collection:write', label: 'Collection: Write'}, {id: 3, code: 'user:read', label: 'User: Read'}, {id: 4, code: 'user:write', label: 'User: Write'}];
