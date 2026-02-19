@@ -17,6 +17,7 @@ let uploadFilesQueue = [];
 let uploadTimer = null;
 let crudFilterState = {};
 let generatedAnnotations = []; // 新增：用于存储动态生成的注释
+let generatedReviews = []; // 新增：用于存储动态生成的评审
 
 const SPHERE_COLORS = {
     "Hydrosphere": "#0ea5e9", "Cryosphere": "#06b6d4", "Lithosphere": "#57534e", "Pedosphere": "#b45309", "Atmosphere": "#64748b", "Biosphere": "#65a30d", "Anthroposphere": "#db2777"
@@ -1407,28 +1408,57 @@ function getDataForTable(tableName) {
             const count = 25;
             for (let i = 0; i < count; i++) {
                 const media = mediaItems[Math.floor(Math.random() * mediaItems.length)];
-                const taxon = mockTaxons[Math.floor(Math.random() * mockTaxons.length)];
                 const soundClass = mockSoundClasses[Math.floor(Math.random() * mockSoundClasses.length)];
+                const creatorType = ["user", "model", "automated"][Math.floor(Math.random() * 3)];
+                const isBiophony = soundClass === 'Biophony';
+                const isUser = creatorType === 'user';
+
+                let taxon = "";
+                let confidence = "";
+                // 修改：默认为空字符串，以便非 Biophony 时表格显示空白
+                let uncertain = "";
+                let distance = "";
+                // 修改：默认为空字符串
+                let distUnknown = "";
+                let indiv = "";
+
+                // Sound Type 对所有记录随机生成
+                let soundType = ["Call", "Song", "Drumming"][Math.floor(Math.random() * 3)];
+
+                // 规则：只有 Biophony 才会有生物相关字段
+                if (isBiophony) {
+                    taxon = mockTaxons[Math.floor(Math.random() * mockTaxons.length)];
+                    uncertain = Math.random() > 0.8; // 生成布尔值
+                    distance = Math.floor(Math.random() * 50);
+                    distUnknown = Math.random() > 0.5; // 生成布尔值
+                    if (distUnknown) distance = "";
+
+                    indiv = Math.floor(Math.random() * 3) + 1;
+
+                    // 规则：如果是 User 创建，Confidence 为空；否则生成随机置信度
+                    if (!isUser) {
+                        confidence = parseFloat((0.5 + Math.random() * 0.5).toFixed(2));
+                    }
+                }
 
                 generatedAnnotations.push({
                     id: i + 1,
                     uuid: `550e8400-e29b-41d4-a716-ANNOT${String(i).padStart(4, '0')}`,
                     sound_id: soundClass,
-                    media_name: media.name, // 直接使用 Audio 的名字
+                    media_name: media.name,
                     creator_id: mockNames[Math.floor(Math.random() * mockNames.length)],
-                    // 修改：随机选择创建者类型
-                    creator_type: ["user", "model", "automated"][Math.floor(Math.random() * 3)],
-                    confidence: parseFloat((0.5 + Math.random() * 0.5).toFixed(2)),
+                    creator_type: creatorType,
+                    confidence: confidence,
                     min_x: parseFloat((Math.random() * 10).toFixed(1)),
                     max_x: parseFloat((10 + Math.random() * 10).toFixed(1)),
                     min_y: Math.floor(Math.random() * 2000),
                     max_y: Math.floor(3000 + Math.random() * 5000),
                     taxon_id: taxon,
-                    uncertain: Math.random() > 0.8,
-                    sound_distance_m: Math.floor(Math.random() * 50),
-                    distance_not_estimable: Math.random() > 0.9,
-                    individual_num: Math.floor(Math.random() * 3) + 1,
-                    animal_sound_type: ["Call", "Song", "Drumming"][Math.floor(Math.random() * 3)],
+                    uncertain: uncertain, // 使用变量
+                    sound_distance_m: distance,
+                    distance_not_estimable: distUnknown, // 使用变量
+                    individual_num: indiv,
+                    animal_sound_type: soundType,
                     reference: Math.random() > 0.9,
                     comments: ["Clear recording", "Background noise high", "Overlapping calls", "Interesting pattern", "Needs review"][Math.floor(Math.random() * 5)],
                     creation_date: moment().subtract(Math.floor(Math.random() * 10), 'days').format("YYYY-MM-DD HH:mm:ss")
@@ -1437,7 +1467,39 @@ function getDataForTable(tableName) {
         }
         return generatedAnnotations;
     } else if (tableName === 'annotation_review') {
-        return staticMockDB.annotation_review || [];
+        // 动态生成 Reviews 数据
+        if (generatedReviews.length === 0) {
+            // 确保先有 Annotation 数据
+            const annotations = getDataForTable('annotation');
+            if (annotations.length > 0) {
+                const count = 20; // 生成 20 条评审记录
+                for (let i = 0; i < count; i++) {
+                    // 随机关联一个 Annotation
+                    const annot = annotations[Math.floor(Math.random() * annotations.length)];
+
+                    // 随机选择状态
+                    const status = mockReviewStatuses[Math.floor(Math.random() * mockReviewStatuses.length)];
+                    let taxon = "";
+
+                    // 规则：只有 Revise 状态下，Taxon 才有值
+                    if (status === 'Revise') {
+                        taxon = mockTaxons[Math.floor(Math.random() * mockTaxons.length)];
+                    }
+
+                    generatedReviews.push({
+                        id: `${1000 + i}`,
+                        media_name: annot.media_name, // 获取 Media Name
+                        annotation_id: annot.id,
+                        reviewer_id: mockNames[Math.floor(Math.random() * mockNames.length)],
+                        annotation_review_status_id: status,
+                        taxon_id: taxon,
+                        note: ["Agreed.", "Unsure about ID.", "Noise interference.", "Verified.", "Needs second opinion."][Math.floor(Math.random() * 5)],
+                        creation_date: moment().subtract(Math.floor(Math.random() * 5), 'days').format("YYYY-MM-DD HH:mm:ss")
+                    });
+                }
+            }
+        }
+        return generatedReviews;
     } else if (tableName === 'index_log') {
         return staticMockDB.index_log || [];
     } else {
@@ -1481,9 +1543,9 @@ function switchCrudTable(tableName) {
         const oldDrop = document.getElementById('toolbar-upload-dropdown');
         if (oldDrop) oldDrop.remove();
 
-        // 隐藏 Annotation 表的 Add 按钮
-        if (tableName === 'annotation') {
-            addBtn.style.display = 'none';
+        // 隐藏 Annotation 和 Review 表的 Add 按钮
+        if (tableName === 'annotation' || tableName === 'annotation_review') {
+            addBtn.style.display = 'none'; //
         } else {
             addBtn.style.display = ''; // 恢复显示
             if (isMediaTable) {
@@ -1752,7 +1814,12 @@ function renderCrudTable() {
                 if (currentTable === 'user' && col.key === 'user_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3);">Current</span> </div>`;
 
                 if (col.type === 'image' || col.type === 'file') val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img" onerror="this.style.display='none'">`;
-                if (col.type === 'boolean') val = val ? `<span class="status-badge status-true">True</span>` : `<span class="status-badge status-false">False</span>`;
+                // 修改：只有当值严格等于 true 或 false 时才渲染 Badge，否则显示为空
+                if (col.type === 'boolean') {
+                    if (val === true) val = `<span class="status-badge status-true">True</span>`;
+                    else if (val === false) val = `<span class="status-badge status-false">False</span>`;
+                    else val = "";
+                }
                 if (col.type === 'richtext') {
                     const text = String(val).replace(/<[^>]*>?/gm, '');
                     val = `<span style="opacity:0.8; font-size:0.85rem;" title="${text}">${text.substring(0, 30)}${text.length > 30 ? '...' : ''}</span>`;
@@ -2783,16 +2850,34 @@ window.selectFormOption = function (key, value, label, element) {
         if (key === 'realm') {
             updateDependentSelect('biome', value && TAXONOMY[value] ? Object.keys(TAXONOMY[value]) : []);
             updateDependentSelect('functional_type', []);
+            // 新增：修改 Realm 时更新坐标
+            updateSiteCoordinates(value);
         } else if (key === 'biome') {
             const realmInput = document.getElementById('input-realm');
             const realmVal = realmInput ? realmInput.value : null;
             const groups = (realmVal && value && TAXONOMY[realmVal] && TAXONOMY[realmVal][value]) ? TAXONOMY[realmVal][value] : [];
             updateDependentSelect('functional_type', groups);
+            // 新增：修改 Biome 时更新坐标
+            updateSiteCoordinates(realmVal);
+        } else if (key === 'functional_type') {
+            // 新增：修改 Functional Type 时更新坐标
+            updateSiteCoordinates();
         }
     }
 
     if (key === 'audio_type') {
         handleAudioTypeChange(value);
+    }
+
+    if (currentTable === 'annotation' && key === 'sound_id') {
+        if (window.updateAnnotationVisibility) {
+            window.updateAnnotationVisibility();
+        }
+    }
+
+    // 新增：监听 Review 状态改变
+    if (currentTable === 'annotation_review' && key === 'annotation_review_status_id') {
+        handleReviewStatusChange(value);
     }
 };
 
@@ -2813,6 +2898,48 @@ function updateDependentSelect(key, options) {
             html += `<div class="form-select-option" onclick="selectFormOption('${key}', '${opt}', '${opt}', this)">${opt}</div>`;
         });
         list.innerHTML = html;
+    }
+}
+
+function setupAnnotationDynamicVisibility() {
+    const creatorInput = document.getElementById('input-creator_type');
+    const soundInput = document.getElementById('input-sound_id');
+
+    const update = () => {
+        const creatorType = creatorInput ? creatorInput.value.toLowerCase().trim() : '';
+        const soundClass = soundInput ? soundInput.value : '';
+
+        const isUser = creatorType === 'user';
+        const isBiophony = soundClass === 'Biophony';
+        const showBioFields = isBiophony;
+
+        toggleFieldVisibility('taxon_id', showBioFields);
+        toggleFieldVisibility('uncertain', showBioFields);
+        toggleFieldVisibility('sound_distance_m', showBioFields);
+        toggleFieldVisibility('individual_num', showBioFields);
+
+        const showConfidence = !isUser && isBiophony;
+        toggleFieldVisibility('confidence', showConfidence);
+    };
+
+    if (creatorInput) {
+        creatorInput.addEventListener('input', update);
+    }
+
+    update();
+    window.updateAnnotationVisibility = update;
+}
+
+function toggleFieldVisibility(key, show) {
+    let el = document.getElementById('input-' + key);
+    if (!el) {
+        el = document.getElementById('btn-bool-' + key);
+    }
+    if (el) {
+        const group = el.closest('.form-group');
+        if (group) {
+            group.style.display = show ? 'flex' : 'none';
+        }
     }
 }
 
@@ -2854,7 +2981,6 @@ function openCrudModal(mode, id = null) {
         if (col.readonly && mode === 'add') return;
         if (col.onlyOnCreate && mode === 'edit') return;
 
-        // 跳过单独渲染 'distance_not_estimable'
         if (col.key === 'distance_not_estimable') return;
 
         if (currentTable === 'audio' && mode === 'edit') {
@@ -2869,29 +2995,22 @@ function openCrudModal(mode, id = null) {
         let val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
         if (val === null) val = "";
 
-        // --- 方案 A：标题栏开关设计 ---
         if (col.key === 'sound_distance_m') {
             const unknownKey = 'distance_not_estimable';
             const isUnknown = mode === 'edit' ? (currentRow[unknownKey] === true) : false;
 
-            // 样式逻辑
             const distDisabled = isUnknown;
             const distStyle = distDisabled ? "opacity:0.5; background:var(--bg-capsule);" : "";
             const distAttr = distDisabled ? "disabled" : "";
 
-            // 容器：相对定位
             let groupHtml = `<div class="form-group" style="position:relative;">`;
 
-            // 左侧 Label
             groupHtml += `<label class="form-label">${col.label}</label>`;
 
-            // 右上角开关组件：绝对定位
             groupHtml += `<div style="position:absolute; top:0; right:0; display:flex; align-items:center; gap:8px;">`;
 
-            // 开关旁边的文字标签
             groupHtml += `<label class="form-label" style="margin-bottom:0; font-size:0.8rem; color:var(--text-muted); cursor:pointer; font-weight:normal;" onclick="document.getElementById('btn-bool-${unknownKey}').click()">Not Estimable</label>`;
 
-            // Toggle Button 样式
             const toggleBg = isUnknown ? 'var(--brand)' : 'var(--border-color)';
             const toggleAlign = isUnknown ? 'flex-end' : 'flex-start';
 
@@ -2900,21 +3019,15 @@ function openCrudModal(mode, id = null) {
                 style="width:36px; height:20px; background:${toggleBg}; border-radius:10px; border:none; padding:2px; display:flex; justify-content:${toggleAlign}; cursor:pointer; transition:all 0.2s;">`;
             groupHtml += `<span style="width:16px; height:16px; background:white; border-radius:50%; display:block; box-shadow:0 1px 2px rgba(0,0,0,0.2);"></span>`;
             groupHtml += `</button>`;
-            groupHtml += `</div>`; // End absolute wrapper
+            groupHtml += `</div>`;
 
-            // 输入框 (独占一行)
-            // 注意：这里如果是在 Edit 模式下且 isUnknown 为 True，我们需要把原始值存在 dataset 中吗？
-            // 通常不需要，因为数据库里存的 Unknown=True 时 distance 应该是空的。
-            // 但如果需要在 UI 上做某种恢复，可以在这里加 data-saved-value="${val}"，前提是 val 有意义。
             groupHtml += `<input type="number" class="form-input" id="input-${col.key}" value="${isUnknown ? '' : val}" ${distAttr} style="${distStyle} width:100%;">`;
 
-            groupHtml += `</div>`; // End form-group
+            groupHtml += `</div>`;
 
             leftHtml += groupHtml;
             return;
         }
-
-        // --- 标准字段渲染逻辑 ---
 
         if (col.key === 'creation_date' && val) {
             try {
@@ -3075,6 +3188,18 @@ function openCrudModal(mode, id = null) {
                 </div>
             </div>
         `;
+    }
+
+    if (currentTable === 'annotation') {
+        setTimeout(setupAnnotationDynamicVisibility, 0);
+    }
+
+    // 新增：初始化 Review 表单的状态联动
+    if (currentTable === 'annotation_review') {
+        const statusInput = document.getElementById('input-annotation_review_status_id');
+        if (statusInput) {
+            handleReviewStatusChange(statusInput.value);
+        }
     }
 
     modal.classList.add('active');
@@ -3872,6 +3997,113 @@ function refreshMultiParentStates() {
 
         processedIds.add(colId);
     });
+}
+
+// --- 新增：更新 Site 坐标的辅助函数 ---
+function updateSiteCoordinates(realm) {
+    const latInput = document.getElementById('input-latitude');
+    const lngInput = document.getElementById('input-longitude');
+
+    // 如果页面上没有这两个输入框（例如非 Site 页面），直接返回
+    if (!latInput || !lngInput) return;
+
+    // 如果未传入 realm（例如修改 Biome 时），尝试从界面获取
+    if (!realm) {
+        const rEl = document.getElementById('input-realm');
+        realm = rEl ? rEl.value : 'Terrestrial';
+    }
+
+    // 模拟坐标生成逻辑：根据 Realm 生成不同的随机坐标范围
+    let lat, lng;
+    if (realm === 'Marine') {
+        // 海洋：大堡礁附近
+        lat = -18.2871 + (Math.random() - 0.5);
+        lng = 147.6992 + (Math.random() - 0.5);
+    } else if (realm === 'Freshwater') {
+        // 淡水：亚马逊河附近
+        lat = -3.1190 + (Math.random() - 0.5);
+        lng = -60.0217 + (Math.random() - 0.5);
+    } else if (realm === 'Atmospheric') {
+        // 大气：赤道附近
+        lat = 0.0 + (Math.random() * 10 - 5);
+        lng = 0.0 + (Math.random() * 10 - 5);
+    } else {
+        // 默认 / 陆地：亚马逊雨林深处
+        lat = -3.4653 + (Math.random() - 0.5);
+        lng = -62.2159 + (Math.random() - 0.5);
+    }
+
+    // 更新输入框的值
+    latInput.value = lat.toFixed(4);
+    lngInput.value = lng.toFixed(4);
+
+    // 视觉反馈：稍微闪烁一下背景色提示用户数值已变
+    const highlight = (el) => {
+        el.style.transition = 'background 0.3s';
+        el.style.backgroundColor = 'var(--brand-tint)';
+        setTimeout(() => el.style.backgroundColor = '', 500);
+    };
+    highlight(latInput);
+    highlight(lngInput);
+}
+
+// --- 新增：处理 Review 状态变更的联动逻辑 ---
+function handleReviewStatusChange(status) {
+    const taxonInput = document.getElementById('input-taxon_id');
+    const taxonTrigger = document.getElementById('trigger-taxon_id');
+    const wrapper = document.getElementById('wrapper-taxon_id');
+
+    if (!taxonInput || !taxonTrigger) return;
+
+    if (status === 'Revise') {
+        // 启用
+        if (wrapper) wrapper.style.pointerEvents = 'auto';
+        taxonTrigger.classList.remove('disabled');
+        taxonTrigger.style.opacity = '1';
+        taxonTrigger.style.backgroundColor = '';
+
+        // 恢复之前保存的值（如果有）
+        if (taxonInput.dataset.savedValue) {
+            const savedVal = taxonInput.dataset.savedValue;
+            taxonInput.value = savedVal;
+            const span = taxonTrigger.querySelector('span');
+            // 显示恢复的值
+            if (span) span.textContent = savedVal;
+            // 也要同步选中下拉列表中的样式（可选，视觉优化）
+            const dropdown = document.getElementById('dropdown-taxon_id');
+            if (dropdown) {
+                dropdown.querySelectorAll('.form-select-option').forEach(opt => {
+                    if (opt.innerText === savedVal) opt.classList.add('selected');
+                    else opt.classList.remove('selected');
+                });
+            }
+        }
+    } else {
+        // 禁用
+        // 如果当前有值，先保存起来以便恢复
+        if (taxonInput.value) {
+            taxonInput.dataset.savedValue = taxonInput.value;
+        }
+
+        // 清空当前值
+        taxonInput.value = "";
+
+        // 设置禁用样式
+        if (wrapper) wrapper.style.pointerEvents = 'none';
+        taxonTrigger.classList.add('disabled');
+        taxonTrigger.style.opacity = '0.5';
+        taxonTrigger.style.backgroundColor = 'var(--bg-capsule)';
+
+        // 重置显示文本
+        const span = taxonTrigger.querySelector('span');
+        if (span) span.textContent = "Select...";
+
+        // 清除下拉选中状态
+        const dropdown = document.getElementById('dropdown-taxon_id');
+        if (dropdown) {
+            dropdown.querySelectorAll('.form-select-option').forEach(opt => opt.classList.remove('selected'));
+        }
+    }
 }
 
 init();

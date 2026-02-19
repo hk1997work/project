@@ -60,7 +60,7 @@ const mockLicenses = ["CC BY 4.0", "CC BY-NC 4.0", "CC0 1.0", "All Rights Reserv
 const mockAudioSettings = ["Default Audio", "High Res 96kHz", "Low Power 16kHz", "Duty Cycle A"];
 const mockSoundClasses = ["Biophony", "Geophony", "Anthropophony", "Unknown"];
 const mockTaxons = ["Aves", "Amphibia", "Insecta", "Mammalia", "Chiroptera"];
-const mockReviewStatuses = ["Pending", "Approved", "Rejected", "Unsure"];
+const mockReviewStatuses = ["Pending", "Approved", "Rejected", "Unsure", "Revise"]; // 添加 Revise
 const mockIndexTypes = ["ACI", "ADI", "AEI", "BI", "NDSI", "H", "M"];
 
 const getContributors = (count, type, leadName = null) => {
@@ -207,112 +207,72 @@ const dbSchema = {
         }, {key: "medium", label: "Medium", type: "select", options: ["Air", "Water"]}, {key: "sampling_rate_Hz", label: "Sample Rate (Hz)", type: "number", filterType: 'range'}, {key: "bit_depth", label: "Bit Depth", type: "number", filterType: 'range'}, {key: "channel_num", label: "Channels", type: "number", filterType: 'range'}, {key: "duration_s", label: "Duration (s)", type: "number", filterType: 'range'}, {
             key: "size_B", label: "Size (Bytes)", type: "number", filterType: 'range'
         }, {key: "recording_gain_dB", label: "Gain (dB)", type: "number", filterType: 'range'}, {key: "duty_cycle_recording", label: "Duty Rec (s)", type: "number", filterType: 'range'}, {key: "duty_cycle_period", label: "Duty Period (s)", type: "number", filterType: 'range'}, {key: "license_id", label: "License", type: "select", options: mockLicenses}, {key: "doi", label: "DOI", type: "text"}, {key: "note", label: "Note", type: "text"}, {
-            key: "uploader_id",
-            label: "Uploader",
-            type: "text",
-            readonly: true,
-            filterType: 'select'
+            key: "uploader_id", label: "Uploader", type: "text", readonly: true, filterType: 'select'
         }, {
             key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'
         }, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, site: {
-        label: "Sites",
-        icon: "map-pin",
-        pk: "id",
-        columns: [
-            {key: "id", label: "ID", type: "text", readonly: true},
-            {key: "uuid", label: "UUID", type: "text", readonly: true},
-            {key: "name", label: "Site Name", type: "text"},
-            // 修改：拆分坐标为经纬度，支持范围筛选，只读
-            {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true},
-            {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true},
-            {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)},
-            {key: "biome", label: "Biome", type: "select", options: []},
-            {key: "functional_type", label: "Functional Type", type: "select", options: []},
-            {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'},
-            {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'},
-            {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'},
-            {key: "creation_date", label: "Created", type: "text", readonly: true}
-        ]
+        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, // 修改：拆分坐标为经纬度，支持范围筛选，只读
+            {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true}, {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "select", options: []}, {key: "functional_type", label: "Functional Type", type: "select", options: []}, {
+                key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'
+            }, {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'}, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, annotation: {
-        label: "Annotations",
-        icon: "scan-line",
-        pk: "id",
-        columns: [
-            {key: "id", label: "ID", type: "number", readonly: true},
-            {key: "uuid", label: "UUID", type: "text", readonly: true},
-            {
-                key: "media_name",
-                label: "Media Name",
-                type: "text",
-                filterType: 'select',
-                readonlyOnUpdate: true // 编辑时不可改
-            },
-            {
-                key: "min_x",
-                label: "Min X",
-                type: "number",
-                readonlyOnUpdate: true // 编辑时不可改
-            },
-            {
-                key: "max_x",
-                label: "Max X",
-                type: "number",
-                readonlyOnUpdate: true // 编辑时不可改
-            },
-            {
-                key: "min_y",
-                label: "Min Y",
-                type: "number",
-                readonlyOnUpdate: true // 编辑时不可改
-            },
-            {
-                key: "max_y",
-                label: "Max Y",
-                type: "number",
-                readonlyOnUpdate: true // 编辑时不可改
-            },
-            {
-                key: "creator_type",
-                label: "Creator Type",
-                type: "text",
-                readonlyOnUpdate: true // 编辑时不可改
-            },
-            {key: "sound_id", label: "Sound Class", type: "select", options: mockSoundClasses},
-            {
-                key: "animal_sound_type",
-                label: "Sound Type",
-                type: "select",
-                options: ["Call", "Song", "Drumming"]
-            },
-            {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons},
-            {key: "confidence", label: "Confidence", type: "number"},
-            {key: "uncertain", label: "Uncertain", type: "boolean"},
-            {
-                key: "sound_distance_m",
-                label: "Distance (m)",
-                type: "number"
-                // 移除 readonlyOnUpdate: true，确保未选中 Unknown 时可输入
-            },
-            {key: "distance_not_estimable", label: "Dist. Unknown", type: "boolean"},
-            {key: "individual_num", label: "Indiv. Num", type: "number"},
-            {key: "reference", label: "Reference", type: "boolean"},
-            {key: "comments", label: "Comments", type: "text"}, // 移除 hiddenInTable
-            {
-                key: "creator_id",
-                label: "Creator",
-                type: "text",
-                readonlyOnUpdate: true // 编辑时不可改
-            },
-            {key: "creation_date", label: "Created", type: "text", readonly: true}
-        ]
+        label: "Annotations", icon: "scan-line", pk: "id", columns: [{key: "id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {
+            key: "media_name", label: "Media Name", type: "text", filterType: 'select', readonlyOnUpdate: true
+        }, {
+            key: "min_x", label: "Min X", type: "number", filterType: 'range' // 可编辑，左侧显示
+        }, {
+            key: "max_x", label: "Max X", type: "number", filterType: 'range' // 可编辑，左侧显示
+        }, {
+            key: "min_y", label: "Min Y", type: "number", filterType: 'range' // 可编辑，左侧显示
+        }, {
+            key: "max_y", label: "Max Y", type: "number", filterType: 'range' // 可编辑，左侧显示
+        }, {
+            key: "creator_type", label: "Creator Type", type: "text", readonlyOnUpdate: true, filterType: 'select'
+        }, {key: "sound_id", label: "Sound Class", type: "select", options: mockSoundClasses}, {
+            key: "animal_sound_type", label: "Sound Type", type: "select", options: ["Call", "Song", "Drumming"]
+        }, {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons}, {
+            key: "confidence", label: "Confidence", type: "number", readonlyOnUpdate: true, // 不可编辑，右侧显示
+            filterType: 'range'
+        }, {key: "uncertain", label: "Uncertain", type: "boolean"}, {
+            key: "sound_distance_m", label: "Distance (m)", type: "number", filterType: 'range'
+        }, {key: "distance_not_estimable", label: "Dist. Unknown", type: "boolean"}, {
+            key: "individual_num", label: "Indiv. Num", type: "number", filterType: 'range'
+        }, {key: "reference", label: "Reference", type: "boolean"}, {key: "comments", label: "Comments", type: "text"}, {
+            key: "creator_id", label: "Creator", type: "text", readonlyOnUpdate: true, filterType: 'select'
+        }, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, annotation_review: {
         label: "Reviews",
         icon: "check-square",
         pk: "id",
-        columns: [{key: "id", label: "ID", type: "text", readonly: true, hiddenInTable: true}, {key: "annotation_id", label: "Annotation ID", type: "select", options: []}, {key: "reviewer_id", label: "Reviewer", type: "select", options: mockNames}, {key: "annotation_review_status_id", label: "Status", type: "select", options: mockReviewStatuses}, {key: "taxon_id", label: "Suggested Taxon", type: "select", options: mockTaxons}, {key: "note", label: "Note", type: "text"}, {
-            key: "creation_date", label: "Created", type: "text", readonly: true
-        }]
+        columns: [
+            {key: "id", label: "ID", type: "text", readonly: true},
+            {
+                key: "annotation_id",
+                label: "Annotation ID",
+                type: "text", // 修改：改为输入框
+                readonlyOnUpdate: true, // 修改：编辑时不可改
+                filterType: 'select'
+            },
+            {
+                key: "media_name",
+                label: "Media Name",
+                type: "text",
+                readonly: true,
+                filterType: 'select'
+            },
+            {
+                key: "reviewer_id",
+                label: "Reviewer",
+                type: "text", // 修改：改为输入框
+                readonlyOnUpdate: true, // 修改：编辑时不可改
+                filterType: 'select'
+            },
+            {key: "annotation_review_status_id", label: "Status", type: "select", options: mockReviewStatuses},
+            {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons},
+            {key: "note", label: "Note", type: "text"},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
     }, index_log: {
         label: "Index Logs",
         icon: "bar-chart-2",
@@ -326,8 +286,7 @@ const dbSchema = {
 const staticMockDB = {
     sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}],
     license: mockLicenses.map((l, i) => ({license_id: i + 1, name: l})),
-    audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})),
-    // 更新 annotation mock 数据：使用 media_name
+    audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})), // 更新 annotation mock 数据：使用 media_name
     annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", sound_id: "Biophony", media_name: "REC_10100020250000.wav", creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "Aves", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Call", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"}],
     annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "Aves", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
     index_log: [{log_id: 1, media_id: 20250001, user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "result", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}]
