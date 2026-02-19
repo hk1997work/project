@@ -275,11 +275,16 @@ const dbSchema = {
             {
                 key: "creator_type",
                 label: "Creator Type",
-                type: "select",
-                options: ["user", "model", "automated"],
+                type: "text",
                 readonlyOnUpdate: true // 编辑时不可改
             },
             {key: "sound_id", label: "Sound Class", type: "select", options: mockSoundClasses},
+            {
+                key: "animal_sound_type",
+                label: "Sound Type",
+                type: "select",
+                options: ["Call", "Song", "Drumming"]
+            },
             {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons},
             {key: "confidence", label: "Confidence", type: "number"},
             {key: "uncertain", label: "Uncertain", type: "boolean"},
@@ -291,14 +296,12 @@ const dbSchema = {
             },
             {key: "distance_not_estimable", label: "Dist. Unknown", type: "boolean"},
             {key: "individual_num", label: "Indiv. Num", type: "number"},
-            {key: "animal_sound_type", label: "Sound Type", type: "text"},
             {key: "reference", label: "Reference", type: "boolean"},
             {key: "comments", label: "Comments", type: "text"}, // 移除 hiddenInTable
             {
                 key: "creator_id",
                 label: "Creator",
-                type: "select",
-                options: mockNames,
+                type: "text",
                 readonlyOnUpdate: true // 编辑时不可改
             },
             {key: "creation_date", label: "Created", type: "text", readonly: true}
