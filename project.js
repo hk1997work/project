@@ -1543,8 +1543,8 @@ function switchCrudTable(tableName) {
         const oldDrop = document.getElementById('toolbar-upload-dropdown');
         if (oldDrop) oldDrop.remove();
 
-        // 隐藏 Annotation 和 Review 表的 Add 按钮
-        if (tableName === 'annotation' || tableName === 'annotation_review') {
+        // 隐藏 Annotation, Review 和 Index Log 表的 Add 按钮
+        if (tableName === 'annotation' || tableName === 'annotation_review' || tableName === 'index_log') {
             addBtn.style.display = 'none'; //
         } else {
             addBtn.style.display = ''; // 恢复显示
@@ -1796,7 +1796,8 @@ function renderCrudTable() {
             const rowIdStr = String(row[pk]);
             const isSelected = selectedCrudIds.includes(rowIdStr);
             const rowClass = isSelected ? 'selected' : '';
-            bodyHtml += `<tr class="${rowClass}" ondblclick="openCrudModal('edit', '${row[pk]}')">`;
+            const dblClickAction = currentTable === 'index_log' ? '' : `ondblclick="openCrudModal('edit', '${row[pk]}')"`;
+            bodyHtml += `<tr class="${rowClass}" ${dblClickAction}>`;
             bodyHtml += ` <td style="text-align:center; border-bottom:1px solid var(--border-color);"> <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleRowSelection('${rowIdStr}', this)" ondblclick="event.stopPropagation()"> </td>`;
             visibleCols.forEach(col => {
                 if (currentTable === 'user') {
@@ -2243,7 +2244,7 @@ function updateToolbarState() {
 
     if (editBtn) {
         editBtn.disabled = (count !== 1);
-        editBtn.style.display = '';
+        editBtn.style.display = currentTable === 'index_log' ? 'none' : '';
     }
     if (delBtn) {
         delBtn.disabled = (count === 0);

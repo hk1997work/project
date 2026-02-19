@@ -236,7 +236,7 @@ const dbSchema = {
             filterType: 'range'
         }, {key: "uncertain", label: "Uncertain", type: "boolean"}, {
             key: "sound_distance_m", label: "Distance (m)", type: "number", filterType: 'range'
-        }, {key: "distance_not_estimable", label: "Dist. Unknown", type: "boolean"}, {
+        }, {key: "distance_not_estimable", label: "Not Estimable", type: "boolean"}, {
             key: "individual_num", label: "Indiv. Num", type: "number", filterType: 'range'
         }, {key: "reference", label: "Reference", type: "boolean"}, {key: "comments", label: "Comments", type: "text"}, {
             key: "creator_id", label: "Creator", type: "text", readonlyOnUpdate: true, filterType: 'select'
@@ -246,7 +246,6 @@ const dbSchema = {
         icon: "check-square",
         pk: "id",
         columns: [
-            {key: "id", label: "ID", type: "text", readonly: true},
             {
                 key: "annotation_id",
                 label: "Annotation ID",
@@ -277,9 +276,22 @@ const dbSchema = {
         label: "Index Logs",
         icon: "bar-chart-2",
         pk: "log_id",
-        columns: [{key: "log_id", label: "ID", type: "number", readonly: true}, {key: "media_id", label: "Media ID", type: "select", options: []}, {key: "user_id", label: "User", type: "select", options: mockNames}, {key: "index_id", label: "Index Type", type: "select", options: mockIndexTypes}, {key: "version", label: "Version", type: "text"}, {key: "min_time", label: "Min T", type: "text"}, {key: "max_time", label: "Max T", type: "text"}, {
-            key: "min_frequency", label: "Min F", type: "text"
-        }, {key: "max_frequency", label: "Max F", type: "text"}, {key: "variable_type", label: "Var Type", type: "text"}, {key: "variable_value", label: "Value", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        columns: [
+            {key: "log_id", label: "ID", type: "number", readonly: true},
+            {key: "media", label: "Media", type: "text", filterType: "select"},
+            {key: "user_id", label: "User", type: "select", options: mockNames},
+            {key: "index_id", label: "Index Type", type: "select", options: mockIndexTypes},
+            {key: "version", label: "Version", type: "text"},
+            {key: "min_time", label: "Min T", type: "text"},
+            {key: "max_time", label: "Max T", type: "text"},
+            {key: "min_frequency", label: "Min F", type: "text"},
+            {key: "max_frequency", label: "Max F", type: "text"},
+            {key: "variable_type", label: "Var Type", type: "select", options: ["input", "output"]},
+            {key: "variable_order", label: "Var Order", type: "number"},
+            {key: "variable_name", label: "Var Name", type: "text"},
+            {key: "variable_value", label: "Value", type: "text"},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
     }
 };
 
@@ -289,6 +301,6 @@ const staticMockDB = {
     audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})), // 更新 annotation mock 数据：使用 media_name
     annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", sound_id: "Biophony", media_name: "REC_10100020250000.wav", creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "Aves", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Call", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"}],
     annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "Aves", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
-    index_log: [{log_id: 1, media_id: 20250001, user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "result", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}]
+    index_log: [{log_id: 1, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "output", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}]
 };
 const PERMISSIONS = [{id: 1, code: 'collection:read', label: 'Collection: Read'}, {id: 2, code: 'collection:write', label: 'Collection: Write'}, {id: 3, code: 'user:read', label: 'User: Read'}, {id: 4, code: 'user:write', label: 'User: Write'}];
