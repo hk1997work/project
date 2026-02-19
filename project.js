@@ -3626,14 +3626,14 @@ function showUploadModalUI() {
                 <input type="text" class="form-input" id="up-doi">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Sound Name Prefix</label>
-                <input type="text" class="form-input" id="up-prefix">
+             <div class="form-group">
+                <label class="form-label">Note</label>
+                <input type="text" class="form-input" id="up-note">
             </div>
             
             <div class="form-group">
-                <label class="form-label">Note</label>
-                <textarea class="form-input" id="up-note" rows="3" style="resize:vertical;"></textarea>
+                <label class="form-label">Sound Name Prefix</label>
+                <input type="text" class="form-input" id="up-prefix">
             </div>
         </div>
     </div>
