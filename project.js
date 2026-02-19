@@ -2854,6 +2854,9 @@ function openCrudModal(mode, id = null) {
         if (col.readonly && mode === 'add') return;
         if (col.onlyOnCreate && mode === 'edit') return;
 
+        // 跳过单独渲染 'distance_not_estimable'
+        if (col.key === 'distance_not_estimable') return;
+
         if (currentTable === 'audio' && mode === 'edit') {
             const type = currentRow.audio_type;
             if (type === 'Audio File') {
@@ -2865,6 +2868,55 @@ function openCrudModal(mode, id = null) {
 
         let val = mode === 'edit' ? (currentRow[col.key] !== undefined ? currentRow[col.key] : "") : "";
         if (val === null) val = "";
+
+        // --- 特殊处理：Distance 和 Unknown 组合成 Input Group ---
+        if (col.key === 'sound_distance_m') {
+            const unknownKey = 'distance_not_estimable';
+            const isUnknown = mode === 'edit' ? (currentRow[unknownKey] === true) : false;
+
+            const distDisabled = isUnknown;
+
+            // 样式：Disabled 时灰显
+            const distStyle = distDisabled ? "opacity:0.6; background:var(--bg-capsule);" : "";
+            const distAttr = distDisabled ? "disabled" : "";
+
+            // 组合样式调整：
+            // 1. Input: 右侧直角，添加相对定位和默认 z-index
+            const inputGroupStyle = "border-top-right-radius: 0; border-bottom-right-radius: 0; position: relative; z-index: 1;";
+
+            // 2. Button: 左侧直角，负边距，移除内联边框以允许 hover 样式，添加相对定位和默认 z-index
+            const btnGroupStyle = "border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 16px; margin-left: -1px; position: relative; z-index: 1;";
+
+            // Z-Index 交互逻辑：悬停或聚焦时提高层级，使其边框覆盖在邻居之上
+            const inputZIndexEvents = `onmouseenter="this.style.zIndex=5" onmouseleave="if(document.activeElement!==this)this.style.zIndex=1" onfocus="this.style.zIndex=5" onblur="this.style.zIndex=1"`;
+            const btnZIndexEvents = `onmouseenter="this.style.zIndex=5" onmouseleave="this.style.zIndex=1"`;
+
+            let groupHtml = `<div class="form-group">`;
+            groupHtml += `<label class="form-label">${col.label}</label>`;
+
+            groupHtml += `<div style="display:flex; align-items:stretch;">`;
+
+            // 1. 左侧：Distance Input
+            groupHtml += `<div style="flex:1;">`;
+            groupHtml += `<input type="number" class="form-input" id="input-${col.key}" value="${isUnknown ? '' : val}" ${distAttr} ${inputZIndexEvents} style="${distStyle} ${inputGroupStyle} width:100%;">`;
+            groupHtml += `</div>`;
+
+            // 2. 右侧：Unknown Button
+            groupHtml += `<div style="flex:0 0 auto;">`;
+            groupHtml += `<input type="hidden" id="input-${unknownKey}" value="${isUnknown}">`;
+            groupHtml += `<button class="form-bool-trigger ${isUnknown ? 'is-true' : ''}" id="btn-bool-${unknownKey}" onclick="toggleBoolean('${unknownKey}')" type="button" ${btnZIndexEvents} style="${btnGroupStyle}">`;
+            groupHtml += `<span id="lbl-bool-${unknownKey}">Unknown</span>`;
+            groupHtml += `<i id="icon-bool-${unknownKey}" data-lucide="${isUnknown ? 'check' : 'x'}" size="16" style="margin-left:8px;"></i>`;
+            groupHtml += `</button>`;
+            groupHtml += `</div>`;
+
+            groupHtml += `</div></div>`; // End flex & form-group
+
+            leftHtml += groupHtml;
+            return; // 结束当前循环
+        }
+
+        // --- 标准字段渲染逻辑 ---
 
         if (col.key === 'creation_date' && val) {
             try {
@@ -2894,18 +2946,13 @@ function openCrudModal(mode, id = null) {
 
         let attrStr = "";
         if (isReadOnly) {
-            const styleStr = "opacity:0.7; background:var(--bg-capsule);";
-            if (effectiveType === 'select' || effectiveType === 'boolean') {
-                attrStr = `disabled style="${styleStr}"`;
-            } else {
-                attrStr = `readonly style="${styleStr}"`;
-            }
+            const disStyle = "opacity:0.6; background:var(--bg-capsule); color:var(--text-muted);";
+            attrStr = `disabled style="${disStyle}"`;
         }
 
         let fieldHtml = `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
         if (effectiveType === 'select') {
-            // --- Custom Searchable Select ---
             let options = col.options || [];
             if (currentTable === 'project' && col.key === 'creator_name') {
                 const currentUser = document.querySelector('.user-name-text').textContent.trim();
@@ -2946,56 +2993,41 @@ function openCrudModal(mode, id = null) {
             }
 
             let currentLabel = "Select...";
-            if (val) {
-                // Try to match val to an option, currently options are simple strings/numbers
-                currentLabel = val;
-            }
-
+            if (val) currentLabel = val;
             const isDisabled = attrStr.includes('disabled');
             const disabledClass = isDisabled ? 'disabled' : '';
+            const wrapperStyle = attrStr.includes('disabled') ? "pointer-events:none;" : "";
 
-            fieldHtml += `<div class="form-select-wrapper" id="wrapper-${col.key}">`;
-            // Hidden input to hold the actual value for saveCrudData
+            fieldHtml += `<div class="form-select-wrapper" id="wrapper-${col.key}" style="${wrapperStyle}">`;
             fieldHtml += `<input type="hidden" id="input-${col.key}" value="${val}">`;
-
-            // Trigger
-            fieldHtml += `<div class="form-select-trigger ${disabledClass}" id="trigger-${col.key}" onclick="toggleFormSelect('dropdown-${col.key}')">`;
+            fieldHtml += `<div class="form-select-trigger ${disabledClass}" id="trigger-${col.key}" onclick="toggleFormSelect('dropdown-${col.key}')" ${attrStr}>`;
             fieldHtml += `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${currentLabel}</span>`;
             fieldHtml += `<i data-lucide="chevron-down" size="16"></i>`;
             fieldHtml += `</div>`;
-
-            // Dropdown
             fieldHtml += `<div class="form-select-dropdown" id="dropdown-${col.key}">`;
             fieldHtml += `<input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-${col.key}', this.value)" onclick="event.stopPropagation()">`;
             fieldHtml += `<div class="form-select-options-list">`;
-
             fieldHtml += `<div class="form-select-option" onclick="selectFormOption('${col.key}', '', 'Select...', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
-
             options.forEach(opt => {
                 const isSelected = String(val) === String(opt) ? 'selected' : '';
                 fieldHtml += `<div class="form-select-option ${isSelected}" onclick="selectFormOption('${col.key}', '${opt}', '${opt}', this)">${opt}</div>`;
             });
-
             fieldHtml += `</div></div></div>`;
 
         } else if (effectiveType === 'datetime-local') {
             let dtVal = val;
-            if (val && val.includes(' ')) {
-                dtVal = val.replace(' ', 'T');
-            }
+            if (val && val.includes(' ')) dtVal = val.replace(' ', 'T');
             fieldHtml += `<input type="datetime-local" class="form-input" id="input-${col.key}" value="${dtVal}" step="1" ${attrStr}>`;
-
         } else if (effectiveType === 'boolean') {
             const isTrue = val === true;
             fieldHtml += `<input type="hidden" id="input-${col.key}" value="${isTrue}">`;
-            // 使用 form-bool-trigger 类，并根据值添加 is-true 类
             fieldHtml += `<button class="form-bool-trigger ${isTrue ? 'is-true' : ''}" id="btn-bool-${col.key}" onclick="toggleBoolean('${col.key}')" ${attrStr} type="button">`;
             fieldHtml += `<span id="lbl-bool-${col.key}">${isTrue ? 'True' : 'False'}</span>`;
             fieldHtml += `<i id="icon-bool-${col.key}" data-lucide="${isTrue ? 'check' : 'x'}" size="16"></i>`;
             fieldHtml += `</button>`;
         } else if (effectiveType === 'file') {
             fieldHtml += `<input type="file" id="input-${col.key}" onchange="handleFileChange(this)" style="display:none;">`;
-            fieldHtml += `<div class="form-select-trigger" onclick="document.getElementById('input-${col.key}').click()" style="cursor:pointer;">`;
+            fieldHtml += `<div class="form-select-trigger" onclick="document.getElementById('input-${col.key}').click()" style="cursor:pointer; ${attrStr.includes('disabled') ? 'pointer-events:none;' : ''}" ${attrStr}>`;
             fieldHtml += `<span id="input-${col.key}-preview" style="display:flex; align-items:center; gap:8px; overflow:hidden;">`;
             if (val) {
                 fieldHtml += `<img src="${val}" style="height:24px; border-radius:4px; border:1px solid var(--border-color);">`;
@@ -3009,7 +3041,7 @@ function openCrudModal(mode, id = null) {
             const safeVal = String(val).replace(/'/g, "&apos;");
             const textPreview = String(val).replace(/<[^>]*>?/gm, '');
             fieldHtml += `<input type="hidden" id="input-${col.key}" value='${safeVal}'>`;
-            fieldHtml += `<div class="form-select-trigger" onclick="openEditorForInput('input-${col.key}')" style="cursor:pointer;">`;
+            fieldHtml += `<div class="form-select-trigger" onclick="openEditorForInput('input-${col.key}')" style="cursor:pointer; ${attrStr.includes('disabled') ? 'pointer-events:none;' : ''}" ${attrStr}>`;
             fieldHtml += `<span id="input-${col.key}-preview" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:${textPreview ? 'var(--text-main)' : 'var(--text-muted)'}; font-size:0.9rem;">`;
             fieldHtml += textPreview ? (textPreview.substring(0, 40) + (textPreview.length > 40 ? '...' : '')) : 'Edit content...';
             fieldHtml += `</span>`;
@@ -3658,7 +3690,6 @@ function toggleDtInput(checked) {
     }
 }
 
-// --- Custom Boolean Toggle Logic ---
 window.toggleBoolean = function (key) {
     const input = document.getElementById(`input-${key}`);
     const btn = document.getElementById(`btn-bool-${key}`);
@@ -3671,7 +3702,13 @@ window.toggleBoolean = function (key) {
     const newVal = !currentVal;
 
     input.value = newVal;
-    lbl.textContent = newVal ? 'True' : 'False';
+
+    // 特殊处理：如果是 distance_not_estimable，文本始终保持 'Unknown'
+    if (key === 'distance_not_estimable') {
+        lbl.textContent = 'Unknown';
+    } else {
+        lbl.textContent = newVal ? 'True' : 'False';
+    }
 
     if (newVal) {
         btn.classList.add('is-true');
@@ -3681,9 +3718,27 @@ window.toggleBoolean = function (key) {
         icon.setAttribute('data-lucide', 'x');
     }
     lucide.createIcons();
-};
-// --- Table Filter Custom Select Logic ---
 
+    // --- 交互逻辑：Dist. Unknown 联动 ---
+    if (key === 'distance_not_estimable') {
+        const distInput = document.getElementById('input-sound_distance_m');
+        if (distInput) {
+            if (newVal === true) {
+                // Unknown 选中：清空 Distance 并禁用
+                distInput.value = '';
+                distInput.disabled = true;
+                distInput.style.opacity = '0.6';
+                distInput.style.backgroundColor = 'var(--bg-capsule)';
+            } else {
+                // Unknown 取消选中：恢复输入
+                distInput.disabled = false;
+                distInput.style.opacity = '1';
+                distInput.style.backgroundColor = '';
+                distInput.style.cursor = '';
+            }
+        }
+    }
+};
 window.toggleTableFilterSelect = function (id) {
     const dropdown = document.getElementById(id);
     if (!dropdown) return;
