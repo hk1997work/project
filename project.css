@@ -2826,10 +2826,14 @@ html {
 }
 
 .crud-table th {
+    position: sticky; /* 关键：开启粘性定位 */
+    top: 0; /* 关键：固定在容器顶部 */
+    z-index: 10; /* 关键：确保表头在表格内容（tbody）之上 */
     vertical-align: top;
     padding: 10px;
     background: var(--bg-surface-secondary);
     border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 0 var(--border-color); /* 优化：滚动时保持底部边框可见 */
 }
 
 .th-header-content {
