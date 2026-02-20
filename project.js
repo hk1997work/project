@@ -761,24 +761,33 @@ function renderSummary() {
         contribBgIconName = 'library';
     }
     let statsHTML = '';
-    order.forEach((key) => {
-        let val = statsObj[key.toLowerCase()] || 0;
-        const icon = getIconForStat(key);
-        statsHTML += `<div class="summary-stat-card"><div class="stat-content-left"><div class="summary-stat-val ${key === 'Users' ? 'highlight' : ''}">${val}</div><div class="summary-stat-label">${key}</div></div><i data-lucide="${icon}" class="bg-icon"></i></div>`;
-    });
 
     // 动态生成 Taxon 汇总卡片（仅对 Collection 生效）
     if (type === "Collection") {
         const col = rawProjects[currProjIdx].collections[currColIdx - 1];
         if (col._taxons && col._taxons.length > 0) {
-            let taxonPills = col._taxons.map(t => `<span style="background:var(--brand-tint); color:var(--brand); padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; white-space:nowrap; display:inline-block;">${t.cached_name}</span>`).join(' ');
-            statsHTML += `<div class="summary-stat-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 20px 32px; gap: 10px; cursor: default;">
-                <div class="summary-stat-label" style="font-size:0.9rem; color:var(--text-main); font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.8;">Taxons</div>
-                <div style="display:flex; flex-wrap:wrap; gap:8px;">${taxonPills}</div>
-                <i data-lucide="tag" class="bg-icon"></i>
+            // 使用与表格 Current 一致的胶囊样式（白色粗体、主题色背景、阴影），允许自动换行以便全部展示
+            let taxonPills = col._taxons.map(t =>
+                `<span style="background:var(--brand); color:white; padding:4px 12px; border-radius:14px; font-size:0.75rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap;">${t.cached_name}</span>`
+            ).join('');
+
+            statsHTML += `<div class="summary-stat-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 20px 32px; gap: 12px; cursor: default; position: relative;">
+                <div class="summary-stat-label" style="position: relative; z-index: 2; font-size:0.85rem; color:var(--text-main); font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.8;">Taxons</div>
+                
+                <div style="position: relative; z-index: 2; display:flex; flex-wrap:wrap; gap:8px; width:calc(100% - 100px);">
+                    ${taxonPills}
+                </div>
+                
+                <i data-lucide="tag" class="bg-icon" style="z-index: 1;"></i>
             </div>`;
         }
     }
+    
+    order.forEach((key) => {
+        let val = statsObj[key.toLowerCase()] || 0;
+        const icon = getIconForStat(key);
+        statsHTML += `<div class="summary-stat-card"><div class="stat-content-left"><div class="summary-stat-val ${key === 'Users' ? 'highlight' : ''}">${val}</div><div class="summary-stat-label">${key}</div></div><i data-lucide="${icon}" class="bg-icon"></i></div>`;
+    });
 
     animateBlockSwap(statsContainer, () => {
         statsContainer.innerHTML = statsHTML;
