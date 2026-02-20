@@ -226,6 +226,7 @@
                         <button class="btn-toolbar" id="btn-add" onclick="openCrudModal('add')"><i data-lucide="plus" size="16"></i> Add</button>
                         <button class="btn-toolbar" disabled id="btn-edit" onclick="handleToolbarEdit()"><i data-lucide="pencil" size="16"></i> Edit</button>
                         <button class="btn-toolbar" disabled id="btn-link" onclick="handleToolbarLink()"><i data-lucide="link" size="16"></i> Link</button>
+                        <button class="btn-toolbar" disabled id="btn-taxon" onclick="handleToolbarTaxon()" style="display:none;"><i data-lucide="tag" size="16"></i> Taxon</button>
                         <button class="btn-toolbar" disabled id="btn-reset-pwd" onclick="handleToolbarResetPassword()" style="display:none;"><i data-lucide="key" size="16"></i> Reset Pwd</button>
                         <button class="btn-toolbar" disabled id="btn-permission" onclick="handleToolbarPermission()" style="display:none;"><i data-lucide="shield-check" size="16"></i> Permission</button>
                         <button class="btn-toolbar" disabled id="btn-set-contrib" onclick="handleSetContributor()" style="display:none;"><i data-lucide="user-plus" size="16"></i> Contributor</button>
@@ -282,6 +283,36 @@
         <div class="modal-footer">
             <button class="btn-secondary" onclick="closePermissionDrawer()">Cancel</button>
             <button class="btn-primary" onclick="savePermissionDrawer()">Save</button>
+        </div>
+    </div>
+</div>
+
+<div class="crud-modal-overlay" id="taxon-drawer-overlay">
+    <div class="crud-modal" id="taxon-drawer" onclick="event.stopPropagation()" style="width: 480px; max-width: 100%;">
+        <div class="card-title" style="margin-bottom: 20px;">Manage Taxons</div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="form-group" style="position: relative;">
+                <label class="form-label">Taxon <span id="taxon-selected-badge" style="display:none; font-size:0.75rem; color:var(--brand); margin-left:8px;"></span></label>
+                <input class="form-input" id="taxon-search-input" oninput="handleTaxonSearchInput(this.value)" style="width: 100%;" type="text">
+                <div class="form-select-dropdown" id="taxon-search-dropdown" style="top: 100%; left: 0; width: 100%; z-index: 100; display: none; position: absolute;"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <input class="form-input" id="taxon-notes-input" style="width: 100%;" type="text">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                <button class="btn-primary" disabled id="btn-add-taxon" onclick="addTaxonToCollection()">Add Taxon</button>
+            </div>
+        </div>
+
+        <div class="taxon-list-container" id="taxon-list-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border-color); margin-top: 10px;">
+        </div>
+
+        <div class="modal-footer" style="margin-top: 20px;">
+            <button class="btn-secondary" onclick="closeTaxonDrawer()">Close</button>
         </div>
     </div>
 </div>

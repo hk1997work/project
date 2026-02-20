@@ -63,6 +63,22 @@ const mockTaxons = ["Aves", "Amphibia", "Insecta", "Mammalia", "Chiroptera"];
 const mockReviewStatuses = ["Pending", "Approved", "Rejected", "Unsure", "Revise"]; // 添加 Revise
 const mockIndexTypes = ["ACI", "ADI", "AEI", "BI", "NDSI", "H", "M"];
 
+const mockTaxonDB = [
+    {id: "tx_101", name: "Felidae", rank: "family"},
+    {id: "tx_102", name: "Canidae", rank: "family"},
+    {id: "tx_103", name: "Panthera", rank: "genus"},
+    {id: "tx_104", name: "Canis", rank: "genus"},
+    {id: "tx_105", name: "Panthera leo", rank: "species"},
+    {id: "tx_106", name: "Panthera tigris", rank: "species"},
+    {id: "tx_107", name: "Canis lupus", rank: "species"},
+    {id: "tx_108", name: "Ursidae", rank: "family"},
+    {id: "tx_109", name: "Ursus", rank: "genus"},
+    {id: "tx_110", name: "Ursus arctos", rank: "species"},
+    {id: "tx_111", name: "Accipitridae", rank: "family"},
+    {id: "tx_112", name: "Aquila", rank: "genus"},
+    {id: "tx_113", name: "Aquila chrysaetos", rank: "species"}
+];
+
 const getContributors = (count, type, leadName = null) => {
     const list = [];
     const rolePool = type === 'project' ? projRoles : colRoles;

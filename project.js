@@ -1122,6 +1122,12 @@ document.addEventListener('click', e => {
     if (!e.target.closest('.table-filter-wrapper')) {
         document.querySelectorAll('.table-filter-dropdown').forEach(d => d.classList.remove('active'));
     }
+
+    // Close taxon search dropdown
+    if (!e.target.closest('#taxon-search-input') && !e.target.closest('#taxon-search-dropdown')) {
+        const drop = document.getElementById('taxon-search-dropdown');
+        if (drop) drop.style.display = 'none';
+    }
 });
 
 function movePill(el) {
@@ -2288,6 +2294,16 @@ function updateToolbarState() {
             setContribBtn.disabled = (count === 0);
         } else {
             setContribBtn.style.display = 'none';
+        }
+    }
+
+    const taxonBtn = document.getElementById('btn-taxon');
+    if (taxonBtn) {
+        if (currentTable === 'collection') {
+            taxonBtn.style.display = 'inline-flex';
+            taxonBtn.disabled = (count !== 1);
+        } else {
+            taxonBtn.style.display = 'none';
         }
     }
 
@@ -4121,6 +4137,153 @@ function handleReviewStatusChange(status) {
             dropdown.querySelectorAll('.form-select-option').forEach(opt => opt.classList.remove('selected'));
         }
     }
+}
+
+let currentTaxonCollectionId = null;
+let currentSelectedTaxonForAdd = null;
+
+function handleToolbarTaxon() {
+    if (selectedCrudIds.length !== 1) return;
+    currentTaxonCollectionId = selectedCrudIds[0];
+    let collection = null;
+    for (let p of rawProjects) {
+        collection = p.collections.find(c => String(c.id) === String(currentTaxonCollectionId));
+        if (collection) break;
+    }
+    if (!collection) return;
+    if (!collection._taxons) collection._taxons = [];
+
+    clearSelectedTaxon();
+    document.getElementById('taxon-notes-input').value = '';
+
+    renderTaxonList();
+    document.getElementById('taxon-drawer-overlay').classList.add('active');
+    lucide.createIcons();
+}
+
+function closeTaxonDrawer() {
+    document.getElementById('taxon-drawer-overlay').classList.remove('active');
+    currentTaxonCollectionId = null;
+    clearSelectedTaxon();
+}
+
+function handleTaxonSearchInput(query) {
+    const dropdown = document.getElementById('taxon-search-dropdown');
+    clearSelectedTaxon(false);
+    query = query.toLowerCase().trim();
+    if (!query) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    const results = mockTaxonDB.filter(t => t.name.toLowerCase().includes(query));
+    if (results.length > 0) {
+        dropdown.innerHTML = `<div class="form-select-options-list">` + results.map(r => `
+            <div class="form-select-option" style="display:flex; justify-content:space-between; align-items:center;" onclick="selectTaxonForAdd('${r.id}', '${r.name}', '${r.rank}')">
+                <span style="font-weight: 600;">${r.name}</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">${r.rank}</span>
+            </div>
+        `).join('') + `</div>`;
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.innerHTML = `<div style="padding: 12px; color: var(--text-muted); font-size: 0.85rem; text-align:center;">No matches found</div>`;
+        dropdown.style.display = 'block';
+    }
+}
+
+function selectTaxonForAdd(id, name, rank) {
+    currentSelectedTaxonForAdd = {id, name, rank};
+    document.getElementById('taxon-search-input').value = name;
+    document.getElementById('taxon-search-dropdown').style.display = 'none';
+    const badge = document.getElementById('taxon-selected-badge');
+    badge.textContent = `(${rank})`;
+    badge.style.display = 'inline-block';
+    document.getElementById('btn-add-taxon').disabled = false;
+}
+
+function clearSelectedTaxon(clearSearchInput = true) {
+    currentSelectedTaxonForAdd = null;
+    if (clearSearchInput) document.getElementById('taxon-search-input').value = '';
+    const badge = document.getElementById('taxon-selected-badge');
+    if (badge) badge.style.display = 'none';
+    const btn = document.getElementById('btn-add-taxon');
+    if (btn) btn.disabled = true;
+    const dropdown = document.getElementById('taxon-search-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+}
+
+function addTaxonToCollection() {
+    if (!currentSelectedTaxonForAdd) return;
+    let collection = null;
+    for (let p of rawProjects) {
+        collection = p.collections.find(c => String(c.id) === String(currentTaxonCollectionId));
+        if (collection) break;
+    }
+    if (!collection) return;
+    if (!collection._taxons) collection._taxons = [];
+
+    const notes = document.getElementById('taxon-notes-input').value;
+    const currentUser = document.querySelector('.user-name-text').textContent.trim();
+
+    const newTaxon = {
+        collection_id: currentTaxonCollectionId,
+        col_taxon_id: currentSelectedTaxonForAdd.id,
+        col_rank: currentSelectedTaxonForAdd.rank,
+        cached_name: currentSelectedTaxonForAdd.name,
+        asserted_by: currentUser,
+        asserted_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+        notes: notes
+    };
+
+    collection._taxons.push(newTaxon);
+
+    clearSelectedTaxon();
+    document.getElementById('taxon-notes-input').value = '';
+    renderTaxonList();
+}
+
+function removeTaxonFromCollection(index) {
+    let collection = null;
+    for (let p of rawProjects) {
+        collection = p.collections.find(c => String(c.id) === String(currentTaxonCollectionId));
+        if (collection) break;
+    }
+    if (!collection || !collection._taxons) return;
+    collection._taxons.splice(index, 1);
+    renderTaxonList();
+}
+
+function renderTaxonList() {
+    const container = document.getElementById('taxon-list-container');
+    let collection = null;
+    for (let p of rawProjects) {
+        collection = p.collections.find(c => String(c.id) === String(currentTaxonCollectionId));
+        if (collection) break;
+    }
+    if (!collection || !collection._taxons || collection._taxons.length === 0) {
+        container.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 40px 20px; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px;">
+                <div style="font-size: 0.85rem;">No Taxons Linked</div>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = collection._taxons.map((t, index) => `
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; gap: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: 700; color: var(--text-main); font-size: 0.9rem;">${t.cached_name}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">(${t.col_rank})</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; color: var(--text-secondary);">
+                    <span style="font-family: monospace; color: var(--text-muted);">ID: ${t.col_taxon_id}</span>
+                    <span>By: ${t.asserted_by}</span>
+                    <span>At: ${t.asserted_at}</span>
+                    ${t.notes ? `<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted);" title="${t.notes}">Notes: ${t.notes}</span>` : ''}
+                </div>
+            </div>
+            <button onclick="removeTaxonFromCollection(${index})" style="background: transparent; border: 1px solid var(--border-color); color: #ef4444; border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Remove</button>
+        </div>
+    `).join('');
 }
 
 init();
