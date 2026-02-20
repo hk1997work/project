@@ -1126,7 +1126,7 @@ document.addEventListener('click', e => {
     // Close taxon search dropdown
     if (!e.target.closest('#taxon-search-input') && !e.target.closest('#taxon-search-dropdown')) {
         const drop = document.getElementById('taxon-search-dropdown');
-        if (drop) drop.style.display = 'none';
+        if (drop) drop.classList.remove('active');
     }
 });
 
@@ -4172,28 +4172,30 @@ function handleTaxonSearchInput(query) {
     clearSelectedTaxon(false);
     query = query.toLowerCase().trim();
     if (!query) {
-        dropdown.style.display = 'none';
+        dropdown.classList.remove('active');
         return;
     }
     const results = mockTaxonDB.filter(t => t.name.toLowerCase().includes(query));
     if (results.length > 0) {
         dropdown.innerHTML = `<div class="form-select-options-list">` + results.map(r => `
-            <div class="form-select-option" style="display:flex; justify-content:space-between; align-items:center;" onclick="selectTaxonForAdd('${r.id}', '${r.name}', '${r.rank}')">
-                <span style="font-weight: 600;">${r.name}</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">${r.rank}</span>
+            <div class="form-select-option" style="display: flex; justify-content: space-between; align-items: center;" onclick="selectTaxonForAdd('${r.id}', '${r.name}', '${r.rank}')">
+                <span>${r.name}</span>
+                <span style="opacity: 0.6; font-size: 0.85em;">${r.rank}</span>
             </div>
         `).join('') + `</div>`;
-        dropdown.style.display = 'block';
+        dropdown.classList.add('active');
     } else {
-        dropdown.innerHTML = `<div style="padding: 12px; color: var(--text-muted); font-size: 0.85rem; text-align:center;">No matches found</div>`;
-        dropdown.style.display = 'block';
+        dropdown.innerHTML = `<div class="form-select-options-list">
+            <div style="padding: 10px 14px; color: var(--text-muted); font-size: 0.9rem; text-align: left;">No matches found</div>
+        </div>`;
+        dropdown.classList.add('active');
     }
 }
 
 function selectTaxonForAdd(id, name, rank) {
     currentSelectedTaxonForAdd = {id, name, rank};
     document.getElementById('taxon-search-input').value = name;
-    document.getElementById('taxon-search-dropdown').style.display = 'none';
+    document.getElementById('taxon-search-dropdown').classList.remove('active');
     const badge = document.getElementById('taxon-selected-badge');
     badge.textContent = `(${rank})`;
     badge.style.display = 'inline-block';
@@ -4208,7 +4210,9 @@ function clearSelectedTaxon(clearSearchInput = true) {
     const btn = document.getElementById('btn-add-taxon');
     if (btn) btn.disabled = true;
     const dropdown = document.getElementById('taxon-search-dropdown');
-    if (dropdown) dropdown.style.display = 'none';
+    if (dropdown) dropdown.classList.remove('active');
+    const errorMsg = document.getElementById('taxon-error-msg');
+    if (errorMsg) errorMsg.style.display = 'none';
 }
 
 function addTaxonToCollection() {
@@ -4220,6 +4224,18 @@ function addTaxonToCollection() {
     }
     if (!collection) return;
     if (!collection._taxons) collection._taxons = [];
+
+    const errorMsg = document.getElementById('taxon-error-msg');
+    if (errorMsg) errorMsg.style.display = 'none';
+
+    const isDuplicate = collection._taxons.some(t => String(t.col_taxon_id) === String(currentSelectedTaxonForAdd.id));
+    if (isDuplicate) {
+        if (errorMsg) {
+            errorMsg.textContent = "Already added";
+            errorMsg.style.display = 'inline-block';
+        }
+        return;
+    }
 
     const notes = document.getElementById('taxon-notes-input').value;
     const currentUser = document.querySelector('.user-name-text').textContent.trim();
@@ -4261,29 +4277,30 @@ function renderTaxonList() {
     }
     if (!collection || !collection._taxons || collection._taxons.length === 0) {
         container.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 40px 20px; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px;">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 40px 20px; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: 8px;">
                 <div style="font-size: 0.85rem;">No Taxons Linked</div>
             </div>`;
         return;
     }
 
-    container.innerHTML = collection._taxons.map((t, index) => `
-        <div style="display: flex; align-items: flex-start; justify-content: space-between; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; gap: 12px;">
-            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-weight: 700; color: var(--text-main); font-size: 0.9rem;">${t.cached_name}</span>
-                    <span style="font-size: 0.75rem; color: var(--text-muted);">(${t.col_rank})</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; color: var(--text-secondary);">
-                    <span style="font-family: monospace; color: var(--text-muted);">ID: ${t.col_taxon_id}</span>
-                    <span>By: ${t.asserted_by}</span>
-                    <span>At: ${t.asserted_at}</span>
-                    ${t.notes ? `<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted);" title="${t.notes}">Notes: ${t.notes}</span>` : ''}
-                </div>
+    let html = `<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 8px;">`;
+    html += collection._taxons.map((t, index) => `
+        <div class="taxon-capsule-item">
+            <span>${t.cached_name}</span>
+            <i data-lucide="x" size="12" style="margin-left: 6px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" onclick="removeTaxonFromCollection(${index})"></i>
+            
+            <div class="taxon-tooltip" style="text-align: left;">
+                <div style="font-weight: 700; margin-bottom: 6px; color: var(--brand); font-size: 0.85rem; text-align: left; text-transform: capitalize;">${t.col_rank}</div>
+                <div style="margin-bottom: 4px; text-align: left;"><span style="color: var(--text-muted); display:inline-block; width: 28px;">BY:</span> ${t.asserted_by}</div>
+                <div style="margin-bottom: 4px; text-align: left;"><span style="color: var(--text-muted); display:inline-block; width: 28px;">AT:</span> ${t.asserted_at}</div>
+                ${t.notes ? `<div style="text-align: left; width: 100%; white-space: normal; line-height: 1.4;"><span style="color: var(--text-muted);">Notes:</span> ${t.notes}</div>` : ''}
             </div>
-            <button onclick="removeTaxonFromCollection(${index})" style="background: transparent; border: 1px solid var(--border-color); color: #ef4444; border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Remove</button>
         </div>
     `).join('');
+    html += `</div>`;
+
+    container.innerHTML = html;
+    lucide.createIcons();
 }
 
 init();

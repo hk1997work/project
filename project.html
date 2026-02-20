@@ -289,13 +289,16 @@
 
 <div class="crud-modal-overlay" id="taxon-drawer-overlay">
     <div class="crud-modal" id="taxon-drawer" onclick="event.stopPropagation()" style="width: 480px; max-width: 100%;">
-        <div class="card-title" style="margin-bottom: 20px;">Manage Taxons</div>
+        <div class="card-title" style="margin-bottom: 20px;">Set Taxons</div>
 
         <div style="display: flex; flex-direction: column; gap: 16px;">
             <div class="form-group" style="position: relative;">
-                <label class="form-label">Taxon <span id="taxon-selected-badge" style="display:none; font-size:0.75rem; color:var(--brand); margin-left:8px;"></span></label>
+                <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Taxon <span id="taxon-selected-badge" style="display:none; font-size:0.75rem; color:var(--brand); margin-left:8px;"></span></span>
+                    <span id="taxon-error-msg" style="display:none; font-size:0.75rem; color:#ef4444; font-weight:normal;"></span>
+                </label>
                 <input class="form-input" id="taxon-search-input" oninput="handleTaxonSearchInput(this.value)" style="width: 100%;" type="text">
-                <div class="form-select-dropdown" id="taxon-search-dropdown" style="top: 100%; left: 0; width: 100%; z-index: 100; display: none; position: absolute;"></div>
+                <div class="form-select-dropdown" id="taxon-search-dropdown"></div>
             </div>
 
             <div class="form-group">
