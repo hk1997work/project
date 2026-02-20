@@ -766,6 +766,20 @@ function renderSummary() {
         const icon = getIconForStat(key);
         statsHTML += `<div class="summary-stat-card"><div class="stat-content-left"><div class="summary-stat-val ${key === 'Users' ? 'highlight' : ''}">${val}</div><div class="summary-stat-label">${key}</div></div><i data-lucide="${icon}" class="bg-icon"></i></div>`;
     });
+
+    // 动态生成 Taxon 汇总卡片（仅对 Collection 生效）
+    if (type === "Collection") {
+        const col = rawProjects[currProjIdx].collections[currColIdx - 1];
+        if (col._taxons && col._taxons.length > 0) {
+            let taxonPills = col._taxons.map(t => `<span style="background:var(--brand-tint); color:var(--brand); padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; white-space:nowrap; display:inline-block;">${t.cached_name}</span>`).join(' ');
+            statsHTML += `<div class="summary-stat-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 20px 32px; gap: 10px; cursor: default;">
+                <div class="summary-stat-label" style="font-size:0.9rem; color:var(--text-main); font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.8;">Taxons</div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">${taxonPills}</div>
+                <i data-lucide="tag" class="bg-icon"></i>
+            </div>`;
+        }
+    }
+
     animateBlockSwap(statsContainer, () => {
         statsContainer.innerHTML = statsHTML;
         lucide.createIcons();
@@ -1322,7 +1336,22 @@ function getDataForTable(tableName) {
                 isCurrent = currentProject.collections.includes(c);
             }
             return {
-                collection_id: c.id, uuid: `${c.id}9999`, project_names: linkedProjs.join(", "), name: c.name, creator_id: c.creator, doi: c.doi, description: c.description, sphere: c.sphere || "Biosphere", external_project_url: c.external_project_url, external_media_url: c.external_media_url, public_access: c.active !== undefined ? c.active : false, public_annotations: false, creation_date: c.date, _rawId: c.id, _isCurrent: isCurrent
+                collection_id: c.id,
+                uuid: `${c.id}9999`,
+                project_names: linkedProjs.join(", "),
+                name: c.name,
+                creator_id: c.creator,
+                doi: c.doi,
+                description: c.description,
+                sphere: c.sphere || "Biosphere",
+                external_project_url: c.external_project_url,
+                external_media_url: c.external_media_url,
+                public_access: c.active !== undefined ? c.active : false,
+                public_annotations: false,
+                creation_date: c.date,
+                taxons_display: (c._taxons && c._taxons.length > 0) ? c._taxons.map(t => t.cached_name).join(', ') : "-",
+                _rawId: c.id,
+                _isCurrent: isCurrent
             };
         });
     } else if (tableName === 'site') {
@@ -1821,12 +1850,22 @@ function renderCrudTable() {
                 if (currentTable === 'user' && col.key === 'user_id' && dataScope === 'all' && row._isCurrent) val = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <span>${val}</span> <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3);">Current</span> </div>`;
 
                 if (col.type === 'image' || col.type === 'file') val = `<img src="${val}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);" alt="img" onerror="this.style.display='none'">`;
-                // 修改：只有当值严格等于 true 或 false 时才渲染 Badge，否则显示为空
+
+                // 统一 true / false 为胶囊样式 (与 Current 保持相同的 padding/radius/shadow)
                 if (col.type === 'boolean') {
-                    if (val === true) val = `<span class="status-badge status-true">True</span>`;
-                    else if (val === false) val = `<span class="status-badge status-false">False</span>`;
+                    if (val === true) val = `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3);">True</span>`;
+                    else if (val === false) val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3);">False</span>`;
                     else val = "";
                 }
+
+                // 统一 Collection 中的 Taxons 呈现为胶囊组（一字排开，不换行）
+                if (col.key === 'taxons_display' && val && val !== "-") {
+                    const taxons = val.split(', ');
+                    val = `<div style="display:inline-flex; gap:4px; overflow:hidden; vertical-align:middle; width:100%;">` +
+                        taxons.map(t => `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap; flex-shrink:0;">${t}</span>`).join('') +
+                        `</div>`;
+                }
+
                 if (col.type === 'richtext') {
                     const text = String(val).replace(/<[^>]*>?/gm, '');
                     val = `<span style="opacity:0.8; font-size:0.85rem;" title="${text}">${text.substring(0, 30)}${text.length > 30 ? '...' : ''}</span>`;
@@ -4255,6 +4294,12 @@ function addTaxonToCollection() {
     clearSelectedTaxon();
     document.getElementById('taxon-notes-input').value = '';
     renderTaxonList();
+
+    // 强制触发更新使得表单和 Summary 同步显示最新结果
+    if (currentTable === 'collection') {
+        renderCrudTable();
+    }
+    renderSummary();
 }
 
 function removeTaxonFromCollection(index) {
@@ -4266,6 +4311,12 @@ function removeTaxonFromCollection(index) {
     if (!collection || !collection._taxons) return;
     collection._taxons.splice(index, 1);
     renderTaxonList();
+
+    // 强制触发更新使得表单和 Summary 同步显示最新结果
+    if (currentTable === 'collection') {
+        renderCrudTable();
+    }
+    renderSummary();
 }
 
 function renderTaxonList() {

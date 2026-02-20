@@ -202,7 +202,13 @@ const dbSchema = {
             key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
         }, {key: "external_project_url", label: "Ext. Project", type: "text"}, {
             key: "external_media_url", label: "Ext. Media", type: "text"
-        }, {key: "doi", label: "DOI", type: "text"}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}]
+        }, {key: "doi", label: "DOI", type: "text"}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {
+            key: "taxons_display",
+            label: "Taxons",
+            type: "text",
+            readonly: true,
+            hiddenInForm: true
+        }]
     }, "user": {
         label: "Users",
         icon: "users",
