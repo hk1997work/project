@@ -227,6 +227,7 @@
                         <button class="btn-toolbar" disabled id="btn-edit" onclick="handleToolbarEdit()"><i data-lucide="pencil" size="16"></i> Edit</button>
                         <button class="btn-toolbar" disabled id="btn-link" onclick="handleToolbarLink()"><i data-lucide="link" size="16"></i> Link</button>
                         <button class="btn-toolbar" disabled id="btn-taxon" onclick="handleToolbarTaxon()" style="display:none;"><i data-lucide="tag" size="16"></i> Taxon</button>
+                        <button class="btn-toolbar" disabled id="btn-label" onclick="handleToolbarLabel()" style="display:none;"><i data-lucide="tags" size="16"></i> Label</button>
                         <button class="btn-toolbar" disabled id="btn-reset-pwd" onclick="handleToolbarResetPassword()" style="display:none;"><i data-lucide="key" size="16"></i> Reset Pwd</button>
                         <button class="btn-toolbar" disabled id="btn-permission" onclick="handleToolbarPermission()" style="display:none;"><i data-lucide="shield-check" size="16"></i> Permission</button>
                         <button class="btn-toolbar" disabled id="btn-set-contrib" onclick="handleSetContributor()" style="display:none;"><i data-lucide="user-plus" size="16"></i> Contributor</button>
@@ -288,10 +289,10 @@
 </div>
 
 <div class="crud-modal-overlay" id="taxon-drawer-overlay">
-    <div class="crud-modal" id="taxon-drawer" onclick="event.stopPropagation()" style="width: 480px; max-width: 100%;">
-        <div class="card-title" style="margin-bottom: 20px;">Set Taxons</div>
+    <div class="crud-modal" id="taxon-drawer" onclick="event.stopPropagation()" style="width: 480px; max-width: 100%; display: flex; flex-direction: column; min-height: 500px;">
+        <div class="card-title" style="margin-bottom: 20px; flex-shrink: 0;">Set Taxons</div>
 
-        <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 16px; flex-shrink: 0;">
             <div class="form-group" style="position: relative;">
                 <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
                     <span>Taxon <span id="taxon-selected-badge" style="display:none; font-size:0.75rem; color:var(--brand); margin-left:8px;"></span></span>
@@ -311,11 +312,26 @@
             </div>
         </div>
 
-        <div class="taxon-list-container" id="taxon-list-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border-color); margin-top: 10px;">
+        <div class="taxon-list-container" id="taxon-list-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border-color); margin-top: 20px;">
         </div>
 
-        <div class="modal-footer" style="margin-top: 20px;">
-            <button class="btn-secondary" onclick="closeTaxonDrawer()">Close</button>
+        <div class="modal-footer" style="margin-top: 20px; flex-shrink: 0;">
+            <button class="btn-secondary" onclick="closeTaxonDrawer()">Cancel</button>
+            <button class="btn-primary" onclick="saveTaxonDrawer()">Save</button>
+        </div>
+    </div>
+</div>
+
+<div class="crud-modal-overlay" id="label-drawer-overlay">
+    <div class="crud-modal" id="label-drawer" onclick="event.stopPropagation()" style="width: 480px; max-width: 100%; display: flex; flex-direction: column; min-height: 500px;">
+        <div class="card-title" style="margin-bottom: 20px; flex-shrink: 0;">Set Labels</div>
+
+        <div id="all-labels-container" style="flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;">
+        </div>
+
+        <div class="modal-footer" style="margin-top: 20px; flex-shrink: 0;">
+            <button class="btn-secondary" onclick="closeLabelDrawer()">Cancel</button>
+            <button class="btn-primary" onclick="saveLabelDrawer()">Save</button>
         </div>
     </div>
 </div>

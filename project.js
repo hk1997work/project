@@ -265,7 +265,7 @@ function openSidebar(site) {
 
     const mediaHtml = site.media.map((m) => {
 
-        const mockAnnotationsHtml = `<span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">Bio</span><span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">Aves</span>`;
+        const mockAnnotationsHtml = (m.annotations || []).map(t => `<span class="media-annotation" style="background:${color}; box-shadow: 0 2px 5px ${color}40;">${t}</span>`).join('');
         const mockTime = "14:30:00";
 
         const isMetadata = m.type === 'Metadata';
@@ -1399,7 +1399,8 @@ function getDataForTable(tableName) {
             size_B: m.size_B,
             md5_hash: m.md5_hash,
             doi: m.doi,
-            creation_date: m.creation_date
+            creation_date: m.creation_date,
+            annotations_display: (m.annotations && m.annotations.length > 0) ? m.annotations.join(', ') : "-"
         }));
         return allMedia.filter(m => m.media_type === tableName);
     } else if (tableName === 'user') {
@@ -1864,11 +1865,11 @@ function renderCrudTable() {
                     else val = "";
                 }
 
-                // 统一 Collection 中的 Taxons 呈现为胶囊组（一字排开，不换行）
-                if (col.key === 'taxons_display' && val && val !== "-") {
-                    const taxons = val.split(', ');
-                    val = `<div style="display:inline-flex; gap:4px; overflow:hidden; vertical-align:middle; width:100%;">` +
-                        taxons.map(t => `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap; flex-shrink:0;">${t}</span>`).join('') +
+                // 统一 Collection 中的 Taxons 和 Audio 中的 Labels，严格与 True 胶囊样式一致，不引入导致高度变异的父层
+                if ((col.key === 'taxons_display' || col.key === 'annotations_display') && val && val !== "-") {
+                    const items = val.split(', ');
+                    val = `<div style="display:flex; flex-wrap:wrap; gap:4px;">` +
+                        items.map(t => `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); display:inline-block;">${t}</span>`).join('') +
                         `</div>`;
                 }
 
@@ -2349,6 +2350,16 @@ function updateToolbarState() {
             taxonBtn.disabled = (count !== 1);
         } else {
             taxonBtn.style.display = 'none';
+        }
+    }
+
+    const labelBtn = document.getElementById('btn-label');
+    if (labelBtn) {
+        if (currentTable === 'audio') {
+            labelBtn.style.display = 'inline-flex';
+            labelBtn.disabled = (count !== 1);
+        } else {
+            labelBtn.style.display = 'none';
         }
     }
 
@@ -4186,6 +4197,7 @@ function handleReviewStatusChange(status) {
 
 let currentTaxonCollectionId = null;
 let currentSelectedTaxonForAdd = null;
+let currentTaxonDraft = []; // 用于保存草稿
 
 function handleToolbarTaxon() {
     if (selectedCrudIds.length !== 1) return;
@@ -4196,7 +4208,9 @@ function handleToolbarTaxon() {
         if (collection) break;
     }
     if (!collection) return;
-    if (!collection._taxons) collection._taxons = [];
+
+    // 初始化时拷贝一份草稿
+    currentTaxonDraft = JSON.parse(JSON.stringify(collection._taxons || []));
 
     clearSelectedTaxon();
     document.getElementById('taxon-notes-input').value = '';
@@ -4209,7 +4223,28 @@ function handleToolbarTaxon() {
 function closeTaxonDrawer() {
     document.getElementById('taxon-drawer-overlay').classList.remove('active');
     currentTaxonCollectionId = null;
+    currentTaxonDraft = [];
     clearSelectedTaxon();
+}
+
+function saveTaxonDrawer() {
+    let collection = null;
+    for (let p of rawProjects) {
+        collection = p.collections.find(c => String(c.id) === String(currentTaxonCollectionId));
+        if (collection) break;
+    }
+    if (collection) {
+        // 保存草稿到真实数据
+        collection._taxons = JSON.parse(JSON.stringify(currentTaxonDraft));
+        if (currentTable === 'collection') {
+            renderCrudTable();
+        }
+        const viewedCol = (currColIdx > 0) ? rawProjects[currProjIdx].collections[currColIdx - 1] : null;
+        if (viewedCol && String(viewedCol.id) === String(currentTaxonCollectionId)) {
+            selectCollection(currColIdx, true);
+        }
+    }
+    closeTaxonDrawer();
 }
 
 function handleTaxonSearchInput(query) {
@@ -4262,18 +4297,12 @@ function clearSelectedTaxon(clearSearchInput = true) {
 
 function addTaxonToCollection() {
     if (!currentSelectedTaxonForAdd) return;
-    let collection = null;
-    for (let p of rawProjects) {
-        collection = p.collections.find(c => String(c.id) === String(currentTaxonCollectionId));
-        if (collection) break;
-    }
-    if (!collection) return;
-    if (!collection._taxons) collection._taxons = [];
 
     const errorMsg = document.getElementById('taxon-error-msg');
     if (errorMsg) errorMsg.style.display = 'none';
 
-    const isDuplicate = collection._taxons.some(t => String(t.col_taxon_id) === String(currentSelectedTaxonForAdd.id));
+    // 基于草稿验证是否重复
+    const isDuplicate = currentTaxonDraft.some(t => String(t.col_taxon_id) === String(currentSelectedTaxonForAdd.id));
     if (isDuplicate) {
         if (errorMsg) {
             errorMsg.textContent = "Already added";
@@ -4295,53 +4324,22 @@ function addTaxonToCollection() {
         notes: notes
     };
 
-    collection._taxons.push(newTaxon);
+    // 只更新草稿
+    currentTaxonDraft.push(newTaxon);
 
     clearSelectedTaxon();
     document.getElementById('taxon-notes-input').value = '';
     renderTaxonList();
-
-    if (currentTable === 'collection') {
-        renderCrudTable();
-    }
-
-    // 如果当前正在查看该 Collection，强制刷新描述页面以显示新的 Taxon
-    const viewedCol = (currColIdx > 0) ? rawProjects[currProjIdx].collections[currColIdx - 1] : null;
-    if (viewedCol && String(viewedCol.id) === String(currentTaxonCollectionId)) {
-        selectCollection(currColIdx, true);
-    }
 }
 
 function removeTaxonFromCollection(index) {
-    let collection = null;
-    for (let p of rawProjects) {
-        collection = p.collections.find(c => String(c.id) === String(currentTaxonCollectionId));
-        if (collection) break;
-    }
-    if (!collection || !collection._taxons) return;
-    collection._taxons.splice(index, 1);
+    currentTaxonDraft.splice(index, 1);
     renderTaxonList();
-
-    if (currentTable === 'collection') {
-        renderCrudTable();
-    }
-
-    // 如果当前正在查看该 Collection，强制刷新描述页面以更新 Taxon
-    const viewedCol = (currColIdx > 0) ? rawProjects[currProjIdx].collections[currColIdx - 1] : null;
-    if (viewedCol && String(viewedCol.id) === String(currentTaxonCollectionId)) {
-        selectCollection(currColIdx, true);
-    }
 }
 
-// 替换 project.js 中的 renderTaxonList 函数
 function renderTaxonList() {
     const container = document.getElementById('taxon-list-container');
-    let collection = null;
-    for (let p of rawProjects) {
-        collection = p.collections.find(c => String(c.id) === String(currentTaxonCollectionId));
-        if (collection) break;
-    }
-    if (!collection || !collection._taxons || collection._taxons.length === 0) {
+    if (!currentTaxonDraft || currentTaxonDraft.length === 0) {
         container.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 40px 20px; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: 8px;">
                 <div style="font-size: 0.85rem;">No Taxons Linked</div>
@@ -4350,7 +4348,7 @@ function renderTaxonList() {
     }
 
     let html = `<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">`;
-    html += collection._taxons.map((t, index) => `
+    html += currentTaxonDraft.map((t, index) => `
         <div class="taxon-capsule-item">
             <span>${t.cached_name}</span>
             <i data-lucide="x" size="12" style="margin-left: 6px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" onclick="removeTaxonFromCollection(${index})"></i>
@@ -4368,8 +4366,6 @@ function renderTaxonList() {
     container.innerHTML = html;
     lucide.createIcons();
 
-    // 🌟 核心改进：在 DOM 渲染后，浏览器重绘前，立刻计算所有悬浮窗的防溢出位置
-    // 这样在用户肉眼看到之前，靠边元素的悬浮窗就已经向内靠拢了，彻底杜绝滚动条闪烁出现
     requestAnimationFrame(() => {
         const items = container.querySelectorAll('.taxon-capsule-item');
         items.forEach(el => {
@@ -4378,13 +4374,11 @@ function renderTaxonList() {
     });
 }
 
-// 放在 project.js 最末尾即可
 window.adjustTaxonTooltip = function (el) {
     const tooltip = el.querySelector('.taxon-tooltip');
     if (!tooltip) return;
     const container = el.closest('#taxon-list-container') || document.body;
 
-    // 重置居中
     tooltip.style.left = '50%';
     tooltip.style.right = 'auto';
     tooltip.style.transform = 'translateX(-50%)';
@@ -4393,17 +4387,87 @@ window.adjustTaxonTooltip = function (el) {
     const contRect = container.getBoundingClientRect();
     const tooltipWidth = 220;
 
-    // 靠右溢出时，向左对齐
     if (rect.left + (rect.width / 2) + (tooltipWidth / 2) > contRect.right) {
         tooltip.style.left = 'auto';
         tooltip.style.right = '0';
         tooltip.style.transform = 'none';
-    }
-    // 靠左溢出时，向右对齐
-    else if (rect.left + (rect.width / 2) - (tooltipWidth / 2) < contRect.left) {
+    } else if (rect.left + (rect.width / 2) - (tooltipWidth / 2) < contRect.left) {
         tooltip.style.left = '0';
         tooltip.style.right = 'auto';
         tooltip.style.transform = 'none';
     }
 };
+
+// ================= 新增: Audio Label 草稿逻辑 =================
+let currentLabelAudioId = null;
+let currentLabelDraft = [];
+const PREDEFINED_LABELS = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony", "Biophony", "Unknown"];
+
+function handleToolbarLabel() {
+    if (selectedCrudIds.length !== 1) return;
+    currentLabelAudioId = selectedCrudIds[0];
+    const media = mediaItems.find(m => String(m.media_id) === String(currentLabelAudioId));
+    if (!media) return;
+
+    // 初始化时拷贝一份草稿
+    currentLabelDraft = [...(media.annotations || [])];
+
+    renderAllLabels();
+    document.getElementById('label-drawer-overlay').classList.add('active');
+}
+
+function closeLabelDrawer() {
+    document.getElementById('label-drawer-overlay').classList.remove('active');
+    currentLabelAudioId = null;
+    currentLabelDraft = [];
+}
+
+function saveLabelDrawer() {
+    const media = mediaItems.find(m => String(m.media_id) === String(currentLabelAudioId));
+    if (media) {
+        // 保存时将草稿真正覆盖原数据
+        media.annotations = [...currentLabelDraft];
+        if (currentTable === 'audio') {
+            renderCrudTable();
+        }
+        renderMedia();
+    }
+    closeLabelDrawer();
+}
+
+function renderAllLabels() {
+    const container = document.getElementById('all-labels-container');
+
+    let html = '';
+    PREDEFINED_LABELS.forEach(label => {
+        // 读取草稿状态而非主数据
+        const isSelected = currentLabelDraft.includes(label);
+
+        const bg = isSelected ? 'var(--brand)' : 'transparent';
+        const color = isSelected ? 'white' : 'var(--text-main)';
+        const borderColor = isSelected ? 'var(--brand)' : 'var(--border-color)';
+        const shadow = isSelected ? '0 2px 5px rgba(var(--brand-rgb),0.3)' : 'none';
+        const icon = isSelected ? 'check' : 'plus';
+        const iconOpacity = isSelected ? '0.9' : '0.6';
+
+        html += `<div class="taxon-capsule-item" style="cursor:pointer; box-sizing:border-box; background:${bg}; color:${color}; border: 1px solid ${borderColor}; box-shadow:${shadow}; transition:all 0.2s ease;" onclick="toggleLabelInAudio('${label}')">
+            <span>${label}</span>
+            <i data-lucide="${icon}" size="14" style="margin-left: 6px; opacity:${iconOpacity};"></i>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+    lucide.createIcons();
+}
+
+function toggleLabelInAudio(label) {
+    const index = currentLabelDraft.indexOf(label);
+    if (index > -1) {
+        currentLabelDraft.splice(index, 1);
+    } else {
+        currentLabelDraft.push(label);
+    }
+    renderAllLabels();
+}
+
 init();

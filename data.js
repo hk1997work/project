@@ -232,7 +232,9 @@ const dbSchema = {
             key: "uploader_id", label: "Uploader", type: "text", readonly: true, filterType: 'select'
         }, {
             key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'
-        }, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        }, {key: "creation_date", label: "Created", type: "text", readonly: true}, {
+            key: "annotations_display", label: "Labels", type: "text", readonly: true, hiddenInForm: true
+        }]
     }, site: {
         label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, // 修改：拆分坐标为经纬度，支持范围筛选，只读
             {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true}, {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "select", options: []}, {key: "functional_type", label: "Functional Type", type: "select", options: []}, {
