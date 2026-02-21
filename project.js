@@ -1860,16 +1860,16 @@ function renderCrudTable() {
 
                 // 统一 true / false 为胶囊样式 (与 Current 保持相同的 padding/radius/shadow)
                 if (col.type === 'boolean') {
-                    if (val === true) val = `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3);">True</span>`;
-                    else if (val === false) val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3);">False</span>`;
+                    if (val === true) val = `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); display:inline-block;">True</span>`;
+                    else if (val === false) val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3); display:inline-block;">False</span>`;
                     else val = "";
                 }
 
-                // 统一 Collection 中的 Taxons 和 Audio 中的 Labels，严格与 True 胶囊样式一致，不引入导致高度变异的父层
+                // 统一 Collection 的 Taxons 和 Audio 的 Labels（剥离多余高度控制样式，强行与 True/False 的 <span> 完全对齐，一字排开且溢出隐藏滚动）
                 if ((col.key === 'taxons_display' || col.key === 'annotations_display') && val && val !== "-") {
                     const items = val.split(', ');
-                    val = `<div style="display:flex; flex-wrap:wrap; gap:4px;">` +
-                        items.map(t => `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); display:inline-block;">${t}</span>`).join('') +
+                    val = `<div style="display:flex; flex-wrap:nowrap; gap:4px; overflow-x:auto; scrollbar-width:none; align-items:center;">` +
+                        items.map(t => `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap; flex-shrink:0; display:inline-block;">${t}</span>`).join('') +
                         `</div>`;
                 }
 
@@ -4195,9 +4195,10 @@ function handleReviewStatusChange(status) {
     }
 }
 
+// ================= Taxon 草稿与保存逻辑 =================
 let currentTaxonCollectionId = null;
 let currentSelectedTaxonForAdd = null;
-let currentTaxonDraft = []; // 用于保存草稿
+let currentTaxonDraft = []; // 草稿数组，取消则丢弃
 
 function handleToolbarTaxon() {
     if (selectedCrudIds.length !== 1) return;
@@ -4234,10 +4235,10 @@ function saveTaxonDrawer() {
         if (collection) break;
     }
     if (collection) {
-        // 保存草稿到真实数据
+        // 保存时将草稿真正覆盖原数据
         collection._taxons = JSON.parse(JSON.stringify(currentTaxonDraft));
         if (currentTable === 'collection') {
-            renderCrudTable();
+            renderCrudTable(); // 这里才会触发表格 UI 更新
         }
         const viewedCol = (currColIdx > 0) ? rawProjects[currProjIdx].collections[currColIdx - 1] : null;
         if (viewedCol && String(viewedCol.id) === String(currentTaxonCollectionId)) {
@@ -4301,7 +4302,6 @@ function addTaxonToCollection() {
     const errorMsg = document.getElementById('taxon-error-msg');
     if (errorMsg) errorMsg.style.display = 'none';
 
-    // 基于草稿验证是否重复
     const isDuplicate = currentTaxonDraft.some(t => String(t.col_taxon_id) === String(currentSelectedTaxonForAdd.id));
     if (isDuplicate) {
         if (errorMsg) {
@@ -4324,7 +4324,7 @@ function addTaxonToCollection() {
         notes: notes
     };
 
-    // 只更新草稿
+    // 仅添加进草稿，不触发 Table 更新
     currentTaxonDraft.push(newTaxon);
 
     clearSelectedTaxon();
@@ -4333,12 +4333,14 @@ function addTaxonToCollection() {
 }
 
 function removeTaxonFromCollection(index) {
+    // 仅从草稿中移除
     currentTaxonDraft.splice(index, 1);
     renderTaxonList();
 }
 
 function renderTaxonList() {
     const container = document.getElementById('taxon-list-container');
+    // 基于草稿渲染
     if (!currentTaxonDraft || currentTaxonDraft.length === 0) {
         container.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 40px 20px; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: 8px;">
@@ -4398,9 +4400,9 @@ window.adjustTaxonTooltip = function (el) {
     }
 };
 
-// ================= 新增: Audio Label 草稿逻辑 =================
+// ================= Audio Label 草稿与保存逻辑 =================
 let currentLabelAudioId = null;
-let currentLabelDraft = [];
+let currentLabelDraft = []; // 草稿数组
 const PREDEFINED_LABELS = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony", "Biophony", "Unknown"];
 
 function handleToolbarLabel() {
@@ -4425,12 +4427,12 @@ function closeLabelDrawer() {
 function saveLabelDrawer() {
     const media = mediaItems.find(m => String(m.media_id) === String(currentLabelAudioId));
     if (media) {
-        // 保存时将草稿真正覆盖原数据
+        // 只有点击 Save，才用草稿覆写真实数据
         media.annotations = [...currentLabelDraft];
         if (currentTable === 'audio') {
-            renderCrudTable();
+            renderCrudTable(); // 这里才会触发表格 UI 更新
         }
-        renderMedia();
+        renderMedia(); // 连带更新卡片视图
     }
     closeLabelDrawer();
 }
@@ -4440,7 +4442,7 @@ function renderAllLabels() {
 
     let html = '';
     PREDEFINED_LABELS.forEach(label => {
-        // 读取草稿状态而非主数据
+        // 从草稿中读取选中状态
         const isSelected = currentLabelDraft.includes(label);
 
         const bg = isSelected ? 'var(--brand)' : 'transparent';
@@ -4463,10 +4465,13 @@ function renderAllLabels() {
 function toggleLabelInAudio(label) {
     const index = currentLabelDraft.indexOf(label);
     if (index > -1) {
+        // 如果已存在于草稿则移除
         currentLabelDraft.splice(index, 1);
     } else {
+        // 否则加入草稿
         currentLabelDraft.push(label);
     }
+    // 只刷新弹窗内部视图，不刷新背后的表格
     renderAllLabels();
 }
 

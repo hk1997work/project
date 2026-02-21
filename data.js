@@ -103,6 +103,20 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
     return Array.from({length: count}, (_, i) => {
         const collectionCreator = `Researcher ${String.fromCharCode(65 + (i % 26))}`;
         const colId = 10000 + (startImgIdx * 100) + i;
+
+        // 随机分配 1 到 3 个初始 Taxon 数据
+        const numTaxons = Math.floor(Math.random() * 3) + 1;
+        const shuffledTaxons = [...mockTaxonDB].sort(() => 0.5 - Math.random());
+        const initialTaxons = shuffledTaxons.slice(0, numTaxons).map(t => ({
+            collection_id: String(colId),
+            col_taxon_id: t.id,
+            col_rank: t.rank,
+            cached_name: t.name,
+            asserted_by: creatorName || collectionCreator,
+            asserted_at: `2025-0${(i % 9) + 1}-15 10:00:00`,
+            notes: "Initial automated assignment."
+        }));
+
         return {
             id: String(colId),
             name: `${baseName} - Phase ${String.fromCharCode(65 + i)}`,
@@ -116,7 +130,9 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
             description: colGenerators[i % 3](`${baseName}`),
             image: getImg(startImgIdx + i + 1),
             stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), annotations: rInt(50, 300), sites: rInt(1, 5)},
-            contributors: getContributors(rInt(3, 5), 'collection', collectionCreator)
+            contributors: getContributors(rInt(3, 5), 'collection', collectionCreator),
+            // 将初始的 taxon 数组赋值给 collection
+            _taxons: initialTaxons
         };
     });
 };
