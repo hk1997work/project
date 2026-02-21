@@ -4348,7 +4348,7 @@ function renderTaxonList() {
         return;
     }
 
-    let html = `<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 8px;">`;
+    let html = `<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">`;
     html += collection._taxons.map((t, index) => `
         <div class="taxon-capsule-item">
             <span>${t.cached_name}</span>

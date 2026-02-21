@@ -2509,7 +2509,6 @@ html {
     border-bottom: 1px solid var(--border-color);
     color: var(--text-main);
     white-space: nowrap;
-    max-width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
