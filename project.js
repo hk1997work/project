@@ -4333,6 +4333,7 @@ function removeTaxonFromCollection(index) {
     }
 }
 
+// 替换 project.js 中的 renderTaxonList 函数
 function renderTaxonList() {
     const container = document.getElementById('taxon-list-container');
     let collection = null;
@@ -4366,6 +4367,43 @@ function renderTaxonList() {
 
     container.innerHTML = html;
     lucide.createIcons();
+
+    // 🌟 核心改进：在 DOM 渲染后，浏览器重绘前，立刻计算所有悬浮窗的防溢出位置
+    // 这样在用户肉眼看到之前，靠边元素的悬浮窗就已经向内靠拢了，彻底杜绝滚动条闪烁出现
+    requestAnimationFrame(() => {
+        const items = container.querySelectorAll('.taxon-capsule-item');
+        items.forEach(el => {
+            if (window.adjustTaxonTooltip) window.adjustTaxonTooltip(el);
+        });
+    });
 }
 
+// 放在 project.js 最末尾即可
+window.adjustTaxonTooltip = function (el) {
+    const tooltip = el.querySelector('.taxon-tooltip');
+    if (!tooltip) return;
+    const container = el.closest('#taxon-list-container') || document.body;
+
+    // 重置居中
+    tooltip.style.left = '50%';
+    tooltip.style.right = 'auto';
+    tooltip.style.transform = 'translateX(-50%)';
+
+    const rect = el.getBoundingClientRect();
+    const contRect = container.getBoundingClientRect();
+    const tooltipWidth = 220;
+
+    // 靠右溢出时，向左对齐
+    if (rect.left + (rect.width / 2) + (tooltipWidth / 2) > contRect.right) {
+        tooltip.style.left = 'auto';
+        tooltip.style.right = '0';
+        tooltip.style.transform = 'none';
+    }
+    // 靠左溢出时，向右对齐
+    else if (rect.left + (rect.width / 2) - (tooltipWidth / 2) < contRect.left) {
+        tooltip.style.left = '0';
+        tooltip.style.right = 'auto';
+        tooltip.style.transform = 'none';
+    }
+};
 init();
