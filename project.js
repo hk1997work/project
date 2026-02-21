@@ -762,27 +762,6 @@ function renderSummary() {
     }
     let statsHTML = '';
 
-    // 动态生成 Taxon 汇总卡片（仅对 Collection 生效）
-    if (type === "Collection") {
-        const col = rawProjects[currProjIdx].collections[currColIdx - 1];
-        if (col._taxons && col._taxons.length > 0) {
-            // 使用与表格 Current 一致的胶囊样式（白色粗体、主题色背景、阴影），允许自动换行以便全部展示
-            let taxonPills = col._taxons.map(t =>
-                `<span style="background:var(--brand); color:white; padding:4px 12px; border-radius:14px; font-size:0.75rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap;">${t.cached_name}</span>`
-            ).join('');
-
-            statsHTML += `<div class="summary-stat-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 20px 32px; gap: 12px; cursor: default; position: relative;">
-                <div class="summary-stat-label" style="position: relative; z-index: 2; font-size:0.85rem; color:var(--text-main); font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.8;">Taxons</div>
-                
-                <div style="position: relative; z-index: 2; display:flex; flex-wrap:wrap; gap:8px; width:calc(100% - 100px);">
-                    ${taxonPills}
-                </div>
-                
-                <i data-lucide="tag" class="bg-icon" style="z-index: 1;"></i>
-            </div>`;
-        }
-    }
-    
     order.forEach((key) => {
         let val = statsObj[key.toLowerCase()] || 0;
         const icon = getIconForStat(key);
@@ -987,10 +966,14 @@ function selectProject(idx) {
     }, 50);
 }
 
-function selectCollection(idx) {
+// ====== 替换整个 selectCollection 函数 ======
+function selectCollection(idx, force = false) {
     const dropdown = document.getElementById('dropdown-collection');
     dropdown.style.display = 'none';
-    if (currColIdx !== idx) {
+
+    // 增加 force 判断，允许强制刷新当前视图
+    if (currColIdx !== idx || force) {
+        const prevIdx = currColIdx; // 记录之前的索引
         currColIdx = idx;
         colSearchQuery = "";
         document.querySelector('#dropdown-collection input').value = "";
@@ -998,20 +981,19 @@ function selectCollection(idx) {
         const project = rawProjects[currProjIdx];
 
         if (currColIdx === 0) {
-
+            // Project View (保持不变)
             updateThemeColors(DEFAULT_BRAND_COLOR);
-
             container.classList.remove('mode-collection');
             animateTextSwap('label-collection', "All Collections");
         } else {
+            // Collection View
             const colData = project.collections[currColIdx - 1];
-
-
             const sphereColor = getSphereColor(colData.sphere);
             updateThemeColors(sphereColor);
 
             const colContainer = document.getElementById('panel-col-desc');
             const colDoiShort = colData.doi.split('/')[1];
+
             const updateCollectionHTML = () => {
                 let externalLinksHtml = '';
                 const hasProjUrl = colData.external_project_url && colData.external_project_url !== '#';
@@ -1030,6 +1012,15 @@ function selectCollection(idx) {
                     </div>`;
                 }
 
+                // --- 生成 Taxon 标签 HTML ---
+                let taxonHtml = '';
+                if (colData._taxons && colData._taxons.length > 0) {
+                    // 调整了 margin，适配标题下方和胶囊上方的间距
+                    taxonHtml = `<div style="margin-top:12px; margin-bottom:4px; display:flex; flex-wrap:wrap; gap:8px;">` +
+                        colData._taxons.map(t => `<span style="background:var(--brand); color:white; padding:4px 12px; border-radius:14px; font-size:0.75rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap;">${t.cached_name}</span>`).join('') +
+                        `</div>`;
+                }
+
                 colContainer.innerHTML = `<div class="collection-card block-anim">
 <div class="col-header-group">
     <div class="col-badge"><i data-lucide="globe-2" size="14"></i> ${colData.sphere}</div>
@@ -1039,7 +1030,8 @@ function selectCollection(idx) {
             ${externalLinksHtml}
         </div>
     </div>
-    <div class="col-meta-row smooth-text">
+    
+    ${taxonHtml} <div class="col-meta-row smooth-text">
         <div class="meta-capsule-box">
             <div class="meta-item-btn">
                 <div class="meta-item-icon"><i data-lucide="user" size="14"></i></div>
@@ -1061,6 +1053,7 @@ function selectCollection(idx) {
 </div>`;
                 lucide.createIcons();
             };
+
             if (!container.classList.contains('mode-collection')) {
                 updateCollectionHTML();
                 requestAnimationFrame(() => container.classList.add('mode-collection'));
@@ -1071,15 +1064,19 @@ function selectCollection(idx) {
             const newLabel = project.collections[currColIdx - 1].name;
             animateTextSwap('label-collection', newLabel);
         }
-        renderSummary();
-        updateMediaContext();
-        loadMapData();
-        if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
-        renderCollectionList();
-        if (document.getElementById('tab-data').classList.contains('active')) {
-            renderTableNav();
-            renderCrudHeader();
-            renderCrudTable();
+
+        // 只有当真正切换了 Collection 时才重载数据；如果是 force 刷新 UI，则跳过这些重型操作
+        if (prevIdx !== idx) {
+            renderSummary();
+            updateMediaContext();
+            loadMapData();
+            if (document.getElementById('tab-map').classList.contains('active')) renderMap(true);
+            renderCollectionList();
+            if (document.getElementById('tab-data').classList.contains('active')) {
+                renderTableNav();
+                renderCrudHeader();
+                renderCrudTable();
+            }
         }
     }
     setTimeout(() => {
@@ -4304,11 +4301,15 @@ function addTaxonToCollection() {
     document.getElementById('taxon-notes-input').value = '';
     renderTaxonList();
 
-    // 强制触发更新使得表单和 Summary 同步显示最新结果
     if (currentTable === 'collection') {
         renderCrudTable();
     }
-    renderSummary();
+
+    // 如果当前正在查看该 Collection，强制刷新描述页面以显示新的 Taxon
+    const viewedCol = (currColIdx > 0) ? rawProjects[currProjIdx].collections[currColIdx - 1] : null;
+    if (viewedCol && String(viewedCol.id) === String(currentTaxonCollectionId)) {
+        selectCollection(currColIdx, true);
+    }
 }
 
 function removeTaxonFromCollection(index) {
@@ -4321,11 +4322,15 @@ function removeTaxonFromCollection(index) {
     collection._taxons.splice(index, 1);
     renderTaxonList();
 
-    // 强制触发更新使得表单和 Summary 同步显示最新结果
     if (currentTable === 'collection') {
         renderCrudTable();
     }
-    renderSummary();
+
+    // 如果当前正在查看该 Collection，强制刷新描述页面以更新 Taxon
+    const viewedCol = (currColIdx > 0) ? rawProjects[currProjIdx].collections[currColIdx - 1] : null;
+    if (viewedCol && String(viewedCol.id) === String(currentTaxonCollectionId)) {
+        selectCollection(currColIdx, true);
+    }
 }
 
 function renderTaxonList() {
