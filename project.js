@@ -20,9 +20,18 @@ let generatedAnnotations = []; // 新增：用于存储动态生成的注释
 let generatedReviews = []; // 新增：用于存储动态生成的评审
 
 const SPHERE_COLORS = {
-    "Hydrosphere": "#0ea5e9", "Cryosphere": "#06b6d4", "Lithosphere": "#57534e", "Pedosphere": "#b45309", "Atmosphere": "#64748b", "Biosphere": "#65a30d", "Anthroposphere": "#db2777"
+    "Hydrosphere": "#0284c7",    // 深海蓝 (水圈) - 较深的蓝色代表海洋和深水
+    "Cryosphere": "#22d3ee",     // 冰晶青 (冰冻圈) - 明亮的青色代表冰雪和极地
+    "Lithosphere": "#78716c",    // 岩石灰 (岩石圈) - 暖灰色代表岩石和地壳
+    "Pedosphere": "#d97706",     // 土壤棕 (土壤圈) - 琥珀/棕色代表泥土和大地
+    "Atmosphere": "#8b5cf6",     // 苍穹紫 (大气圈) - 偏紫色的天空蓝，以防和水圈颜色混淆
+    "Biosphere": "#10b981",      // 活力绿 (生物圈) - 鲜艳的翠绿代表植物和生命
+    "Anthroposphere": "#ec4899", // 人造粉 (人类圈) - 显眼的品红色代表人类活动与人造物
+    "Unknown": "#94a3b8"         // 未知/默认 (备用)
 };
-const getSphereColor = (s) => SPHERE_COLORS[s] || SPHERE_COLORS["Biosphere"];
+
+// 确保默认回退颜色逻辑也是健全的
+const getSphereColor = (s) => SPHERE_COLORS[s] || SPHERE_COLORS["Unknown"];
 const DEFAULT_BRAND_COLOR = "#83CD20";
 
 

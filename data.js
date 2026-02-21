@@ -124,7 +124,7 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
             creator: collectionCreator,
             date: `2025-0${(i % 9) + 1}-15 09:30:00`,
             doi: `10.ECO/col.${colId}`,
-            sphere: ["Atmosphere", "Biosphere", "Hydrosphere"][i % 3],
+            sphere: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere", "Cryosphere", "Pedosphere", "Anthroposphere", 'Unknown'][i % 8],
             external_project_url: `https://science-db.io/project/${colId}`,
             external_media_url: `https://nature-sounds.org/archive/${colId}/media`,
             description: colGenerators[i % 3](`${baseName}`),
@@ -215,7 +215,18 @@ const dbSchema = {
         }]
     }, collection: {
         label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {
-            key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere"]
+            key: "sphere",
+            label: "Sphere",
+            type: "select",
+            options: [
+                "Atmosphere",
+                "Biosphere",
+                "Hydrosphere",
+                "Lithosphere",
+                "Cryosphere",     // 新增
+                "Pedosphere",     // 新增
+                "Anthroposphere"  // 新增
+            ]
         }, {key: "external_project_url", label: "Ext. Project", type: "text"}, {
             key: "external_media_url", label: "Ext. Media", type: "text"
         }, {key: "doi", label: "DOI", type: "text"}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {
