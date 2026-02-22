@@ -2283,7 +2283,14 @@ const USER_PERMISSIONS_DB = {};
 let currentPermDraft = null;
 let currentPermUserIds = [];
 
-const PERM_RESOURCES = [{key: 'recording', label: 'Recording', icon: 'mic'}, {key: 'site', label: 'Site', icon: 'map-pin'}, {key: 'annotation', label: 'Annotation', icon: 'scan-line'}, {key: 'review', label: 'Review', icon: 'check-circle'}];
+// 根据 data.js 中的 dbSchema 动态映射权限资源
+const PERM_RESOURCES = [
+    {key: 'audio', label: 'Audio', icon: 'mic'},
+    {key: 'site', label: 'Site', icon: 'map-pin'},
+    {key: 'annotation', label: 'Annotation', icon: 'scan-line'},
+    {key: 'annotation_review', label: 'Review', icon: 'check-square'},
+    {key: 'index_log', label: 'Index Log', icon: 'bar-chart-2'}
+];
 
 function initUserPermission(userId) {
     if (!USER_PERMISSIONS_DB[userId]) {
@@ -2651,8 +2658,13 @@ function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
         let stateClass = '';
         if (write) stateClass = 'active-write'; else if (read) stateClass = 'active';
 
+        // 更新此处的 iconMap，与 dbSchema 保持严格一致
         const iconMap = {
-            'recording': 'mic', 'site': 'map-pin', 'annotation': 'scan-line', 'review': 'check-circle'
+            'audio': 'mic',
+            'site': 'map-pin',
+            'annotation': 'scan-line',
+            'annotation_review': 'check-square',
+            'index_log': 'bar-chart-2'
         };
 
         const nextState = write ? 'none' : (read ? 'write' : 'read');

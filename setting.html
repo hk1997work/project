@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>ecoSignal | Settings</title>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="project.css" rel="stylesheet">
+    <style>
+        /* 针对 select 元素应用 form-input 样式时的微调，确保下拉箭头不被遮挡 */
+        select.form-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="project-nav-bar">
+    <div class="nav-left">
+        <div class="nav-capsule-box">
+            <a class="nav-logo" href="index.html">
+                <div class="logo-icon-box"><i data-lucide="activity"></i></div>
+                <span>ecoSignal</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="nav-center"></div>
+
+    <div class="nav-right">
+        <div class="nav-capsule-box">
+            <button class="nav-btn-simple" onclick="toggleTheme()" title="Switch Theme">
+                <i data-lucide="moon" id="theme-icon-el" size="20"></i>
+            </button>
+            <div class="nav-divider"></div>
+            <button class="nav-btn-simple" title="Information"><i data-lucide="info" size="20"></i></button>
+            <div class="nav-divider"></div>
+            <div class="user-wrapper" id="user-menu">
+                <div class="user-capsule-btn" onclick="toggleUserMenu()">
+                    <div class="user-avatar-icon"><i data-lucide="user" size="16"></i></div>
+                    <span class="user-name-text">Liudilong</span>
+                    <i class="chevron-icon" data-lucide="chevron-down" size="14"></i>
+                </div>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="project.html"><i data-lucide="layout-dashboard" size="18"></i>Dashboard</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item danger" href="index.html"><i data-lucide="log-out" size="18"></i>Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="content-wrapper">
+    <div class="data-layout-wrapper">
+
+        <div class="data-sidebar">
+            <div class="data-sidebar-header">
+                <i data-lucide="settings" size="18" style="color:var(--brand);"></i> Settings
+            </div>
+            <div class="data-table-list">
+                <div class="dt-item active">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="sliders" size="16"></i> User Preferences
+                    </span>
+                </div>
+                <div class="dt-item">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="user" size="16"></i> Profile
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-main-content">
+            <div class="data-toolbar">
+                <div class="card-title">
+                    <i data-lucide="sliders"></i> User Preferences
+                </div>
+            </div>
+
+            <div style="padding: 30px; overflow-y: auto; flex: 1;">
+                <div class="form-grid" style="max-width: 480px; display: flex; flex-direction: column; gap: 24px;">
+
+                    <div class="form-group">
+                        <label class="form-label">FFT Window Size</label>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">
+                            Fast Fourier Transform window size used for spectrogram generation (e.g., 256, 512, 1024, 2048).
+                        </div>
+                        <input class="form-input" id="input-fft-size" type="number" value="512">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Theme</label>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">
+                            Select your preferred visual theme for the dashboard.
+                        </div>
+                        <select class="form-input" id="input-theme" onchange="previewTheme(this.value)">
+                            <option value="system">System Default</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Language</label>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">
+                            Preferred language for the interface (ISO 639-1 code).
+                        </div>
+                        <select class="form-input" id="input-language">
+                            <option value="en">English (en)</option>
+                            <option value="zh">Chinese (zh)</option>
+                            <option value="fr">French (fr)</option>
+                            <option value="es">Spanish (es)</option>
+                            <option value="de">German (de)</option>
+                            <option value="ja">Japanese (ja)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Timezone</label>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">
+                            Display times and dates based on your local IANA timezone.
+                        </div>
+                        <select class="form-input" id="input-timezone">
+                            <option value="UTC">UTC</option>
+                            <option value="Asia/Shanghai">Asia/Shanghai (GMT+8)</option>
+                            <option value="Asia/Tokyo">Asia/Tokyo (GMT+9)</option>
+                            <option value="Europe/London">Europe/London (GMT/BST)</option>
+                            <option value="Europe/Paris">Europe/Paris (CET/CEST)</option>
+                            <option value="America/New_York">America/New_York (EST/EDT)</option>
+                            <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
+                            <option value="Australia/Sydney">Australia/Sydney (AEST/AEDT)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button class="btn-primary" onclick="saveSettings()">Save Preferences</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // 控制右上角菜单
+    function toggleUserMenu() {
+        const menu = document.getElementById('user-menu');
+        menu.classList.toggle('active');
+    }
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.user-wrapper')) {
+            document.querySelectorAll('.user-wrapper').forEach(el => el.classList.remove('active'));
+        }
+    });
+
+    // 右上角按钮的主题切换逻辑
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const target = current === 'dark' ? 'light' : 'dark';
+        setTheme(target);
+
+        // 同步更新 Select 选择框
+        const themeSelect = document.getElementById('input-theme');
+        if (themeSelect) {
+            themeSelect.value = target;
+        }
+    }
+
+    // 表单中下拉框改变时预览主题
+    function previewTheme(themeValue) {
+        if (themeValue === 'system') {
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setTheme(systemDark ? 'dark' : 'light');
+        } else {
+            setTheme(themeValue);
+        }
+    }
+
+    // 设置并应用主题
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        const iconEl = document.getElementById('theme-icon-el');
+        if (iconEl) {
+            iconEl.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+    }
+
+    // 页面加载时初始化主题和表单值
+    (function initTheme() {
+        const saved = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const defaultTheme = saved || (systemDark ? 'dark' : 'light');
+        setTheme(defaultTheme);
+
+        // 同步主题到下拉框
+        const themeSelect = document.getElementById('input-theme');
+        if (themeSelect) {
+            themeSelect.value = saved ? saved : 'system';
+        }
+    })();
+
+    // 保存设置按钮逻辑
+    function saveSettings() {
+        const fftVal = document.getElementById('input-fft-size').value;
+        const themeVal = document.getElementById('input-theme').value;
+        const langVal = document.getElementById('input-language').value;
+        const tzVal = document.getElementById('input-timezone').value;
+
+        if (themeVal !== 'system') {
+            localStorage.setItem('theme', themeVal);
+        }
+
+        alert(`Preferences saved successfully!\n\nFFT Size: ${fftVal}\nTheme: ${themeVal}\nLanguage: ${langVal}\nTimezone: ${tzVal}`);
+    }
+</script>
+
+</body>
+</html>
