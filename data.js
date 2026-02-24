@@ -304,6 +304,39 @@ const dbSchema = {
             readonlyOnUpdate: true, // 修改：编辑时不可改
             filterType: 'select'
         }, {key: "annotation_review_status_id", label: "Status", type: "select", options: mockReviewStatuses}, {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons}, {key: "note", label: "Note", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+    }, task: {
+        label: "Tasks",
+        icon: "clipboard-list",
+        pk: "task_id",
+        columns: [
+            {key: "task_id", label: "ID", type: "number", readonly: true},
+            {key: "type", label: "Type", type: "select", options: ["tag", "recording"]},
+            // 修改这里：增加 filterType: "select" 使其可以在表头筛选
+            {key: "media_name", label: "Media Name", type: "text", filterType: "select"},
+            // 修改这里：增加 filterType: "select"
+            {key: "annotation_id", label: "Annotation ID", type: "text", filterType: "select"},
+            {key: "assigner_id", label: "Assigner", type: "text", filterType: 'select'},
+            {key: "assignee_id", label: "Assignee", type: "text", filterType: 'select'},
+            {key: "status", label: "Status", type: "select", options: ["assigned", "reviewed"]},
+            {key: "comment", label: "Comment", type: "text"},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
+    }, queue: {
+        label: "Queue",
+        icon: "layers", // 可以使用 layers, cpu, 或者 server 图标
+        pk: "queue_id",
+        columns: [
+            {key: "queue_id", label: "ID", type: "number", readonly: true},
+            {key: "type", label: "Type", type: "select", options: ["ai model", "upload", "index analysis"], filterType: "select"},
+            {key: "user_id", label: "User", type: "text", filterType: "select"},
+            {key: "completed", label: "Completed", type: "number"},
+            {key: "total", label: "Total", type: "number"},
+            {key: "status", label: "Status", type: "text", filterType: "select"},
+            {key: "start_time", label: "Start Time", type: "text"},
+            {key: "stop_time", label: "Stop Time", type: "text"},
+            {key: "error", label: "Error", type: "text"},
+            {key: "warning", label: "Warning", type: "text"}
+        ]
     }, index_log: {
         label: "Index Logs",
         icon: "bar-chart-2",

@@ -1551,6 +1551,64 @@ function getDataForTable(tableName) {
             }
         }
         return generatedReviews;
+    } else if (tableName === 'task') {
+        // 动态生成 Task 数据
+        const tasks = [];
+        const count = 15;
+        const users = mockNames;
+        const types = ["tag", "recording"];
+
+        for (let i = 0; i < count; i++) {
+            const isAssigned = Math.random() > 0.5;
+            const status = isAssigned ? "assigned" : "reviewed";
+            const type = types[Math.floor(Math.random() * types.length)];
+
+            tasks.push({
+                task_id: 10000 + i,
+                type: type,
+                // 修改这里：所有的任务（无论是 recording 还是 tag）都有对应的 media_name
+                media_name: `REC_${20250000 + i}.wav`,
+                // tag 类型的任务有 annotation_id，recording 类型的为空
+                annotation_id: type === 'tag' ? `${Math.floor(Math.random() * 100) + 1}` : "",
+                assigner_id: users[Math.floor(Math.random() * users.length)],
+                assignee_id: users[Math.floor(Math.random() * users.length)],
+                status: status,
+                comment: isAssigned ? "Please check this." : "Verified.",
+                creation_date: moment().subtract(rInt(0, 10), 'days').format("YYYY-MM-DD HH:mm:ss")
+            });
+        }
+        return tasks;
+    } else if (tableName === 'queue') {
+        // >>> 新增：动态生成 Queue 数据 <<<
+        const queues = [];
+        const count = 12;
+        const users = mockNames;
+        const types = ["ai model", "upload", "index analysis"];
+        const statuses = ["pending", "processing", "completed", "failed"];
+
+        for (let i = 0; i < count; i++) {
+            const type = types[Math.floor(Math.random() * types.length)];
+            const status = statuses[Math.floor(Math.random() * statuses.length)];
+            const total = Math.floor(Math.random() * 100) + 10;
+            // 根据状态模拟完成数量
+            let completed = 0;
+            if (status === 'completed') completed = total;
+            else if (status === 'processing') completed = Math.floor(Math.random() * total);
+
+            queues.push({
+                queue_id: 20000 + i,
+                type: type,
+                user_id: users[Math.floor(Math.random() * users.length)],
+                completed: completed,
+                total: total,
+                status: status,
+                start_time: moment().subtract(Math.floor(Math.random() * 60) + 1, 'minutes').format("YYYY-MM-DD HH:mm:ss"),
+                stop_time: (status === 'completed' || status === 'failed') ? moment().format("YYYY-MM-DD HH:mm:ss") : "",
+                error: status === 'failed' ? "Connection timeout or processing error" : "",
+                warning: (status === 'completed' && Math.random() > 0.8) ? "Some items were skipped" : ""
+            });
+        }
+        return queues;
     } else if (tableName === 'index_log') {
         return staticMockDB.index_log || [];
     } else {
@@ -1595,8 +1653,9 @@ function switchCrudTable(tableName) {
         if (oldDrop) oldDrop.remove();
 
         // 隐藏 Annotation, Review 和 Index Log 表的 Add 按钮
-        if (tableName === 'annotation' || tableName === 'annotation_review' || tableName === 'index_log') {
-            addBtn.style.display = 'none'; //
+        // 隐藏 Annotation, Review, Index Log, Task 和 Queue 表的 Add 按钮
+        if (tableName === 'annotation' || tableName === 'annotation_review' || tableName === 'index_log' || tableName === 'task' || tableName === 'queue') {
+            addBtn.style.display = 'none';
         } else {
             addBtn.style.display = ''; // 恢复显示
             if (isMediaTable) {
@@ -1847,7 +1906,7 @@ function renderCrudTable() {
             const rowIdStr = String(row[pk]);
             const isSelected = selectedCrudIds.includes(rowIdStr);
             const rowClass = isSelected ? 'selected' : '';
-            const dblClickAction = currentTable === 'index_log' ? '' : `ondblclick="openCrudModal('edit', '${row[pk]}')"`;
+            const dblClickAction = (currentTable === 'index_log' || currentTable === 'task' || currentTable === 'queue') ? '' : `ondblclick="openCrudModal('edit', '${row[pk]}')"`;
             bodyHtml += `<tr class="${rowClass}" ${dblClickAction}>`;
             bodyHtml += ` <td style="text-align:center; border-bottom:1px solid var(--border-color);"> <input type="checkbox" class="crud-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleRowSelection('${rowIdStr}', this)" ondblclick="event.stopPropagation()"> </td>`;
             visibleCols.forEach(col => {
@@ -1873,7 +1932,15 @@ function renderCrudTable() {
                     else if (val === false) val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3); display:inline-block;">False</span>`;
                     else val = "";
                 }
-
+                if (currentTable === 'task' && col.key === 'status') {
+                    if (val === 'reviewed') {
+                        // 样式对应 True (绿色/Brand Color)
+                        val = `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); display:inline-block; text-transform: capitalize;">${val}</span>`;
+                    } else if (val === 'assigned') {
+                        // 样式对应 False (红色/Warning Color)
+                        val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3); display:inline-block; text-transform: capitalize;">${val}</span>`;
+                    }
+                }
                 // 统一 Collection 的 Taxons 和 Audio 的 Labels（剥离多余高度控制样式，强行与 True/False 的 <span> 完全对齐，一字排开且溢出隐藏滚动）
                 if ((col.key === 'taxons_display' || col.key === 'annotations_display') && val && val !== "-") {
                     const items = val.split(', ');
@@ -2289,6 +2356,8 @@ const PERM_RESOURCES = [
     {key: 'site', label: 'Site', icon: 'map-pin'},
     {key: 'annotation', label: 'Annotation', icon: 'scan-line'},
     {key: 'annotation_review', label: 'Review', icon: 'check-square'},
+    {key: 'task', label: 'Task', icon: 'clipboard-list'},
+    {key: 'queue', label: 'Queue', icon: 'layers'}, // >>> 新增这一行 <<<
     {key: 'index_log', label: 'Index Log', icon: 'bar-chart-2'}
 ];
 
@@ -2312,7 +2381,8 @@ function updateToolbarState() {
 
     if (editBtn) {
         editBtn.disabled = (count !== 1);
-        editBtn.style.display = currentTable === 'index_log' ? 'none' : '';
+        // 修改这行，让 queue 也隐藏 Edit 按钮
+        editBtn.style.display = (currentTable === 'index_log' || currentTable === 'task' || currentTable === 'queue') ? 'none' : '';
     }
     if (delBtn) {
         delBtn.disabled = (count === 0);
@@ -2664,6 +2734,8 @@ function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
             'site': 'map-pin',
             'annotation': 'scan-line',
             'annotation_review': 'check-square',
+            'task': 'clipboard-list',
+            'queue': 'layers', // >>> 新增这一行 <<<
             'index_log': 'bar-chart-2'
         };
 
