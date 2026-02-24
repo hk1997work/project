@@ -3990,7 +3990,7 @@ function showUploadModalUI() {
     container.innerHTML = html;
 
     if (submitBtn) {
-        submitBtn.textContent = "Finish";
+        submitBtn.textContent = "Save";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = () => {
             clearInterval(uploadTimer);
