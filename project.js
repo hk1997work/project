@@ -2345,6 +2345,8 @@ function updateToolbarState() {
     const permBtn = document.getElementById('btn-permission');
     const setContribBtn = document.getElementById('btn-set-contrib');
     let assignBtn = document.getElementById('btn-assign');
+    const aiModelBtn = document.getElementById('btn-ai-models');
+    const acIndexBtn = document.getElementById('btn-ac-indices');
 
     const count = selectedCrudIds.length;
 
@@ -2427,7 +2429,25 @@ function updateToolbarState() {
             assignBtn.style.display = 'none';
         }
     }
+// 添加 AI Models 按钮的显示逻辑
+    if (aiModelBtn) {
+        if (currentTable === 'audio') {
+            aiModelBtn.style.display = 'inline-flex';
+            aiModelBtn.disabled = (count === 0);
+        } else {
+            aiModelBtn.style.display = 'none';
+        }
+    }
 
+// 添加 Acoustic Indices 按钮的显示逻辑
+    if (acIndexBtn) {
+        if (currentTable === 'audio') {
+            acIndexBtn.style.display = 'inline-flex';
+            acIndexBtn.disabled = (count === 0);
+        } else {
+            acIndexBtn.style.display = 'none';
+        }
+    }
     if (currentTable === 'project' && count === 1) {
         const currentUser = document.querySelector('.user-name-text').textContent.trim();
         const currentData = getDataForTable('project');
@@ -2887,11 +2907,21 @@ function handleToolbarAssignment() {
     openAssignmentModal();
 }
 
+// 控制独立Comment输入框的显示和隐藏
+window.toggleAssignComment = function (checkbox, safeU) {
+    const container = document.getElementById(`comment-container-${safeU}`);
+    if (checkbox.checked) {
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+        document.getElementById(`comment-input-${safeU}`).value = '';
+    }
+};
+
 function openAssignmentModal() {
     const modal = document.getElementById('crud-modal-overlay');
-
     const modalEl = modal.querySelector('.crud-modal');
-    if (modalEl) modalEl.style.width = '500px';
+    if (modalEl) modalEl.style.width = '550px';
 
     const container = document.getElementById('modal-form-container');
     const title = document.getElementById('modal-title');
@@ -2899,7 +2929,6 @@ function openAssignmentModal() {
 
     title.textContent = "Assign Tasks";
 
-    // 获取用户列表 (当前项目的contributors + 可能的 mockNames)
     const currentProject = rawProjects[currProjIdx];
     let users = [];
     if (currentProject && currentProject.contributors) {
@@ -2909,31 +2938,76 @@ function openAssignmentModal() {
         users = mockNames;
     }
 
-    let userHtml = `<div style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin-bottom: 12px; background: var(--bg-capsule);">`;
+    // --- 新增：提前查询当前选中项的分配情况 ---
+    const taskData = getDataForTable('task') || [];
+    const type = (currentTable === 'audio') ? 'recording' : 'tag';
+    const sourceData = getDataForTable(currentTable);
+    const pk = dbSchema[currentTable].pk;
+
+    // 提取当前选中项的关键比对信息
+    const selectedItemsInfo = selectedCrudIds.map(id => {
+        const item = sourceData.find(d => String(d[pk]) === String(id));
+        if (!item) return null;
+        return {
+            mediaName: currentTable === 'audio' ? (item.filename || item.name || "") : (item.media_name || ""),
+            annotationId: currentTable === 'annotation' ? (item.id || "") : ""
+        };
+    }).filter(Boolean);
+    // ------------------------------------------
+
+    let userHtml = `<div style="max-height: 350px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: var(--bg-capsule);">`;
     users.forEach(u => {
+        const safeU = String(u).replace(/\W/g, '_');
+
+        // --- 新增：计算该用户已经分配了多少个当前选中的任务 ---
+        let assignedCount = 0;
+        selectedItemsInfo.forEach(info => {
+            const isAssigned = taskData.some(t =>
+                t.assignee_id === u &&
+                t.type === type &&
+                t.media_name === info.mediaName &&
+                String(t.annotation_id) === String(info.annotationId)
+            );
+            if (isAssigned) assignedCount++;
+        });
+
+        // 根据分配数量生成提示徽章
+        let badgeHtml = '';
+        if (assignedCount > 0) {
+            const total = selectedItemsInfo.length;
+            if (assignedCount === total) {
+                // 全部都已分配（红色警告样式）
+                badgeHtml = `<span style="font-size:0.7rem; color:#b91c1c; margin-left:8px; background:#fee2e2; border: 1px solid #fca5a5; padding:2px 8px; border-radius:12px; font-weight:700;">Assigned All (${assignedCount}/${total})</span>`;
+            } else {
+                // 部分分配（黄色提醒样式）
+                badgeHtml = `<span style="font-size:0.7rem; color:#b45309; margin-left:8px; background:#fef3c7; border: 1px solid #fcd34d; padding:2px 8px; border-radius:12px; font-weight:700;">Assigned (${assignedCount}/${total})</span>`;
+            }
+        }
+        // --------------------------------------------------------
+
         userHtml += `
-        <label style="display:flex; align-items:center; gap:10px; padding:6px 4px; cursor:pointer; border-bottom: 1px dashed var(--border-color);">
-            <input type="checkbox" class="assign-user-cb" value="${u}" style="width:16px; height:16px; accent-color:var(--brand);">
-            <span style="font-size:0.9rem; color:var(--text-main);">${u}</span>
-        </label>`;
+        <div style="border-bottom: 1px dashed var(--border-color); padding: 8px 4px;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" class="assign-user-cb" value="${u}" onchange="toggleAssignComment(this, '${safeU}')" style="width:16px; height:16px; accent-color:var(--brand);">
+                <span style="font-size:0.9rem; color:var(--text-main); font-weight:600;">${u}</span>
+                ${badgeHtml}
+            </label>
+            <div id="comment-container-${safeU}" style="display:none; margin-top:8px; padding-left:26px;">
+                <input type="text" id="comment-input-${safeU}" class="form-input" placeholder="Comment" style="width:100%; height: 32px; font-size: 0.85rem;">
+            </div>
+        </div>`;
     });
     userHtml += `</div>`;
 
-    let html = `
+    container.innerHTML = `
         <div class="form-group">
             <label class="form-label" style="font-weight:600;">Select Assignees</label>
             ${userHtml}
-        </div>
-        <div class="form-group">
-            <label class="form-label" style="font-weight:600;">Comment</label>
-            <textarea id="assign-comment-input" class="form-input" rows="3" placeholder="Enter assignment instructions..."></textarea>
         </div>
         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
             Selected Items: <strong style="color:var(--brand);">${selectedCrudIds.length}</strong>
         </div>
     `;
-
-    container.innerHTML = html;
 
     if (submitBtn) {
         submitBtn.textContent = "Assign";
@@ -2948,21 +3022,20 @@ function openAssignmentModal() {
 
 function saveAssignmentData() {
     const userCbs = document.querySelectorAll('.assign-user-cb:checked');
-    const assignees = Array.from(userCbs).map(cb => cb.value);
-    const comment = document.getElementById('assign-comment-input').value;
-
-    if (assignees.length === 0) {
+    if (userCbs.length === 0) {
         alert("Please select at least one assignee.");
         return;
     }
 
+    const assigneesData = Array.from(userCbs).map(cb => {
+        const u = cb.value;
+        const safeU = String(u).replace(/\W/g, '_');
+        const comment = document.getElementById(`comment-input-${safeU}`).value.trim();
+        return {username: u, comment: comment};
+    });
+
     const taskData = getDataForTable('task');
-    let maxId = 0;
-    if (taskData && taskData.length > 0) {
-        maxId = Math.max(...taskData.map(t => t.task_id || 0));
-    } else {
-        maxId = 10000;
-    }
+    let maxId = taskData && taskData.length > 0 ? Math.max(...taskData.map(t => t.task_id || 0)) : 10000;
 
     const currentUserObj = document.querySelector('.user-name-text');
     const currentUser = currentUserObj ? currentUserObj.textContent.trim() : 'Admin';
@@ -2971,35 +3044,54 @@ function saveAssignmentData() {
     const pk = dbSchema[currentTable].pk;
 
     let addedCount = 0;
+    let duplicateCount = 0;
 
     selectedCrudIds.forEach(id => {
         const item = sourceData.find(d => String(d[pk]) === String(id));
         if (!item) return;
 
-        let mediaName = "";
-        let annotationId = "";
+        let mediaName = currentTable === 'audio' ? (item.filename || item.name || "") : (item.media_name || "");
+        let annotationId = currentTable === 'annotation' ? (item.id || "") : "";
 
-        if (currentTable === 'audio') {
-            mediaName = item.filename || item.name || "";
-        } else if (currentTable === 'annotation') {
-            mediaName = item.media_name || "";
-            annotationId = item.id || "";
-        }
+        assigneesData.forEach(assigneeData => {
+            const isDuplicate = taskData.some(t =>
+                t.assignee_id === assigneeData.username &&
+                t.type === type &&
+                t.media_name === mediaName &&
+                String(t.annotation_id) === String(annotationId)
+            );
 
-        assignees.forEach(assignee => {
+            if (isDuplicate) {
+                duplicateCount++;
+                return;
+            }
+
             maxId++;
             const newTask = {
-                task_id: maxId, type: type, media_name: mediaName, annotation_id: annotationId, assigner_id: currentUser, assignee_id: assignee, status: 'assigned', comment: comment, creation_date: moment().format("YYYY-MM-DD HH:mm:ss")
+                task_id: maxId,
+                type: type,
+                media_name: mediaName,
+                annotation_id: annotationId,
+                assigner_id: currentUser,
+                assignee_id: assigneeData.username,
+                status: 'assigned',
+                comment: assigneeData.comment || "Please check this.",
+                creation_date: moment().format("YYYY-MM-DD HH:mm:ss")
             };
-            if (taskData) taskData.unshift(newTask); // 添加到最上方
+            if (taskData) taskData.unshift(newTask);
             addedCount++;
         });
     });
 
-    alert(`Successfully created ${addedCount} tasks for ${assignees.length} users.`);
+    // 精简后的完成提示
+    let msg = `Created ${addedCount} tasks.`;
+    if (duplicateCount > 0) {
+        msg += `\nSkipped ${duplicateCount} duplicate assignment(s).`;
+    }
+
+    alert(msg);
     closeCrudModal();
 
-    // 取消全选并刷新当前表格
     selectedCrudIds = [];
     renderCrudTable();
     updateToolbarState();
@@ -4656,6 +4748,225 @@ function toggleLabelInAudio(label) {
     }
     // 只刷新弹窗内部视图，不刷新背后的表格
     renderAllLabels();
+}
+
+// ================= AI Models & Acoustic Indices 数据配置 =================
+const MOCK_AI_MODELS = [
+    {
+        id: 'birdnet', name: 'BirdNET',
+        desc: 'Identify bird species by sound using the BirdNET algorithm.',
+        url: 'https://birdnet.cornell.edu/',
+        params: [
+            {key: 'conf', label: 'Confidence Threshold', type: 'number', min: 0.0, max: 1.0, step: 0.1, default: 0.5},
+            {key: 'overlap', label: 'Overlap (seconds)', type: 'number', min: 0.0, max: 2.9, step: 0.1, default: 0.0},
+            {key: 'sens', label: 'Sensitivity', type: 'number', min: 0.5, max: 1.5, step: 0.1, default: 1.0},
+            {key: 'fmin', label: 'Min Frequency (Hz)', type: 'number', min: 0, max: 15000, step: 100, default: 0},
+            {key: 'fmax', label: 'Max Frequency (Hz)', type: 'number', min: 0, max: 15000, step: 100, default: 15000},
+            {key: 'version', label: 'Model Version', type: 'select', options: ['V2.4', 'V2.3', 'V2.2', 'V2.1'], default: 'V2.4'}
+        ]
+    },
+    {
+        id: 'batdetect', name: 'BatDetect',
+        desc: 'Detect bat echolocation calls in ultrasonic recordings.',
+        url: '#',
+        params: [
+            {key: 'thresh', label: 'Detection Threshold', type: 'number', min: 0, max: 100, step: 1, default: 50},
+            {key: 'chunk', label: 'Chunk Size (s)', type: 'number', min: 1, max: 10, step: 1, default: 3},
+            {key: 'nms', label: 'NMS Merge', type: 'checkbox', default: true}
+        ]
+    }
+];
+
+const MOCK_AC_INDICES = [
+    {
+        id: 'aci', name: 'Acoustic Complexity Index (ACI)',
+        desc: 'Measures the variability of sound intensities, which is typically higher when birds sing.',
+        url: 'https://en.wikipedia.org/wiki/Acoustic_Complexity_Index',
+        params: [
+            {key: 'fft', label: 'FFT Window Size', type: 'select', options: ['256', '512', '1024', '2048', '4096'], default: '512'},
+            {key: 'j', label: 'Temporal Step (s)', type: 'number', min: 0.01, max: 1.0, step: 0.01, default: 0.2},
+            {key: 'fmin', label: 'Min Freq (Hz)', type: 'number', min: 0, max: 24000, step: 100, default: 0},
+            {key: 'fmax', label: 'Max Freq (Hz)', type: 'number', min: 0, max: 24000, step: 100, default: 12000}
+        ]
+    },
+    {
+        id: 'ndsi', name: 'Normalized Difference Soundscape Index (NDSI)',
+        desc: 'Estimates the ratio of anthropogenic to biological acoustic components.',
+        url: '#',
+        params: [
+            {key: 'anthro_min', label: 'Anthro Min Freq (Hz)', type: 'number', min: 0, max: 2000, step: 100, default: 1000},
+            {key: 'anthro_max', label: 'Anthro Max Freq (Hz)', type: 'number', min: 1000, max: 4000, step: 100, default: 2000},
+            {key: 'bio_min', label: 'Bio Min Freq (Hz)', type: 'number', min: 1000, max: 4000, step: 100, default: 2000},
+            {key: 'bio_max', label: 'Bio Max Freq (Hz)', type: 'number', min: 4000, max: 24000, step: 100, default: 11000}
+        ]
+    }
+];
+
+// ================= 全局辅助函数 =================
+window.toggleItemParams = function (id) {
+    const container = document.getElementById(`params-${id}`);
+    const checkbox = document.querySelector(`input[value="${id}"]`);
+    if (container && checkbox) {
+        container.style.display = checkbox.checked ? 'block' : 'none';
+    }
+};
+
+window.toggleAiMergeOptions = function (checkbox) {
+    const container = document.getElementById('ai-merge-options');
+    if (container) {
+        container.style.display = checkbox.checked ? 'block' : 'none';
+    }
+};
+
+// 动态渲染参数表单的公共函数
+function renderParamsHtml(params) {
+    let html = '';
+    params.forEach(p => {
+        html += `<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">`;
+        if (p.type === 'number') {
+            html += `
+                <span style="font-size:0.85rem; color:var(--text-main);">${p.label} <span style="color:var(--text-muted); font-size:0.75rem;">(Range: ${p.min} - ${p.max})</span></span>
+                <input type="number" class="form-input" style="width:80px; height:24px; font-size:0.8rem; padding: 0 4px;" min="${p.min}" max="${p.max}" step="${p.step}" value="${p.default}">
+            `;
+        } else if (p.type === 'select') {
+            html += `
+                <span style="font-size:0.85rem; color:var(--text-main);">${p.label}</span>
+                <select class="form-input" style="width:80px; height:24px; font-size:0.8rem; padding: 0 4px;">
+                    ${p.options.map(o => `<option value="${o}" ${o === p.default ? 'selected' : ''}>${o}</option>`).join('')}
+                </select>
+            `;
+        } else if (p.type === 'checkbox') {
+            html += `
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text-main);">
+                    <input type="checkbox" style="width:14px; height:14px; accent-color:var(--brand);" ${p.default ? 'checked' : ''}>
+                    ${p.label}
+                </label>
+            `;
+        }
+        html += `</div>`;
+    });
+    return html;
+}
+
+// ================= AI Models 弹窗 =================
+function openAiModelsModal() {
+    const modal = document.getElementById('crud-modal-overlay');
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '600px';
+
+    const container = document.getElementById('modal-form-container');
+    const title = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit-btn');
+
+    title.textContent = "Run AI Models";
+
+    let html = `<div class="form-group"><label class="form-label" style="font-weight:600;">Select AI Models</label><div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: var(--bg-capsule); max-height: 400px; overflow-y: auto;">`;
+
+    MOCK_AI_MODELS.forEach(model => {
+        html += `
+        <div style="border-bottom: 1px dashed var(--border-color); padding: 10px 4px;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" value="${model.id}" class="ai-model-cb" onchange="toggleItemParams('${model.id}')" style="width:16px; height:16px; accent-color:var(--brand);">
+                <span style="font-size:0.95rem; color:var(--text-main); font-weight:600;">${model.name}</span>
+                <a href="${model.url}" target="_blank" style="color:var(--brand); display:flex; align-items:center;" title="Learn More" onclick="event.stopPropagation()"><i data-lucide="external-link" size="14"></i></a>
+            </label>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-left: 26px; margin-top: 4px;">${model.desc}</div>
+            
+            <div id="params-${model.id}" style="display:none; margin-top: 10px; margin-left: 26px; padding: 10px; background: var(--bg-surface); border-radius: 6px; border: 1px solid var(--border-light);">
+                <div style="font-size:0.8rem; font-weight:600; margin-bottom: 8px;">Parameters:</div>
+                ${renderParamsHtml(model.params)}
+            </div>
+        </div>`;
+    });
+    html += `</div></div>`;
+
+    // AI Merge 附加功能区域
+    html += `
+    <div class="form-group" style="margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
+            <input type="checkbox" id="ai-merge-tags" onchange="toggleAiMergeOptions(this)" style="width:16px; height:16px; accent-color:var(--brand);">
+            <span style="font-size:0.9rem; color:var(--text-main); font-weight:600;">Merge resulting conspecific tags</span>
+        </label>
+        
+        <div id="ai-merge-options" style="display:none; margin-left: 26px; padding: 12px; background: var(--bg-capsule); border-left: 3px solid var(--brand); border-radius: 0 6px 6px 0;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-size:0.85rem; color:var(--text-main);">Duration between separate tags, in seconds (default: 0)</span>
+                <input type="number" id="ai-merge-duration" class="form-input" style="width:80px; height:24px; font-size:0.8rem; padding: 0 4px;" value="0" min="0">
+            </div>
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" id="ai-keep-merged" style="width:14px; height:14px; accent-color:var(--brand);">
+                <span style="font-size:0.85rem; color:var(--text-main);">Keep only merged and separate tags</span>
+            </label>
+        </div>
+    </div>
+    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+        Selected Audios: <strong style="color:var(--brand);">${selectedCrudIds.length}</strong>
+    </div>
+    `;
+
+    container.innerHTML = html;
+
+    if (submitBtn) {
+        submitBtn.textContent = "Run Models";
+        submitBtn.className = "btn-primary";
+        submitBtn.onclick = () => {
+            alert(`Started AI Models analysis for ${selectedCrudIds.length} audio(s).`);
+            closeCrudModal();
+        };
+    }
+
+    modal.classList.add('active');
+    lucide.createIcons();
+}
+
+// ================= Acoustic Indices 弹窗 =================
+function openAcousticIndicesModal() {
+    const modal = document.getElementById('crud-modal-overlay');
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '600px';
+
+    const container = document.getElementById('modal-form-container');
+    const title = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit-btn');
+
+    title.textContent = "Calculate Acoustic Indices";
+
+    let html = `<div class="form-group"><label class="form-label" style="font-weight:600;">Select Acoustic Indices</label><div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: var(--bg-capsule); max-height: 400px; overflow-y: auto;">`;
+
+    MOCK_AC_INDICES.forEach(idx => {
+        html += `
+        <div style="border-bottom: 1px dashed var(--border-color); padding: 10px 4px;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="checkbox" value="${idx.id}" class="ac-index-cb" onchange="toggleItemParams('${idx.id}')" style="width:16px; height:16px; accent-color:var(--brand);">
+                <span style="font-size:0.95rem; color:var(--text-main); font-weight:600;">${idx.name}</span>
+                <a href="${idx.url}" target="_blank" style="color:var(--brand); display:flex; align-items:center;" title="Learn More" onclick="event.stopPropagation()"><i data-lucide="external-link" size="14"></i></a>
+            </label>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-left: 26px; margin-top: 4px;">${idx.desc}</div>
+            
+            <div id="params-${idx.id}" style="display:none; margin-top: 10px; margin-left: 26px; padding: 10px; background: var(--bg-surface); border-radius: 6px; border: 1px solid var(--border-light);">
+                <div style="font-size:0.8rem; font-weight:600; margin-bottom: 8px;">Parameters:</div>
+                ${renderParamsHtml(idx.params)}
+            </div>
+        </div>`;
+    });
+    html += `</div></div>
+    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+        Selected Audios: <strong style="color:var(--brand);">${selectedCrudIds.length}</strong>
+    </div>`;
+
+    container.innerHTML = html;
+
+    if (submitBtn) {
+        submitBtn.textContent = "Calculate";
+        submitBtn.className = "btn-primary";
+        submitBtn.onclick = () => {
+            alert(`Calculating Acoustic Indices for ${selectedCrudIds.length} audio(s).`);
+            closeCrudModal();
+        };
+    }
+
+    modal.classList.add('active');
+    lucide.createIcons();
 }
 
 init();
