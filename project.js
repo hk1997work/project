@@ -145,10 +145,7 @@ function generateSitesForContext(projId, colId) {
         let linkedCols = colId ? [String(colId)] : [];
 
         return {
-            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created,
-            linkedProjects: linkedProjs,
-            linkedCollections: linkedCols,
-            mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
+            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created, linkedProjects: linkedProjs, linkedCollections: linkedCols, mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
                 const isMeta = Math.random() > 0.7;
                 return {
                     type: isMeta ? 'Metadata' : 'Audio', name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`, date: "2025-01-15", duration: "01:00:00"
@@ -1026,9 +1023,7 @@ function selectCollection(idx, force = false) {
                 let taxonHtml = '';
                 if (colData._taxons && colData._taxons.length > 0) {
                     // 调整了 margin，适配标题下方和胶囊上方的间距
-                    taxonHtml = `<div style="margin-top:12px; margin-bottom:4px; display:flex; flex-wrap:wrap; gap:8px;">` +
-                        colData._taxons.map(t => `<span style="background:var(--brand); color:white; padding:4px 12px; border-radius:14px; font-size:0.75rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap;">${t.cached_name}</span>`).join('') +
-                        `</div>`;
+                    taxonHtml = `<div style="margin-top:12px; margin-bottom:4px; display:flex; flex-wrap:wrap; gap:8px;">` + colData._taxons.map(t => `<span style="background:var(--brand); color:white; padding:4px 12px; border-radius:14px; font-size:0.75rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap;">${t.cached_name}</span>`).join('') + `</div>`;
                 }
 
                 colContainer.innerHTML = `<div class="collection-card block-anim">
@@ -1374,9 +1369,7 @@ function getDataForTable(tableName) {
         // 修改：拆分坐标字段，保留4位小数供筛选使用
         return currentSites.map(s => {
             return {
-                ...s,
-                latitude: Number(s.center[0].toFixed(4)),
-                longitude: Number(s.center[1].toFixed(4))
+                ...s, latitude: Number(s.center[0].toFixed(4)), longitude: Number(s.center[1].toFixed(4))
             };
         });
     } else if (['audio', 'photo', 'video'].includes(tableName)) {
@@ -1539,14 +1532,8 @@ function getDataForTable(tableName) {
                     }
 
                     generatedReviews.push({
-                        id: `${1000 + i}`,
-                        media_name: annot.media_name, // 获取 Media Name
-                        annotation_id: annot.id,
-                        reviewer_id: mockNames[Math.floor(Math.random() * mockNames.length)],
-                        annotation_review_status_id: status,
-                        taxon_id: taxon,
-                        note: ["Agreed.", "Unsure about ID.", "Noise interference.", "Verified.", "Needs second opinion."][Math.floor(Math.random() * 5)],
-                        creation_date: moment().subtract(Math.floor(Math.random() * 5), 'days').format("YYYY-MM-DD HH:mm:ss")
+                        id: `${1000 + i}`, media_name: annot.media_name, // 获取 Media Name
+                        annotation_id: annot.id, reviewer_id: mockNames[Math.floor(Math.random() * mockNames.length)], annotation_review_status_id: status, taxon_id: taxon, note: ["Agreed.", "Unsure about ID.", "Noise interference.", "Verified.", "Needs second opinion."][Math.floor(Math.random() * 5)], creation_date: moment().subtract(Math.floor(Math.random() * 5), 'days').format("YYYY-MM-DD HH:mm:ss")
                     });
                 }
             }
@@ -1565,15 +1552,7 @@ function getDataForTable(tableName) {
                 const type = types[Math.floor(Math.random() * types.length)];
 
                 generatedTasks.push({
-                    task_id: 10000 + i,
-                    type: type,
-                    media_name: `REC_${20250000 + i}.wav`,
-                    annotation_id: type === 'tag' ? `${Math.floor(Math.random() * 100) + 1}` : "",
-                    assigner_id: users[Math.floor(Math.random() * users.length)],
-                    assignee_id: users[Math.floor(Math.random() * users.length)],
-                    status: status,
-                    comment: isAssigned ? "Please check this." : "Verified.",
-                    creation_date: moment().subtract(rInt(0, 10), 'days').format("YYYY-MM-DD HH:mm:ss")
+                    task_id: 10000 + i, type: type, media_name: `REC_${20250000 + i}.wav`, annotation_id: type === 'tag' ? `${Math.floor(Math.random() * 100) + 1}` : "", assigner_id: users[Math.floor(Math.random() * users.length)], assignee_id: users[Math.floor(Math.random() * users.length)], status: status, comment: isAssigned ? "Please check this." : "Verified.", creation_date: moment().subtract(rInt(0, 10), 'days').format("YYYY-MM-DD HH:mm:ss")
                 });
             }
         }
@@ -1592,8 +1571,7 @@ function getDataForTable(tableName) {
             const total = Math.floor(Math.random() * 100) + 10;
             // 根据状态模拟完成数量
             let completed = 0;
-            if (status === 'completed') completed = total;
-            else if (status === 'processing') completed = Math.floor(Math.random() * total);
+            if (status === 'completed') completed = total; else if (status === 'processing') completed = Math.floor(Math.random() * total);
 
             queues.push({
                 queue_id: 20000 + i,
@@ -1928,9 +1906,7 @@ function renderCrudTable() {
 
                 // 统一 true / false 为胶囊样式 (与 Current 保持相同的 padding/radius/shadow)
                 if (col.type === 'boolean') {
-                    if (val === true) val = `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); display:inline-block;">True</span>`;
-                    else if (val === false) val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3); display:inline-block;">False</span>`;
-                    else val = "";
+                    if (val === true) val = `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); display:inline-block;">True</span>`; else if (val === false) val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3); display:inline-block;">False</span>`; else val = "";
                 }
                 if (currentTable === 'task' && col.key === 'status') {
                     if (val === 'reviewed') {
@@ -1944,9 +1920,7 @@ function renderCrudTable() {
                 // 统一 Collection 的 Taxons 和 Audio 的 Labels（剥离多余高度控制样式，强行与 True/False 的 <span> 完全对齐，一字排开且溢出隐藏滚动）
                 if ((col.key === 'taxons_display' || col.key === 'annotations_display') && val && val !== "-") {
                     const items = val.split(', ');
-                    val = `<div style="display:flex; flex-wrap:nowrap; gap:4px; overflow-x:auto; scrollbar-width:none; align-items:center;">` +
-                        items.map(t => `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap; flex-shrink:0; display:inline-block;">${t}</span>`).join('') +
-                        `</div>`;
+                    val = `<div style="display:flex; flex-wrap:nowrap; gap:4px; overflow-x:auto; scrollbar-width:none; align-items:center;">` + items.map(t => `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap; flex-shrink:0; display:inline-block;">${t}</span>`).join('') + `</div>`;
                 }
 
                 if (col.type === 'richtext') {
@@ -2351,15 +2325,8 @@ let currentPermDraft = null;
 let currentPermUserIds = [];
 
 // 根据 data.js 中的 dbSchema 动态映射权限资源
-const PERM_RESOURCES = [
-    {key: 'audio', label: 'Audio', icon: 'mic'},
-    {key: 'site', label: 'Site', icon: 'map-pin'},
-    {key: 'annotation', label: 'Annotation', icon: 'scan-line'},
-    {key: 'annotation_review', label: 'Review', icon: 'check-square'},
-    {key: 'task', label: 'Task', icon: 'clipboard-list'},
-    {key: 'queue', label: 'Queue', icon: 'layers'}, // >>> 新增这一行 <<<
-    {key: 'index_log', label: 'Index Log', icon: 'bar-chart-2'}
-];
+const PERM_RESOURCES = [{key: 'audio', label: 'Audio', icon: 'mic'}, {key: 'site', label: 'Site', icon: 'map-pin'}, {key: 'annotation', label: 'Annotation', icon: 'scan-line'}, {key: 'annotation_review', label: 'Review', icon: 'check-square'}, {key: 'task', label: 'Task', icon: 'clipboard-list'}, {key: 'queue', label: 'Queue', icon: 'layers'}, // >>> 新增这一行 <<<
+    {key: 'index_log', label: 'Index Log', icon: 'bar-chart-2'}];
 
 function initUserPermission(userId) {
     if (!USER_PERMISSIONS_DB[userId]) {
@@ -2377,23 +2344,7 @@ function updateToolbarState() {
     const resetBtn = document.getElementById('btn-reset-pwd');
     const permBtn = document.getElementById('btn-permission');
     const setContribBtn = document.getElementById('btn-set-contrib');
-
-    // >>> 新增 Assignment 按钮动态注入逻辑 <<<
     let assignBtn = document.getElementById('btn-assign');
-    if (!assignBtn) {
-        const toolbar = document.querySelector('.toolbar');
-        if (toolbar) {
-            assignBtn = document.createElement('button');
-            assignBtn.id = 'btn-assign';
-            assignBtn.className = 'btn btn-secondary';
-            assignBtn.innerHTML = '<i data-lucide="user-plus" size="16"></i> Assignment';
-            assignBtn.onclick = handleToolbarAssignment;
-            // 尝试插入在 Delete 按钮之前，如果没有则放在最后
-            if (delBtn) toolbar.insertBefore(assignBtn, delBtn);
-            else toolbar.appendChild(assignBtn);
-            if (window.lucide) lucide.createIcons();
-        }
-    }
 
     const count = selectedCrudIds.length;
 
@@ -2758,12 +2709,7 @@ function renderAtomicPermsHTML(pid, cid, userCol, forceFull) {
 
         // 更新此处的 iconMap，与 dbSchema 保持严格一致
         const iconMap = {
-            'audio': 'mic',
-            'site': 'map-pin',
-            'annotation': 'scan-line',
-            'annotation_review': 'check-square',
-            'task': 'clipboard-list',
-            'queue': 'layers', // >>> 新增这一行 <<<
+            'audio': 'mic', 'site': 'map-pin', 'annotation': 'scan-line', 'annotation_review': 'check-square', 'task': 'clipboard-list', 'queue': 'layers', // >>> 新增这一行 <<<
             'index_log': 'bar-chart-2'
         };
 
@@ -3043,15 +2989,7 @@ function saveAssignmentData() {
         assignees.forEach(assignee => {
             maxId++;
             const newTask = {
-                task_id: maxId,
-                type: type,
-                media_name: mediaName,
-                annotation_id: annotationId,
-                assigner_id: currentUser,
-                assignee_id: assignee,
-                status: 'assigned',
-                comment: comment,
-                creation_date: moment().format("YYYY-MM-DD HH:mm:ss")
+                task_id: maxId, type: type, media_name: mediaName, annotation_id: annotationId, assigner_id: currentUser, assignee_id: assignee, status: 'assigned', comment: comment, creation_date: moment().format("YYYY-MM-DD HH:mm:ss")
             };
             if (taskData) taskData.unshift(newTask); // 添加到最上方
             addedCount++;
@@ -4258,8 +4196,7 @@ window.filterTableFilterSelect = function (dropdownId, query) {
     const val = query.toLowerCase();
     options.forEach(opt => {
         const text = opt.textContent.toLowerCase();
-        if (text.includes(val)) opt.classList.remove('hidden');
-        else opt.classList.add('hidden');
+        if (text.includes(val)) opt.classList.remove('hidden'); else opt.classList.add('hidden');
     });
 };
 
@@ -4415,8 +4352,7 @@ function handleReviewStatusChange(status) {
             const dropdown = document.getElementById('dropdown-taxon_id');
             if (dropdown) {
                 dropdown.querySelectorAll('.form-select-option').forEach(opt => {
-                    if (opt.innerText === savedVal) opt.classList.add('selected');
-                    else opt.classList.remove('selected');
+                    if (opt.innerText === savedVal) opt.classList.add('selected'); else opt.classList.remove('selected');
                 });
             }
         }
@@ -4568,13 +4504,7 @@ function addTaxonToCollection() {
     const currentUser = document.querySelector('.user-name-text').textContent.trim();
 
     const newTaxon = {
-        collection_id: currentTaxonCollectionId,
-        col_taxon_id: currentSelectedTaxonForAdd.id,
-        col_rank: currentSelectedTaxonForAdd.rank,
-        cached_name: currentSelectedTaxonForAdd.name,
-        asserted_by: currentUser,
-        asserted_at: moment().format("YYYY-MM-DD HH:mm:ss"),
-        notes: notes
+        collection_id: currentTaxonCollectionId, col_taxon_id: currentSelectedTaxonForAdd.id, col_rank: currentSelectedTaxonForAdd.rank, cached_name: currentSelectedTaxonForAdd.name, asserted_by: currentUser, asserted_at: moment().format("YYYY-MM-DD HH:mm:ss"), notes: notes
     };
 
     // 仅添加进草稿，不触发 Table 更新
