@@ -18,6 +18,7 @@ let uploadTimer = null;
 let crudFilterState = {};
 let generatedAnnotations = []; // 新增：用于存储动态生成的注释
 let generatedReviews = []; // 新增：用于存储动态生成的评审
+let generatedTasks = []; // 新增：用于存储动态生成的任务
 
 const SPHERE_COLORS = {
     "Hydrosphere": "#0284c7",    // 深海蓝 (水圈) - 较深的蓝色代表海洋和深水
@@ -1552,32 +1553,31 @@ function getDataForTable(tableName) {
         }
         return generatedReviews;
     } else if (tableName === 'task') {
-        // 动态生成 Task 数据
-        const tasks = [];
-        const count = 15;
-        const users = mockNames;
-        const types = ["tag", "recording"];
+        // 动态生成 Task 数据 (只生成一次，以便后续追加 Assignment)
+        if (generatedTasks.length === 0) {
+            const count = 15;
+            const users = mockNames;
+            const types = ["tag", "recording"];
 
-        for (let i = 0; i < count; i++) {
-            const isAssigned = Math.random() > 0.5;
-            const status = isAssigned ? "assigned" : "reviewed";
-            const type = types[Math.floor(Math.random() * types.length)];
+            for (let i = 0; i < count; i++) {
+                const isAssigned = Math.random() > 0.5;
+                const status = isAssigned ? "assigned" : "reviewed";
+                const type = types[Math.floor(Math.random() * types.length)];
 
-            tasks.push({
-                task_id: 10000 + i,
-                type: type,
-                // 修改这里：所有的任务（无论是 recording 还是 tag）都有对应的 media_name
-                media_name: `REC_${20250000 + i}.wav`,
-                // tag 类型的任务有 annotation_id，recording 类型的为空
-                annotation_id: type === 'tag' ? `${Math.floor(Math.random() * 100) + 1}` : "",
-                assigner_id: users[Math.floor(Math.random() * users.length)],
-                assignee_id: users[Math.floor(Math.random() * users.length)],
-                status: status,
-                comment: isAssigned ? "Please check this." : "Verified.",
-                creation_date: moment().subtract(rInt(0, 10), 'days').format("YYYY-MM-DD HH:mm:ss")
-            });
+                generatedTasks.push({
+                    task_id: 10000 + i,
+                    type: type,
+                    media_name: `REC_${20250000 + i}.wav`,
+                    annotation_id: type === 'tag' ? `${Math.floor(Math.random() * 100) + 1}` : "",
+                    assigner_id: users[Math.floor(Math.random() * users.length)],
+                    assignee_id: users[Math.floor(Math.random() * users.length)],
+                    status: status,
+                    comment: isAssigned ? "Please check this." : "Verified.",
+                    creation_date: moment().subtract(rInt(0, 10), 'days').format("YYYY-MM-DD HH:mm:ss")
+                });
+            }
         }
-        return tasks;
+        return generatedTasks;
     } else if (tableName === 'queue') {
         // >>> 新增：动态生成 Queue 数据 <<<
         const queues = [];
@@ -2377,6 +2377,24 @@ function updateToolbarState() {
     const resetBtn = document.getElementById('btn-reset-pwd');
     const permBtn = document.getElementById('btn-permission');
     const setContribBtn = document.getElementById('btn-set-contrib');
+
+    // >>> 新增 Assignment 按钮动态注入逻辑 <<<
+    let assignBtn = document.getElementById('btn-assign');
+    if (!assignBtn) {
+        const toolbar = document.querySelector('.toolbar');
+        if (toolbar) {
+            assignBtn = document.createElement('button');
+            assignBtn.id = 'btn-assign';
+            assignBtn.className = 'btn btn-secondary';
+            assignBtn.innerHTML = '<i data-lucide="user-plus" size="16"></i> Assignment';
+            assignBtn.onclick = handleToolbarAssignment;
+            // 尝试插入在 Delete 按钮之前，如果没有则放在最后
+            if (delBtn) toolbar.insertBefore(assignBtn, delBtn);
+            else toolbar.appendChild(assignBtn);
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+
     const count = selectedCrudIds.length;
 
     if (editBtn) {
@@ -2446,6 +2464,16 @@ function updateToolbarState() {
             labelBtn.disabled = (count !== 1);
         } else {
             labelBtn.style.display = 'none';
+        }
+    }
+
+    // >>> 控制 Assignment 按钮的显示与状态 <<<
+    if (assignBtn) {
+        if (currentTable === 'audio' || currentTable === 'annotation') {
+            assignBtn.style.display = 'inline-flex';
+            assignBtn.disabled = (count === 0); // 必须选中至少一项
+        } else {
+            assignBtn.style.display = 'none';
         }
     }
 
@@ -2905,6 +2933,138 @@ function confirmDeleteData() {
     updateToolbarState();
     closeCrudModal();
     if (currentTable === 'site' && map) renderMap(false);
+}
+
+// ================= Assignment 逻辑 =================
+function handleToolbarAssignment() {
+    if (selectedCrudIds.length === 0) return;
+    openAssignmentModal();
+}
+
+function openAssignmentModal() {
+    const modal = document.getElementById('crud-modal-overlay');
+
+    const modalEl = modal.querySelector('.crud-modal');
+    if (modalEl) modalEl.style.width = '500px';
+
+    const container = document.getElementById('modal-form-container');
+    const title = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit-btn');
+
+    title.textContent = "Assign Tasks";
+
+    // 获取用户列表 (当前项目的contributors + 可能的 mockNames)
+    const currentProject = rawProjects[currProjIdx];
+    let users = [];
+    if (currentProject && currentProject.contributors) {
+        users = currentProject.contributors.map(c => c.name);
+    }
+    if (users.length === 0 && typeof mockNames !== 'undefined') {
+        users = mockNames;
+    }
+
+    let userHtml = `<div style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin-bottom: 12px; background: var(--bg-capsule);">`;
+    users.forEach(u => {
+        userHtml += `
+        <label style="display:flex; align-items:center; gap:10px; padding:6px 4px; cursor:pointer; border-bottom: 1px dashed var(--border-color);">
+            <input type="checkbox" class="assign-user-cb" value="${u}" style="width:16px; height:16px; accent-color:var(--brand);">
+            <span style="font-size:0.9rem; color:var(--text-main);">${u}</span>
+        </label>`;
+    });
+    userHtml += `</div>`;
+
+    let html = `
+        <div class="form-group">
+            <label class="form-label" style="font-weight:600;">Select Assignees</label>
+            ${userHtml}
+        </div>
+        <div class="form-group">
+            <label class="form-label" style="font-weight:600;">Comment</label>
+            <textarea id="assign-comment-input" class="form-input" rows="3" placeholder="Enter assignment instructions..."></textarea>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+            Selected Items: <strong style="color:var(--brand);">${selectedCrudIds.length}</strong>
+        </div>
+    `;
+
+    container.innerHTML = html;
+
+    if (submitBtn) {
+        submitBtn.textContent = "Assign";
+        submitBtn.className = "btn-primary";
+        submitBtn.style.backgroundColor = "";
+        submitBtn.onclick = saveAssignmentData;
+    }
+
+    modal.classList.add('active');
+    lucide.createIcons();
+}
+
+function saveAssignmentData() {
+    const userCbs = document.querySelectorAll('.assign-user-cb:checked');
+    const assignees = Array.from(userCbs).map(cb => cb.value);
+    const comment = document.getElementById('assign-comment-input').value;
+
+    if (assignees.length === 0) {
+        alert("Please select at least one assignee.");
+        return;
+    }
+
+    const taskData = getDataForTable('task');
+    let maxId = 0;
+    if (taskData && taskData.length > 0) {
+        maxId = Math.max(...taskData.map(t => t.task_id || 0));
+    } else {
+        maxId = 10000;
+    }
+
+    const currentUserObj = document.querySelector('.user-name-text');
+    const currentUser = currentUserObj ? currentUserObj.textContent.trim() : 'Admin';
+    const type = (currentTable === 'audio') ? 'recording' : 'tag';
+    const sourceData = getDataForTable(currentTable);
+    const pk = dbSchema[currentTable].pk;
+
+    let addedCount = 0;
+
+    selectedCrudIds.forEach(id => {
+        const item = sourceData.find(d => String(d[pk]) === String(id));
+        if (!item) return;
+
+        let mediaName = "";
+        let annotationId = "";
+
+        if (currentTable === 'audio') {
+            mediaName = item.filename || item.name || "";
+        } else if (currentTable === 'annotation') {
+            mediaName = item.media_name || "";
+            annotationId = item.id || "";
+        }
+
+        assignees.forEach(assignee => {
+            maxId++;
+            const newTask = {
+                task_id: maxId,
+                type: type,
+                media_name: mediaName,
+                annotation_id: annotationId,
+                assigner_id: currentUser,
+                assignee_id: assignee,
+                status: 'assigned',
+                comment: comment,
+                creation_date: moment().format("YYYY-MM-DD HH:mm:ss")
+            };
+            if (taskData) taskData.unshift(newTask); // 添加到最上方
+            addedCount++;
+        });
+    });
+
+    alert(`Successfully created ${addedCount} tasks for ${assignees.length} users.`);
+    closeCrudModal();
+
+    // 取消全选并刷新当前表格
+    selectedCrudIds = [];
+    renderCrudTable();
+    updateToolbarState();
 }
 
 function handleAudioTypeChange(type) {
