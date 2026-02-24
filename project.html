@@ -221,24 +221,29 @@
                 <div class="data-toolbar">
                     <div class="card-title" id="current-table-title"><i data-lucide="table"></i> Project</div>
                     <div class="media-controls">
-                        <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" id="data-search-input" oninput="handleDataSearch(this.value)" placeholder="Search" type="text"></div>
-                        <button class="btn-toolbar" onclick="resetDataTable()" title="Reset"><i data-lucide="rotate-ccw" size="16"></i> Reset</button>
-                        <button class="btn-toolbar" id="btn-add" onclick="openCrudModal('add')"><i data-lucide="plus" size="16"></i> Add</button>
-                        <button class="btn-toolbar" disabled id="btn-edit" onclick="handleToolbarEdit()"><i data-lucide="pencil" size="16"></i> Edit</button>
-                        <button class="btn-toolbar" disabled id="btn-link" onclick="handleToolbarLink()"><i data-lucide="link" size="16"></i> Link</button>
-                        <button class="btn-toolbar" disabled id="btn-taxon" onclick="handleToolbarTaxon()" style="display:none;"><i data-lucide="tag" size="16"></i> Taxon</button>
-                        <button class="btn-toolbar" disabled id="btn-label" onclick="handleToolbarLabel()" style="display:none;"><i data-lucide="tags" size="16"></i> Label</button>
-                        <button class="btn-toolbar" disabled id="btn-reset-pwd" onclick="handleToolbarResetPassword()" style="display:none;"><i data-lucide="key" size="16"></i> Reset Pwd</button>
-                        <button class="btn-toolbar" disabled id="btn-permission" onclick="handleToolbarPermission()" style="display:none;"><i data-lucide="shield-check" size="16"></i> Permission</button>
-                        <button class="btn-toolbar" disabled id="btn-set-contrib" onclick="handleSetContributor()" style="display:none;"><i data-lucide="user-plus" size="16"></i> Contributor</button>
-                        <button class="btn-secondary" id="btn-ai-models" onclick="openAiModelsModal()" style="display:none;">
-                            <i data-lucide="cpu" size="16"></i> AI Models
+                        <div class="media-search-box">
+                            <i class="media-search-icon" data-lucide="search"></i>
+                            <input class="media-search-input" id="data-search-input" oninput="handleDataSearch(this.value)" placeholder="Search" type="text">
+                        </div>
+                        <button class="btn-toolbar" onclick="resetDataTable()" title="Reset"><i data-lucide="rotate-ccw" size="14"></i> Reset</button>
+                        <button class="btn-toolbar" disabled id="btn-view" onclick="handleToolbarView()" style="display:none;"><i data-lucide="eye" size="16"></i> View</button>
+                        <button class="btn-toolbar" id="btn-add" onclick="openCrudModal('add')"><i data-lucide="plus" size="14"></i> Add</button>
+                        <button class="btn-toolbar" disabled id="btn-edit" onclick="handleToolbarEdit()"><i data-lucide="pencil" size="14"></i> Edit</button>
+                        <button class="btn-toolbar" disabled id="btn-link" onclick="handleToolbarLink()"><i data-lucide="link" size="14"></i> Link</button>
+                        <button class="btn-toolbar" disabled id="btn-taxon" onclick="handleToolbarTaxon()" style="display:none;"><i data-lucide="tag" size="14"></i> Taxon</button>
+                        <button class="btn-toolbar" disabled id="btn-label" onclick="handleToolbarLabel()" style="display:none;"><i data-lucide="tags" size="14"></i> Label</button>
+                        <button class="btn-toolbar" disabled id="btn-reset-pwd" onclick="handleToolbarResetPassword()" style="display:none;"><i data-lucide="key" size="14"></i> Reset Pwd</button>
+                        <button class="btn-toolbar" disabled id="btn-permission" onclick="handleToolbarPermission()" style="display:none;"><i data-lucide="shield-check" size="14"></i> Permission</button>
+                        <button class="btn-toolbar" disabled id="btn-set-contrib" onclick="handleSetContributor()" style="display:none;"><i data-lucide="user-plus" size="14"></i> Contributor</button>
+                        <button class="btn-toolbar" disabled id="btn-assign" onclick="handleToolbarAssignment()" style="display:none;"><i data-lucide="clipboard-list" size="14"></i> Assignment</button>
+
+                        <button class="btn-toolbar" disabled id="btn-ai-models" onclick="openAiModelsModal()" style="display:none;"><i data-lucide="cpu" size="14"></i> AI Models</button>
+                        <button class="btn-toolbar" disabled id="btn-ac-indices" onclick="openAcousticIndicesModal()" style="display:none;"><i data-lucide="bar-chart-2" size="14"></i> Acoustic Indices</button>
+
+                        <button class="btn-toolbar danger" disabled id="btn-delete" onclick="handleToolbarDelete()"><i data-lucide="trash-2" size="14"></i> Delete</button>
+                        <button class="btn-toolbar" id="btn-export-csv" onclick="exportCurrentTableToCSV()">
+                            <i data-lucide="download" size="12"></i> Export CSV
                         </button>
-                        <button class="btn-secondary" id="btn-ac-indices" onclick="openAcousticIndicesModal()" style="display:none;">
-                            <i data-lucide="bar-chart-2" size="16"></i> Acoustic Indices
-                        </button>
-                        <button class="btn-toolbar" disabled id="btn-assign" onclick="handleToolbarAssignment()" style="display:none;"><i data-lucide="clipboard-list" size="16"></i> Assignment</button>
-                        <button class="btn-toolbar danger" disabled id="btn-delete" onclick="handleToolbarDelete()"><i data-lucide="trash-2" size="16"></i> Delete</button>
                     </div>
                 </div>
                 <div class="data-table-container">

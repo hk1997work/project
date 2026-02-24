@@ -145,12 +145,17 @@ function generateSitesForContext(projId, colId) {
         let linkedCols = colId ? [String(colId)] : [];
 
         return {
-            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created, linkedProjects: linkedProjs, linkedCollections: linkedCols, mediaCount: Math.floor(Math.random() * 10) + 2, media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
+            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created, linkedProjects: linkedProjs, linkedCollections: linkedCols, mediaCount: Math.floor(Math.random() * 10) + 2,
+
+            // ▼ ▼ ▼ 替换这里的 media 数组生成逻辑 ▼ ▼ ▼
+            media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
                 const isMeta = Math.random() > 0.7;
                 return {
-                    type: isMeta ? 'Metadata' : 'Audio', name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`, date: "2025-01-15", duration: "01:00:00"
+                    type: isMeta ? 'Metadata' : 'Audio', name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`, date: "2025-01-15", duration: "01:00:00", // 新增 annotations 属性，调用与 media 页面相同的假数据生成函数
+                    annotations: typeof getRandomAnnotations !== 'undefined' ? getRandomAnnotations() : ["Aves", "Biophony"]
                 };
             })
+            // ▲ ▲ ▲ 替换结束 ▲ ▲ ▲
         };
     });
 }
@@ -1636,11 +1641,10 @@ function switchCrudTable(tableName) {
             addBtn.style.display = 'none';
         } else {
             addBtn.style.display = ''; // 恢复显示
+            addBtn.innerHTML = `<i data-lucide="plus" size="16"></i> Add`;
             if (isMediaTable) {
-                addBtn.innerHTML = `<i data-lucide="upload" size="16"></i> Upload`;
                 addBtn.onclick = (e) => toggleToolbarUploadDropdown(e);
             } else {
-                addBtn.innerHTML = `<i data-lucide="plus" size="16"></i> Add`;
                 addBtn.onclick = () => openCrudModal('add');
             }
         }
@@ -2295,7 +2299,7 @@ function handleToolbarResetPassword() {
     title.textContent = "Reset Password";
     container.innerHTML = ` <div class="form-group"> <label class="form-label">Current Admin Password</label> <input type="password" class="form-input" id="reset-admin-pwd"> </div> <div class="form-group"> <label class="form-label">New Password</label> <input type="password" class="form-input" id="reset-new-pwd"> </div> <div class="form-group"> <label class="form-label">Confirm Password</label> <input type="password" class="form-input" id="reset-confirm-pwd"> </div> `;
     if (submitBtn) {
-        submitBtn.textContent = "Submit";
+        submitBtn.textContent = "Save";
         submitBtn.className = "btn-primary";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveResetPassword;
@@ -2339,17 +2343,28 @@ function initUserPermission(userId) {
 
 function updateToolbarState() {
     const editBtn = document.getElementById('btn-edit');
+    const viewBtn = document.getElementById('btn-view');
     const delBtn = document.getElementById('btn-delete');
     const linkBtn = document.getElementById('btn-link');
     const resetBtn = document.getElementById('btn-reset-pwd');
     const permBtn = document.getElementById('btn-permission');
     const setContribBtn = document.getElementById('btn-set-contrib');
-    let assignBtn = document.getElementById('btn-assign');
+    const assignBtn = document.getElementById('btn-assign');
     const aiModelBtn = document.getElementById('btn-ai-models');
     const acIndexBtn = document.getElementById('btn-ac-indices');
 
     const count = selectedCrudIds.length;
+    if (viewBtn) {
+        // 定义哪些表格允许显示 View 按钮
+        const viewableTables = ['project', 'collection', 'audio', 'annotation', 'review', 'task'];
 
+        if (viewableTables.includes(currentTable)) {
+            viewBtn.style.display = 'inline-flex';
+            viewBtn.disabled = (count !== 1); // 只能选中一个时才允许查看
+        } else {
+            viewBtn.style.display = 'none';
+        }
+    }
     if (editBtn) {
         editBtn.disabled = (count !== 1);
         // 修改这行，让 queue 也隐藏 Edit 按钮
@@ -2424,7 +2439,7 @@ function updateToolbarState() {
     if (assignBtn) {
         if (currentTable === 'audio' || currentTable === 'annotation') {
             assignBtn.style.display = 'inline-flex';
-            assignBtn.disabled = (count === 0); // 必须选中至少一项
+            assignBtn.disabled = (count === 0);
         } else {
             assignBtn.style.display = 'none';
         }
@@ -2949,8 +2964,7 @@ function openAssignmentModal() {
         const item = sourceData.find(d => String(d[pk]) === String(id));
         if (!item) return null;
         return {
-            mediaName: currentTable === 'audio' ? (item.filename || item.name || "") : (item.media_name || ""),
-            annotationId: currentTable === 'annotation' ? (item.id || "") : ""
+            mediaName: currentTable === 'audio' ? (item.filename || item.name || "") : (item.media_name || ""), annotationId: currentTable === 'annotation' ? (item.id || "") : ""
         };
     }).filter(Boolean);
     // ------------------------------------------
@@ -2962,12 +2976,7 @@ function openAssignmentModal() {
         // --- 新增：计算该用户已经分配了多少个当前选中的任务 ---
         let assignedCount = 0;
         selectedItemsInfo.forEach(info => {
-            const isAssigned = taskData.some(t =>
-                t.assignee_id === u &&
-                t.type === type &&
-                t.media_name === info.mediaName &&
-                String(t.annotation_id) === String(info.annotationId)
-            );
+            const isAssigned = taskData.some(t => t.assignee_id === u && t.type === type && t.media_name === info.mediaName && String(t.annotation_id) === String(info.annotationId));
             if (isAssigned) assignedCount++;
         });
 
@@ -3001,16 +3010,12 @@ function openAssignmentModal() {
 
     container.innerHTML = `
         <div class="form-group">
-            <label class="form-label" style="font-weight:600;">Select Assignees</label>
             ${userHtml}
-        </div>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
-            Selected Items: <strong style="color:var(--brand);">${selectedCrudIds.length}</strong>
         </div>
     `;
 
     if (submitBtn) {
-        submitBtn.textContent = "Assign";
+        submitBtn.textContent = "Save";
         submitBtn.className = "btn-primary";
         submitBtn.style.backgroundColor = "";
         submitBtn.onclick = saveAssignmentData;
@@ -3054,12 +3059,7 @@ function saveAssignmentData() {
         let annotationId = currentTable === 'annotation' ? (item.id || "") : "";
 
         assigneesData.forEach(assigneeData => {
-            const isDuplicate = taskData.some(t =>
-                t.assignee_id === assigneeData.username &&
-                t.type === type &&
-                t.media_name === mediaName &&
-                String(t.annotation_id) === String(annotationId)
-            );
+            const isDuplicate = taskData.some(t => t.assignee_id === assigneeData.username && t.type === type && t.media_name === mediaName && String(t.annotation_id) === String(annotationId));
 
             if (isDuplicate) {
                 duplicateCount++;
@@ -3068,15 +3068,7 @@ function saveAssignmentData() {
 
             maxId++;
             const newTask = {
-                task_id: maxId,
-                type: type,
-                media_name: mediaName,
-                annotation_id: annotationId,
-                assigner_id: currentUser,
-                assignee_id: assigneeData.username,
-                status: 'assigned',
-                comment: assigneeData.comment || "Please check this.",
-                creation_date: moment().format("YYYY-MM-DD HH:mm:ss")
+                task_id: maxId, type: type, media_name: mediaName, annotation_id: annotationId, assigner_id: currentUser, assignee_id: assigneeData.username, status: 'assigned', comment: assigneeData.comment || "Please check this.", creation_date: moment().format("YYYY-MM-DD HH:mm:ss")
             };
             if (taskData) taskData.unshift(newTask);
             addedCount++;
@@ -4751,56 +4743,37 @@ function toggleLabelInAudio(label) {
 }
 
 // ================= AI Models & Acoustic Indices 数据配置 =================
-const MOCK_AI_MODELS = [
-    {
-        id: 'birdnet', name: 'BirdNET',
-        desc: 'Identify bird species by sound using the BirdNET algorithm.',
-        url: 'https://birdnet.cornell.edu/',
-        params: [
-            {key: 'conf', label: 'Confidence Threshold', type: 'number', min: 0.0, max: 1.0, step: 0.1, default: 0.5},
-            {key: 'overlap', label: 'Overlap (seconds)', type: 'number', min: 0.0, max: 2.9, step: 0.1, default: 0.0},
-            {key: 'sens', label: 'Sensitivity', type: 'number', min: 0.5, max: 1.5, step: 0.1, default: 1.0},
-            {key: 'fmin', label: 'Min Frequency (Hz)', type: 'number', min: 0, max: 15000, step: 100, default: 0},
-            {key: 'fmax', label: 'Max Frequency (Hz)', type: 'number', min: 0, max: 15000, step: 100, default: 15000},
-            {key: 'version', label: 'Model Version', type: 'select', options: ['V2.4', 'V2.3', 'V2.2', 'V2.1'], default: 'V2.4'}
-        ]
-    },
-    {
-        id: 'batdetect', name: 'BatDetect',
-        desc: 'Detect bat echolocation calls in ultrasonic recordings.',
-        url: '#',
-        params: [
-            {key: 'thresh', label: 'Detection Threshold', type: 'number', min: 0, max: 100, step: 1, default: 50},
-            {key: 'chunk', label: 'Chunk Size (s)', type: 'number', min: 1, max: 10, step: 1, default: 3},
-            {key: 'nms', label: 'NMS Merge', type: 'checkbox', default: true}
-        ]
-    }
-];
+const MOCK_AI_MODELS = [{
+    id: 'birdnet',
+    name: 'BirdNET',
+    desc: 'Identify bird species by sound using the BirdNET algorithm.',
+    url: 'https://birdnet.cornell.edu/',
+    params: [{key: 'conf', label: 'Confidence Threshold', type: 'number', min: 0.0, max: 1.0, step: 0.1, default: 0.5}, {key: 'overlap', label: 'Overlap (seconds)', type: 'number', min: 0.0, max: 2.9, step: 0.1, default: 0.0}, {key: 'sens', label: 'Sensitivity', type: 'number', min: 0.5, max: 1.5, step: 0.1, default: 1.0}, {key: 'fmin', label: 'Min Frequency (Hz)', type: 'number', min: 0, max: 15000, step: 100, default: 0}, {
+        key: 'fmax',
+        label: 'Max Frequency (Hz)',
+        type: 'number',
+        min: 0,
+        max: 15000,
+        step: 100,
+        default: 15000
+    }, {key: 'version', label: 'Model Version', type: 'select', options: ['V2.4', 'V2.3', 'V2.2', 'V2.1'], default: 'V2.4'}]
+}, {
+    id: 'batdetect', name: 'BatDetect', desc: 'Detect bat echolocation calls in ultrasonic recordings.', url: '#', params: [{key: 'thresh', label: 'Detection Threshold', type: 'number', min: 0, max: 100, step: 1, default: 50}, {key: 'chunk', label: 'Chunk Size (s)', type: 'number', min: 1, max: 10, step: 1, default: 3}, {key: 'nms', label: 'NMS Merge', type: 'checkbox', default: true}]
+}];
 
-const MOCK_AC_INDICES = [
-    {
-        id: 'aci', name: 'Acoustic Complexity Index (ACI)',
-        desc: 'Measures the variability of sound intensities, which is typically higher when birds sing.',
-        url: 'https://en.wikipedia.org/wiki/Acoustic_Complexity_Index',
-        params: [
-            {key: 'fft', label: 'FFT Window Size', type: 'select', options: ['256', '512', '1024', '2048', '4096'], default: '512'},
-            {key: 'j', label: 'Temporal Step (s)', type: 'number', min: 0.01, max: 1.0, step: 0.01, default: 0.2},
-            {key: 'fmin', label: 'Min Freq (Hz)', type: 'number', min: 0, max: 24000, step: 100, default: 0},
-            {key: 'fmax', label: 'Max Freq (Hz)', type: 'number', min: 0, max: 24000, step: 100, default: 12000}
-        ]
-    },
-    {
-        id: 'ndsi', name: 'Normalized Difference Soundscape Index (NDSI)',
-        desc: 'Estimates the ratio of anthropogenic to biological acoustic components.',
-        url: '#',
-        params: [
-            {key: 'anthro_min', label: 'Anthro Min Freq (Hz)', type: 'number', min: 0, max: 2000, step: 100, default: 1000},
-            {key: 'anthro_max', label: 'Anthro Max Freq (Hz)', type: 'number', min: 1000, max: 4000, step: 100, default: 2000},
-            {key: 'bio_min', label: 'Bio Min Freq (Hz)', type: 'number', min: 1000, max: 4000, step: 100, default: 2000},
-            {key: 'bio_max', label: 'Bio Max Freq (Hz)', type: 'number', min: 4000, max: 24000, step: 100, default: 11000}
-        ]
-    }
-];
+const MOCK_AC_INDICES = [{
+    id: 'aci',
+    name: 'Acoustic Complexity Index (ACI)',
+    desc: 'Measures the variability of sound intensities, which is typically higher when birds sing.',
+    url: 'https://en.wikipedia.org/wiki/Acoustic_Complexity_Index',
+    params: [{key: 'fft', label: 'FFT Window Size', type: 'select', options: ['256', '512', '1024', '2048', '4096'], default: '512'}, {key: 'j', label: 'Temporal Step (s)', type: 'number', min: 0.01, max: 1.0, step: 0.01, default: 0.2}, {key: 'fmin', label: 'Min Freq (Hz)', type: 'number', min: 0, max: 24000, step: 100, default: 0}, {key: 'fmax', label: 'Max Freq (Hz)', type: 'number', min: 0, max: 24000, step: 100, default: 12000}]
+}, {
+    id: 'ndsi',
+    name: 'Normalized Difference Soundscape Index (NDSI)',
+    desc: 'Estimates the ratio of anthropogenic to biological acoustic components.',
+    url: '#',
+    params: [{key: 'anthro_min', label: 'Anthro Min Freq (Hz)', type: 'number', min: 0, max: 2000, step: 100, default: 1000}, {key: 'anthro_max', label: 'Anthro Max Freq (Hz)', type: 'number', min: 1000, max: 4000, step: 100, default: 2000}, {key: 'bio_min', label: 'Bio Min Freq (Hz)', type: 'number', min: 1000, max: 4000, step: 100, default: 2000}, {key: 'bio_max', label: 'Bio Max Freq (Hz)', type: 'number', min: 4000, max: 24000, step: 100, default: 11000}]
+}];
 
 // ================= 全局辅助函数 =================
 window.toggleItemParams = function (id) {
@@ -4860,7 +4833,7 @@ function openAiModelsModal() {
 
     title.textContent = "Run AI Models";
 
-    let html = `<div class="form-group"><label class="form-label" style="font-weight:600;">Select AI Models</label><div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: var(--bg-capsule); max-height: 400px; overflow-y: auto;">`;
+    let html = `<div class="form-group"><div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: var(--bg-capsule); overflow-y: auto;">`;
 
     MOCK_AI_MODELS.forEach(model => {
         html += `
@@ -4899,15 +4872,12 @@ function openAiModelsModal() {
             </label>
         </div>
     </div>
-    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
-        Selected Audios: <strong style="color:var(--brand);">${selectedCrudIds.length}</strong>
-    </div>
     `;
 
     container.innerHTML = html;
 
     if (submitBtn) {
-        submitBtn.textContent = "Run Models";
+        submitBtn.textContent = "Save";
         submitBtn.className = "btn-primary";
         submitBtn.onclick = () => {
             alert(`Started AI Models analysis for ${selectedCrudIds.length} audio(s).`);
@@ -4931,7 +4901,7 @@ function openAcousticIndicesModal() {
 
     title.textContent = "Calculate Acoustic Indices";
 
-    let html = `<div class="form-group"><label class="form-label" style="font-weight:600;">Select Acoustic Indices</label><div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: var(--bg-capsule); max-height: 400px; overflow-y: auto;">`;
+    let html = `<div class="form-group"><div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: var(--bg-capsule); overflow-y: auto;">`;
 
     MOCK_AC_INDICES.forEach(idx => {
         html += `
@@ -4949,15 +4919,11 @@ function openAcousticIndicesModal() {
             </div>
         </div>`;
     });
-    html += `</div></div>
-    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
-        Selected Audios: <strong style="color:var(--brand);">${selectedCrudIds.length}</strong>
-    </div>`;
 
     container.innerHTML = html;
 
     if (submitBtn) {
-        submitBtn.textContent = "Calculate";
+        submitBtn.textContent = "Save";
         submitBtn.className = "btn-primary";
         submitBtn.onclick = () => {
             alert(`Calculating Acoustic Indices for ${selectedCrudIds.length} audio(s).`);
@@ -4969,4 +4935,114 @@ function openAcousticIndicesModal() {
     lucide.createIcons();
 }
 
+// ================= 导出 CSV 功能 =================
+window.exportCurrentTableToCSV = function () {
+    // 获取当前表格的结构定义和当前显示的过滤后数据
+    const schema = dbSchema[currentTable];
+    const data = window.currentVisibleData || [];
+
+    if (data.length === 0) {
+        alert("No data available to export.");
+        return;
+    }
+
+    // 只导出在表格中可见的列（过滤掉 hiddenInTable 的列）
+    const visibleCols = schema.columns.filter(c => !c.hiddenInTable);
+    const headers = visibleCols.map(c => c.label);
+    const keys = visibleCols.map(c => c.key);
+
+    // 拼接 CSV 头部
+    let csvContent = headers.map(h => `"${h}"`).join(",") + "\n";
+
+    // 遍历当前显示的每一行数据
+    data.forEach(row => {
+        const rowData = keys.map(key => {
+            let val = row[key];
+            if (val === null || val === undefined) val = "";
+
+            // 格式化特殊类型的值
+            if (typeof val === 'boolean') {
+                val = val ? 'True' : 'False';
+            } else if (Array.isArray(val)) {
+                val = val.join(", "); // 将数组转为逗号分隔的字符串
+            } else if (typeof val === 'object') {
+                val = JSON.stringify(val);
+            }
+
+            // 处理富文本（去除 HTML 标签）
+            const colDef = visibleCols.find(c => c.key === key);
+            if (colDef && colDef.type === 'richtext') {
+                val = String(val).replace(/<[^>]*>?/gm, '');
+            }
+
+            // CSV 单元格转义：将双引号替换为两个双引号，并在外层包裹双引号
+            val = String(val).replace(/"/g, '""');
+            return `"${val}"`;
+        });
+        csvContent += rowData.join(",") + "\n";
+    });
+
+    // 创建 Blob 对象并触发下载
+    const blob = new Blob(['\uFEFF' + csvContent], {type: 'text/csv;charset=utf-8;'}); // \uFEFF 是 BOM 头，防止 Excel 打开中文乱码
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+
+    // 生成带时间戳的文件名 (例如：audio_export_20231025_143000.csv)
+    const timestamp = moment().format('YYYYMMDD_HHmmss');
+    link.setAttribute("download", `${currentTable}_export_${timestamp}.csv`);
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+// ================= 跳转到 Project / Collection 概览视图 =================
+window.handleToolbarView = function () {
+    if (selectedCrudIds.length !== 1) return;
+    const selectedId = String(selectedCrudIds[0]);
+
+    // 辅助函数：触发左侧导航栏切换到 Summary 页面
+    const goToDescription = () => {
+        const DescriptionBtn = document.querySelector('.nav-item[onclick*="desc"]');
+        if (DescriptionBtn) DescriptionBtn.click();
+    };
+
+    if (currentTable === 'project') {
+        // 在所有项目中查找对应的 index
+        const idx = rawProjects.findIndex(p => String(p.id) === selectedId);
+        if (idx > -1) {
+            selectProject(idx);
+            goToDescription();
+        }
+    } else if (currentTable === 'collection') {
+        // 在所有项目的 collections 中查找，定位它属于哪个 project 和 collection
+        let targetProjIdx = -1;
+        let targetColIdx = -1;
+
+        for (let i = 0; i < rawProjects.length; i++) {
+            const cIdx = rawProjects[i].collections.findIndex(c => String(c.id) === selectedId);
+            if (cIdx > -1) {
+                targetProjIdx = i;
+                targetColIdx = cIdx + 1; // +1 是因为 0 被 "All Collections" 占用了
+                break;
+            }
+        }
+
+        if (targetProjIdx > -1) {
+            if (currProjIdx !== targetProjIdx) {
+                // 如果 Collection 属于另一个 Project，需要先切换 Project，稍微延迟后再切换 Collection
+                selectProject(targetProjIdx);
+                setTimeout(() => {
+                    selectCollection(targetColIdx);
+                    goToDescription();
+                }, 150);
+            } else {
+                // 如果就是当前 Project 下的 Collection，直接切换
+                selectCollection(targetColIdx);
+                goToDescription();
+            }
+        }
+    }
+};
 init();

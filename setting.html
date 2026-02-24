@@ -90,17 +90,11 @@
 
                     <div class="form-group">
                         <label class="form-label">FFT Window Size</label>
-                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">
-                            Fast Fourier Transform window size used for spectrogram generation (e.g., 256, 512, 1024, 2048).
-                        </div>
                         <input class="form-input" id="input-fft-size" type="number" value="512">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Theme</label>
-                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">
-                            Select your preferred visual theme for the dashboard.
-                        </div>
                         <select class="form-input" id="input-theme" onchange="previewTheme(this.value)">
                             <option value="system">System Default</option>
                             <option value="light">Light</option>
@@ -110,33 +104,15 @@
 
                     <div class="form-group">
                         <label class="form-label">Language</label>
-                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">
-                            Preferred language for the interface (ISO 639-1 code).
-                        </div>
                         <select class="form-input" id="input-language">
                             <option value="en">English (en)</option>
-                            <option value="zh">Chinese (zh)</option>
-                            <option value="fr">French (fr)</option>
-                            <option value="es">Spanish (es)</option>
-                            <option value="de">German (de)</option>
-                            <option value="ja">Japanese (ja)</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Timezone</label>
-                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">
-                            Display times and dates based on your local IANA timezone.
-                        </div>
                         <select class="form-input" id="input-timezone">
                             <option value="UTC">UTC</option>
-                            <option value="Asia/Shanghai">Asia/Shanghai (GMT+8)</option>
-                            <option value="Asia/Tokyo">Asia/Tokyo (GMT+9)</option>
-                            <option value="Europe/London">Europe/London (GMT/BST)</option>
-                            <option value="Europe/Paris">Europe/Paris (CET/CEST)</option>
-                            <option value="America/New_York">America/New_York (EST/EDT)</option>
-                            <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
-                            <option value="Australia/Sydney">Australia/Sydney (AEST/AEDT)</option>
                         </select>
                     </div>
 
