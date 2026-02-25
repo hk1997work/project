@@ -62,7 +62,22 @@ const mockSoundClasses = ["Biophony", "Geophony", "Anthropophony", "Unknown"];
 const mockTaxons = ["Aves", "Amphibia", "Insecta", "Mammalia", "Chiroptera"];
 const mockReviewStatuses = ["Pending", "Approved", "Rejected", "Unsure", "Revise"]; // 添加 Revise
 const mockIndexTypes = ["ACI", "ADI", "AEI", "BI", "NDSI", "H", "M"];
-
+// --- 新增：GADM 3级行政区和 IHO 海域的模拟数据 ---
+const GADM_DATA = {
+    "United States": {
+        "California": ["Los Angeles", "San Francisco", "San Diego"],
+        "New York": ["New York City", "Albany", "Buffalo"]
+    },
+    "Australia": {
+        "Queensland": ["Brisbane", "Cairns", "Townsville"],
+        "New South Wales": ["Sydney", "Newcastle", "Wollongong"]
+    },
+    "Brazil": {
+        "Amazonas": ["Manaus", "Tefé", "Parintins"],
+        "Pará": ["Belém", "Santarém", "Altamira"]
+    }
+};
+const IHO_OPTIONS = ["North Pacific Ocean", "South Atlantic Ocean", "Indian Ocean", "Caribbean Sea", "Mediterranean Sea"];
 const mockTaxonDB = [
     {id: "tx_101", name: "Felidae", rank: "family"},
     {id: "tx_102", name: "Canidae", rank: "family"},
@@ -263,10 +278,24 @@ const dbSchema = {
             key: "annotations_display", label: "Labels", type: "text", readonly: true, hiddenInForm: true
         }]
     }, site: {
-        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, // 修改：拆分坐标为经纬度，支持范围筛选，只读
-            {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true}, {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "select", options: []}, {key: "functional_type", label: "Functional Type", type: "select", options: []}, {
-                key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'
-            }, {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'}, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
+        label: "Sites", icon: "map-pin", pk: "id", columns: [
+            {key: "id", label: "ID", type: "text", readonly: true},
+            {key: "uuid", label: "UUID", type: "text", readonly: true},
+            {key: "name", label: "Name", type: "text"},
+            {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true},
+            {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true},
+            {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'},
+            {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'},
+            {key: "gadm0", label: "GADM0", type: "select", options: Object.keys(GADM_DATA)},
+            {key: "gadm1", label: "GADM1", type: "select", options: []},
+            {key: "gadm2", label: "GADM2", type: "select", options: []},
+            {key: "iho", label: "IHO", type: "select", options: IHO_OPTIONS},
+            {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)},
+            {key: "biome", label: "Biome", type: "select", options: []},
+            {key: "functional_type", label: "Functional Type", type: "select", options: []},
+            {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'},
+            {key: "creation_date", label: "Created", type: "text", readonly: true}
+        ]
     }, annotation: {
         label: "Annotations", icon: "scan-line", pk: "id", columns: [{key: "id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {
             key: "media_name", label: "Media Name", type: "text", filterType: 'select', readonlyOnUpdate: true

@@ -143,11 +143,19 @@ function generateSitesForContext(projId, colId) {
 
         // 默认关联当前 Collection (如果有)
         let linkedCols = colId ? [String(colId)] : [];
-
+        const gadm0Keys = Object.keys(GADM_DATA);
+        const g0 = gadm0Keys[Math.floor(Math.random() * gadm0Keys.length)];
+        const gadm1Keys = Object.keys(GADM_DATA[g0]);
+        const g1 = gadm1Keys[Math.floor(Math.random() * gadm1Keys.length)];
+        const gadm2Keys = GADM_DATA[g0][g1];
+        const g2 = gadm2Keys[Math.floor(Math.random() * gadm2Keys.length)];
+        const ihoVal = IHO_OPTIONS[Math.floor(Math.random() * IHO_OPTIONS.length)];
         return {
-            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g, topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created, linkedProjects: linkedProjs, linkedCollections: linkedCols, mediaCount: Math.floor(Math.random() * 10) + 2,
-
-            // ▼ ▼ ▼ 替换这里的 media 数组生成逻辑 ▼ ▼ ▼
+            id: siteId, uuid: uuid, name: `Site ${String.fromCharCode(65 + (i % 26))}-${100 + i}`, center: [lat, lng], polygon: poly, realm: r, biome: b, functional_type: g,
+            // ▼ ▼ ▼ 增加这几行给假数据赋值 ▼ ▼ ▼
+            gadm0: g0, gadm1: g1, gadm2: g2, iho: (r === 'Marine') ? ihoVal : "",
+            // ▲ ▲ ▲
+            topography_m: topo, freshwater_depth_m: depth, creator_id: creator, creation_date: created, linkedProjects: linkedProjs, linkedCollections: linkedCols, mediaCount: Math.floor(Math.random() * 10) + 2,
             media: Array.from({length: Math.floor(Math.random() * 10) + 2}, (_, m) => {
                 const isMeta = Math.random() > 0.7;
                 return {
@@ -155,7 +163,6 @@ function generateSitesForContext(projId, colId) {
                     annotations: typeof getRandomAnnotations !== 'undefined' ? getRandomAnnotations() : ["Aves", "Biophony"]
                 };
             })
-            // ▲ ▲ ▲ 替换结束 ▲ ▲ ▲
         };
     });
 }
@@ -3198,17 +3205,31 @@ window.selectFormOption = function (key, value, label, element) {
         if (key === 'realm') {
             updateDependentSelect('biome', value && TAXONOMY[value] ? Object.keys(TAXONOMY[value]) : []);
             updateDependentSelect('functional_type', []);
-            // 新增：修改 Realm 时更新坐标
-            updateSiteCoordinates(value);
+            // 移除 updateSiteCoordinates
         } else if (key === 'biome') {
             const realmInput = document.getElementById('input-realm');
             const realmVal = realmInput ? realmInput.value : null;
             const groups = (realmVal && value && TAXONOMY[realmVal] && TAXONOMY[realmVal][value]) ? TAXONOMY[realmVal][value] : [];
             updateDependentSelect('functional_type', groups);
-            // 新增：修改 Biome 时更新坐标
-            updateSiteCoordinates(realmVal);
+            // 移除 updateSiteCoordinates
         } else if (key === 'functional_type') {
-            // 新增：修改 Functional Type 时更新坐标
+            // 移除 updateSiteCoordinates
+        }
+        // ▼ ▼ ▼ 新增的 GADM 级联和坐标更新逻辑 ▼ ▼ ▼
+        else if (key === 'gadm0') {
+            const states = (value && GADM_DATA[value]) ? Object.keys(GADM_DATA[value]) : [];
+            updateDependentSelect('gadm1', states);
+            updateDependentSelect('gadm2', []);
+            updateSiteCoordinates();
+        } else if (key === 'gadm1') {
+            const g0Input = document.getElementById('input-gadm0');
+            const g0Val = g0Input ? g0Input.value : null;
+            const cities = (g0Val && value && GADM_DATA[g0Val] && GADM_DATA[g0Val][value]) ? GADM_DATA[g0Val][value] : [];
+            updateDependentSelect('gadm2', cities);
+            updateSiteCoordinates();
+        } else if (key === 'gadm2') {
+            updateSiteCoordinates();
+        } else if (key === 'iho') {
             updateSiteCoordinates();
         }
     }
