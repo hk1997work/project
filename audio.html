@@ -103,52 +103,144 @@
         </div>
     </div>
 </nav>
+<div class="content-wrapper" style="top: var(--nav-height); padding: 0; height: calc(100vh - var(--nav-height)); display: flex; flex-direction: column;">
 
-<div class="content-wrapper" style="top: var(--nav-height); padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+    <div class="audio-studio-container" style="background: var(--bg-surface); display: flex; flex-direction: row; flex: 1; overflow: hidden;">
 
-    <div class="audio-content-placeholder" style="background: var(--bg-surface); border: var(--card-border); border-radius: var(--radius); padding: 40px; text-align: center; color: var(--text-muted);">
-        <i data-lucide="activity" size="48" style="opacity: 0.2; margin-bottom: 16px;"></i>
-        <h2>Spectrogram Workspace</h2>
-        <p>Your spectrogram visualization and audio controls will appear here.</p>
-    </div>
+        <div class="studio-main-section" style="flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); overflow: hidden;">
 
-    <div class="data-main-content" style="background: var(--bg-surface); border: var(--card-border); border-radius: var(--radius); box-shadow: var(--card-shadow); display: flex; flex-direction: column; overflow: hidden; min-height: 450px;">
-        <div class="data-toolbar">
-            <div class="card-title" id="current-table-title"><i data-lucide="scan-line"></i> Annotations</div>
-            <div class="media-controls">
-                <div class="media-search-box">
-                    <i class="media-search-icon" data-lucide="search"></i>
-                    <input class="media-search-input" id="data-search-input" oninput="handleDataSearch(this.value)" placeholder="Search" type="text">
+            <div class="player-section" style="display: flex; flex-direction: column; padding: 12px 16px; border-bottom: 1px solid var(--border-color); gap: 8px; flex-shrink: 0;">
+
+                <div class="player-toolbar-top" style="display: flex; gap: 8px; align-items: center;">
+
+                    <button class="btn-toolbar" style="padding: 4px 8px; color: var(--brand);" title="Select Tool"><i data-lucide="mouse-pointer-2" size="14"></i></button>
+                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Draw Bounding Box"><i data-lucide="crosshair" size="14"></i></button>
+
+                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
+
+                    <button class="btn-toolbar" disabled style="padding: 4px 8px;" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
+                    <button class="btn-toolbar" disabled style="padding: 4px 8px;" title="Pan Right (Next Time Segment)"><i data-lucide="chevron-right" size="14"></i></button>
+
+                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
+
+                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom In Proportionally"><i data-lucide="zoom-in" size="14"></i></button>
+                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom Out"><i data-lucide="zoom-out" size="14"></i></button>
+                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom by px/s"><i data-lucide="stretch-horizontal" size="14"></i></button>
+
+                    <span style="margin-left: auto; font-family: monospace; font-size: 0.75rem; color: var(--text-main);">00:00:00 / 00:05:00</span>
                 </div>
 
-                <button class="btn-toolbar" onclick="resetFilters()" title="Reset"><i data-lucide="rotate-ccw" size="14"></i> Reset</button>
-                <button class="btn-toolbar" disabled id="btn-view" style="display:none;"><i data-lucide="eye" size="16"></i> View</button>
-                <button class="btn-toolbar" id="btn-add"><i data-lucide="plus" size="14"></i> Add</button>
-                <button class="btn-toolbar" disabled id="btn-edit"><i data-lucide="pencil" size="14"></i> Edit</button>
-                <button class="btn-toolbar" disabled id="btn-link" style="display:none;"><i data-lucide="link" size="14"></i> Link</button>
-                <button class="btn-toolbar" disabled id="btn-taxon" style="display:none;"><i data-lucide="tag" size="14"></i> Taxon</button>
-                <button class="btn-toolbar" disabled id="btn-label" style="display:none;"><i data-lucide="tags" size="14"></i> Label</button>
-                <button class="btn-toolbar" disabled id="btn-reset-pwd" style="display:none;"><i data-lucide="key" size="14"></i> Reset Pwd</button>
-                <button class="btn-toolbar" disabled id="btn-permission" style="display:none;"><i data-lucide="shield-check" size="14"></i> Permission</button>
-                <button class="btn-toolbar" disabled id="btn-set-contrib" style="display:none;"><i data-lucide="user-plus" size="14"></i> Contributor</button>
-                <button class="btn-toolbar" disabled id="btn-assign" style="display:inline-flex;"><i data-lucide="clipboard-list" size="14"></i> Assignment</button>
-                <button class="btn-toolbar" disabled id="btn-ai-models" style="display:none;"><i data-lucide="cpu" size="14"></i> AI Models</button>
-                <button class="btn-toolbar" disabled id="btn-ac-indices" style="display:none;"><i data-lucide="bar-chart-2" size="14"></i> Acoustic Indices</button>
-                <button class="btn-toolbar danger" disabled id="btn-delete"><i data-lucide="trash-2" size="14"></i> Delete</button>
-                <button class="btn-toolbar" id="btn-export-csv">
-                    <i data-lucide="download" size="12"></i> Export CSV
-                </button>
+                <div class="player-middle" style="display: flex; gap: 8px; height: 400px;">
+
+                    <div class="spectrogram-viewport" id="spectrogram-viewport" style="flex: 1; height: 100%; background-color: #1e1e1e; background-image: url('https://ecosound-web.de/ecosound_web/tmp/47877828/10005255_f7644c9a13d31622281088363recording_f1d6c506_897f_4c5e_8ca9_fe2ab93fef312421328162956812056_1-22050_0-59.8954__1.png'); background-size: 100% 100%; background-repeat: no-repeat; border-radius: 4px; position: relative; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+
+                        <div id="annotations-layer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 5;"></div>
+
+                        <div style="position: absolute; left: 25%; top: 0; bottom: 0; width: 1px; background: rgba(239, 68, 68, 0.8); box-shadow: 0 0 4px rgba(239, 68, 68, 0.5); pointer-events: none; z-index: 10;"></div>
+                    </div>
+                </div>
+                <div class="player-toolbar-bottom" style="display: flex; gap: 12px; align-items: center; margin-top: 4px;">
+
+                    <div style="display: flex; gap: 4px;">
+                        <button class="btn-toolbar" style="padding: 4px 8px; color: var(--brand);" title="Play"><i data-lucide="play" size="14"></i></button>
+                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Stop"><i data-lucide="square" size="14"></i></button>
+                    </div>
+
+                    <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
+
+                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Auto-advance to next segment"><i data-lucide="skip-forward" size="14"></i></button>
+
+                    <button class="btn-toolbar" style="padding: 4px 8px; color: var(--brand);" title="Toggle Full Band / Filtered Frequency"><i data-lucide="filter" size="14"></i></button>
+
+                    <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
+
+                    <div style="display: flex; align-items: center; gap: 8px;" title="Playback Speed">
+                        <i data-lucide="gauge" size="14" style="color: var(--text-muted);"></i>
+                        <input type="range" min="0" max="1" step="0.1" value="1" style="width: 60px; height: 4px; cursor: pointer; accent-color: var(--brand);">
+                        <span style="font-size: 0.7rem; color: var(--text-main); font-family: monospace; width: 24px;">1.0x</span>
+                    </div>
+
+                    <div style="flex: 1;"></div>
+
+                    <div style="display: flex; align-items: center;">
+                        <div style="display: flex; background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 100px; padding: 2px; gap: 2px;" title="Channel (L/R)">
+                            <button style="background: var(--brand); color: white; border: none; border-radius: 100px; padding: 4px 12px; font-size: 0.7rem; font-weight: 600; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">L</button>
+                            <button style="background: transparent; color: var(--text-main); border: none; border-radius: 100px; padding: 4px 12px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">R</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="studio-bottom-section" style="flex: 1; display: flex; flex-direction: row; overflow: hidden; background: var(--bg-surface);">
+
+                <div class="table-side-toolbar" style="display: flex; flex-direction: column; gap: 12px; padding: 16px 8px; border-right: 1px solid var(--border-color); background: var(--bg-body); flex-shrink: 0; align-items: center;">
+                    <button class="btn-toolbar" onclick="resetFilters()" title="Reset Filters" style="padding: 8px; justify-content: center;"><i data-lucide="rotate-ccw" size="16"></i></button>
+
+                    <button class="btn-toolbar" disabled id="btn-assign" title="Assign Task" style="padding: 8px; justify-content: center;"><i data-lucide="clipboard-list" size="16"></i></button>
+
+                    <button class="btn-toolbar danger" disabled id="btn-delete" title="Delete Selected" style="padding: 8px; justify-content: center;"><i data-lucide="trash-2" size="16"></i></button>
+                    <button class="btn-toolbar" id="btn-export-csv" title="Export CSV" style="padding: 8px; justify-content: center;"><i data-lucide="download" size="16"></i></button>
+                </div>
+
+                <div class="data-table-container" style="flex: 1; overflow: auto;">
+                    <table class="crud-table">
+                        <thead id="crud-thead"></thead>
+                        <tbody id="crud-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="info-section" style="width: 280px; padding: 16px; display: flex; flex-direction: column; gap: 16px; background: var(--bg-body); flex-shrink: 0; overflow-y: auto;">
+            <div style="font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="info" size="16"></i> Recording Info
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted);">File Name</span>
+                    <span style="font-weight: 500; font-family: monospace; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="info-filename" title="REC_c10000_20260000.wav">REC_c10000_...wav</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Date</span>
+                    <span style="font-weight: 500;">2026-02-15</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Time</span>
+                    <span style="font-weight: 500;">08:30:00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Duration</span>
+                    <span style="font-weight: 500;">00:05:00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Sample Rate</span>
+                    <span style="font-weight: 500;">48000 Hz</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Channels</span>
+                    <span style="font-weight: 500;">2 (Stereo)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Format</span>
+                    <span style="font-weight: 500;">WAV (16-bit)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted);">Site / Sensor</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span id="site-color-dot" style="width: 8px; height: 8px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 4px var(--brand);"></span>
+                        <span style="font-weight: 600; color: var(--brand); transition: color 0.3s;" id="info-site">Site A / SM4</span>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <button class="btn-toolbar" style="width: 100%; justify-content: center;"><i data-lucide="file-audio" size="14"></i> Download Audio</button>
             </div>
         </div>
-        <div class="data-table-container">
-            <table class="crud-table">
-                <thead id="crud-thead"></thead>
-                <tbody id="crud-tbody"></tbody>
-            </table>
-        </div>
+
     </div>
 </div>
-
 <script>
     // ================== 1. 顶部下拉框数据源逻辑 ==================
     // 使用引入的 initialProjects 确保顶部具有与 Dashboard 完全相同的级联项目
@@ -235,9 +327,39 @@
         renderAudios();
     }
 
+    // ================== 1.5 生态站点主题色引擎 ==================
+    // 预设四种典型生境的主题色
+    const siteThemes = {
+        'Forest (Site A)': { hex: '#10b981', rgb: '16, 185, 129' },  // 翠绿 (森林)
+        'Marine (Site B)': { hex: '#0ea5e9', rgb: '14, 165, 233' },  // 海蓝 (海洋)
+        'Urban (Site C)':  { hex: '#8b5cf6', rgb: '139, 92, 246' },  // 亮紫 (城市)
+        'Desert (Site D)': { hex: '#f59e0b', rgb: '245, 158, 11' }   // 琥珀 (荒漠)
+    };
+    const siteNames = Object.keys(siteThemes);
+
+    // 动态应用站点主题色
+    function applySiteTheme(siteName) {
+        const theme = siteThemes[siteName] || siteThemes['Forest (Site A)'];
+
+        // 动态修改全局 CSS 变量
+        document.documentElement.style.setProperty('--brand', theme.hex);
+        document.documentElement.style.setProperty('--brand-rgb', theme.rgb);
+
+        // 更新右侧信息面板显示
+        const siteEl = document.getElementById('info-site');
+        if (siteEl) siteEl.textContent = `${siteName} / SM4`;
+    }
+
+    // ================== 修改原有的 selectAudio ==================
     function selectAudio(id) {
         currentAudio = currentAudios.find(a => a.id === id);
         document.getElementById('label-audio').textContent = currentAudio.name;
+
+        // 模拟：根据音频 ID 的数字部分，随机分配一个生境站点并切换主题色
+        const numId = parseInt(id.replace(/\D/g, '') || 0);
+        const assignedSite = siteNames[numId % siteNames.length];
+        applySiteTheme(assignedSite);
+
         closeAllMenus();
         renderAudios();
     }
@@ -462,11 +584,9 @@
 
     function updateToolbarState() {
         const count = selectedIds.length;
-        const editBtn = document.getElementById('btn-edit');
         const delBtn = document.getElementById('btn-delete');
         const assignBtn = document.getElementById('btn-assign');
 
-        if (editBtn) editBtn.disabled = count !== 1;
         if (delBtn) delBtn.disabled = count === 0;
         if (assignBtn) assignBtn.disabled = count === 0;
     }
@@ -618,6 +738,11 @@
         tbody.innerHTML = bodyHtml;
         lucide.createIcons();
         updateToolbarState(); // 渲染完毕后根据选择更新顶部按钮状态
+
+        // 【新增】每次表格数据渲染/筛选后，同步更新频谱图上的标注框
+        if (typeof renderAnnotationsOnSpectrogram === 'function') {
+            renderAnnotationsOnSpectrogram(processedData);
+        }
     }
 
     function toggleTheme() {
@@ -628,6 +753,87 @@
         document.getElementById('theme-icon-el').setAttribute('data-lucide', target === 'dark' ? 'sun' : 'moon');
         lucide.createIcons();
     }
+
+    // ================== 5.5 渲染频谱图上的标注框 ==================
+    function renderAnnotationsOnSpectrogram(filteredData) {
+        const layer = document.getElementById('annotations-layer');
+        if (!layer) return;
+
+        // 如果没有传入数据，默认设为空数组
+        const data = filteredData || [];
+
+        // 假设当前音频总时长约为 60 秒，最高频率设定为 24000 Hz
+        const MAX_TIME = 60;
+        const MAX_FREQ = 24000;
+
+        let html = '';
+
+        // 改为遍历 data 而不是全局的 mockAnnotations
+        data.forEach(anno => {
+            // 防止生成超出范围的数据
+            if (anno.min_x > MAX_TIME) return;
+
+            // 计算坐标百分比（注意：频率0在最下方，所以用 bottom 定位）
+            const left = (anno.min_x / MAX_TIME) * 100;
+            let width = ((anno.max_x - anno.min_x) / MAX_TIME) * 100;
+            const bottom = (anno.min_y / MAX_FREQ) * 100;
+            let height = ((anno.max_y - anno.min_y) / MAX_FREQ) * 100;
+
+            // 边界截断，防止框超出频谱图画布
+            if (left + width > 100) width = 100 - left;
+            if (bottom + height > 100) height = 100 - bottom;
+
+            // 根据声音类别分配不同颜色
+            let color = '#3b82f6'; // 默认蓝色
+            if (anno.sound_id === 'Biophony') color = '#10b981'; // 绿色 (生物声)
+            else if (anno.sound_id === 'Anthrophony') color = '#ef4444'; // 红色 (人类声)
+            else if (anno.sound_id === 'Geophony') color = '#f59e0b'; // 橙色 (地质声)
+
+            // 画出标注框 (33 是 20%的十六进制透明度， 66 是 40%)
+            // 美化后的科技感标注框 (Neon Glow)
+            html += `<div class="annotation-box" data-id="${anno.id}" style="
+                position: absolute;
+                left: ${left}%;
+                bottom: ${bottom}%;
+                width: ${width}%;
+                height: ${height}%;
+                border: 1px solid ${color};
+                background-color: ${color}1A; /* 10% 极低透明度，不遮挡频谱细节 */
+                box-shadow: 0 0 6px ${color}4D, inset 0 0 4px ${color}4D; /* 内外发光效果 */
+                pointer-events: auto;
+                cursor: pointer;
+                border-radius: 2px;
+                box-sizing: border-box;
+                transition: all 0.2s ease;
+                backdrop-filter: brightness(1.2); /* 微微提亮背后的频谱图 */
+            " title="${anno.sound_id} (ID: ${anno.id})"
+              onclick="handleBoxClick(${anno.id}, event)"
+              onmouseover="this.style.backgroundColor='${color}4D'; this.style.boxShadow='0 0 10px ${color}80, inset 0 0 8px ${color}80'; this.style.zIndex='10';"
+              onmouseout="this.style.backgroundColor='${color}1A'; this.style.boxShadow='0 0 6px ${color}4D, inset 0 0 4px ${color}4D'; this.style.zIndex='1';">
+            </div>`;
+        });
+
+        layer.innerHTML = html;
+    }
+
+    // 处理图上标注框的点击事件，与下方的表格发生联动
+    function handleBoxClick(id, event) {
+        if(event) event.stopPropagation();
+
+        // 找到表格中对应的行并模拟点击该行的复选框，触发已有的选中/解除选中逻辑
+        const tr = document.querySelector(`tr[data-id="${id}"]`);
+        if(tr) {
+            const checkbox = tr.querySelector('.crud-checkbox');
+            if(checkbox) checkbox.click();
+            // 自动滚动让这行居中显示
+            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 添加一个临时的闪烁动画提示
+            tr.style.backgroundColor = 'var(--bg-hover)';
+            setTimeout(() => tr.style.backgroundColor = '', 500);
+        }
+    }
+
 
     // ================== 6. 初始化 ==================
     window.addEventListener('DOMContentLoaded', () => {
@@ -644,6 +850,8 @@
         // 初始化表格与按钮
         renderCrudHeader();
         renderCrudTable();
+
+        applySiteTheme(siteNames[0]);
         lucide.createIcons();
     });
 </script>
