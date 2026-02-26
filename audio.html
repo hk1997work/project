@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>ecoSignal | Audio Detail</title>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="project.css" rel="stylesheet">
+    <script src="data.js"></script>
+</head>
+<body>
+
+<nav class="project-nav-bar">
+    <div class="nav-left">
+        <div class="nav-capsule-box">
+            <a class="nav-logo" href="index.html">
+                <div class="logo-icon-box"><i data-lucide="activity"></i></div>
+                <span>ecoSignal</span>
+            </a>
+            <div class="nav-divider"></div>
+
+            <div class="breadcrumb-group">
+                <div class="crumb-wrapper" id="project-wrap">
+                    <button class="crumb-btn" onclick="toggleMenu('project-wrap')">
+                        <span class="block-anim" id="label-project">Loading...</span>
+                        <i data-lucide="chevron-down" size="14"></i>
+                    </button>
+                    <div class="crumb-dropdown" id="dropdown-project">
+                        <div class="dropdown-search-box">
+                            <div class="search-input-wrapper">
+                                <i class="search-icon-small" data-lucide="search"></i>
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchProject(this.value)" placeholder="Search Project..." type="text">
+                            </div>
+                        </div>
+                        <div class="dropdown-list-scroll" id="project-list-container"></div>
+                    </div>
+                </div>
+
+                <span class="crumb-separator">/</span>
+
+                <div class="crumb-wrapper" id="collection-wrap">
+                    <button class="crumb-btn" onclick="toggleMenu('collection-wrap')">
+                        <span class="block-anim" id="label-collection">Loading...</span>
+                        <i data-lucide="chevron-down" size="14"></i>
+                    </button>
+                    <div class="crumb-dropdown" id="dropdown-collection">
+                        <div class="dropdown-search-box">
+                            <div class="search-input-wrapper">
+                                <i class="search-icon-small" data-lucide="search"></i>
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchCollection(this.value)" placeholder="Search Collection..." type="text">
+                            </div>
+                        </div>
+                        <div class="dropdown-list-scroll" id="collection-list-container"></div>
+                    </div>
+                </div>
+
+                <span class="crumb-separator">/</span>
+
+                <div class="crumb-wrapper" id="audio-wrap">
+                    <button class="crumb-btn" onclick="toggleMenu('audio-wrap')">
+                        <span class="block-anim" id="label-audio">Loading...</span>
+                        <i data-lucide="chevron-down" size="14"></i>
+                    </button>
+                    <div class="crumb-dropdown" id="dropdown-audio">
+                        <div class="dropdown-search-box">
+                            <div class="search-input-wrapper">
+                                <i class="search-icon-small" data-lucide="search"></i>
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchAudio(this.value)" placeholder="Search Audio..." type="text">
+                            </div>
+                        </div>
+                        <div class="dropdown-list-scroll" id="audio-list-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-center"></div>
+
+    <div class="nav-right">
+        <div class="nav-capsule-box">
+            <button class="nav-btn-simple" onclick="toggleTheme()" title="Switch Theme">
+                <i data-lucide="moon" id="theme-icon-el" size="20"></i>
+            </button>
+            <div class="nav-divider"></div>
+            <button class="nav-btn-simple" title="Information"><i data-lucide="info" size="20"></i></button>
+            <div class="nav-divider"></div>
+            <div class="user-wrapper" id="user-menu">
+                <div class="user-capsule-btn" onclick="toggleUserMenu()">
+                    <div class="user-avatar-icon"><i data-lucide="user" size="16"></i></div>
+                    <span class="user-name-text">Liudilong</span>
+                    <i class="chevron-icon" data-lucide="chevron-down" size="14"></i>
+                </div>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="project.html"><i data-lucide="layout-dashboard" size="18"></i>Dashboard</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="setting.html"><i data-lucide="settings" size="18"></i> Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item danger" href="index.html"><i data-lucide="log-out" size="18"></i>Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="content-wrapper" style="top: var(--nav-height); padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+
+    <div class="audio-content-placeholder" style="background: var(--bg-surface); border: var(--card-border); border-radius: var(--radius); padding: 40px; text-align: center; color: var(--text-muted);">
+        <i data-lucide="activity" size="48" style="opacity: 0.2; margin-bottom: 16px;"></i>
+        <h2>Spectrogram Workspace</h2>
+        <p>Your spectrogram visualization and audio controls will appear here.</p>
+    </div>
+
+    <div class="data-main-content" style="background: var(--bg-surface); border: var(--card-border); border-radius: var(--radius); box-shadow: var(--card-shadow); display: flex; flex-direction: column; overflow: hidden; min-height: 450px;">
+        <div class="data-toolbar">
+            <div class="card-title" id="current-table-title"><i data-lucide="scan-line"></i> Annotations</div>
+            <div class="media-controls">
+                <div class="media-search-box">
+                    <i class="media-search-icon" data-lucide="search"></i>
+                    <input class="media-search-input" id="data-search-input" oninput="handleDataSearch(this.value)" placeholder="Search" type="text">
+                </div>
+
+                <button class="btn-toolbar" onclick="resetFilters()" title="Reset"><i data-lucide="rotate-ccw" size="14"></i> Reset</button>
+                <button class="btn-toolbar" disabled id="btn-view" style="display:none;"><i data-lucide="eye" size="16"></i> View</button>
+                <button class="btn-toolbar" id="btn-add"><i data-lucide="plus" size="14"></i> Add</button>
+                <button class="btn-toolbar" disabled id="btn-edit"><i data-lucide="pencil" size="14"></i> Edit</button>
+                <button class="btn-toolbar" disabled id="btn-link" style="display:none;"><i data-lucide="link" size="14"></i> Link</button>
+                <button class="btn-toolbar" disabled id="btn-taxon" style="display:none;"><i data-lucide="tag" size="14"></i> Taxon</button>
+                <button class="btn-toolbar" disabled id="btn-label" style="display:none;"><i data-lucide="tags" size="14"></i> Label</button>
+                <button class="btn-toolbar" disabled id="btn-reset-pwd" style="display:none;"><i data-lucide="key" size="14"></i> Reset Pwd</button>
+                <button class="btn-toolbar" disabled id="btn-permission" style="display:none;"><i data-lucide="shield-check" size="14"></i> Permission</button>
+                <button class="btn-toolbar" disabled id="btn-set-contrib" style="display:none;"><i data-lucide="user-plus" size="14"></i> Contributor</button>
+                <button class="btn-toolbar" disabled id="btn-assign" style="display:inline-flex;"><i data-lucide="clipboard-list" size="14"></i> Assignment</button>
+                <button class="btn-toolbar" disabled id="btn-ai-models" style="display:none;"><i data-lucide="cpu" size="14"></i> AI Models</button>
+                <button class="btn-toolbar" disabled id="btn-ac-indices" style="display:none;"><i data-lucide="bar-chart-2" size="14"></i> Acoustic Indices</button>
+                <button class="btn-toolbar danger" disabled id="btn-delete"><i data-lucide="trash-2" size="14"></i> Delete</button>
+                <button class="btn-toolbar" id="btn-export-csv">
+                    <i data-lucide="download" size="12"></i> Export CSV
+                </button>
+            </div>
+        </div>
+        <div class="data-table-container">
+            <table class="crud-table">
+                <thead id="crud-thead"></thead>
+                <tbody id="crud-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================== 1. 顶部下拉框数据源逻辑 ==================
+    // 使用引入的 initialProjects 确保顶部具有与 Dashboard 完全相同的级联项目
+    let currentProject = initialProjects[0];
+    let currentCollection = currentProject.collections[0];
+
+    // 动态生成属于该集合的音频文件列表
+    function generateAudiosForCol(colId) {
+        return Array.from({length: 12}, (_, i) => ({
+            id: `a${i}`,
+            name: `REC_${colId}_${20260000 + i}.wav`
+        }));
+    }
+
+    let currentAudios = generateAudiosForCol(currentCollection.id);
+    let currentAudio = currentAudios[0];
+
+    function renderProjects(filterText = '') {
+        const container = document.getElementById('project-list-container');
+        const filtered = initialProjects.filter(p => p.name.toLowerCase().includes(filterText.toLowerCase()));
+        if (filtered.length === 0) return container.innerHTML = '<div class="empty-state">No projects found</div>';
+        container.innerHTML = filtered.map(proj => {
+            const isSel = currentProject && currentProject.id === proj.id;
+            return `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectProject(${proj.id})">
+                <span>${proj.name}</span><i data-lucide="check" class="check-icon"></i></div>`;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    function renderCollections(filterText = '') {
+        const container = document.getElementById('collection-list-container');
+        if (!currentProject) return container.innerHTML = '<div class="empty-state">Select a project first</div>';
+        const filtered = currentProject.collections.filter(c => c.name.toLowerCase().includes(filterText.toLowerCase()));
+        if (filtered.length === 0) return container.innerHTML = '<div class="empty-state">No collections found</div>';
+        container.innerHTML = filtered.map(col => {
+            const isSel = currentCollection && currentCollection.id === col.id;
+            return `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectCollection('${col.id}')">
+                <span>${col.name}</span><i data-lucide="check" class="check-icon"></i></div>`;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    function renderAudios(filterText = '') {
+        const container = document.getElementById('audio-list-container');
+        if (!currentCollection) return container.innerHTML = '<div class="empty-state">Select a collection first</div>';
+        const filtered = currentAudios.filter(a => a.name.toLowerCase().includes(filterText.toLowerCase()));
+        if (filtered.length === 0) return container.innerHTML = '<div class="empty-state">No audios found</div>';
+        container.innerHTML = filtered.map(audio => {
+            const isSel = currentAudio && currentAudio.id === audio.id;
+            return `<div class="crumb-item ${isSel ? 'selected' : ''}" onclick="selectAudio('${audio.id}')">
+                <span>${audio.name}</span><i data-lucide="check" class="check-icon"></i></div>`;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    function selectProject(id) {
+        currentProject = initialProjects.find(p => p.id === id);
+        document.getElementById('label-project').textContent = currentProject.name;
+        currentCollection = currentProject.collections[0];
+        document.getElementById('label-collection').textContent = currentCollection ? currentCollection.name : 'No Collection';
+
+        if (currentCollection) {
+            currentAudios = generateAudiosForCol(currentCollection.id);
+            currentAudio = currentAudios[0];
+        } else {
+            currentAudios = [];
+            currentAudio = null;
+        }
+        document.getElementById('label-audio').textContent = currentAudio ? currentAudio.name : 'No Audio';
+        closeAllMenus();
+        renderProjects();
+        renderCollections();
+        renderAudios();
+    }
+
+    function selectCollection(id) {
+        currentCollection = currentProject.collections.find(c => String(c.id) === String(id));
+        document.getElementById('label-collection').textContent = currentCollection.name;
+        currentAudios = generateAudiosForCol(currentCollection.id);
+        currentAudio = currentAudios[0];
+        document.getElementById('label-audio').textContent = currentAudio.name;
+        closeAllMenus();
+        renderCollections();
+        renderAudios();
+    }
+
+    function selectAudio(id) {
+        currentAudio = currentAudios.find(a => a.id === id);
+        document.getElementById('label-audio').textContent = currentAudio.name;
+        closeAllMenus();
+        renderAudios();
+    }
+
+    function toggleMenu(id) {
+        const el = document.getElementById(id);
+        const isActive = el.classList.contains('active');
+        closeAllMenus();
+        if (!isActive) {
+            el.classList.add('active');
+            const input = el.querySelector('input');
+            if (input) {
+                input.value = '';
+                setTimeout(() => input.focus(), 50);
+            }
+            if (id === 'project-wrap') renderProjects();
+            if (id === 'collection-wrap') renderCollections();
+            if (id === 'audio-wrap') renderAudios();
+        }
+    }
+
+    function closeAllMenus() {
+        document.querySelectorAll('.crumb-wrapper, .user-wrapper').forEach(el => el.classList.remove('active'));
+    }
+
+    function toggleUserMenu() {
+        const el = document.getElementById('user-menu');
+        const isActive = el.classList.contains('active');
+        closeAllMenus();
+        if (!isActive) el.classList.add('active');
+    }
+
+
+    // ================== 2. 表格 Schema 和 数据生成 ==================
+    const annotationSchema = [
+        {key: "id", label: "ID", type: "number"},
+        {key: "uuid", label: "UUID", type: "text"},
+        {key: "media_name", label: "Media Name", type: "text", filterType: 'select'},
+        {key: "min_x", label: "Min X", type: "number", filterType: 'range'},
+        {key: "max_x", label: "Max X", type: "number", filterType: 'range'},
+        {key: "min_y", label: "Min Y", type: "number", filterType: 'range'},
+        {key: "max_y", label: "Max Y", type: "number", filterType: 'range'},
+        {key: "creator_type", label: "Creator Type", type: "text", filterType: 'select'},
+        {key: "sound_id", label: "Sound Class", type: "select"},
+        {key: "animal_sound_type", label: "Sound Type", type: "select"},
+        {key: "taxon_id", label: "Taxon", type: "select"},
+        {key: "confidence", label: "Confidence", type: "number", filterType: 'range'},
+        {key: "uncertain", label: "Uncertain", type: "boolean"},
+        {key: "sound_distance_m", label: "Distance (m)", type: "number", filterType: 'range'},
+        {key: "distance_not_estimable", label: "Not Estimable", type: "boolean"},
+        {key: "individual_num", label: "Indiv. Num", type: "number", filterType: 'range'},
+        {key: "reference", label: "Reference", type: "boolean"},
+        {key: "comments", label: "Comments", type: "text"},
+        {key: "creator_id", label: "Creator", type: "text", filterType: 'select'},
+        {key: "creation_date", label: "Created", type: "text"}
+    ];
+
+    // 动态生成 30 条标注数据
+    const mockAnnotations = Array.from({length: 30}, (_, i) => {
+        const isBio = Math.random() > 0.3;
+        const minX = parseFloat((Math.random() * 50).toFixed(1));
+        const soundClass = isBio ? 'Biophony' : (Math.random() > 0.5 ? 'Geophony' : 'Anthrophony');
+        const taxon = isBio ? ["Aves", "Insecta", "Amphibia"][Math.floor(Math.random() * 3)] : "";
+        const creatorType = ["user", "model", "automated"][Math.floor(Math.random() * 3)];
+
+        return {
+            id: i + 1,
+            uuid: `5570-e29b-41d4-a716-${String(i + 1).padStart(12, '0')}`,
+            media_name: ['REC_c10000_20260000.wav', 'REC_c10000_20260001.wav'][Math.floor(Math.random() * 2)],
+            min_x: minX,
+            max_x: parseFloat((minX + 2 + Math.random() * 10).toFixed(1)),
+            min_y: Math.floor(Math.random() * 1000),
+            max_y: Math.floor(2000 + Math.random() * 6000),
+            creator_type: creatorType,
+            sound_id: soundClass,
+            animal_sound_type: isBio ? ["Call", "Song", "Drumming"][Math.floor(Math.random() * 3)] : "",
+            taxon_id: taxon,
+            confidence: creatorType === 'user' ? null : parseFloat((0.5 + Math.random() * 0.49).toFixed(2)),
+            uncertain: Math.random() > 0.8,
+            sound_distance_m: isBio ? Math.floor(Math.random() * 100) : null,
+            distance_not_estimable: isBio ? Math.random() > 0.8 : false,
+            individual_num: isBio ? Math.floor(Math.random() * 5) + 1 : null,
+            reference: Math.random() > 0.7,
+            comments: ["Clear", "Noisy", "Overlapping", "Needs review", ""][Math.floor(Math.random() * 5)],
+            creator_id: ["Liudilong", "A. Schmidt", "J. Doe", "System"][Math.floor(Math.random() * 4)],
+            creation_date: `2026-02-${String((i % 28) + 1).padStart(2, '0')} 10:00:00`
+        };
+    });
+
+    // ================== 3. 状态引擎与事件监听 ==================
+    let crudSearchQuery = "";
+    let crudFilterState = {};
+    let sortState = {key: "id", direction: 'asc'};
+    let selectedIds = [];
+
+    document.addEventListener('click', e => {
+        // 防止点击在搜索框里也触发关闭
+        if (e.target.closest('.dropdown-search-box')) return;
+
+        // 如果点击的地方不是高级下拉筛选框，则关闭它们
+        if (!e.target.closest('.table-filter-wrapper')) {
+            document.querySelectorAll('.table-filter-dropdown').forEach(d => d.classList.remove('active'));
+        }
+
+        // 如果点击的地方不是顶部导航菜单，则关闭导航
+        if (!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) {
+            closeAllMenus();
+        }
+    });
+
+    function getUniqueValues(data, key) {
+        const set = new Set();
+        data.forEach(row => {
+            if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+                set.add(row[key]);
+            }
+        });
+        return Array.from(set).sort();
+    }
+
+    // ================== 4. 表格交互与联动逻辑 ==================
+    function handleDataSearch(val) {
+        crudSearchQuery = val.toLowerCase();
+        renderCrudTable();
+    }
+
+    function handleSort(key) {
+        if (sortState.key === key) sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+        else {
+            sortState.key = key;
+            sortState.direction = 'asc';
+        }
+        renderCrudHeader();
+        renderCrudTable();
+    }
+
+    function handleColumnFilter(key, value) {
+        if (value === "" || value === "all") delete crudFilterState[key];
+        else crudFilterState[key] = value;
+        renderCrudTable();
+    }
+
+    function handleRangeFilter(key, type, val) {
+        if (!crudFilterState[key] || typeof crudFilterState[key] !== 'object') crudFilterState[key] = {min: "", max: ""};
+        crudFilterState[key][type] = val;
+        if (crudFilterState[key].min === "" && crudFilterState[key].max === "") delete crudFilterState[key];
+        renderCrudTable();
+    }
+
+    function resetFilters() {
+        crudSearchQuery = "";
+        crudFilterState = {};
+        sortState = {key: "id", direction: 'asc'};
+        document.getElementById('data-search-input').value = "";
+        renderCrudHeader();
+        renderCrudTable();
+    }
+
+    function toggleTableFilterSelect(id) {
+        const dropdown = document.getElementById(id);
+        if (!dropdown) return;
+        document.querySelectorAll('.table-filter-dropdown').forEach(d => {
+            if (d.id !== id) d.classList.remove('active');
+        });
+        const isActive = dropdown.classList.contains('active');
+        if (!isActive) {
+            dropdown.classList.add('active');
+            const search = dropdown.querySelector('.table-filter-search');
+            if (search) search.value = '';
+            Array.from(dropdown.querySelectorAll('.table-filter-option')).forEach(opt => opt.classList.remove('hidden'));
+        } else {
+            dropdown.classList.remove('active');
+        }
+    }
+
+    function filterTableFilterSelect(dropdownId, query) {
+        const dropdown = document.getElementById(dropdownId);
+        if (!dropdown) return;
+        const val = query.toLowerCase();
+        dropdown.querySelectorAll('.table-filter-option').forEach(opt => {
+            if (opt.textContent.toLowerCase().includes(val)) opt.classList.remove('hidden');
+            else opt.classList.add('hidden');
+        });
+    }
+
+    function selectTableFilterOption(key, value, label) {
+        handleColumnFilter(key, value);
+        const triggerSpan = document.getElementById(`filter-trigger-span-${key}`);
+        if (triggerSpan) triggerSpan.textContent = label;
+        const dropdown = document.getElementById(`filter-dropdown-${key}`);
+        if (dropdown) dropdown.classList.remove('active');
+    }
+
+    function toggleRowSelection(id, el) {
+        const idx = selectedIds.indexOf(id);
+        if (idx > -1) {
+            selectedIds.splice(idx, 1);
+            el.closest('tr').classList.remove('selected');
+        } else {
+            selectedIds.push(id);
+            el.closest('tr').classList.add('selected');
+        }
+        updateToolbarState();
+    }
+
+    function handleSelectAll(checked) {
+        const checkboxes = document.querySelectorAll('#crud-tbody .crud-checkbox');
+        selectedIds = [];
+        checkboxes.forEach(cb => {
+            cb.checked = checked;
+            const tr = cb.closest('tr');
+            const id = Number(tr.dataset.id);
+            if (checked) {
+                selectedIds.push(id);
+                tr.classList.add('selected');
+            } else {
+                tr.classList.remove('selected');
+            }
+        });
+        updateToolbarState();
+    }
+
+    function updateToolbarState() {
+        const count = selectedIds.length;
+        const editBtn = document.getElementById('btn-edit');
+        const delBtn = document.getElementById('btn-delete');
+        const assignBtn = document.getElementById('btn-assign');
+
+        if (editBtn) editBtn.disabled = count !== 1;
+        if (delBtn) delBtn.disabled = count === 0;
+        if (assignBtn) assignBtn.disabled = count === 0;
+    }
+
+    // ================== 5. 表格渲染核心 ==================
+    function renderCrudHeader() {
+        const thead = document.getElementById('crud-thead');
+        let headHtml = "<tr>";
+        headHtml += `<th style="width: 40px; text-align:center; vertical-align:top; padding-top:14px;"><input type="checkbox" class="crud-checkbox" onclick="handleSelectAll(this.checked)"></th>`;
+
+        annotationSchema.forEach(col => {
+            const isSorted = sortState.key === col.key;
+            const sortIcon = isSorted ? (sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down';
+            const activeClass = isSorted ? 'active-sort' : '';
+            const iconOpacity = isSorted ? '1' : '0.3';
+
+            let filterInputHtml = '';
+            const currentFilterVal = crudFilterState[col.key];
+
+            if (col.filterType === 'range') {
+                const minVal = (currentFilterVal && currentFilterVal.min) ? currentFilterVal.min : "";
+                const maxVal = (currentFilterVal && currentFilterVal.max) ? currentFilterVal.max : "";
+                filterInputHtml = `
+                <div style="display:flex; gap:4px; align-items:center;">
+                    <input type="number" class="th-filter-input" placeholder="Min" style="padding:0 4px; font-size:0.75rem;" value="${minVal}" oninput="handleRangeFilter('${col.key}', 'min', this.value)" onclick="event.stopPropagation()">
+                    <span style="color:var(--text-muted);">-</span>
+                    <input type="number" class="th-filter-input" placeholder="Max" style="padding:0 4px; font-size:0.75rem;" value="${maxVal}" oninput="handleRangeFilter('${col.key}', 'max', this.value)" onclick="event.stopPropagation()">
+                </div>`;
+            } else if (col.type === 'boolean') {
+                const valStr = currentFilterVal || "all";
+                let displayLabel = valStr === 'true' ? "True" : (valStr === 'false' ? "False" : "All");
+                filterInputHtml = `
+                <div class="table-filter-wrapper" style="position:relative; width:100%;">
+                    <div class="table-filter-trigger th-filter-input" onclick="event.stopPropagation(); toggleTableFilterSelect('filter-dropdown-${col.key}')" style="display:flex; align-items:center; justify-content:space-between; padding-right:24px;">
+                        <span id="filter-trigger-span-${col.key}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayLabel}</span>
+                        <i data-lucide="chevron-down" size="12" style="position:absolute; right:8px; opacity:0.5;"></i>
+                    </div>
+                    <div class="table-filter-dropdown" id="filter-dropdown-${col.key}" onclick="event.stopPropagation()">
+                        <div class="table-filter-options-list">
+                            <div class="table-filter-option ${valStr === 'all' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'all', 'All')">All</div>
+                            <div class="table-filter-option ${valStr === 'true' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'true', 'True')">True</div>
+                            <div class="table-filter-option ${valStr === 'false' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'false', 'False')">False</div>
+                        </div>
+                    </div>
+                </div>`;
+            } else if (col.type === 'select' || col.filterType === 'select') {
+                const valStr = currentFilterVal || "";
+                const displayLabel = (valStr && valStr !== 'all') ? valStr : 'All';
+                const uniqueVals = getUniqueValues(mockAnnotations, col.key);
+                filterInputHtml = `
+                <div class="table-filter-wrapper" style="position:relative; width:100%;">
+                    <div class="table-filter-trigger th-filter-input" onclick="event.stopPropagation(); toggleTableFilterSelect('filter-dropdown-${col.key}')" style="display:flex; align-items:center; justify-content:space-between; padding-right:24px;">
+                        <span id="filter-trigger-span-${col.key}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayLabel}</span>
+                        <i data-lucide="chevron-down" size="12" style="position:absolute; right:8px; opacity:0.5;"></i>
+                    </div>
+                    <div class="table-filter-dropdown" id="filter-dropdown-${col.key}" onclick="event.stopPropagation()">
+                        <input type="text" class="table-filter-search" placeholder="Search..." oninput="filterTableFilterSelect('filter-dropdown-${col.key}', this.value)">
+                        <div class="table-filter-options-list">
+                            <div class="table-filter-option ${!valStr || valStr === 'all' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'all', 'All')">All</div>
+                            ${uniqueVals.map(o => `<div class="table-filter-option ${String(valStr) === String(o) ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', '${String(o).replace(/'/g, "\\'")}', '${String(o).replace(/'/g, "\\'")}')">${o}</div>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                const valStr = currentFilterVal || "";
+                filterInputHtml = `<input type="text" class="th-filter-input" placeholder="Filter..." value="${valStr}" oninput="handleColumnFilter('${col.key}', this.value)" onclick="event.stopPropagation()">`;
+            }
+
+            headHtml += `<th style="min-width: 140px;">
+                <div class="th-header-content ${activeClass}" onclick="handleSort('${col.key}')">
+                    <span>${col.label}</span>
+                    <i data-lucide="${sortIcon}" size="14" style="opacity:${iconOpacity}"></i>
+                </div>
+                <div class="th-filter-box">${filterInputHtml}</div>
+            </th>`;
+        });
+        headHtml += `</tr>`;
+        thead.innerHTML = headHtml;
+        lucide.createIcons();
+    }
+
+    function renderCrudTable() {
+        const tbody = document.getElementById('crud-tbody');
+
+        let processedData = mockAnnotations.filter(row => {
+            const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
+            if (!matchesGlobal) return false;
+
+            return Object.keys(crudFilterState).every(key => {
+                const filterVal = crudFilterState[key];
+                const rowVal = row[key];
+
+                if (typeof filterVal === 'object' && (filterVal.min !== undefined || filterVal.max !== undefined)) {
+                    if (rowVal === null || rowVal === undefined || rowVal === "") return false;
+                    const numVal = Number(rowVal);
+                    if (filterVal.min !== "" && numVal < Number(filterVal.min)) return false;
+                    if (filterVal.max !== "" && numVal > Number(filterVal.max)) return false;
+                    return true;
+                }
+                const strFilterVal = String(filterVal).toLowerCase();
+                const strRowVal = String(rowVal !== undefined && rowVal !== null ? rowVal : "").toLowerCase();
+                if (strFilterVal === 'true' || strFilterVal === 'false') return strRowVal === strFilterVal;
+                return strRowVal.includes(strFilterVal);
+            });
+        });
+
+        if (sortState.key) {
+            processedData.sort((a, b) => {
+                let valA = a[sortState.key], valB = b[sortState.key];
+                if (valA === null || valA === undefined) valA = "";
+                if (valB === null || valB === undefined) valB = "";
+                if (typeof valA === 'number' && typeof valB === 'number') return sortState.direction === 'asc' ? valA - valB : valB - valA;
+                valA = String(valA).toLowerCase();
+                valB = String(valB).toLowerCase();
+                if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        let bodyHtml = "";
+        if (processedData.length === 0) {
+            bodyHtml = `<tr><td colspan="${annotationSchema.length + 1}" style="text-align:center; padding:40px; color:var(--text-muted); font-style:italic;">No results found</td></tr>`;
+        } else {
+            processedData.forEach(row => {
+                const isChecked = selectedIds.includes(row.id);
+                bodyHtml += `<tr data-id="${row.id}" class="${isChecked ? 'selected' : ''}">`;
+                bodyHtml += `<td style="text-align:center; border-bottom:1px solid var(--border-color);"><input type="checkbox" class="crud-checkbox" ${isChecked ? 'checked' : ''} onclick="toggleRowSelection(${row.id}, this)"></td>`;
+
+                annotationSchema.forEach(col => {
+                    let val = row[col.key];
+                    if (val === undefined || val === null) val = "";
+
+                    if (col.type === 'boolean') {
+                        if (val === true) val = `<span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); display:inline-block;">True</span>`;
+                        else if (val === false) val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3); display:inline-block;">False</span>`;
+                        else val = "";
+                    } else if (col.key === 'taxon_id' && val) {
+                        val = `<div style="display:flex; flex-wrap:nowrap; gap:4px; overflow-x:auto; scrollbar-width:none; align-items:center;">
+                                <span style="background:var(--brand); color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(var(--brand-rgb),0.3); white-space:nowrap; flex-shrink:0; display:inline-block;">${val}</span>
+                               </div>`;
+                    }
+                    bodyHtml += `<td>${val}</td>`;
+                });
+                bodyHtml += `</tr>`;
+            });
+        }
+
+        tbody.innerHTML = bodyHtml;
+        lucide.createIcons();
+        updateToolbarState(); // 渲染完毕后根据选择更新顶部按钮状态
+    }
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const target = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', target);
+        localStorage.setItem('theme', target);
+        document.getElementById('theme-icon-el').setAttribute('data-lucide', target === 'dark' ? 'sun' : 'moon');
+        lucide.createIcons();
+    }
+
+    // ================== 6. 初始化 ==================
+    window.addEventListener('DOMContentLoaded', () => {
+        const saved = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const targetTheme = saved || (systemDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', targetTheme);
+        document.getElementById('theme-icon-el').setAttribute('data-lucide', targetTheme === 'dark' ? 'sun' : 'moon');
+
+        document.getElementById('label-project').textContent = currentProject.name;
+        document.getElementById('label-collection').textContent = currentCollection.name;
+        document.getElementById('label-audio').textContent = currentAudio.name;
+
+        // 初始化表格与按钮
+        renderCrudHeader();
+        renderCrudTable();
+        lucide.createIcons();
+    });
+</script>
+</body>
+</html>
