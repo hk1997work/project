@@ -14,14 +14,18 @@
             box-shadow: none;
         }
 
-        /* 新增：工具栏按钮被选中时的状态 */
+        /* 工具栏按钮被选中时的状态：仅改变图标颜色，无背景 */
         .player-toolbar-bottom .btn-toolbar.active {
-            background: var(--brand) !important;
-            color: white !important;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            background: transparent !important;
+            box-shadow: none !important;
         }
         .player-toolbar-bottom .btn-toolbar.active i {
-            color: white !important;
+            color: var(--brand) !important; /* 普通选中变成主题色 */
+        }
+
+        /* 暂停和停止专属的红色样式 */
+        .player-toolbar-bottom .btn-toolbar.is-red i {
+            color: #ef4444 !important; /* 变成红色 */
         }
 
         /* 声道切换按钮的默认样式 */
@@ -168,8 +172,6 @@
                     <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom In Proportionally"><i data-lucide="zoom-in" size="14"></i></button>
                     <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom Out"><i data-lucide="zoom-out" size="14"></i></button>
                     <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom by px/s"><i data-lucide="stretch-horizontal" size="14"></i></button>
-
-                    <span style="margin-left: auto; font-family: monospace; font-size: 0.75rem; color: var(--text-main);">00:00:00 / 00:05:00</span>
                 </div>
 
                 <div class="player-middle" style="display: flex; gap: 8px; height: 400px;">
@@ -183,34 +185,43 @@
                 </div>
                 <div class="player-toolbar-bottom" style="display: flex; gap: 12px; align-items: center; margin-top: 4px;">
 
-                    <div style="display: flex; gap: 4px;">
+                    <div style="display: flex; gap: 4px; align-items: center;">
                         <button class="btn-toolbar" id="btn-play-toggle" style="padding: 4px 8px;" title="Play" onclick="togglePlayState()">
                             <i data-lucide="play" size="14"></i>
                         </button>
-                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Stop" onclick="stopPlayState()">
+                        <button class="btn-toolbar is-red" style="padding: 4px 8px;" title="Stop" onclick="stopPlayState()">
                             <i data-lucide="square" size="14"></i>
                         </button>
                     </div>
 
-                    <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
-
-                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Auto-advance to next segment" onclick="this.classList.toggle('active')"><i data-lucide="arrow-right-from-line" size="14"></i></button>
-
-                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Toggle Full Band / Filtered Frequency" onclick="this.classList.toggle('active')"><i data-lucide="filter" size="14"></i></button>
+                    <div id="playback-time-display" style="display: flex; align-items: center; gap: 4px; cursor: default;">
+                        <span id="time-current" style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">0</span>
+                        <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">/</span>
+                        <span id="time-total" style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">300</span>
+                    </div>
 
                     <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
 
                     <div style="display: flex; align-items: center; gap: 8px;" title="Playback Speed">
                         <i data-lucide="gauge" size="14" style="color: var(--text-muted);"></i>
-
                         <input type="range" min="0.05" max="1" step="0.01" value="1"
                                style="width: 140px; height: 8px; cursor: pointer; accent-color: var(--brand); border-radius: 4px; background: var(--border-color); border: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent;"
                                oninput="this.nextElementSibling.innerText = Number(this.value).toFixed(2) + 'x'">
-
-                        <span style="font-size: 0.75rem; color: var(--text-main); font-family: monospace; font-weight: 600; width: 38px; text-align: right;">1.00x</span>
+                        <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); width: 38px; text-align: right;">1.00x</span>
                     </div>
 
                     <div style="flex: 1;"></div>
+
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Auto-advance to next segment" onclick="this.classList.toggle('active')">
+                            <i data-lucide="arrow-right-from-line" size="14"></i>
+                        </button>
+                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Toggle Full Band / Filtered Frequency" onclick="this.classList.toggle('active')">
+                            <i data-lucide="filter" size="14"></i>
+                        </button>
+                    </div>
+
+                    <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
 
                     <div id="channel-control-container" style="display: flex; align-items: center;"></div>
 
@@ -427,15 +438,14 @@
             </div>`;
             if (infoChannels) infoChannels.textContent = "2 (Stereo)";
         } else {
-            // 单声道：去掉了等宽字体，颜色使用与 L/R 未选中时一致的 var(--text-secondary)
+            // 单声道：恢复胶囊底座，并使用 active 样式的高亮按钮
             container.innerHTML = `
-            <div style="display: flex; align-items: center; padding: 0 8px; height: 32px; box-sizing: border-box;" title="Mono Audio">
-                <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Mono</span>
+            <div style="display: flex; align-items: center; background: var(--bg-capsule); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1); border-radius: 60px; padding: 4px; height: 32px; box-sizing: border-box;" title="Mono Audio">
+                <button class="channel-btn active" style="cursor: default; pointer-events: none;">Mono</button>
             </div>`;
             if (infoChannels) infoChannels.textContent = "1 (Mono)";
         }
     }
-
     // ================== 修改原有的 selectAudio ==================
     function selectAudio(id) {
         currentAudio = currentAudios.find(a => a.id === id);
@@ -453,41 +463,85 @@
         closeAllMenus();
         renderAudios();
     }
-    // ================== 1.7 播放/暂停 图标切换逻辑 ==================
+    // ================== 1.7 播放/暂停及时间模拟逻辑 ==================
     let isAudioPlaying = false;
+    let playTimer = null;           // 计时器
+    let currentTimeSeconds = 0;     // 当前播放时间 (秒)
+    const totalTimeSeconds = 300;   // 模拟总时长 (300秒)
+
+    // 更新页面上的时间显示 (加入了安全检查)
+    function updateTimeUI() {
+        const timeEl = document.getElementById('time-current');
+        if (timeEl) {
+            timeEl.textContent = currentTimeSeconds;
+        } else {
+            console.warn("未找到时间显示的元素，请检查 HTML 中是否有 id='time-current'");
+        }
+    }
 
     function togglePlayState() {
         isAudioPlaying = !isAudioPlaying;
         const btn = document.getElementById('btn-play-toggle');
-        const icon = btn.querySelector('i');
+        if (!btn) return;
 
         if (isAudioPlaying) {
-            // 切换为暂停状态
-            icon.setAttribute('data-lucide', 'pause');
+            // 1. 切换为暂停图标，并加上红色样式
+            btn.innerHTML = '<i data-lucide="pause" size="14"></i>';
             btn.setAttribute('title', 'Pause');
-            btn.classList.add('active'); // 增加高亮背景（可选，视觉提示正在播放）
+            btn.classList.add('is-red');    // 暂停状态变成红色
+            btn.classList.remove('active'); // 确保不跟普通的主题色冲突
+
+            // 2. 启动计时器 (每 1000 毫秒递增 1 秒)
+            if (!playTimer) {
+                playTimer = setInterval(() => {
+                    if (currentTimeSeconds < totalTimeSeconds) {
+                        currentTimeSeconds++;
+                        updateTimeUI();
+                    } else {
+                        // 播放到最后，自动停止
+                        stopPlayState();
+                    }
+                }, 1000);
+            }
         } else {
-            // 切换回播放状态
-            icon.setAttribute('data-lucide', 'play');
+            // 1. 切换回播放图标，移除红色
+            btn.innerHTML = '<i data-lucide="play" size="14"></i>';
             btn.setAttribute('title', 'Play');
+            btn.classList.remove('is-red');
             btn.classList.remove('active');
+
+            // 2. 暂停计时器，保留当前秒数
+            if (playTimer) {
+                clearInterval(playTimer);
+                playTimer = null;
+            }
         }
-        // 关键：通知 Lucide 重新渲染刚修改过 data-lucide 属性的图标
+        // 重新渲染图标
         lucide.createIcons();
     }
 
     function stopPlayState() {
-        // 点击停止时，强制重置为未播放状态
         isAudioPlaying = false;
         const btn = document.getElementById('btn-play-toggle');
-        const icon = btn.querySelector('i');
+        if (!btn) return;
 
-        icon.setAttribute('data-lucide', 'play');
+        // 1. 重置播放按钮（恢复原本颜色，移除红色）
+        btn.innerHTML = '<i data-lucide="play" size="14"></i>';
         btn.setAttribute('title', 'Play');
+        btn.classList.remove('is-red');
         btn.classList.remove('active');
+
+        // 2. 清除计时器，并让秒数强制归零
+        if (playTimer) {
+            clearInterval(playTimer);
+            playTimer = null;
+        }
+        currentTimeSeconds = 0;
+        updateTimeUI(); // 触发界面归零
 
         lucide.createIcons();
     }
+
     function toggleMenu(id) {
         const el = document.getElementById(id);
         const isActive = el.classList.contains('active');
