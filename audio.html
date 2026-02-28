@@ -31,31 +31,6 @@
             box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3) !important;
         }
 
-        /* 声道切换按钮的默认样式 */
-        .channel-btn {
-            background: transparent;
-            color: var(--text-secondary);
-            border: none;
-            border-radius: 50px;
-            padding: 0 14px;
-            height: 100%;
-            font-family: inherit;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        /* 悬停时文字变亮 */
-        .channel-btn:hover {
-            color: var(--text-main);
-        }
-        /* 选中时的激活样式 */
-        .channel-btn.active {
-            background: var(--brand) !important;
-            color: white !important;
-            font-weight: 700;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
         /* --- 拖拽条自定义样式 --- */
         input[type="range"] {
             -webkit-appearance: none;
@@ -99,46 +74,92 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
         }
-        /* 放大缩小输入框的定制样式 */
-        .zoom-input-box {
+        /* 连体缩放控制组（无边框透明风格，与其他按键完全一致） */
+        .zoom-control-wrapper {
             display: flex;
             align-items: center;
-            background: var(--bg-body);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 0 6px;
-            height: 28px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 50px;
+            height: 32px;
             box-sizing: border-box;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
-        .zoom-input-box:focus-within {
-            border-color: var(--brand); /* 聚焦时边框高亮为主题色 */
+
+        /* 鼠标悬停时，呈现和标准按键完全一致的主题色+阴影反馈 */
+        .zoom-control-wrapper:hover {
+            border-color: var(--brand);
+            background: var(--brand);
+            box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3);
         }
-        .zoom-input-box input {
-            width: 36px;
+        /* 悬停时，内部的所有元素（图标、数字、单位）都变成白色 */
+        .zoom-control-wrapper:hover .zoom-control-btn,
+        .zoom-control-wrapper:hover input,
+        .zoom-control-wrapper:hover span {
+            color: white;
+        }
+
+        /* 当用户点击输入框激活(focus)时，恢复白底黑字，避免输入时看不清数值 */
+        .zoom-control-wrapper:focus-within,
+        .zoom-control-wrapper:hover:focus-within {
+            background: var(--bg-surface);
+            border-color: var(--brand);
+            box-shadow: 0 0 0 2px var(--brand-tint);
+        }
+        .zoom-control-wrapper:focus-within .zoom-control-btn,
+        .zoom-control-wrapper:focus-within span {
+            color: var(--text-secondary);
+        }
+        .zoom-control-wrapper:focus-within input {
+            color: var(--text-main);
+        }
+
+        /* 内部嵌入的图标按键 */
+        .zoom-control-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 0 4px 0 12px; /* 左侧胶囊留白 */
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        /* 内部嵌入的输入框 */
+        .zoom-control-wrapper input {
+            width: 32px;
             background: transparent;
             border: none;
             outline: none;
             font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-main);
+            font-weight: 600;
+            color: var(--text-secondary);
             text-align: right;
             font-family: inherit;
             padding: 0;
+            transition: color 0.2s;
         }
-        .zoom-input-box span {
+
+        /* 内部的单位文字 */
+        .zoom-control-wrapper span {
             font-size: 0.85rem;
+            font-weight: 600;
             color: var(--text-secondary);
-            margin-left: 4px;
+            margin: 0 12px 0 2px; /* 右侧胶囊留白 */
             user-select: none;
+            transition: color 0.2s;
         }
+
         /* 隐藏数字输入框自带的加减箭头 */
-        .zoom-input-box input[type="number"]::-webkit-inner-spin-button,
-        .zoom-input-box input[type="number"]::-webkit-outer-spin-button {
+        .zoom-control-wrapper input[type="number"]::-webkit-inner-spin-button,
+        .zoom-control-wrapper input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-        .zoom-input-box input[type="number"] {
+        .zoom-control-wrapper input[type="number"] {
             -moz-appearance: textfield;
         }
     </style>
@@ -248,36 +269,55 @@
 
                 <div class="player-toolbar-top" style="display: flex; gap: 8px; align-items: center;">
 
-                    <div id="channel-control-container" style="display: flex; align-items: center;"></div>
-                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
-
                     <button class="btn-toolbar" disabled style="padding: 4px 8px;" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
                     <button class="btn-toolbar" disabled style="padding: 4px 8px;" title="Pan Right (Next Time Segment)"><i data-lucide="chevron-right" size="14"></i></button>
 
                     <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
 
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom In Proportionally"><i data-lucide="zoom-in" size="14"></i></button>
-                        <div class="zoom-input-box">
-                            <input type="number" value="150" step="10">
-                            <span>%</span>
-                        </div>
+                    <div class="zoom-control-wrapper">
+                        <button class="zoom-control-btn" title="Zoom In Proportionally">
+                            <i data-lucide="zoom-in" size="14"></i>
+                        </button>
+                        <input type="number" value="150" step="10">
+                        <span>%</span>
                     </div>
+
                     <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom Out"><i data-lucide="zoom-out" size="14"></i></button>
-                        <div class="zoom-input-box">
-                            <input type="number" value="50" step="10">
-                            <span>%</span>
-                        </div>
+
+                    <div class="zoom-control-wrapper">
+                        <button class="zoom-control-btn" title="Zoom Out">
+                            <i data-lucide="zoom-out" size="14"></i>
+                        </button>
+                        <input type="number" value="50" step="10">
+                        <span>%</span>
                     </div>
+
                     <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Zoom by px/s"><i data-lucide="stretch-horizontal" size="14"></i></button>
-                        <div class="zoom-input-box">
-                            <input type="number" value="100" step="10" style="width: 44px;">
-                            <span>px/s</span>
-                        </div>
+
+                    <div class="zoom-control-wrapper">
+                        <button class="zoom-control-btn" title="Zoom by px/s">
+                            <i data-lucide="stretch-horizontal" size="14"></i>
+                        </button>
+                        <input type="number" value="100" step="10" style="width: 44px;">
+                        <span>px/s</span>
+                    </div>
+
+                    <div style="flex: 1;"></div>
+
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="btn-toolbar" title="Apply AI Models">
+                            <i data-lucide="cpu" size="14"></i>
+                            <span>AI models</span>
+                        </button>
+                        <button class="btn-toolbar" title="Calculate Acoustic Indices">
+                            <i data-lucide="bar-chart-2" size="14"></i>
+                            <span>Acoustic indices</span>
+                        </button>
+
+                        <button class="btn-toolbar" title="Perform Acoustic Analysis">
+                            <i data-lucide="audio-lines" size="14"></i>
+                            <span>Acoustic analysis</span>
+                        </button>
                     </div>
                 </div>
 
@@ -392,10 +432,6 @@
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-muted);">Sample Rate</span>
                     <span style="font-weight: 500;">48000 Hz</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-muted);">Channels</span>
-                    <span style="font-weight: 500;" id="info-channels">2 (Stereo)</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-muted);">Format</span>
@@ -525,29 +561,6 @@
         if (siteEl) siteEl.textContent = `${siteName} / SM4`;
     }
 
-    // ================== 1.6 动态渲染声道控制器 ==================
-    function renderChannelControl(isStereo) {
-        const container = document.getElementById('channel-control-container');
-        const infoChannels = document.getElementById('info-channels');
-        if (!container) return;
-
-        if (isStereo) {
-            // 双声道：保留可点击的胶囊切换样式
-            container.innerHTML = `
-            <div style="display: flex; align-items: center; background: var(--bg-capsule); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1); border-radius: 60px; padding: 4px; height: 32px; box-sizing: border-box; gap: 2px;" title="Stereo Channel Selection">
-                <button class="channel-btn active" onclick="this.parentNode.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">L</button>
-                <button class="channel-btn" onclick="this.parentNode.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">R</button>
-            </div>`;
-            if (infoChannels) infoChannels.textContent = "2 (Stereo)";
-        } else {
-            // 单声道：恢复胶囊底座，并使用 active 样式的高亮按钮
-            container.innerHTML = `
-            <div style="display: flex; align-items: center; background: var(--bg-capsule); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1); border-radius: 60px; padding: 4px; height: 32px; box-sizing: border-box;" title="Mono Audio">
-                <button class="channel-btn active" style="cursor: default; pointer-events: none;">Mono</button>
-            </div>`;
-            if (infoChannels) infoChannels.textContent = "1 (Mono)";
-        }
-    }
     // ================== 修改原有的 selectAudio ==================
     function selectAudio(id) {
         currentAudio = currentAudios.find(a => a.id === id);
@@ -557,10 +570,6 @@
         const numId = parseInt(id.replace(/\D/g, '') || 0);
         const assignedSite = siteNames[numId % siteNames.length];
         applySiteTheme(assignedSite);
-
-        // 【新增】每次切换音频，随机决定是双声道(Stereo)还是单声道(Mono)
-        const isStereo = Math.random() > 0.5;
-        renderChannelControl(isStereo);
 
         closeAllMenus();
         renderAudios();
@@ -1130,9 +1139,6 @@
         renderCrudTable();
 
         applySiteTheme(siteNames[0]);
-
-        // 【新增】页面首次加载时，也随机初始化一个声道状态
-        renderChannelControl(Math.random() > 0.5);
 
         lucide.createIcons();
     });
