@@ -39,7 +39,6 @@
             border-radius: 50px;
             padding: 0 14px;
             height: 100%;
-            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -206,9 +205,7 @@
 
                 <div class="player-toolbar-top" style="display: flex; gap: 8px; align-items: center;">
 
-                    <button class="btn-toolbar" style="padding: 4px 8px; color: var(--brand);" title="Select Tool"><i data-lucide="mouse-pointer-2" size="14"></i></button>
-                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Draw Bounding Box"><i data-lucide="crosshair" size="14"></i></button>
-
+                    <div id="channel-control-container" style="display: flex; align-items: center;"></div>
                     <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
 
                     <button class="btn-toolbar" disabled style="padding: 4px 8px;" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
@@ -249,6 +246,15 @@
 
                     <div style="flex: 1;"></div>
 
+                    <div style="display: flex; align-items: center; gap: 8px;" title="Playback Speed">
+                        <input type="range" min="0.05" max="1" step="0.01" value="1"
+                               style="width: 200px; height: 8px; cursor: pointer; border-radius: 0; --p: 100%; border: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent; margin: 6px 0;"
+                               oninput="this.style.setProperty('--p', ((this.value - this.min) / (this.max - this.min) * 100) + '%'); this.nextElementSibling.innerText = Number(this.value).toFixed(2) + 'x';">
+                        <span style="font-weight: 600; color: var(--text-secondary); width: 44px; text-align: right;">1.00x</span>
+                    </div>
+
+                    <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
+
                     <div style="display: flex; gap: 4px; align-items: center;">
                         <button class="btn-toolbar" style="padding: 4px 8px;" title="Auto-advance to next segment" onclick="this.classList.toggle('active')">
                             <i data-lucide="arrow-right-from-line" size="14"></i>
@@ -257,20 +263,6 @@
                             <i data-lucide="filter" size="14"></i>
                         </button>
                     </div>
-
-                    <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
-
-                    <div style="display: flex; align-items: center; gap: 8px;" title="Playback Speed">
-                        <i data-lucide="gauge" size="14" style="color: var(--text-secondary);"></i>
-                        <input type="range" min="0.05" max="1" step="0.01" value="1"
-                               style="width: 140px; height: 8px; cursor: pointer; border-radius: 10px; --p: 100%; border: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent; margin: 6px 0;"
-                               oninput="this.style.setProperty('--p', ((this.value - this.min) / (this.max - this.min) * 100) + '%'); this.nextElementSibling.innerText = Number(this.value).toFixed(2) + 'x';">
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); width: 44px; text-align: right;">1.00x</span>
-                    </div>
-
-                    <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
-
-                    <div id="channel-control-container" style="display: flex; align-items: center;"></div>
 
                 </div>
             </div>
@@ -834,9 +826,9 @@
                 const maxVal = (currentFilterVal && currentFilterVal.max) ? currentFilterVal.max : "";
                 filterInputHtml = `
                 <div style="display:flex; gap:4px; align-items:center;">
-                    <input type="number" class="th-filter-input" placeholder="Min" style="padding:0 4px; font-size:0.75rem;" value="${minVal}" oninput="handleRangeFilter('${col.key}', 'min', this.value)" onclick="event.stopPropagation()">
+                    <input type="number" class="th-filter-input" placeholder="Min" style="padding:0 4px;" value="${minVal}" oninput="handleRangeFilter('${col.key}', 'min', this.value)" onclick="event.stopPropagation()">
                     <span style="color:var(--text-muted);">-</span>
-                    <input type="number" class="th-filter-input" placeholder="Max" style="padding:0 4px; font-size:0.75rem;" value="${maxVal}" oninput="handleRangeFilter('${col.key}', 'max', this.value)" onclick="event.stopPropagation()">
+                    <input type="number" class="th-filter-input" placeholder="Max" style="padding:0 4px;" value="${maxVal}" oninput="handleRangeFilter('${col.key}', 'max', this.value)" onclick="event.stopPropagation()">
                 </div>`;
             } else if (col.type === 'boolean') {
                 const valStr = currentFilterVal || "all";
