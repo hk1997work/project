@@ -8,10 +8,19 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="project.css" rel="stylesheet">
     <style>
+        /* 统一频谱图上下功能栏的基础字体大小，覆盖默认继承 */
+        .player-toolbar-top,
+        .player-toolbar-bottom {
+            font-size: 0.85rem;
+        }
+
+        /* 强制覆盖项目默认按键的 0.8rem 字号，使其和输入框完全一致 */
         .player-toolbar-top .btn-toolbar,
         .player-toolbar-bottom .btn-toolbar {
             border-color: transparent;
             box-shadow: none;
+            font-size: 0.85rem;
+            font-family: inherit; /* 防止浏览器默认的 button 字体差异 */
         }
 
         /* 新增：工具栏按钮被选中时的状态 */
@@ -134,7 +143,7 @@
             background: transparent;
             border: none;
             outline: none;
-            font-size: 0.85rem;
+            font-size: inherit; /* 统一继承基准字号 */
             font-weight: 600;
             color: var(--text-secondary);
             text-align: right;
@@ -145,7 +154,7 @@
 
         /* 内部的单位文字 */
         .zoom-control-wrapper span {
-            font-size: 0.85rem;
+            font-size: inherit; /* 统一继承基准字号 */
             font-weight: 600;
             color: var(--text-secondary);
             margin: 0 12px 0 2px; /* 右侧胶囊留白 */
