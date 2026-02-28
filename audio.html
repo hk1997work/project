@@ -184,23 +184,27 @@
                 <div class="player-toolbar-bottom" style="display: flex; gap: 12px; align-items: center; margin-top: 4px;">
 
                     <div style="display: flex; gap: 4px;">
-                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Play"><i data-lucide="play" size="14"></i></button>
-                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Stop"><i data-lucide="square" size="14"></i></button>
+                        <button class="btn-toolbar" id="btn-play-toggle" style="padding: 4px 8px;" title="Play" onclick="togglePlayState()">
+                            <i data-lucide="play" size="14"></i>
+                        </button>
+                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Stop" onclick="stopPlayState()">
+                            <i data-lucide="square" size="14"></i>
+                        </button>
                     </div>
 
                     <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
 
-                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Auto-advance to next segment" onclick="this.classList.toggle('active')"><i data-lucide="repeat" size="14"></i></button>
+                    <button class="btn-toolbar" style="padding: 4px 8px;" title="Auto-advance to next segment" onclick="this.classList.toggle('active')"><i data-lucide="arrow-right-from-line" size="14"></i></button>
 
                     <button class="btn-toolbar" style="padding: 4px 8px;" title="Toggle Full Band / Filtered Frequency" onclick="this.classList.toggle('active')"><i data-lucide="filter" size="14"></i></button>
 
                     <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
 
-                    <div style="display: flex; align-items: center; gap: 10px; background: var(--bg-capsule); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1); border-radius: 60px; padding: 0 16px; height: 32px; box-sizing: border-box;" title="Playback Speed">
+                    <div style="display: flex; align-items: center; gap: 8px;" title="Playback Speed">
                         <i data-lucide="gauge" size="14" style="color: var(--text-muted);"></i>
 
-                        <input type="range" min="0.05" max="1" step="0.05" value="1"
-                               style="width: 120px; height: 8px; cursor: pointer; accent-color: var(--brand); border-radius: 8px; background: var(--bg-surface); border: none; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); -webkit-tap-highlight-color: transparent;"
+                        <input type="range" min="0.05" max="1" step="0.01" value="1"
+                               style="width: 140px; height: 8px; cursor: pointer; accent-color: var(--brand); border-radius: 4px; background: var(--border-color); border: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent;"
                                oninput="this.nextElementSibling.innerText = Number(this.value).toFixed(2) + 'x'">
 
                         <span style="font-size: 0.75rem; color: var(--text-main); font-family: monospace; font-weight: 600; width: 38px; text-align: right;">1.00x</span>
@@ -208,13 +212,7 @@
 
                     <div style="flex: 1;"></div>
 
-                    <div style="display: flex; align-items: center; background: var(--bg-capsule); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1); border-radius: 60px; padding: 4px; height: 32px; box-sizing: border-box; gap: 2px;" title="Channel Selection">
-                        <button class="channel-btn active" onclick="this.parentNode.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">L</button>
-
-                        <button class="channel-btn" onclick="this.parentNode.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">R</button>
-
-                        <button class="channel-btn" onclick="this.parentNode.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">Mono</button>
-                    </div>
+                    <div id="channel-control-container" style="display: flex; align-items: center;"></div>
 
                 </div>
             </div>
@@ -284,7 +282,7 @@
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-muted);">Channels</span>
-                    <span style="font-weight: 500;">2 (Stereo)</span>
+                    <span style="font-weight: 500;" id="info-channels">2 (Stereo)</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-muted);">Format</span>
@@ -414,6 +412,30 @@
         if (siteEl) siteEl.textContent = `${siteName} / SM4`;
     }
 
+    // ================== 1.6 动态渲染声道控制器 ==================
+    function renderChannelControl(isStereo) {
+        const container = document.getElementById('channel-control-container');
+        const infoChannels = document.getElementById('info-channels');
+        if (!container) return;
+
+        if (isStereo) {
+            // 双声道：保留可点击的胶囊切换样式
+            container.innerHTML = `
+            <div style="display: flex; align-items: center; background: var(--bg-capsule); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.04), inset -1px -1px 3px rgba(255, 255, 255, 0.1); border-radius: 60px; padding: 4px; height: 32px; box-sizing: border-box; gap: 2px;" title="Stereo Channel Selection">
+                <button class="channel-btn active" onclick="this.parentNode.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">L</button>
+                <button class="channel-btn" onclick="this.parentNode.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">R</button>
+            </div>`;
+            if (infoChannels) infoChannels.textContent = "2 (Stereo)";
+        } else {
+            // 单声道：去掉了等宽字体，颜色使用与 L/R 未选中时一致的 var(--text-secondary)
+            container.innerHTML = `
+            <div style="display: flex; align-items: center; padding: 0 8px; height: 32px; box-sizing: border-box;" title="Mono Audio">
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Mono</span>
+            </div>`;
+            if (infoChannels) infoChannels.textContent = "1 (Mono)";
+        }
+    }
+
     // ================== 修改原有的 selectAudio ==================
     function selectAudio(id) {
         currentAudio = currentAudios.find(a => a.id === id);
@@ -424,10 +446,48 @@
         const assignedSite = siteNames[numId % siteNames.length];
         applySiteTheme(assignedSite);
 
+        // 【新增】每次切换音频，随机决定是双声道(Stereo)还是单声道(Mono)
+        const isStereo = Math.random() > 0.5;
+        renderChannelControl(isStereo);
+
         closeAllMenus();
         renderAudios();
     }
+    // ================== 1.7 播放/暂停 图标切换逻辑 ==================
+    let isAudioPlaying = false;
 
+    function togglePlayState() {
+        isAudioPlaying = !isAudioPlaying;
+        const btn = document.getElementById('btn-play-toggle');
+        const icon = btn.querySelector('i');
+
+        if (isAudioPlaying) {
+            // 切换为暂停状态
+            icon.setAttribute('data-lucide', 'pause');
+            btn.setAttribute('title', 'Pause');
+            btn.classList.add('active'); // 增加高亮背景（可选，视觉提示正在播放）
+        } else {
+            // 切换回播放状态
+            icon.setAttribute('data-lucide', 'play');
+            btn.setAttribute('title', 'Play');
+            btn.classList.remove('active');
+        }
+        // 关键：通知 Lucide 重新渲染刚修改过 data-lucide 属性的图标
+        lucide.createIcons();
+    }
+
+    function stopPlayState() {
+        // 点击停止时，强制重置为未播放状态
+        isAudioPlaying = false;
+        const btn = document.getElementById('btn-play-toggle');
+        const icon = btn.querySelector('i');
+
+        icon.setAttribute('data-lucide', 'play');
+        btn.setAttribute('title', 'Play');
+        btn.classList.remove('active');
+
+        lucide.createIcons();
+    }
     function toggleMenu(id) {
         const el = document.getElementById(id);
         const isActive = el.classList.contains('active');
@@ -916,6 +976,10 @@
         renderCrudTable();
 
         applySiteTheme(siteNames[0]);
+
+        // 【新增】页面首次加载时，也随机初始化一个声道状态
+        renderChannelControl(Math.random() > 0.5);
+
         lucide.createIcons();
     });
 </script>
