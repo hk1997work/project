@@ -14,18 +14,14 @@
             box-shadow: none;
         }
 
-        /* 工具栏按钮被选中时的状态：仅改变图标颜色，无背景 */
+        /* 新增：工具栏按钮被选中时的状态 */
         .player-toolbar-bottom .btn-toolbar.active {
-            background: transparent !important;
-            box-shadow: none !important;
+            background: var(--brand) !important;
+            color: white !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
         }
         .player-toolbar-bottom .btn-toolbar.active i {
-            color: var(--brand) !important; /* 普通选中变成主题色 */
-        }
-
-        /* 暂停和停止专属的红色样式 */
-        .player-toolbar-bottom .btn-toolbar.is-red i {
-            color: #ef4444 !important; /* 变成红色 */
+            color: white !important;
         }
 
         /* 声道切换按钮的默认样式 */
@@ -189,7 +185,7 @@
                         <button class="btn-toolbar" id="btn-play-toggle" style="padding: 4px 8px;" title="Play" onclick="togglePlayState()">
                             <i data-lucide="play" size="14"></i>
                         </button>
-                        <button class="btn-toolbar is-red" style="padding: 4px 8px;" title="Stop" onclick="stopPlayState()">
+                        <button class="btn-toolbar" style="padding: 4px 8px;" title="Stop" onclick="stopPlayState()">
                             <i data-lucide="square" size="14"></i>
                         </button>
                     </div>
@@ -485,11 +481,10 @@
         if (!btn) return;
 
         if (isAudioPlaying) {
-            // 1. 切换为暂停图标，并加上红色样式
+            // 1. 切换为暂停图标
             btn.innerHTML = '<i data-lucide="pause" size="14"></i>';
             btn.setAttribute('title', 'Pause');
-            btn.classList.add('is-red');    // 暂停状态变成红色
-            btn.classList.remove('active'); // 确保不跟普通的主题色冲突
+            btn.classList.add('active');
 
             // 2. 启动计时器 (每 1000 毫秒递增 1 秒)
             if (!playTimer) {
@@ -504,10 +499,9 @@
                 }, 1000);
             }
         } else {
-            // 1. 切换回播放图标，移除红色
+            // 1. 切换回播放图标
             btn.innerHTML = '<i data-lucide="play" size="14"></i>';
             btn.setAttribute('title', 'Play');
-            btn.classList.remove('is-red');
             btn.classList.remove('active');
 
             // 2. 暂停计时器，保留当前秒数
@@ -525,10 +519,9 @@
         const btn = document.getElementById('btn-play-toggle');
         if (!btn) return;
 
-        // 1. 重置播放按钮（恢复原本颜色，移除红色）
+        // 1. 重置按钮为播放状态
         btn.innerHTML = '<i data-lucide="play" size="14"></i>';
         btn.setAttribute('title', 'Play');
-        btn.classList.remove('is-red');
         btn.classList.remove('active');
 
         // 2. 清除计时器，并让秒数强制归零
