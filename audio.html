@@ -278,7 +278,13 @@
             <div class="player-section" style="display: flex; flex-direction: column; padding: 12px 16px; border-bottom: 1px solid var(--border-color); gap: 8px; flex-shrink: 0;">
 
                 <div class="player-toolbar-top" style="display: flex; gap: 8px; align-items: center;">
-
+                    <button class="btn-toolbar active" id="btn-toggle-annotations" title="Hide Annotations" onclick="toggleAnnotationsVisibility(this)">
+                        <i data-lucide="eye" size="14"></i>
+                    </button>
+                    <button class="btn-toolbar" id="btn-toggle-channel" onclick="toggleAudioChannel(this)" style="width: 44px; padding: 0;">
+                        <span style="font-weight: 800; font-size: 0.75rem;">L</span>
+                    </button>
+                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
                     <button class="btn-toolbar" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
                     <button class="btn-toolbar" title="Pan Right (Next Time Segment)"><i data-lucide="chevron-right" size="14"></i></button>
 
@@ -583,6 +589,57 @@
 
         closeAllMenus();
         renderAudios();
+    }
+    // ================== 显示/隐藏 Annotations 逻辑 ==================
+    let annotationsVisible = true;
+    function toggleAnnotationsVisibility(btn) {
+        annotationsVisible = !annotationsVisible;
+        const layer = document.getElementById('annotations-layer');
+        if (layer) {
+            // 切换图层的可见性
+            layer.style.display = annotationsVisible ? 'block' : 'none';
+        }
+
+        // 切换按钮的图标和激活状态
+        if (annotationsVisible) {
+            btn.classList.add('active');
+            btn.innerHTML = '<i data-lucide="eye" size="14"></i>';
+            btn.setAttribute('title', 'Hide Annotations');
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = '<i data-lucide="eye-off" size="14"></i>';
+            btn.setAttribute('title', 'Show Annotations');
+        }
+
+        // 重新渲染新插入的图标
+        lucide.createIcons();
+    }
+    let currentChannelMode = 0; // 0: L+R (立体声), 1: L (左声道), 2: R (右声道)
+    const channelModes = [
+        { label: 'L', title: 'Left Channel Only' },
+        { label: 'R', title: 'Right Channel Only' }
+    ];
+
+    function toggleAudioChannel(btn) {
+        // 在三种模式之间循环：0 -> 1 -> 2 -> 0
+        currentChannelMode = (currentChannelMode + 1) % channelModes.length;
+        const mode = channelModes[currentChannelMode];
+
+        // 更新按钮上的文本与提示
+        const span = btn.querySelector('span');
+        if (span) span.textContent = mode.label;
+        btn.setAttribute('title', mode.title);
+
+        // 当处于单声道模式时，给按钮加上 active 高亮状态，提醒用户当前非默认状态
+        if (currentChannelMode !== 0) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+
+        // 此处为界面 UI 切换逻辑，如果您后续集成了 Wavesurfer.js 或 Web Audio API，
+        // 可以在这里调用底层音频通道拆分/静音的方法来实现真正的物理声道切换。
+        console.log("Audio channel switched to:", mode.label);
     }
     // ================== 1.7 播放/暂停及时间模拟逻辑 ==================
     let isAudioPlaying = false;
