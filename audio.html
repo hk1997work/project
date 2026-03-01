@@ -29,6 +29,7 @@
             color: white !important;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
         }
+
         .player-toolbar-bottom .btn-toolbar.active i {
             color: white !important;
         }
@@ -61,8 +62,8 @@
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;       /* 从 14px 增大到 20px */
-            height: 20px;      /* 从 14px 增大到 20px */
+            width: 20px; /* 从 14px 增大到 20px */
+            height: 20px; /* 从 14px 增大到 20px */
             background: var(--brand);
             border: 3px solid #fff;
             border-radius: 50%;
@@ -83,6 +84,7 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
         }
+
         /* 连体缩放控制组：基础外壳，采用和 btn-toolbar 一致的底板 */
         .zoom-control-wrapper {
             display: flex;
@@ -94,6 +96,74 @@
             box-sizing: border-box;
             transition: all 0.2s;
             /* 移除了 overflow: hidden，以允许内部按键的阴影向外扩散发光 */
+        }
+
+        /* --- 声道切换胶囊样式 --- */
+        .channel-capsule {
+            display: flex;
+            align-items: center;
+            background: var(--bg-capsule);
+            border-radius: 50px;
+            padding: 2px;
+            position: relative;
+            height: 32px;
+            box-sizing: border-box;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .channel-capsule:hover {
+            background: var(--bg-surface);
+            border-color: var(--border-color);
+        }
+
+        /* 滑动的背景药丸 */
+        .channel-capsule-pill {
+            position: absolute;
+            top: 2px;
+            bottom: 2px;
+            left: 0;
+            background: var(--brand);
+            border-radius: 50px;
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), width 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: 1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 内部文字按键 */
+        .channel-capsule-btn {
+            position: relative;
+            z-index: 2;
+            background: transparent;
+            border: none;
+            height: 100%;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+            font-family: inherit;
+            outline: none;
+            min-width: 32px;
+        }
+
+        /* 激活状态文字变白 */
+        .channel-capsule-btn.active {
+            color: white;
+        }
+
+        /* Mono 单声道模式下不可点击交互 */
+        .channel-capsule.mono-mode .channel-capsule-btn {
+            cursor: default;
+        }
+
+        .channel-capsule.mono-mode:hover {
+            background: var(--bg-capsule);
+            border-color: transparent;
         }
 
         /* 1. 整体悬停时：显示微弱的胶囊底色（表示这是一个可交互的输入区域） */
@@ -132,7 +202,7 @@
 
         /* 鼠标按下的瞬间：增加微弱内阴影增强点击感 */
         .zoom-control-btn:active {
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
         }
 
         /* 4. 右侧输入区域 */
@@ -169,6 +239,7 @@
             -webkit-appearance: none;
             margin: 0;
         }
+
         .zoom-control-wrapper input[type="number"] {
             -moz-appearance: textfield;
         }
@@ -278,12 +349,11 @@
             <div class="player-section" style="display: flex; flex-direction: column; padding: 12px 16px; border-bottom: 1px solid var(--border-color); gap: 8px; flex-shrink: 0;">
 
                 <div class="player-toolbar-top" style="display: flex; gap: 8px; align-items: center;">
-                    <button class="btn-toolbar active" id="btn-toggle-annotations" title="Hide Annotations" onclick="toggleAnnotationsVisibility(this)">
+                    <div id="channel-capsule-container"></div>
+                    <button class="btn-toolbar active" id="btn-toggle-annotations" onclick="toggleAnnotationsVisibility(this)" title="Hide Annotations">
                         <i data-lucide="eye" size="14"></i>
                     </button>
-                    <button class="btn-toolbar" id="btn-toggle-channel" onclick="toggleAudioChannel(this)" style="width: 44px; padding: 0;">
-                        <span style="font-weight: 800; font-size: 0.75rem;">L</span>
-                    </button>
+
                     <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
                     <button class="btn-toolbar" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
                     <button class="btn-toolbar" title="Pan Right (Next Time Segment)"><i data-lucide="chevron-right" size="14"></i></button>
@@ -294,7 +364,7 @@
                         <button class="zoom-control-btn" title="Zoom In Proportionally">
                             <i data-lucide="zoom-in" size="14"></i>
                         </button>
-                        <input type="number" value="50" max="100" step="10" oninput="if(this.value > 100) this.value = 100;">
+                        <input max="100" oninput="if(this.value > 100) this.value = 100;" step="10" type="number" value="50">
                         <span>%</span>
                     </div>
 
@@ -304,7 +374,7 @@
                         <button class="zoom-control-btn" title="Zoom Out">
                             <i data-lucide="zoom-out" size="14"></i>
                         </button>
-                        <input type="number" value="50" max="100" step="10" oninput="if(this.value > 100) this.value = 100;">
+                        <input max="100" oninput="if(this.value > 100) this.value = 100;" step="10" type="number" value="50">
                         <span>%</span>
                     </div>
 
@@ -314,7 +384,7 @@
                         <button class="zoom-control-btn" title="Zoom by px/s">
                             <i data-lucide="stretch-horizontal" size="14"></i>
                         </button>
-                        <input type="number" value="15" step="5" style="width: 44px;">
+                        <input step="5" style="width: 44px;" type="number" value="15">
                         <span>px/s</span>
                     </div>
 
@@ -339,7 +409,7 @@
 
                 <div class="player-middle" style="display: flex; gap: 8px; height: 400px;">
 
-                    <div class="spectrogram-viewport" id="spectrogram-viewport" style="flex: 1; height: 100%; background-color: #1e1e1e; background-image: url('https://ecosound-web.de/ecosound_web/tmp/47877828/10005255_f7644c9a13d31622281088363recording_f1d6c506_897f_4c5e_8ca9_fe2ab93fef312421328162956812056_1-22050_0-59.8954__1.png'); background-size: 100% 100%; background-repeat: no-repeat; border-radius: 4px; position: relative; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                    <div class="spectrogram-viewport" id="spectrogram-viewport" style="flex: 1; height: 100%; background-color: #1e1e1e; background-image: url('https://ecosound-web.de/ecosound_web/tmp/1510953165/IngerophrynusparvusLS_33576_1-5512.5_0-5.6566__1.png'); background-size: 100% 100%; background-repeat: no-repeat; border-radius: 4px; position: relative; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
 
                         <div id="annotations-layer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 5;"></div>
 
@@ -349,10 +419,10 @@
                 <div class="player-toolbar-bottom" style="display: flex; gap: 12px; align-items: center; margin-top: 4px;">
 
                     <div style="display: flex; gap: 4px; align-items: center;">
-                        <button class="btn-toolbar" id="btn-play-toggle" style="padding: 4px 8px;" title="Play" onclick="togglePlayState()">
+                        <button class="btn-toolbar" id="btn-play-toggle" onclick="togglePlayState()" style="padding: 4px 8px;" title="Play">
                             <i data-lucide="play" size="14"></i>
                         </button>
-                        <button class="btn-toolbar danger" style="padding: 4px 8px;" title="Stop" onclick="stopPlayState()">
+                        <button class="btn-toolbar danger" onclick="stopPlayState()" style="padding: 4px 8px;" title="Stop">
                             <i data-lucide="square" size="14"></i>
                         </button>
                     </div>
@@ -366,19 +436,19 @@
                     <div style="flex: 1;"></div>
 
                     <div style="display: flex; align-items: center; gap: 8px;" title="Playback Speed">
-                        <input type="range" min="0.05" max="1" step="0.01" value="1"
-                               style="width: 200px; height: 8px; cursor: pointer; border-radius: 0; --p: 100%; border: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent; margin: 6px 0;"
-                               oninput="this.style.setProperty('--p', ((this.value - this.min) / (this.max - this.min) * 100) + '%'); this.nextElementSibling.innerText = Number(this.value).toFixed(2) + 'x';">
+                        <input max="1" min="0.05" oninput="this.style.setProperty('--p', ((this.value - this.min) / (this.max - this.min) * 100) + '%'); this.nextElementSibling.innerText = Number(this.value).toFixed(2) + 'x';" step="0.01" style="width: 200px; height: 8px; cursor: pointer; border-radius: 0; --p: 100%; border: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent; margin: 6px 0;"
+                               type="range"
+                               value="1">
                         <span style="font-weight: 600; color: var(--text-secondary); width: 44px; text-align: right;">1.00x</span>
                     </div>
 
                     <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
 
                     <div style="display: flex; gap: 4px; align-items: center;">
-                        <button class="btn-toolbar" title="Auto-advance to next segment" onclick="this.classList.toggle('active')">
+                        <button class="btn-toolbar" onclick="this.classList.toggle('active')" title="Auto-advance to next segment">
                             <i data-lucide="arrow-right-from-line" size="14"></i>
                         </button>
-                        <button class="btn-toolbar" title="Toggle Full Band / Filtered Frequency" onclick="this.classList.toggle('active')">
+                        <button class="btn-toolbar" onclick="this.classList.toggle('active')" title="Toggle Full Band / Filtered Frequency">
                             <i data-lucide="filter" size="14"></i>
                         </button>
                     </div>
@@ -390,25 +460,25 @@
 
                 <div class="table-side-toolbar" style="display: flex; flex-direction: column; gap: 8px; padding: 16px 8px; border-right: 1px solid var(--border-color); background: var(--bg-body); flex-shrink: 0; align-items: center;">
 
-                    <button class="btn-toolbar" onclick="resetFilters()" title="Reset Filters" style="padding: 8px; justify-content: center;">
+                    <button class="btn-toolbar" onclick="resetFilters()" style="padding: 8px; justify-content: center;" title="Reset Filters">
                         <i data-lucide="rotate-ccw" size="16"></i>
                     </button>
 
                     <div style="width: 24px; height: 1px; background: var(--border-color); margin: 6px 0; border-radius: 1px; opacity: 0.8;"></div>
 
                     <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-                        <button class="btn-toolbar" disabled id="btn-assign" title="Assign Task" style="padding: 8px; justify-content: center;">
+                        <button class="btn-toolbar" disabled id="btn-assign" style="padding: 8px; justify-content: center;" title="Assign Task">
                             <i data-lucide="clipboard-list" size="16"></i>
                         </button>
 
-                        <button class="btn-toolbar danger" disabled id="btn-delete" title="Delete Selected" style="padding: 8px; justify-content: center;">
+                        <button class="btn-toolbar danger" disabled id="btn-delete" style="padding: 8px; justify-content: center;" title="Delete Selected">
                             <i data-lucide="trash-2" size="16"></i>
                         </button>
                     </div>
 
                     <div style="flex: 1;"></div>
 
-                    <button class="btn-toolbar" id="btn-export-csv" title="Export CSV" style="padding: 8px; justify-content: center;">
+                    <button class="btn-toolbar" id="btn-export-csv" style="padding: 8px; justify-content: center;" title="Export CSV">
                         <i data-lucide="download" size="16"></i>
                     </button>
 
@@ -431,7 +501,7 @@
             <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted);">File Name</span>
-                    <span style="font-weight: 500; font-family: monospace; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="info-filename" title="REC_c10000_20260000.wav">REC_c10000_...wav</span>
+                    <span id="info-filename" style="font-weight: 500; font-family: monospace; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="REC_c10000_20260000.wav">REC_c10000_...wav</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-muted);">Date</span>
@@ -457,7 +527,7 @@
                     <span style="color: var(--text-muted);">Site / Sensor</span>
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <span id="site-color-dot" style="width: 8px; height: 8px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 4px var(--brand);"></span>
-                        <span style="font-weight: 600; color: var(--brand); transition: color 0.3s;" id="info-site">Site A / SM4</span>
+                        <span id="info-site" style="font-weight: 600; color: var(--brand); transition: color 0.3s;">Site A / SM4</span>
                     </div>
                 </div>
             </div>
@@ -478,7 +548,8 @@
     function generateAudiosForCol(colId) {
         return Array.from({length: 12}, (_, i) => ({
             id: `a${i}`,
-            name: `REC_${colId}_${20260000 + i}.wav`
+            name: `REC_${colId}_${20260000 + i}.wav`,
+            channel_num: Math.random() > 0.5 ? 2 : 1 // 随机单双声道
         }));
     }
 
@@ -557,10 +628,10 @@
     // ================== 1.5 生态站点主题色引擎 ==================
     // 预设四种典型生境的主题色
     const siteThemes = {
-        'Forest (Site A)': { hex: '#10b981', rgb: '16, 185, 129' },  // 翠绿 (森林)
-        'Marine (Site B)': { hex: '#0ea5e9', rgb: '14, 165, 233' },  // 海蓝 (海洋)
-        'Urban (Site C)':  { hex: '#8b5cf6', rgb: '139, 92, 246' },  // 亮紫 (城市)
-        'Desert (Site D)': { hex: '#f59e0b', rgb: '245, 158, 11' }   // 琥珀 (荒漠)
+        'Forest (Site A)': {hex: '#10b981', rgb: '16, 185, 129'},  // 翠绿 (森林)
+        'Marine (Site B)': {hex: '#0ea5e9', rgb: '14, 165, 233'},  // 海蓝 (海洋)
+        'Urban (Site C)': {hex: '#8b5cf6', rgb: '139, 92, 246'},  // 亮紫 (城市)
+        'Desert (Site D)': {hex: '#f59e0b', rgb: '245, 158, 11'}   // 琥珀 (荒漠)
     };
     const siteNames = Object.keys(siteThemes);
 
@@ -586,12 +657,15 @@
         const numId = parseInt(id.replace(/\D/g, '') || 0);
         const assignedSite = siteNames[numId % siteNames.length];
         applySiteTheme(assignedSite);
+        renderChannelCapsule(currentAudio.channel_num);
 
         closeAllMenus();
         renderAudios();
     }
+
     // ================== 显示/隐藏 Annotations 逻辑 ==================
     let annotationsVisible = true;
+
     function toggleAnnotationsVisibility(btn) {
         annotationsVisible = !annotationsVisible;
         const layer = document.getElementById('annotations-layer');
@@ -614,33 +688,53 @@
         // 重新渲染新插入的图标
         lucide.createIcons();
     }
-    let currentChannelMode = 0; // 0: L+R (立体声), 1: L (左声道), 2: R (右声道)
-    const channelModes = [
-        { label: 'L', title: 'Left Channel Only' },
-        { label: 'R', title: 'Right Channel Only' }
-    ];
 
-    function toggleAudioChannel(btn) {
-        // 在三种模式之间循环：0 -> 1 -> 2 -> 0
-        currentChannelMode = (currentChannelMode + 1) % channelModes.length;
-        const mode = channelModes[currentChannelMode];
+    // ================== 声道切换(胶囊滑动)逻辑 ==================
+    // 根据声道数动态渲染胶囊
+    function renderChannelCapsule(channelNum) {
+        const container = document.getElementById('channel-capsule-container');
+        if (!container) return;
 
-        // 更新按钮上的文本与提示
-        const span = btn.querySelector('span');
-        if (span) span.textContent = mode.label;
-        btn.setAttribute('title', mode.title);
-
-        // 当处于单声道模式时，给按钮加上 active 高亮状态，提醒用户当前非默认状态
-        if (currentChannelMode !== 0) {
-            btn.classList.add('active');
+        if (channelNum === 1) {
+            // 单声道 (Mono)
+            container.innerHTML = `
+                <div class="channel-capsule mono-mode" title="Mono Audio">
+                    <div class="channel-capsule-pill" style="transform: translateX(2px); width: calc(100% - 4px);"></div>
+                    <button class="channel-capsule-btn active">Mono</button>
+                </div>
+            `;
         } else {
-            btn.classList.remove('active');
+            // 双声道 (Stereo - L/R)
+            container.innerHTML = `
+                <div class="channel-capsule">
+                    <div class="channel-capsule-pill" style="transform: translateX(2px); width: 32px;"></div>
+                    <button class="channel-capsule-btn active" style="width: 32px; padding: 0;" onclick="setAudioChannel('L', this)" title="Left Channel">L</button>
+                    <button class="channel-capsule-btn" style="width: 32px; padding: 0;" onclick="setAudioChannel('R', this)" title="Right Channel">R</button>
+                </div>
+            `;
         }
-
-        // 此处为界面 UI 切换逻辑，如果您后续集成了 Wavesurfer.js 或 Web Audio API，
-        // 可以在这里调用底层音频通道拆分/静音的方法来实现真正的物理声道切换。
-        console.log("Audio channel switched to:", mode.label);
     }
+
+    // 处理 L / R 按钮点击与动画
+    function setAudioChannel(mode, btn) {
+        if (btn.classList.contains('active')) return; // 已经是激活状态，不触发
+
+        const container = btn.closest('.channel-capsule');
+
+        // 1. 移除高亮
+        container.querySelectorAll('.channel-capsule-btn').forEach(b => b.classList.remove('active'));
+        // 2. 赋予当前点击按钮高亮
+        btn.classList.add('active');
+
+        // 3. 移动背景药丸
+        const pill = container.querySelector('.channel-capsule-pill');
+        pill.style.width = btn.offsetWidth + 'px';
+        pill.style.transform = `translateX(${btn.offsetLeft}px)`;
+
+        // 实际应用中，在这里调用频谱图或音频库 (如 Wavesurfer.js) 切换展示的物理轨道
+        console.log("Audio channel switched to view:", mode);
+    }
+
     // ================== 1.7 播放/暂停及时间模拟逻辑 ==================
     let isAudioPlaying = false;
     let playTimer = null;           // 计时器
@@ -1172,15 +1266,15 @@
 
     // 处理图上标注框的点击事件，与下方的表格发生联动
     function handleBoxClick(id, event) {
-        if(event) event.stopPropagation();
+        if (event) event.stopPropagation();
 
         // 找到表格中对应的行并模拟点击该行的复选框，触发已有的选中/解除选中逻辑
         const tr = document.querySelector(`tr[data-id="${id}"]`);
-        if(tr) {
+        if (tr) {
             const checkbox = tr.querySelector('.crud-checkbox');
-            if(checkbox) checkbox.click();
+            if (checkbox) checkbox.click();
             // 自动滚动让这行居中显示
-            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tr.scrollIntoView({behavior: 'smooth', block: 'center'});
 
             // 添加一个临时的闪烁动画提示
             tr.style.backgroundColor = 'var(--bg-hover)';
@@ -1206,7 +1300,7 @@
         renderCrudTable();
 
         applySiteTheme(siteNames[0]);
-
+        renderChannelCapsule(currentAudio.channel_num);
         lucide.createIcons();
     });
 </script>
