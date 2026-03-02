@@ -4878,18 +4878,18 @@ function openAiModelsModal() {
     html += `
     <div class="form-group" style="margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
         <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:8px;">
-            <input type="checkbox" id="ai-merge-tags" onchange="toggleAiMergeOptions(this)" style="width:16px; height:16px; accent-color:var(--brand);">
-            <span style="font-size:0.9rem; color:var(--text-main); font-weight:600;">Merge resulting conspecific tags</span>
+            <input type="checkbox" id="ai-merge-annotations" onchange="toggleAiMergeOptions(this)" style="width:16px; height:16px; accent-color:var(--brand);">
+            <span style="font-size:0.9rem; color:var(--text-main); font-weight:600;">Merge resulting conspecific annotations</span>
         </label>
         
         <div id="ai-merge-options" style="display:none; margin-left: 26px; padding: 12px; background: var(--bg-capsule); border-left: 3px solid var(--brand); border-radius: 0 6px 6px 0;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                <span style="font-size:0.85rem; color:var(--text-main);">Duration between separate tags, in seconds (default: 0)</span>
+                <span style="font-size:0.85rem; color:var(--text-main);">Duration between separate annotations, in seconds (default: 0)</span>
                 <input type="number" id="ai-merge-duration" class="form-input" style="width:80px; height:24px; font-size:0.8rem; padding: 0 4px;" value="0" min="0">
             </div>
             <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                 <input type="checkbox" id="ai-keep-merged" style="width:14px; height:14px; accent-color:var(--brand);">
-                <span style="font-size:0.85rem; color:var(--text-main);">Keep only merged and separate tags</span>
+                <span style="font-size:0.85rem; color:var(--text-main);">Keep only merged and separate annotations</span>
             </label>
         </div>
     </div>
