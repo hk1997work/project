@@ -57,11 +57,6 @@
             /* 关键修改：移除 overflow: hidden，允许大尺寸圆点超出轨道边界显示 */
         }
 
-        /* 移除悬停时的背景变化 */
-        input[type="range"]:hover {
-            background: linear-gradient(to right, var(--brand) 0%, var(--brand) var(--p, 100%), var(--border-color) var(--p, 100%), var(--border-color) 100%) !important;
-        }
-
         /* 自定义滑块“点”：显著增大尺寸并增强投影 */
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -180,16 +175,6 @@
             user-select: none;
         }
 
-        /* 隐藏数字输入框自带的加减箭头 */
-        .zoom-control-wrapper input[type="number"]::-webkit-inner-spin-button,
-        .zoom-control-wrapper input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .zoom-control-wrapper input[type="number"] {
-            -moz-appearance: textfield;
-        }
         /* --- 自定义 FFT 下拉框悬浮菜单样式 --- */
         .fft-dropdown-wrapper {
             position: relative;
@@ -232,6 +217,16 @@
             background: var(--brand-tint);
             color: var(--brand);
         }
+        /* 用于 JS 触发的表格行双向悬停同步高亮 (增强版) */
+        .crud-table tr.hover-sync:not(.selected) td {
+            background: var(--brand-tint) !important; /* 使用明显的品牌色微亮背景 */
+            transition: background 0.1s;
+        }
+
+        /* 悬停时在最左侧加一条显眼的品牌色边框线 */
+        .crud-table tr.hover-sync:not(.selected) td:first-child {
+            box-shadow: inset 4px 0 0 var(--brand) !important;
+        }
     </style>
     <script src="data.js"></script>
 </head>
@@ -256,7 +251,7 @@
                         <div class="dropdown-search-box">
                             <div class="search-input-wrapper">
                                 <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchProject(this.value)" placeholder="Search Project..." type="text">
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderProjects(this.value)" placeholder="Search Project..." type="text">
                             </div>
                         </div>
                         <div class="dropdown-list-scroll" id="project-list-container"></div>
@@ -274,7 +269,7 @@
                         <div class="dropdown-search-box">
                             <div class="search-input-wrapper">
                                 <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchCollection(this.value)" placeholder="Search Collection..." type="text">
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderCollections(this.value)" placeholder="Search Collection..." type="text">
                             </div>
                         </div>
                         <div class="dropdown-list-scroll" id="collection-list-container"></div>
@@ -292,7 +287,7 @@
                         <div class="dropdown-search-box">
                             <div class="search-input-wrapper">
                                 <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchAudio(this.value)" placeholder="Search Audio..." type="text">
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderAudios(this.value)" placeholder="Search Audio..." type="text">
                             </div>
                         </div>
                         <div class="dropdown-list-scroll" id="audio-list-container"></div>
@@ -495,7 +490,7 @@
 
         <div class="info-section" style="width: 360px; padding: 16px; display: flex; flex-direction: column; gap: 16px; background: var(--bg-body); flex-shrink: 0; overflow-y: auto;">
             <div style="font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="info" size="16"></i> Recording Info
+                <i data-lucide="info" size="16"></i> Auido Info
             </div>
             <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -852,7 +847,6 @@
     const annotationSchema = [
         {key: "id", label: "ID", type: "number"},
         {key: "uuid", label: "UUID", type: "text"},
-        {key: "media_name", label: "Media Name", type: "text", filterType: 'select'},
         {key: "min_x", label: "Min X", type: "number", filterType: 'range'},
         {key: "max_x", label: "Max X", type: "number", filterType: 'range'},
         {key: "min_y", label: "Min Y", type: "number", filterType: 'range'},
@@ -905,7 +899,6 @@
     });
 
     // ================== 3. 状态引擎与事件监听 ==================
-    let crudSearchQuery = "";
     let crudFilterState = {};
     let sortState = {key: "id", direction: 'asc'};
     let selectedIds = [];
@@ -945,11 +938,6 @@
     }
 
     // ================== 4. 表格交互与联动逻辑 ==================
-    function handleDataSearch(val) {
-        crudSearchQuery = val.toLowerCase();
-        renderCrudTable();
-    }
-
     function handleSort(key) {
         if (sortState.key === key) sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
         else {
@@ -974,10 +962,8 @@
     }
 
     function resetFilters() {
-        crudSearchQuery = "";
         crudFilterState = {};
         sortState = {key: "id", direction: 'asc'};
-        document.getElementById('data-search-input').value = "";
         renderCrudHeader();
         renderCrudTable();
     }
@@ -1134,7 +1120,7 @@
 
     function renderCrudTable() {
         const tbody = document.getElementById('crud-tbody');
-
+        let crudSearchQuery = "";
         let processedData = mockAnnotations.filter(row => {
             const matchesGlobal = !crudSearchQuery || Object.values(row).some(v => String(v).toLowerCase().includes(crudSearchQuery));
             if (!matchesGlobal) return false;
@@ -1177,7 +1163,9 @@
         } else {
             processedData.forEach(row => {
                 const isChecked = selectedIds.includes(row.id);
-                bodyHtml += `<tr data-id="${row.id}" class="${isChecked ? 'selected' : ''}">`;
+                bodyHtml += `<tr data-id="${row.id}" class="${isChecked ? 'selected' : ''}"
+                                 onmouseenter="syncHoverState(${row.id}, true)"
+                                 onmouseleave="syncHoverState(${row.id}, false)">`;
                 bodyHtml += `<td style="text-align:center; border-bottom:1px solid var(--border-color);"><input type="checkbox" class="crud-checkbox" ${isChecked ? 'checked' : ''} onclick="toggleRowSelection(${row.id}, this)"></td>`;
 
                 annotationSchema.forEach(col => {
@@ -1255,7 +1243,7 @@
 
             // 画出标注框 (33 是 20%的十六进制透明度， 66 是 40%)
             // 美化后的科技感标注框 (Neon Glow)
-            html += `<div class="annotation-box" data-id="${anno.id}" style="
+            html += `<div class="annotation-box" data-id="${anno.id}" data-color="${color}" style="
                 position: absolute;
                 left: ${left}%;
                 bottom: ${bottom}%;
@@ -1272,29 +1260,76 @@
                 backdrop-filter: brightness(1.2); /* 微微提亮背后的频谱图 */
             " title="${anno.sound_id} (ID: ${anno.id})"
               onclick="handleBoxClick(${anno.id}, event)"
-              onmouseover="this.style.backgroundColor='${color}4D'; this.style.boxShadow='0 0 10px ${color}80, inset 0 0 8px ${color}80'; this.style.zIndex='10';"
-              onmouseout="this.style.backgroundColor='${color}1A'; this.style.boxShadow='0 0 6px ${color}4D, inset 0 0 4px ${color}4D'; this.style.zIndex='1';">
+              onmouseenter="syncHoverState(${anno.id}, true)"
+              onmouseleave="syncHoverState(${anno.id}, false)">
             </div>`;
         });
 
         layer.innerHTML = html;
     }
 
-    // 处理图上标注框的点击事件，与下方的表格发生联动
+    // 处理图上标注框的点击事件，与下方的表格发生联动（仅高亮定位，不触发勾选）
     function handleBoxClick(id, event) {
         if (event) event.stopPropagation();
 
-        // 找到表格中对应的行并模拟点击该行的复选框，触发已有的选中/解除选中逻辑
+        // 1. 清除之前所有因点击标注而产生的临时高亮背景色
+        document.querySelectorAll('#crud-tbody tr').forEach(row => {
+            // 只要不是被正式勾选（selected）的行，都恢复默认背景
+            if (!row.classList.contains('selected')) {
+                row.style.backgroundColor = '';
+            }
+        });
+
+        // 2. 找到表格中对应的当前行
         const tr = document.querySelector(`tr[data-id="${id}"]`);
         if (tr) {
-            const checkbox = tr.querySelector('.crud-checkbox');
-            if (checkbox) checkbox.click();
             // 自动滚动让这行居中显示
             tr.scrollIntoView({behavior: 'smooth', block: 'center'});
 
-            // 添加一个临时的闪烁动画提示
-            tr.style.backgroundColor = 'var(--bg-hover)';
-            setTimeout(() => tr.style.backgroundColor = '', 500);
+            // 3. 仅改变背景色实现“高亮”视觉，完全不操作 checkbox 和 selectedIds
+            if (!tr.classList.contains('selected')) {
+                // 使用主题色作为高亮背景，它会一直保持高亮，直到你点击下一个标注
+                tr.style.backgroundColor = 'var(--brand-tint)';
+            }
+
+            // （可选）如果你希望高亮闪烁一下就自动消失，可以取消下面代码的注释：
+            // setTimeout(() => {
+            //     if (!tr.classList.contains('selected')) {
+            //         tr.style.backgroundColor = '';
+            //     }
+            // }, 1500);
+        }
+    }
+    // ================== 双向悬停联动逻辑 ==================
+    function syncHoverState(id, isHovering) {
+        // 1. 同步表格行的高亮
+        const tr = document.querySelector(`tr[data-id="${id}"]`);
+        if (tr) {
+            if (isHovering) {
+                tr.classList.add('hover-sync');
+            } else {
+                tr.classList.remove('hover-sync');
+            }
+        }
+
+        // 2. 同步频谱图标注框的高亮发光 (增强版)
+        const box = document.querySelector(`.annotation-box[data-id="${id}"]`);
+        if (box) {
+            // 从 DOM 中读取该框独有的配色
+            const color = box.getAttribute('data-color');
+            if (isHovering) {
+                // 【增强】大幅提高背景不透明度(80即50%)，加强外发光(15px)，边框变纯白
+                box.style.backgroundColor = `${color}80`;
+                box.style.boxShadow = `0 0 15px ${color}, inset 0 0 10px ${color}`;
+                box.style.borderColor = '#ffffff';
+                box.style.zIndex = '50';
+            } else {
+                // 恢复原状
+                box.style.backgroundColor = `${color}1A`;
+                box.style.boxShadow = `0 0 6px ${color}4D, inset 0 0 4px ${color}4D`;
+                box.style.borderColor = color;
+                box.style.zIndex = '1';
+            }
         }
     }
     // ================== 自定义 FFT 下拉框逻辑 ==================
