@@ -21,6 +21,10 @@
             box-shadow: none;
             font-size: 0.85rem;
             font-family: inherit; /* 防止浏览器默认的 button 字体差异 */
+
+            /* -- 新增以下两行 -- */
+            height: 28px !important; /* 强制统一按键高度 */
+            padding: 0 10px !important; /* 覆盖底部播放等按钮写死的内联 padding */
         }
 
         /* 新增：工具栏按钮被选中时的状态 */
@@ -92,10 +96,9 @@
             background: transparent;
             border: 1px solid transparent; /* 默认无边框 */
             border-radius: 50px;
-            height: 32px;
+            height: 30px; /* <--- 从 32px 改为 28px */
             box-sizing: border-box;
             transition: all 0.2s;
-            /* 移除了 overflow: hidden，以允许内部按键的阴影向外扩散发光 */
         }
 
         /* --- 声道切换胶囊样式 --- */
@@ -106,7 +109,7 @@
             border-radius: 50px;
             padding: 2px;
             position: relative;
-            height: 32px;
+            height: 32px; /* <--- 从 32px 改为 28px */
             box-sizing: border-box;
             border: 1px solid transparent;
             transition: all 0.2s;
@@ -384,7 +387,7 @@
                         <button class="zoom-control-btn" title="Zoom by px/s">
                             <i data-lucide="stretch-horizontal" size="14"></i>
                         </button>
-                        <input step="5" style="width: 44px;" type="number" value="15">
+                        <input step="5" type="number" value="15">
                         <span>px/s</span>
                     </div>
 
@@ -458,7 +461,7 @@
 
             <div class="studio-bottom-section" style="flex: 1; display: flex; flex-direction: row; overflow: hidden; background: var(--bg-surface);">
 
-                <div class="table-side-toolbar" style="display: flex; flex-direction: column; gap: 8px; padding: 16px 8px; border-right: 1px solid var(--border-color); background: var(--bg-body); flex-shrink: 0; align-items: center;">
+                <div class="table-side-toolbar" style="display: flex; flex-direction: column; gap: 8px; padding: 16px 8px; border-right: 1px solid var(--border-color); background: var(--bg-surface-secondary); flex-shrink: 0; align-items: center;">
 
                     <button class="btn-toolbar" onclick="resetFilters()" style="padding: 8px; justify-content: center;" title="Reset Filters">
                         <i data-lucide="rotate-ccw" size="16"></i>
