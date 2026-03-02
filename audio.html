@@ -21,10 +21,10 @@
             box-shadow: none;
             font-size: 0.85rem;
             font-family: inherit; /* 防止浏览器默认的 button 字体差异 */
-
-            /* -- 新增以下两行 -- */
-            height: 28px !important; /* 强制统一按键高度 */
-            padding: 0 10px !important; /* 覆盖底部播放等按钮写死的内联 padding */
+            height: 28px !important;
+            padding: 0 10px !important;
+            /* ★ 核心修复：强制 div 和 button 统一算上边框的高度，消除 2px 误差 */
+            box-sizing: border-box !important;
         }
 
         /* 新增：工具栏按钮被选中时的状态 */
@@ -94,79 +94,23 @@
             display: flex;
             align-items: center;
             background: transparent;
-            border: 1px solid transparent; /* 默认无边框 */
+            border: none; /* ★ 核心修复：移除默认的1px物理边框，避免挤压内部悬停发光的高度 */
             border-radius: 50px;
-            height: 30px; /* <--- 从 32px 改为 28px */
+            height: 28px;
             box-sizing: border-box;
             transition: all 0.2s;
         }
 
-        /* --- 声道切换胶囊样式 --- */
-        .channel-capsule {
-            display: flex;
-            align-items: center;
-            background: var(--bg-capsule);
-            border-radius: 50px;
-            padding: 2px;
-            position: relative;
-            height: 32px; /* <--- 从 32px 改为 28px */
-            box-sizing: border-box;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .channel-capsule:hover {
-            background: var(--bg-surface);
-            border-color: var(--border-color);
-        }
-
-        /* 滑动的背景药丸 */
-        .channel-capsule-pill {
-            position: absolute;
-            top: 2px;
-            bottom: 2px;
-            left: 0;
-            background: var(--brand);
-            border-radius: 50px;
-            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), width 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-            z-index: 1;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        }
-
-        /* 内部文字按键 */
-        .channel-capsule-btn {
-            position: relative;
-            z-index: 2;
-            background: transparent;
-            border: none;
-            height: 100%;
-            font-size: 0.75rem;
-            font-weight: 800;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: color 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 12px;
-            font-family: inherit;
-            outline: none;
-            min-width: 32px;
-        }
-
-        /* 激活状态文字变白 */
-        .channel-capsule-btn.active {
-            color: white;
+        /* 2. 当用户点击右侧数字输入框激活(focus)时：变成白色输入框形态 */
+        .zoom-control-wrapper:focus-within {
+            background: var(--bg-surface) !important;
+            /* ★ 核心修复：用内阴影 (inset) 模拟边框，这样就不会改变元素的物理高度 */
+            box-shadow: inset 0 0 0 1px var(--brand), 0 0 0 2px var(--brand-tint) !important;
         }
 
         /* Mono 单声道模式下不可点击交互 */
         .channel-capsule.mono-mode .channel-capsule-btn {
             cursor: default;
-        }
-
-        .channel-capsule.mono-mode:hover {
-            background: var(--bg-capsule);
-            border-color: transparent;
         }
 
         /* 1. 整体悬停时：显示微弱的胶囊底色（表示这是一个可交互的输入区域） */
@@ -245,6 +189,48 @@
 
         .zoom-control-wrapper input[type="number"] {
             -moz-appearance: textfield;
+        }
+        /* --- 自定义 FFT 下拉框悬浮菜单样式 --- */
+        .fft-dropdown-wrapper {
+            position: relative;
+        }
+        .fft-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 80px;
+            z-index: 100;
+        }
+        .fft-dropdown-menu.active {
+            display: flex;
+            animation: fadeIn 0.2s ease; /* 复用项目的淡入动画 */
+        }
+        .fft-option {
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-align: center;
+            transition: all 0.2s;
+            font-variant-numeric: tabular-nums;
+        }
+        .fft-option:hover {
+            background: var(--bg-capsule);
+            color: var(--brand);
+        }
+        .fft-option.selected {
+            background: var(--brand-tint);
+            color: var(--brand);
         }
     </style>
     <script src="data.js"></script>
@@ -352,10 +338,24 @@
             <div class="player-section" style="display: flex; flex-direction: column; padding: 12px 16px; border-bottom: 1px solid var(--border-color); gap: 8px; flex-shrink: 0;">
 
                 <div class="player-toolbar-top" style="display: flex; gap: 8px; align-items: center;">
-                    <div id="channel-capsule-container"></div>
                     <button class="btn-toolbar active" id="btn-toggle-annotations" onclick="toggleAnnotationsVisibility(this)" title="Hide Annotations">
                         <i data-lucide="eye" size="14"></i>
                     </button>
+                    <div id="channel-capsule-container"></div>
+                    <div class="fft-dropdown-wrapper">
+                        <div class="btn-toolbar" onclick="toggleFftDropdown(event)" style="padding: 0 12px; gap: 6px; cursor: pointer;" title="FFT Window Size">
+                            <i data-lucide="square-activity" size="14"></i>
+                            <span id="fft-value" style="font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums; display: inline-block; width: 40px; text-align: center;">1024</span>
+                        </div>
+                        <div class="fft-dropdown-menu" id="fft-menu">
+                            <div class="fft-option" onclick="selectFft('256', this, event)">256</div>
+                            <div class="fft-option" onclick="selectFft('512', this, event)">512</div>
+                            <div class="fft-option selected" onclick="selectFft('1024', this, event)">1024</div>
+                            <div class="fft-option" onclick="selectFft('2048', this, event)">2048</div>
+                            <div class="fft-option" onclick="selectFft('4096', this, event)">4096</div>
+                        </div>
+                    </div>
+
 
                     <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
                     <button class="btn-toolbar" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
@@ -371,8 +371,6 @@
                         <span>%</span>
                     </div>
 
-                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
-
                     <div class="zoom-control-wrapper">
                         <button class="zoom-control-btn" title="Zoom Out">
                             <i data-lucide="zoom-out" size="14"></i>
@@ -380,8 +378,6 @@
                         <input max="100" oninput="if(this.value > 100) this.value = 100;" step="10" type="number" value="50">
                         <span>%</span>
                     </div>
-
-                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
 
                     <div class="zoom-control-wrapper">
                         <button class="zoom-control-btn" title="Zoom by px/s">
@@ -497,7 +493,7 @@
 
         </div>
 
-        <div class="info-section" style="width: 280px; padding: 16px; display: flex; flex-direction: column; gap: 16px; background: var(--bg-body); flex-shrink: 0; overflow-y: auto;">
+        <div class="info-section" style="width: 360px; padding: 16px; display: flex; flex-direction: column; gap: 16px; background: var(--bg-body); flex-shrink: 0; overflow-y: auto;">
             <div style="font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="info" size="16"></i> Recording Info
             </div>
@@ -692,8 +688,6 @@
         lucide.createIcons();
     }
 
-    // ================== 声道切换(胶囊滑动)逻辑 ==================
-    // 根据声道数动态渲染胶囊
     function renderChannelCapsule(channelNum) {
         const container = document.getElementById('channel-capsule-container');
         if (!container) return;
@@ -701,21 +695,31 @@
         if (channelNum === 1) {
             // 单声道 (Mono)
             container.innerHTML = `
-                <div class="channel-capsule mono-mode" title="Mono Audio">
-                    <div class="channel-capsule-pill" style="transform: translateX(2px); width: calc(100% - 4px);"></div>
-                    <button class="channel-capsule-btn active">Mono</button>
+                <div class="fft-dropdown-wrapper" title="Mono Audio" style="cursor: default;">
+                    <div class="btn-toolbar" style="padding: 0 12px; gap: 6px; pointer-events: none;">
+                        <i data-lucide="headphones" size="14"></i>
+                        <span style="font-size: 0.85rem; font-weight: 600; display: inline-block; width: 64px; text-align: center;">Mono</span>
+                    </div>
                 </div>
             `;
         } else {
-            // 双声道 (Stereo - L/R)
+            // 双声道 - 可点击下拉
             container.innerHTML = `
-                <div class="channel-capsule">
-                    <div class="channel-capsule-pill" style="transform: translateX(2px); width: 32px;"></div>
-                    <button class="channel-capsule-btn active" style="width: 32px; padding: 0;" onclick="setAudioChannel('L', this)" title="Left Channel">L</button>
-                    <button class="channel-capsule-btn" style="width: 32px; padding: 0;" onclick="setAudioChannel('R', this)" title="Right Channel">R</button>
+                <div class="fft-dropdown-wrapper">
+                    <div class="btn-toolbar" onclick="toggleChannelDropdown(event)" style="padding: 0 12px; gap: 6px; cursor: pointer;" title="Audio Channel">
+                        <i data-lucide="headphones" size="14"></i>
+                        <span id="channel-value" style="font-size: 0.85rem; font-weight: 600; display: inline-block; width: 64px; text-align: center;">Left (L)</span>
+                    </div>
+                    <div class="fft-dropdown-menu" id="channel-menu">
+                        <div class="fft-option selected" onclick="selectChannel('Left (L)', this, event)">Left (L)</div>
+                        <div class="fft-option" onclick="selectChannel('Right (R)', this, event)">Right (R)</div>
+                    </div>
                 </div>
             `;
         }
+
+        // 动态注入 HTML 后，需要重新渲染里面的 lucide 图标
+        if (window.lucide) lucide.createIcons();
     }
 
     // 处理 L / R 按钮点击与动画
@@ -918,6 +922,15 @@
         // 如果点击的地方不是顶部导航菜单，则关闭导航
         if (!e.target.closest('.crumb-wrapper') && !e.target.closest('.user-wrapper')) {
             closeAllMenus();
+        }
+
+        // --- 新增：点击空白处关闭 工具栏的下拉框 (FFT 和 Channel) ---
+        if (!e.target.closest('.fft-dropdown-wrapper')) {
+            const fftMenu = document.getElementById('fft-menu');
+            if (fftMenu) fftMenu.classList.remove('active');
+
+            const channelMenu = document.getElementById('channel-menu');
+            if (channelMenu) channelMenu.classList.remove('active');
         }
     });
 
@@ -1284,8 +1297,63 @@
             setTimeout(() => tr.style.backgroundColor = '', 500);
         }
     }
+    // ================== 自定义 FFT 下拉框逻辑 ==================
+    function toggleFftDropdown(e) {
+        if (e) e.stopPropagation();
 
+        // 1. 先关闭可能处于打开状态的声道下拉框
+        const channelMenu = document.getElementById('channel-menu');
+        if (channelMenu) channelMenu.classList.remove('active');
 
+        // 2. 再切换当前的 FFT 下拉框
+        const menu = document.getElementById('fft-menu');
+        if (menu) menu.classList.toggle('active');
+    }
+
+    function selectFft(val, el, e) {
+        if (e) e.stopPropagation();
+        // 更新按钮上的数字
+        document.getElementById('fft-value').textContent = val;
+
+        // 更新下拉列表中的高亮选中状态
+        const options = document.querySelectorAll('.fft-option');
+        options.forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+
+        // 选中后关闭面板
+        document.getElementById('fft-menu').classList.remove('active');
+        console.log("FFT changed to:", val);
+    }
+    // 控制 声道 下拉框的显示/隐藏，并排斥 FFT 下拉框
+    function toggleChannelDropdown(e) {
+        if (e) e.stopPropagation();
+
+        // 1. 先关闭可能处于打开状态的 FFT 下拉框
+        const fftMenu = document.getElementById('fft-menu');
+        if (fftMenu) fftMenu.classList.remove('active');
+
+        // 2. 再切换当前的声道下拉框
+        const menu = document.getElementById('channel-menu');
+        if (menu) menu.classList.toggle('active');
+    }
+
+    // 选中声道选项
+    function selectChannel(val, el, e) {
+        if (e) e.stopPropagation();
+        // 更新按钮上的文字
+        document.getElementById('channel-value').textContent = val;
+
+        // 更新下拉列表中的高亮选中状态
+        const options = document.getElementById('channel-menu').querySelectorAll('.fft-option');
+        options.forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+
+        // 选中后关闭面板
+        document.getElementById('channel-menu').classList.remove('active');
+
+        // 实际应用中，在这里调用频谱图或音频库切换展示的物理轨道
+        console.log("Audio channel switched to view:", val);
+    }
     // ================== 6. 初始化 ==================
     window.addEventListener('DOMContentLoaded', () => {
         const saved = localStorage.getItem('theme');
