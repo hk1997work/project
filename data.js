@@ -209,11 +209,12 @@ const TAXONOMY = {
 const allBiomes = Array.from(new Set(Object.values(TAXONOMY).flatMap(r => Object.keys(r)))).sort();
 const allFunctionalTypes = Array.from(new Set(Object.values(TAXONOMY).flatMap(r => Object.values(r).flat()))).sort();
 
-const taxonAnnotations = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony"];
+// 配合最新的 Label 逻辑，改为基础标签池
+const audioBaseLabels = ["not analysed", "tagged", "reviewed"];
 const getRandomAnnotations = () => {
-    const count = rInt(1, 3);
-    const shuffled = taxonAnnotations.sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
+    // 随机选中一个标签作为单选初始化，兼容数组格式
+    const label = audioBaseLabels[Math.floor(Math.random() * audioBaseLabels.length)];
+    return [label];
 };
 
 const getRealmColor = (r) => {

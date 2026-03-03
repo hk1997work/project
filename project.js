@@ -160,7 +160,7 @@ function generateSitesForContext(projId, colId) {
                 const isMeta = Math.random() > 0.7;
                 return {
                     type: isMeta ? 'Metadata' : 'Audio', name: `${r.slice(0, 3).toUpperCase()}_REC_${202500 + m}.${isMeta ? 'csv' : 'wav'}`, date: "2025-01-15", duration: "01:00:00", // 新增 annotations 属性，调用与 media 页面相同的假数据生成函数
-                    annotations: typeof getRandomAnnotations !== 'undefined' ? getRandomAnnotations() : ["Aves", "Biophony"]
+                    annotations: typeof getRandomAnnotations !== 'undefined' ? getRandomAnnotations() : ["not analysed"]
                 };
             })
         };
@@ -4690,8 +4690,12 @@ window.adjustTaxonTooltip = function (el) {
 
 // ================= Audio Label 草稿与保存逻辑 =================
 let currentLabelAudioId = null;
-let currentLabelDraft = []; // 草稿数组
-const PREDEFINED_LABELS = ["Aves", "Insecta", "Chiroptera", "Anura", "Anthrophony", "Geophony", "Biophony", "Unknown"];
+let currentLabelDraft = null; // 修改为单值（单选）
+
+// 基础选项，不允许删除
+const BASE_LABELS = ["not analysed", "tagged", "reviewed"];
+// 当前环境的所有可用选项（包含动态新增的）
+let AVAILABLE_LABELS = [...BASE_LABELS];
 
 function handleToolbarLabel() {
     if (selectedCrudIds.length !== 1) return;
@@ -4699,8 +4703,17 @@ function handleToolbarLabel() {
     const media = mediaItems.find(m => String(m.media_id) === String(currentLabelAudioId));
     if (!media) return;
 
-    // 初始化时拷贝一份草稿
-    currentLabelDraft = [...(media.annotations || [])];
+    // 初始化草稿（取原数组的第一个值作为当前选中的单选标签）
+    currentLabelDraft = media.annotations && media.annotations.length > 0 ? media.annotations[0] : null;
+
+    // 如果音频包含之前新增过的标签，但不在当前可用列表里，则加入列表中
+    if (currentLabelDraft && !AVAILABLE_LABELS.includes(currentLabelDraft)) {
+        AVAILABLE_LABELS.push(currentLabelDraft);
+    }
+
+    // 清空新建标签输入框
+    const inputEl = document.getElementById('new-label-input');
+    if (inputEl) inputEl.value = '';
 
     renderAllLabels();
     document.getElementById('label-drawer-overlay').classList.add('active');
@@ -4709,59 +4722,111 @@ function handleToolbarLabel() {
 function closeLabelDrawer() {
     document.getElementById('label-drawer-overlay').classList.remove('active');
     currentLabelAudioId = null;
-    currentLabelDraft = [];
+    currentLabelDraft = null;
 }
 
 function saveLabelDrawer() {
     const media = mediaItems.find(m => String(m.media_id) === String(currentLabelAudioId));
     if (media) {
-        // 只有点击 Save，才用草稿覆写真实数据
-        media.annotations = [...currentLabelDraft];
+        // 保存为数组以兼容其他部分的渲染逻辑
+        media.annotations = currentLabelDraft ? [currentLabelDraft] : [];
         if (currentTable === 'audio') {
-            renderCrudTable(); // 这里才会触发表格 UI 更新
+            renderCrudTable();
         }
-        renderMedia(); // 连带更新卡片视图
+        renderMedia();
     }
     closeLabelDrawer();
 }
 
 function renderAllLabels() {
     const container = document.getElementById('all-labels-container');
+    let html = `<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">`;
 
-    let html = '';
-    PREDEFINED_LABELS.forEach(label => {
-        // 从草稿中读取选中状态
-        const isSelected = currentLabelDraft.includes(label);
+    AVAILABLE_LABELS.forEach(label => {
+        const isSelected = (currentLabelDraft === label);
+        const isBase = BASE_LABELS.includes(label);
 
-        const bg = isSelected ? 'var(--brand)' : 'transparent';
-        const color = isSelected ? 'white' : 'var(--text-main)';
-        const borderColor = isSelected ? 'var(--brand)' : 'var(--border-color)';
-        const shadow = isSelected ? '0 2px 5px rgba(var(--brand-rgb),0.3)' : 'none';
-        const icon = isSelected ? 'check' : 'plus';
-        const iconOpacity = isSelected ? '0.9' : '0.6';
+        // 新增：强制设定统一的高度(26px)、字体(0.75rem)和内边距，消除有无图标带来的尺寸差
+        const baseStyle = `cursor:pointer; transition:all 0.2s ease; border: 1px solid transparent; height: 26px; padding: 0 12px; font-size: 0.75rem; border-radius: 13px;`;
 
-        html += `<div class="taxon-capsule-item" style="cursor:pointer; box-sizing:border-box; background:${bg}; color:${color}; border: 1px solid ${borderColor}; box-shadow:${shadow}; transition:all 0.2s ease;" onclick="toggleLabelInAudio('${label}')">
+        // 选中与未选中的颜色区分
+        const customStyle = isSelected
+            ? baseStyle
+            : baseStyle + ` background: var(--bg-capsule); color: var(--text-secondary); box-shadow: none;`;
+
+        let deleteIconHtml = '';
+        if (!isBase) {
+            deleteIconHtml = `<i data-lucide="x" size="12" style="margin-left: 6px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" 
+                                 onmouseover="this.style.opacity='1'" 
+                                 onmouseout="this.style.opacity='0.8'" 
+                                 onclick="deleteCustomLabel('${label}', event)"></i>`;
+        }
+
+        html += `<div class="taxon-capsule-item" style="${customStyle}" onclick="toggleLabelInAudio('${label}')">
             <span>${label}</span>
-            <i data-lucide="${icon}" size="14" style="margin-left: 6px; opacity:${iconOpacity};"></i>
+            ${deleteIconHtml}
         </div>`;
     });
 
+    html += `</div>`;
     container.innerHTML = html;
     lucide.createIcons();
 }
-
 function toggleLabelInAudio(label) {
-    const index = currentLabelDraft.indexOf(label);
-    if (index > -1) {
-        // 如果已存在于草稿则移除
-        currentLabelDraft.splice(index, 1);
+    if (currentLabelDraft === label) {
+        // 如果点击的是已经选中的标签，则取消选中
+        currentLabelDraft = null;
     } else {
-        // 否则加入草稿
-        currentLabelDraft.push(label);
+        // 否则切换为单选当前标签
+        currentLabelDraft = label;
     }
-    // 只刷新弹窗内部视图，不刷新背后的表格
     renderAllLabels();
 }
+
+// 新增功能：添加自定义标签
+window.addNewCustomLabel = function() {
+    const inputEl = document.getElementById('new-label-input');
+    if (!inputEl) return;
+    const newLabel = inputEl.value.trim();
+
+    if (!newLabel) {
+        alert("Please enter a valid label name.");
+        return;
+    }
+
+    if (AVAILABLE_LABELS.includes(newLabel)) {
+        alert("This label already exists.");
+        return;
+    }
+
+    // 加入可用标签库并清空输入框
+    AVAILABLE_LABELS.push(newLabel);
+    inputEl.value = '';
+
+    // 添加后自动选中新标签
+    currentLabelDraft = newLabel;
+    renderAllLabels();
+};
+
+// 新增功能：删除自定义标签
+window.deleteCustomLabel = function(label, event) {
+    // 阻止事件冒泡，以免触发容器的 onclick (即选中操作)
+    event.stopPropagation();
+
+    if (BASE_LABELS.includes(label)) {
+        alert("Cannot delete basic labels.");
+        return;
+    }
+
+    if (confirm(`Are you sure you want to delete the label "${label}"?`)) {
+        AVAILABLE_LABELS = AVAILABLE_LABELS.filter(l => l !== label);
+        // 如果删除的正是当前选中的草稿，则清空草稿
+        if (currentLabelDraft === label) {
+            currentLabelDraft = null;
+        }
+        renderAllLabels();
+    }
+};
 
 // ================= AI Models & Acoustic Indices 数据配置 =================
 const MOCK_AI_MODELS = [{

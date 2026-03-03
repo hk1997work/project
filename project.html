@@ -230,8 +230,8 @@
                         <button class="btn-toolbar" id="btn-add" onclick="openCrudModal('add')"><i data-lucide="plus" size="14"></i> Add</button>
                         <button class="btn-toolbar" disabled id="btn-edit" onclick="handleToolbarEdit()"><i data-lucide="pencil" size="14"></i> Edit</button>
                         <button class="btn-toolbar" disabled id="btn-link" onclick="handleToolbarLink()"><i data-lucide="link" size="14"></i> Link</button>
-                        <button class="btn-toolbar" disabled id="btn-taxon" onclick="handleToolbarTaxon()" style="display:none;"><i data-lucide="tag" size="14"></i> Taxon</button>
-                        <button class="btn-toolbar" disabled id="btn-label" onclick="handleToolbarLabel()" style="display:none;"><i data-lucide="annotations" size="14"></i> Label</button>
+                        <button class="btn-toolbar" disabled id="btn-taxon" onclick="handleToolbarTaxon()" style="display:none;"><i data-lucide="tags" size="14"></i> Taxon</button>
+                        <button class="btn-toolbar" disabled id="btn-label" onclick="handleToolbarLabel()" style="display:none;"><i data-lucide="tag" size="14"></i> Label</button>
                         <button class="btn-toolbar" disabled id="btn-reset-pwd" onclick="handleToolbarResetPassword()" style="display:none;"><i data-lucide="key" size="14"></i> Reset Pwd</button>
                         <button class="btn-toolbar" disabled id="btn-permission" onclick="handleToolbarPermission()" style="display:none;"><i data-lucide="shield-check" size="14"></i> Permission</button>
                         <button class="btn-toolbar" disabled id="btn-set-contrib" onclick="handleSetContributor()" style="display:none;"><i data-lucide="user-plus" size="14"></i> Contributor</button>
@@ -320,7 +320,7 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-                <button class="btn-primary" disabled id="btn-add-taxon" onclick="addTaxonToCollection()">Add Taxon</button>
+                <button class="btn-primary" disabled id="btn-add-taxon" onclick="addTaxonToCollection()">Add</button>
             </div>
         </div>
 
@@ -338,7 +338,20 @@
     <div class="crud-modal" id="label-drawer" onclick="event.stopPropagation()" style="width: 480px; max-width: 100%; display: flex; flex-direction: column; min-height: 500px;">
         <div class="card-title" style="margin-bottom: 20px; flex-shrink: 0;">Set Labels</div>
 
-        <div id="all-labels-container" style="flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;">
+        <div style="display: flex; flex-direction: column; gap: 16px; flex-shrink: 0;">
+            <div class="form-group" style="position: relative;">
+                <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>New Label</span>
+                </label>
+                <input class="form-input" id="new-label-input" style="width: 100%;" type="text">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                <button class="btn-primary" onclick="addNewCustomLabel()">Add</button>
+            </div>
+        </div>
+
+        <div id="all-labels-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border-color); margin-top: 20px;">
         </div>
 
         <div class="modal-footer" style="margin-top: 20px; flex-shrink: 0;">
