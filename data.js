@@ -62,6 +62,22 @@ const mockSoundClasses = ["Biophony", "Geophony", "Anthropophony", "Unknown"];
 const mockTaxons = ["Aves", "Amphibia", "Insecta", "Mammalia", "Chiroptera"];
 const mockReviewStatuses = ["Pending", "Approved", "Rejected", "Unsure", "Revise"]; // 添加 Revise
 const mockIndexTypes = ["ACI", "ADI", "AEI", "BI", "NDSI", "H", "M"];
+
+// --- 新增：Soundscape & Taxon 级联数据 ---
+const SOUNDSCAPE_MAPPING = {
+    "Biophony": ["fish chorus", "bat swarm", "insect broadband noise", "reptile", "bird chorus", ""],
+    "Anthropophony": ["human voices", "transportation", "mining", ""],
+    "Geophony": ["wind", "wave", "earthquake", "rain", ""],
+    "Other": ["template matching result", "equipment self-noise", "ambient sound (background)", "thermal bat detection", "unknown", "TEST", ""]
+};
+
+const TAXON_SOUND_TYPE_MAPPING = {
+    "AMPHIBIA": ["Courtship", "Advertisement towards males", "Acquisition/defense - reproductive", "Discouragement", "Defense - non reproductive"],
+    "AVES": ["Call - unspecific", "Song", "Non-vocal", "Call - contact", "Call - flight", "Call - begging", "Alarm"],
+    "MAMMALIA CHIROPTERA": ["Searching", "Feeding", "Social"],
+    "MAMMALIA PRIMATA": ["Agonistic", "Affiliative", "Contact", "Song", "Advertisement - territory", "Advertisement - mating", "Foraging", "Alarm", "Begging", "Adult - offspring"]
+};
+
 // --- 新增：GADM 3级行政区和 IHO 海域的模拟数据 ---
 const GADM_DATA = {
     "United States": {
@@ -301,20 +317,21 @@ const dbSchema = {
         label: "Annotations", icon: "scan-line", pk: "id", columns: [{key: "id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {
             key: "media_name", label: "Media Name", type: "text", filterType: 'select', readonlyOnUpdate: true
         }, {
-            key: "min_x", label: "Min X", type: "number", filterType: 'range' // 可编辑，左侧显示
+            key: "min_x", label: "Min X", type: "number", filterType: 'range'
         }, {
-            key: "max_x", label: "Max X", type: "number", filterType: 'range' // 可编辑，左侧显示
+            key: "max_x", label: "Max X", type: "number", filterType: 'range'
         }, {
-            key: "min_y", label: "Min Y", type: "number", filterType: 'range' // 可编辑，左侧显示
+            key: "min_y", label: "Min Y", type: "number", filterType: 'range'
         }, {
-            key: "max_y", label: "Max Y", type: "number", filterType: 'range' // 可编辑，左侧显示
+            key: "max_y", label: "Max Y", type: "number", filterType: 'range'
         }, {
             key: "creator_type", label: "Creator Type", type: "text", readonlyOnUpdate: true, filterType: 'select'
-        }, {key: "sound_id", label: "Sound Class", type: "select", options: mockSoundClasses}, {
-            key: "animal_sound_type", label: "Sound Type", type: "select", options: ["Call", "Song", "Drumming"]
-        }, {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons}, {
-            key: "confidence", label: "Confidence", type: "number", readonlyOnUpdate: true, // 不可编辑，右侧显示
-            filterType: 'range'
+        }, {key: "soundscape_component", label: "Soundscape", type: "select", options: ["Biophony", "Anthropophony", "Geophony", "Other"]}, {
+            key: "sound_type", label: "Sound Type", type: "select", options: [] // 将动态填充
+        }, {key: "taxon_id", label: "Taxon", type: "select", options: ["AMPHIBIA", "AVES", "MAMMALIA CHIROPTERA", "MAMMALIA PRIMATA"]}, {
+            key: "animal_sound_type", label: "Animal Sound", type: "select", options: [] // 将动态填充
+        }, {
+            key: "confidence", label: "Confidence", type: "number", readonlyOnUpdate: true, filterType: 'range'
         }, {key: "uncertain", label: "Uncertain", type: "boolean"}, {
             key: "sound_distance_m", label: "Distance (m)", type: "number", filterType: 'range'
         }, {key: "distance_not_estimable", label: "Not Estimable", type: "boolean"}, {
@@ -389,8 +406,8 @@ const staticMockDB = {
     sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}],
     license: mockLicenses.map((l, i) => ({license_id: i + 1, name: l})),
     audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})), // 更新 annotation mock 数据：使用 media_name
-    annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", sound_id: "Biophony", media_name: "REC_10100020250000.wav", creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "Aves", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Call", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"}],
-    annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "Aves", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
+    annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", soundscape_component: "Biophony", sound_type: "bird chorus", media_name: "REC_10100020250000.wav", creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "AVES", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Song", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"}],
+    annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "AVES", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
     index_log: [{log_id: 1, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "output", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}, {
         log_id: 2,
         media: "REC_10100020250000.wav",

@@ -1463,45 +1463,52 @@ function getDataForTable(tableName) {
         if (generatedAnnotations.length === 0 && mediaItems.length > 0) {
             // 动态生成 Annotation 数据
             const count = 25;
+            const soundscapeKeys = Object.keys(SOUNDSCAPE_MAPPING);
+            const taxonKeys = Object.keys(TAXON_SOUND_TYPE_MAPPING);
+
             for (let i = 0; i < count; i++) {
                 const media = mediaItems[Math.floor(Math.random() * mediaItems.length)];
-                const soundClass = mockSoundClasses[Math.floor(Math.random() * mockSoundClasses.length)];
                 const creatorType = ["user", "model", "automated"][Math.floor(Math.random() * 3)];
-                const isBiophony = soundClass === 'Biophony';
                 const isUser = creatorType === 'user';
 
+                const comp = soundscapeKeys[Math.floor(Math.random() * soundscapeKeys.length)];
+                const sTypes = SOUNDSCAPE_MAPPING[comp] || [];
+                const sType = sTypes.length > 0 ? sTypes[Math.floor(Math.random() * sTypes.length)] : "";
+
+                const isBiophony = comp === 'Biophony';
+
                 let taxon = "";
+                let aType = "Unknown";
                 let confidence = "";
-                // 修改：默认为空字符串，以便非 Biophony 时表格显示空白
                 let uncertain = "";
                 let distance = "";
-                // 修改：默认为空字符串
                 let distUnknown = "";
                 let indiv = "";
 
-                // Sound Type 对所有记录随机生成
-                let soundType = ["Call", "Song", "Drumming"][Math.floor(Math.random() * 3)];
-
-                // 规则：只有 Biophony 才会有生物相关字段
                 if (isBiophony) {
-                    taxon = mockTaxons[Math.floor(Math.random() * mockTaxons.length)];
-                    uncertain = Math.random() > 0.8; // 生成布尔值
+                    taxon = taxonKeys[Math.floor(Math.random() * taxonKeys.length)];
+                    const aTypes = TAXON_SOUND_TYPE_MAPPING[taxon] || [];
+                    if (aTypes.length > 0) aType = aTypes[Math.floor(Math.random() * aTypes.length)];
+
+                    uncertain = Math.random() > 0.8;
                     distance = Math.floor(Math.random() * 50);
-                    distUnknown = Math.random() > 0.5; // 生成布尔值
+                    distUnknown = Math.random() > 0.5;
                     if (distUnknown) distance = "";
 
                     indiv = Math.floor(Math.random() * 3) + 1;
 
-                    // 规则：如果是 User 创建，Confidence 为空；否则生成随机置信度
                     if (!isUser) {
                         confidence = parseFloat((0.5 + Math.random() * 0.5).toFixed(2));
                     }
+                } else {
+                    aType = "";
                 }
 
                 generatedAnnotations.push({
                     id: i + 1,
                     uuid: `550e8400-e29b-41d4-a716-ANNOT${String(i).padStart(4, '0')}`,
-                    sound_id: soundClass,
+                    soundscape_component: comp,
+                    sound_type: sType,
                     media_name: media.name,
                     creator_id: mockNames[Math.floor(Math.random() * mockNames.length)],
                     creator_type: creatorType,
@@ -1511,11 +1518,11 @@ function getDataForTable(tableName) {
                     min_y: Math.floor(Math.random() * 2000),
                     max_y: Math.floor(3000 + Math.random() * 5000),
                     taxon_id: taxon,
-                    uncertain: uncertain, // 使用变量
+                    animal_sound_type: aType,
+                    uncertain: uncertain,
                     sound_distance_m: distance,
-                    distance_not_estimable: distUnknown, // 使用变量
+                    distance_not_estimable: distUnknown,
                     individual_num: indiv,
-                    animal_sound_type: soundType,
                     reference: Math.random() > 0.9,
                     comments: ["Clear recording", "Background noise high", "Overlapping calls", "Interesting pattern", "Needs review"][Math.floor(Math.random() * 5)],
                     creation_date: moment().subtract(Math.floor(Math.random() * 10), 'days').format("YYYY-MM-DD HH:mm:ss")
@@ -3238,9 +3245,12 @@ window.selectFormOption = function (key, value, label, element) {
         handleAudioTypeChange(value);
     }
 
-    if (currentTable === 'annotation' && key === 'sound_id') {
-        if (window.updateAnnotationVisibility) {
-            window.updateAnnotationVisibility();
+    if (currentTable === 'annotation') {
+        if (key === 'soundscape_component') {
+            updateDependentSelect('sound_type', value && SOUNDSCAPE_MAPPING[value] ? SOUNDSCAPE_MAPPING[value] : []);
+            if (window.updateAnnotationVisibility) window.updateAnnotationVisibility();
+        } else if (key === 'taxon_id') {
+            updateDependentSelect('animal_sound_type', value && TAXON_SOUND_TYPE_MAPPING[value] ? ["Unknown", ...TAXON_SOUND_TYPE_MAPPING[value]] : ["Unknown"]);
         }
     }
 
@@ -3272,7 +3282,7 @@ function updateDependentSelect(key, options) {
 
 function setupAnnotationDynamicVisibility() {
     const creatorInput = document.getElementById('input-creator_type');
-    const soundInput = document.getElementById('input-sound_id');
+    const soundInput = document.getElementById('input-soundscape_component');
 
     const update = () => {
         const creatorType = creatorInput ? creatorInput.value.toLowerCase().trim() : '';
@@ -3283,6 +3293,7 @@ function setupAnnotationDynamicVisibility() {
         const showBioFields = isBiophony;
 
         toggleFieldVisibility('taxon_id', showBioFields);
+        toggleFieldVisibility('animal_sound_type', showBioFields);
         toggleFieldVisibility('uncertain', showBioFields);
         toggleFieldVisibility('sound_distance_m', showBioFields);
         toggleFieldVisibility('individual_num', showBioFields);
@@ -3447,6 +3458,13 @@ function openCrudModal(mode, id = null) {
                     const video = getDataForTable('video');
                     const allMedia = [...audio, ...photo, ...video];
                     options = allMedia.map(m => m.media_id);
+                } else if (col.key === 'sound_type') {
+                    const comp = currentRow['soundscape_component'];
+                    if (comp && SOUNDSCAPE_MAPPING[comp]) options = SOUNDSCAPE_MAPPING[comp];
+                } else if (col.key === 'animal_sound_type') {
+                    const tax = currentRow['taxon_id'];
+                    if (tax && TAXON_SOUND_TYPE_MAPPING[tax]) options = ["Unknown", ...TAXON_SOUND_TYPE_MAPPING[tax]];
+                    else options = ["Unknown"];
                 }
             } else if (currentTable === 'annotation_review') {
                 if (col.key === 'annotation_id') {
