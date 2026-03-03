@@ -607,6 +607,96 @@
 
                 </div>
             </div>
+
+            <div id="panel-new-annotation" style="display: none; flex-direction: column; height: 100%;">
+                <div style="height: 28px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-sizing: border-box; flex-shrink: 0;">
+                    <i data-lucide="plus-square" size="16" style="color: var(--brand);"></i>
+                    <span>New Annotation</span>
+                </div>
+
+                <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-top: 12px; padding-right: 4px;">
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Start Time (s)</label>
+                            <input type="number" id="anno-min-x" class="form-input" style="height: 28px; font-size: 0.8rem;" oninput="updateDraftBoxFromInputs()">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">End Time (s)</label>
+                            <input type="number" id="anno-max-x" class="form-input" style="height: 28px; font-size: 0.8rem;" oninput="updateDraftBoxFromInputs()">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Low Freq (Hz)</label>
+                            <input type="number" id="anno-min-y" class="form-input" style="height: 28px; font-size: 0.8rem;" oninput="updateDraftBoxFromInputs()">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">High Freq (Hz)</label>
+                            <input type="number" id="anno-max-y" class="form-input" style="height: 28px; font-size: 0.8rem;" oninput="updateDraftBoxFromInputs()">
+                        </div>
+                    </div>
+
+                    <div style="height: 1px; background: var(--border-color); opacity: 0.5;"></div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Sound Class</label>
+                        <select id="anno-sound-class" class="form-input" style="height: 30px; font-size: 0.8rem; width: 100%;" onchange="toggleBiophonyFields(this.value)">
+                            <option value="Biophony">Biophony</option>
+                            <option value="Geophony">Geophony</option>
+                            <option value="Anthrophony">Anthrophony</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Sound Type</label>
+                        <select id="anno-sound-type" class="form-input" style="height: 30px; font-size: 0.8rem; width: 100%;">
+                            <option value="">-- Select --</option>
+                            <option value="Call">Call</option>
+                            <option value="Song">Song</option>
+                            <option value="Drumming">Drumming</option>
+                        </select>
+                    </div>
+
+                    <div id="biophony-fields" style="display: flex; flex-direction: column; gap: 10px; border-left: 2px solid var(--brand); padding-left: 10px; margin-top: 2px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Taxon</label>
+                            <input type="text" id="anno-taxon" class="form-input" style="height: 30px; font-size: 0.8rem; width: 100%;" placeholder="e.g. Aves, Insecta">
+                        </div>
+
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-main); cursor: pointer;">
+                            <input type="checkbox" id="anno-uncertain" style="accent-color: var(--brand);"> Uncertain
+                        </label>
+
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <div class="form-group" style="margin: 0; flex: 1;">
+                                <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Distance (m)</label>
+                                <input type="number" id="anno-distance" class="form-input" style="height: 30px; font-size: 0.8rem; width: 100%;">
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-main); cursor: pointer; margin-top: 18px;">
+                                <input type="checkbox" id="anno-not-estimable" style="accent-color: var(--brand);" onchange="document.getElementById('anno-distance').disabled = this.checked;"> Not Estimable
+                            </label>
+                        </div>
+
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Indiv. Num</label>
+                            <input type="number" id="anno-indiv-num" class="form-input" style="height: 30px; font-size: 0.8rem; width: 100%;" min="1">
+                        </div>
+                    </div>
+
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-main); cursor: pointer; margin-top: 2px;">
+                        <input type="checkbox" id="anno-reference" style="accent-color: var(--brand);"> Reference
+                    </label>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Comments</label>
+                        <textarea id="anno-comments" class="form-input" style="min-height: 60px; font-size: 0.8rem; width: 100%; padding: 8px; resize: vertical;" placeholder="Add notes here..."></textarea>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; flex-shrink: 0;">
+                    <button class="btn-secondary" style="flex: 1; justify-content: center; height: 30px;" onclick="cancelNewAnnotation()">Cancel</button>
+                    <button class="btn-primary" style="flex: 1; justify-content: center; height: 30px;" onclick="saveNewAnnotation()">Save</button>
+                </div>
+            </div>
             <div id="panel-ai-models" style="display: none; flex-direction: column; height: 100%;"></div>
 
             <div id="panel-ac-indices" style="display: none; flex-direction: column; height: 100%;"></div>
@@ -1547,12 +1637,14 @@
 
     // 2. 核心切换逻辑
     function switchRightPanel(panelId) {
-        ['audio-info', 'ai-models', 'ac-indices', 'ac-analysis'].forEach(id => {
-            document.getElementById('panel-' + id).style.display = 'none';
+        // 新增：加入 'new-annotation'，确保切换面板时能正确隐藏它
+        ['audio-info', 'ai-models', 'ac-indices', 'ac-analysis', 'new-annotation'].forEach(id => {
+            const el = document.getElementById('panel-' + id);
+            if (el) el.style.display = 'none';
         });
 
         const target = document.getElementById('panel-' + panelId);
-        target.style.display = 'flex';
+        if (target) target.style.display = 'flex';
 
         if (panelId === 'ai-models') {
             renderSidePanelList(target, 'Run AI Models', 'cpu', MOCK_AI_MODELS, "alert('AI Models task started!'); switchRightPanel('audio-info');", true);
@@ -1806,6 +1898,227 @@
             renderAudioInfoLabel();
         }
     };
+
+    // ================= 频谱图画框与新建标注逻辑 =================
+    let isDrawingAnno = false;
+    let drawStartX = 0;
+    let drawStartY = 0;
+    let draftBox = null;
+    let currentDraftData = null;
+
+    // 获取频谱图容器
+    const viewport = document.getElementById('spectrogram-viewport');
+    if (viewport) {
+        viewport.style.cursor = 'crosshair';
+
+        // 1. 鼠标按下，开始画框
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button !== 0 || e.target.closest('.annotation-box')) return;
+
+            // 【需求更新】：一旦点击了图上的空白处，不仅清除旧框，同时立刻关闭右侧新建表单
+            if (draftBox) {
+                draftBox.remove();
+                draftBox = null;
+                switchRightPanel('audio-info');
+            }
+
+            isDrawingAnno = true;
+            const rect = viewport.getBoundingClientRect();
+            drawStartX = e.clientX - rect.left;
+            drawStartY = e.clientY - rect.top;
+
+            draftBox = document.createElement('div');
+            draftBox.id = 'draft-annotation';
+            draftBox.style.position = 'absolute';
+            draftBox.style.border = '2px dashed var(--brand)';
+            draftBox.style.backgroundColor = 'rgba(var(--brand-rgb), 0.2)';
+            draftBox.style.boxShadow = '0 0 10px rgba(var(--brand-rgb), 0.5)';
+            draftBox.style.zIndex = '100';
+            draftBox.style.pointerEvents = 'none';
+
+            document.getElementById('annotations-layer').appendChild(draftBox);
+        });
+
+        // 2. 鼠标拖拽
+        viewport.addEventListener('mousemove', (e) => {
+            if (!isDrawingAnno || !draftBox) return;
+            const rect = viewport.getBoundingClientRect();
+            let currentX = e.clientX - rect.left;
+            let currentY = e.clientY - rect.top;
+
+            currentX = Math.max(0, Math.min(currentX, rect.width));
+            currentY = Math.max(0, Math.min(currentY, rect.height));
+
+            const left = Math.min(drawStartX, currentX);
+            const top = Math.min(drawStartY, currentY);
+            const width = Math.abs(currentX - drawStartX);
+            const height = Math.abs(currentY - drawStartY);
+
+            draftBox.style.left = left + 'px';
+            draftBox.style.top = top + 'px';
+            draftBox.style.width = width + 'px';
+            draftBox.style.height = height + 'px';
+        });
+
+        // 3. 鼠标抬起
+        viewport.addEventListener('mouseup', handleDrawEnd);
+        viewport.addEventListener('mouseleave', (e) => {
+            if (isDrawingAnno) handleDrawEnd(e);
+        });
+    }
+
+    function handleDrawEnd(e) {
+        if (!isDrawingAnno) return;
+        isDrawingAnno = false;
+
+        const rect = viewport.getBoundingClientRect();
+        const boxLeft = parseFloat(draftBox.style.left || 0);
+        const boxTop = parseFloat(draftBox.style.top || 0);
+        const boxWidth = parseFloat(draftBox.style.width || 0);
+        const boxHeight = parseFloat(draftBox.style.height || 0);
+
+        // 如果只是很小的点击，直接清除放弃，并确保切回 info
+        if (boxWidth < 5 || boxHeight < 5) {
+            draftBox.remove();
+            draftBox = null;
+            switchRightPanel('audio-info');
+            return;
+        }
+
+        const MAX_TIME = 60;
+        const MAX_FREQ = 24000;
+
+        const min_x = (boxLeft / rect.width) * MAX_TIME;
+        const max_x = ((boxLeft + boxWidth) / rect.width) * MAX_TIME;
+        const bottomPx = rect.height - (boxTop + boxHeight);
+        const min_y = (bottomPx / rect.height) * MAX_FREQ;
+        const max_y = ((bottomPx + boxHeight) / rect.height) * MAX_FREQ;
+
+        currentDraftData = {
+            min_x: min_x.toFixed(2),
+            max_x: max_x.toFixed(2),
+            min_y: Math.round(min_y),
+            max_y: Math.round(max_y)
+        };
+
+        // 填充右侧坐标
+        document.getElementById('anno-min-x').value = currentDraftData.min_x;
+        document.getElementById('anno-max-x').value = currentDraftData.max_x;
+        document.getElementById('anno-min-y').value = currentDraftData.min_y;
+        document.getElementById('anno-max-y').value = currentDraftData.max_y;
+
+        // 重置所有表单状态
+        document.getElementById('anno-sound-class').value = 'Biophony';
+        document.getElementById('anno-sound-type').value = '';
+        document.getElementById('anno-taxon').value = '';
+        document.getElementById('anno-comments').value = '';
+        document.getElementById('anno-uncertain').checked = false;
+        document.getElementById('anno-distance').value = '';
+        document.getElementById('anno-distance').disabled = false;
+        document.getElementById('anno-not-estimable').checked = false;
+        document.getElementById('anno-indiv-num').value = '';
+        document.getElementById('anno-reference').checked = false;
+
+        toggleBiophonyFields('Biophony'); // 触发显示特定的 Biophony 联动区域
+        switchRightPanel('new-annotation');
+    }
+
+    // 【需求更新】：在输入框输入数字时，实时重绘频谱图上的虚线框
+    window.updateDraftBoxFromInputs = function() {
+        if (!draftBox) return;
+
+        const minX = parseFloat(document.getElementById('anno-min-x').value) || 0;
+        const maxX = parseFloat(document.getElementById('anno-max-x').value) || 0;
+        const minY = parseFloat(document.getElementById('anno-min-y').value) || 0;
+        const maxY = parseFloat(document.getElementById('anno-max-y').value) || 0;
+
+        const MAX_TIME = 60;
+        const MAX_FREQ = 24000;
+
+        // 根据最新输入的数据计算百分比
+        const left = (minX / MAX_TIME) * 100;
+        const width = ((maxX - minX) / MAX_TIME) * 100;
+        const bottom = (minY / MAX_FREQ) * 100;
+        const height = ((maxY - minY) / MAX_FREQ) * 100;
+
+        // 直接通过 bottom 和 % 来绘制，适应性最强
+        draftBox.style.left = left + '%';
+        draftBox.style.width = width + '%';
+        draftBox.style.top = 'auto'; // 清除原来基于像素的 top
+        draftBox.style.bottom = bottom + '%';
+        draftBox.style.height = height + '%';
+
+        // 更新缓存数据
+        currentDraftData.min_x = minX;
+        currentDraftData.max_x = maxX;
+        currentDraftData.min_y = minY;
+        currentDraftData.max_y = maxY;
+    };
+
+    // 【需求更新】：控制 Sound Class 联动隐藏 Biophony 区域
+    window.toggleBiophonyFields = function(val) {
+        const bioFields = document.getElementById('biophony-fields');
+        if (bioFields) {
+            bioFields.style.display = (val === 'Biophony') ? 'flex' : 'none';
+        }
+    };
+
+    // 4. 表单 - 取消按钮
+    window.cancelNewAnnotation = function() {
+        if (draftBox) {
+            draftBox.remove();
+            draftBox = null;
+        }
+        currentDraftData = null;
+        switchRightPanel('audio-info');
+    };
+
+    // 5. 表单 - 保存按钮
+    window.saveNewAnnotation = function() {
+        if (!currentDraftData) return;
+
+        const newId = mockAnnotations.length > 0 ? Math.max(...mockAnnotations.map(a => a.id)) + 1 : 1;
+        const isBio = document.getElementById('anno-sound-class').value === 'Biophony';
+        const isNotEstimable = document.getElementById('anno-not-estimable').checked;
+
+        const newAnno = {
+            id: newId,
+            uuid: `5570-e29b-41d4-a716-new${String(newId).padStart(9, '0')}`,
+            media_name: currentAudio ? currentAudio.name : 'Unknown',
+            min_x: parseFloat(document.getElementById('anno-min-x').value),
+            max_x: parseFloat(document.getElementById('anno-max-x').value),
+            min_y: parseInt(document.getElementById('anno-min-y').value),
+            max_y: parseInt(document.getElementById('anno-max-y').value),
+            creator_type: 'user',
+            sound_id: document.getElementById('anno-sound-class').value,
+            animal_sound_type: document.getElementById('anno-sound-type').value,
+
+            // 下面字段如果是 Biophony 就提取数据，否则置空/置默认
+            taxon_id: isBio ? document.getElementById('anno-taxon').value : "",
+            confidence: null,
+            uncertain: isBio ? document.getElementById('anno-uncertain').checked : false,
+            sound_distance_m: (isBio && !isNotEstimable && document.getElementById('anno-distance').value) ? parseInt(document.getElementById('anno-distance').value) : null,
+            distance_not_estimable: isBio ? isNotEstimable : false,
+            individual_num: (isBio && document.getElementById('anno-indiv-num').value) ? parseInt(document.getElementById('anno-indiv-num').value) : null,
+
+            reference: document.getElementById('anno-reference').checked,
+            comments: document.getElementById('anno-comments').value,
+            creator_id: 'Liudilong',
+            creation_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        };
+
+        mockAnnotations.push(newAnno);
+
+        if (draftBox) {
+            draftBox.remove();
+            draftBox = null;
+        }
+        currentDraftData = null;
+
+        switchRightPanel('audio-info');
+        renderCrudTable();
+    };
+
     // ================== 6. 初始化 ==================
     window.addEventListener('DOMContentLoaded', () => {
         const saved = localStorage.getItem('theme');
