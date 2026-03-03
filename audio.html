@@ -233,6 +233,34 @@
         .crud-table tr.hover-sync:not(.selected) td:first-child {
             box-shadow: inset 4px 0 0 var(--brand) !important;
         }
+        .label-add-wrapper {
+            width: 28px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .label-add-wrapper:hover,
+        .label-add-wrapper:focus-within {
+            width: 130px; /* 悬停时展开的宽度 */
+            border-color: var(--brand) !important;
+        }
+        .label-add-wrapper .label-add-input {
+            width: 0;
+            padding: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* 展开状态下输入框的样式 */
+        .label-add-wrapper:hover .label-add-input,
+        .label-add-wrapper:focus-within .label-add-input {
+            width: 100%;
+            padding: 0 0 0 8px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        /* 聚焦发光 */
+        .label-add-wrapper:focus-within {
+            box-shadow: 0 0 0 2px var(--brand-tint);
+        }
     </style>
     <script src="data.js"></script>
 </head>
@@ -350,13 +378,25 @@
                         </div>
                         <div class="fft-dropdown-menu" id="fft-menu">
                             <div class="fft-option" onclick="selectFft('256', this, event)">256</div>
-                            <div class="fft-option" onclick="selectFft('512', this, event)">512</div>
-                            <div class="fft-option selected" onclick="selectFft('1024', this, event)">1024</div>
-                            <div class="fft-option" onclick="selectFft('2048', this, event)">2048</div>
                             <div class="fft-option" onclick="selectFft('4096', this, event)">4096</div>
                         </div>
                     </div>
 
+                    <div class="fft-dropdown-wrapper" title="Audio Label">
+                        <div id="audio-label-tag" class="btn-toolbar" onclick="toggleAudioLabelDropdown(event)" style="padding: 0 12px; gap: 6px; cursor: pointer;">
+                            <i data-lucide="tag" size="14"></i>
+                            <span id="audio-label-display" style="font-size: 0.85rem; font-weight: 600; display: inline-block; width: 80px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">not analysed</span>
+                        </div>
+
+                        <div class="fft-dropdown-menu" id="audio-label-dropdown" style="width: 240px;">
+                            <div id="audio-label-options" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;">
+                            </div>
+                            <div style="margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border-color); display: flex; gap: 6px; align-items: center;">
+                                <input type="text" id="new-label-input" class="form-input" placeholder="Create new..." style="flex: 1; min-width: 0; height: 26px; font-size: 0.75rem; padding: 0 8px; border-radius: 4px;" onkeydown="if(event.key === 'Enter') handleAddNewLabel(event)" onclick="event.stopPropagation()">
+                                <button onclick="handleAddNewLabel(event)" style="height: 26px; padding: 0 12px; font-size: 0.75rem; border-radius: 4px; background: var(--brand); color: white; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(var(--brand-rgb), 0.2);" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='none'">Add</button>
+                            </div>
+                        </div>
+                    </div>
 
                     <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
                     <button class="btn-toolbar" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
@@ -514,27 +554,6 @@
                 </div>
 
                 <div style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 18px; padding-bottom: 8px;">
-
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; gap: 6px; align-items: center;">
-
-                            <select id="audio-label-select" class="form-input" style="width: 120px; flex-shrink: 0; height: 26px; font-size: 0.75rem; padding: 0 4px; border-radius: 4px; cursor: pointer;" onchange="changeAudioLabel(this.value)">
-                            </select>
-
-                            <button class="btn-toolbar danger" onclick="deleteCurrentCustomLabel()" style="height: 26px; width: 26px; flex-shrink: 0; padding: 0; display: flex; justify-content: center; align-items: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface);" title="Delete current label">
-                                <i data-lucide="trash-2" size="14"></i>
-                            </button>
-
-                            <div style="width: 1px; height: 16px; background: var(--border-color); margin: 0 2px;"></div>
-
-                            <input type="text" id="new-label-input" class="form-input" placeholder="New label..." style="flex: 1; min-width: 60px; height: 26px; font-size: 0.75rem; padding: 0 8px; border-radius: 4px;">
-
-                            <button class="btn-primary" onclick="addNewCustomLabel()" style="height: 26px; padding: 0 10px; flex-shrink: 0; font-size: 0.75rem; line-height: 1; min-height: unset; border-radius: 4px;">Add</button>
-                        </div>
-
-                        <div style="height: 1px; background: var(--border-color); margin-top: 2px; opacity: 0.5;"></div>
-                    </div>
-
                     <div style="display: grid; grid-template-columns: max-content 1fr; gap: 10px 16px; align-items: baseline; font-size: 0.8rem;">
                         <span style="color: var(--text-muted); font-size: 0.75rem;">Date Time</span>
                         <span style="font-weight: 500; color: var(--text-main); text-align: right; font-variant-numeric: tabular-nums;">2026-02-15 08:30:00</span>
@@ -1402,11 +1421,13 @@
     function toggleFftDropdown(e) {
         if (e) e.stopPropagation();
 
-        // 1. 先关闭可能处于打开状态的声道下拉框
         const channelMenu = document.getElementById('channel-menu');
         if (channelMenu) channelMenu.classList.remove('active');
 
-        // 2. 再切换当前的 FFT 下拉框
+        // 新增：打开 FFT 时，关闭 Label 菜单
+        const labelMenu = document.getElementById('audio-label-dropdown');
+        if (labelMenu) labelMenu.classList.remove('active');
+
         const menu = document.getElementById('fft-menu');
         if (menu) menu.classList.toggle('active');
     }
@@ -1430,11 +1451,13 @@
     function toggleChannelDropdown(e) {
         if (e) e.stopPropagation();
 
-        // 1. 先关闭可能处于打开状态的 FFT 下拉框
         const fftMenu = document.getElementById('fft-menu');
         if (fftMenu) fftMenu.classList.remove('active');
 
-        // 2. 再切换当前的声道下拉框
+        // 新增：打开 Channel 时，关闭 Label 菜单
+        const labelMenu = document.getElementById('audio-label-dropdown');
+        if (labelMenu) labelMenu.classList.remove('active');
+
         const menu = document.getElementById('channel-menu');
         if (menu) menu.classList.toggle('active');
     }
@@ -1660,14 +1683,15 @@
             container.style.display = checkbox.checked ? 'block' : 'none';
         }
     };
-    // ================= Audio Info Select Label 核心逻辑 =================
+    // ================= Audio Info Custom Select Label 核心逻辑 =================
     const BASE_LABELS = ["not analysed", "tagged", "reviewed"];
     let AVAILABLE_LABELS = [...BASE_LABELS];
 
-    // 渲染下拉框的选项
     function renderAudioInfoLabel() {
-        const selectEl = document.getElementById('audio-label-select');
-        if (!selectEl || !currentAudio) return;
+        const optionsContainer = document.getElementById('audio-label-options');
+        const display = document.getElementById('audio-label-display');
+        const tag = document.getElementById('audio-label-tag');
+        if (!optionsContainer || !display || !tag || !currentAudio) return;
 
         let currentLabel = currentAudio.label || "not analysed";
 
@@ -1675,31 +1699,75 @@
             AVAILABLE_LABELS.push(currentLabel);
         }
 
+        display.textContent = currentLabel;
+
+        // 核心修改：利用工具栏原生的 .active 样式来实现高亮选中态
+        if (currentLabel === "not analysed") {
+            tag.classList.remove('active');
+        } else {
+            tag.classList.add('active');
+        }
+
         let html = '';
         AVAILABLE_LABELS.forEach(label => {
             const isSelected = (currentLabel === label) ? 'selected' : '';
-            html += `<option value="${label}" ${isSelected}>${label}</option>`;
+            const isBase = BASE_LABELS.includes(label);
+
+            let deleteHtml = '';
+            if (!isBase) {
+                // 使用绝对定位将 X 图标固定在右侧边缘，避免影响中间文字的居中对齐
+                deleteHtml = `<i data-lucide="x" size="14" style="position: absolute; right: 12px; opacity: 0.5; cursor: pointer; transition: all 0.2s;"
+                                 onmouseover="this.style.opacity='1'; this.style.color='#ef4444';"
+                                 onmouseout="this.style.opacity='0.5'; this.style.color='';"
+                                 onclick="deleteCustomLabel('${label}', event)"></i>`;
+            }
+
+            // 彻底移除高度和字号的强制内联覆盖，全盘继承 css 中的 fft-option 样式 (居中排版、0.85rem 字号、8px 圆角)
+            html += `<div class="fft-option ${isSelected}" style="position: relative; display: flex; align-items: center; justify-content: center;" onclick="changeAudioLabel('${label}', event)">
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 80%;">${label}</span>
+                        ${deleteHtml}
+                     </div>`;
         });
 
-        selectEl.innerHTML = html;
+        optionsContainer.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
     }
 
-    // 切换下拉框选择时触发，直接保存到当前音频
-    window.changeAudioLabel = function(newLabel) {
-        if (!currentAudio) return;
-        currentAudio.label = newLabel;
+    window.toggleAudioLabelDropdown = function(e) {
+        if (e) e.stopPropagation();
+
+        // 点击标签时，自动收起其他菜单
+        const fftMenu = document.getElementById('fft-menu');
+        if (fftMenu) fftMenu.classList.remove('active');
+        const channelMenu = document.getElementById('channel-menu');
+        if (channelMenu) channelMenu.classList.remove('active');
+
+        const menu = document.getElementById('audio-label-dropdown');
+        if (menu) menu.classList.toggle('active');
     };
 
-    // 新增标签
-    window.addNewCustomLabel = function() {
+    window.changeAudioLabel = function(newLabel, e) {
+        if (e) e.stopPropagation();
+        if (!currentAudio) return;
+        currentAudio.label = newLabel;
+
+        const menu = document.getElementById('audio-label-dropdown');
+        if (menu) menu.classList.remove('active');
+
+        renderAudioInfoLabel();
+    };
+
+    window.handleAddNewLabel = function(e) {
+        if (e) e.stopPropagation();
         const inputEl = document.getElementById('new-label-input');
         if (!inputEl) return;
         const newLabel = inputEl.value.trim();
 
         if (!newLabel) {
-            alert("Please enter a valid label name.");
+            inputEl.focus();
             return;
         }
+
         if (AVAILABLE_LABELS.includes(newLabel)) {
             alert("This label already exists.");
             return;
@@ -1708,17 +1776,18 @@
         AVAILABLE_LABELS.push(newLabel);
         inputEl.value = '';
 
-        // 新增后自动应用为当前标签
         if (currentAudio) {
             currentAudio.label = newLabel;
         }
+
+        const menu = document.getElementById('audio-label-dropdown');
+        if (menu) menu.classList.remove('active');
+
         renderAudioInfoLabel();
     };
 
-    // 删除当前下拉框选中的自定义标签
-    window.deleteCurrentCustomLabel = function() {
-        if (!currentAudio) return;
-        const labelToDelete = currentAudio.label;
+    window.deleteCustomLabel = function(labelToDelete, event) {
+        if (event) event.stopPropagation();
 
         if (BASE_LABELS.includes(labelToDelete)) {
             alert("Cannot delete basic labels.");
@@ -1727,7 +1796,10 @@
 
         if (confirm(`Are you sure you want to delete the label "${labelToDelete}"?`)) {
             AVAILABLE_LABELS = AVAILABLE_LABELS.filter(l => l !== labelToDelete);
-            currentAudio.label = "not analysed"; // 退回到默认值
+
+            if (currentAudio && currentAudio.label === labelToDelete) {
+                currentAudio.label = "not analysed";
+            }
             renderAudioInfoLabel();
         }
     };
