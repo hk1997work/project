@@ -489,7 +489,7 @@
 
         </div>
 
-        <div class="info-section" style="width: 360px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; background: var(--bg-body); flex-shrink: 0; overflow: hidden;">
+        <div class="info-section" style="width: 420px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; background: var(--bg-body); flex-shrink: 0; overflow: hidden;">
             <div id="panel-audio-info" style="display: flex; flex-direction: column; gap: 8px; height: 100%;">
                 <div style="height: 28px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-sizing: border-box; flex-shrink: 0;">
                     <i data-lucide="info" size="16" style="color: var(--brand);"></i>
@@ -1513,15 +1513,17 @@
         }
     }
 
-    // 3. 通用侧边栏渲染器 (完全还原 project.js 的 Form Group 结构)
+    // 3. 通用侧边栏渲染器 (修复返回按键悬停消失问题，增加优雅的 hover 效果)
     function renderSidePanelList(container, title, iconName, dataList, onRunStr, isAiModel = false) {
         let html = `
-    <div style="height: 28px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-sizing: border-box; flex-shrink: 0; padding-bottom: 4px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px;">
-        <button class="btn-toolbar" onclick="switchRightPanel('audio-info')" style="padding: 0; width: 24px; height: 24px; justify-content: center; border:none; box-shadow:none; background:transparent;" title="Back to Info">
-            <i data-lucide="arrow-left" size="16"></i>
+    <div style="height: 28px; font-weight: 600; display: flex; align-items: center; gap: 4px; box-sizing: border-box; flex-shrink: 0; margin-bottom: 8px;">
+        <button onclick="switchRightPanel('audio-info')" style="padding: 0; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; border: none; background: transparent; cursor: pointer; border-radius: 6px; color: var(--text-secondary); transition: all 0.2s ease; margin-left: -4px;"
+                onmouseover="this.style.background='var(--bg-capsule)'; this.style.color='var(--text-main)';"
+                onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)';"
+                title="Back to Info">
+            <i data-lucide="arrow-left" size="18"></i>
         </button>
-        <i data-lucide="${iconName}" size="16" style="color: var(--brand);"></i>
-        <span>${title}</span>
+        <span style="margin-left: 2px;">${title}</span>
     </div>
 
     <div style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; padding-bottom: 8px;">
@@ -1532,12 +1534,17 @@
         dataList.forEach((item, index) => {
             const borderStyle = index === dataList.length - 1 ? '' : 'border-bottom: 1px dashed var(--border-color);';
 
+            const linkUrl = (item.url && item.url !== '#') ? item.url : '#';
+
             html += `
         <div style="${borderStyle} padding: 10px 4px;">
             <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                 <input type="checkbox" value="${item.id}" class="ai-model-cb" onchange="toggleSideParams('${item.id}', this)" style="width:16px; height:16px; accent-color:var(--brand);">
                 <span style="font-size:0.95rem; color:var(--text-main); font-weight:600;">${item.name}</span>
-                ${item.url && item.url !== '#' ? `<a href="${item.url}" target="_blank" style="color:var(--brand); display:flex; align-items:center; margin-left:auto;" title="Learn More" onclick="event.stopPropagation()"><i data-lucide="external-link" size="14"></i></a>` : ''}
+
+                <a href="${linkUrl}" target="_blank" style="color:var(--brand); display:flex; align-items:center; margin-left:auto;" title="Learn More" onclick="event.stopPropagation()">
+                    <i data-lucide="external-link" size="14"></i>
+                </a>
             </label>
             <div style="font-size:0.8rem; color:var(--text-muted); margin-left: 26px; margin-top: 4px;">${item.desc}</div>
 
@@ -1548,9 +1555,8 @@
         </div>`;
         });
 
-        html += `</div></div>`; // 关闭 form-group 和 background container
+        html += `</div></div>`;
 
-        // 【新增】还原 AI Merge Annotations 选项框
         if (isAiModel) {
             html += `
         <div class="form-group" style="margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
