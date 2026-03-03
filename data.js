@@ -276,7 +276,7 @@ const dbSchema = {
         }, {
             key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'
         }, {key: "creation_date", label: "Created", type: "text", readonly: true}, {
-            key: "annotations_display", label: "Labels", type: "text", readonly: true, hiddenInForm: true
+            key: "annotations_display", label: "Labels", type: "text", readonly: true, hiddenInForm: true, filterType: 'select'
         }]
     }, site: {
         label: "Sites", icon: "map-pin", pk: "id", columns: [

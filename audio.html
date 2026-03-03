@@ -515,6 +515,26 @@
 
                 <div style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 18px; padding-bottom: 8px;">
 
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; gap: 6px; align-items: center;">
+
+                            <select id="audio-label-select" class="form-input" style="width: 120px; flex-shrink: 0; height: 26px; font-size: 0.75rem; padding: 0 4px; border-radius: 4px; cursor: pointer;" onchange="changeAudioLabel(this.value)">
+                            </select>
+
+                            <button class="btn-toolbar danger" onclick="deleteCurrentCustomLabel()" style="height: 26px; width: 26px; flex-shrink: 0; padding: 0; display: flex; justify-content: center; align-items: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface);" title="Delete current label">
+                                <i data-lucide="trash-2" size="14"></i>
+                            </button>
+
+                            <div style="width: 1px; height: 16px; background: var(--border-color); margin: 0 2px;"></div>
+
+                            <input type="text" id="new-label-input" class="form-input" placeholder="New label..." style="flex: 1; min-width: 60px; height: 26px; font-size: 0.75rem; padding: 0 8px; border-radius: 4px;">
+
+                            <button class="btn-primary" onclick="addNewCustomLabel()" style="height: 26px; padding: 0 10px; flex-shrink: 0; font-size: 0.75rem; line-height: 1; min-height: unset; border-radius: 4px;">Add</button>
+                        </div>
+
+                        <div style="height: 1px; background: var(--border-color); margin-top: 2px; opacity: 0.5;"></div>
+                    </div>
+
                     <div style="display: grid; grid-template-columns: max-content 1fr; gap: 10px 16px; align-items: baseline; font-size: 0.8rem;">
                         <span style="color: var(--text-muted); font-size: 0.75rem;">Date Time</span>
                         <span style="font-weight: 500; color: var(--text-main); text-align: right; font-variant-numeric: tabular-nums;">2026-02-15 08:30:00</span>
@@ -584,7 +604,8 @@
         return Array.from({length: 12}, (_, i) => ({
             id: `a${i}`,
             name: `REC_${colId}_${20260000 + i}.wav`,
-            channel_num: Math.random() > 0.5 ? 2 : 1 // 随机单双声道
+            channel_num: Math.random() > 0.5 ? 2 : 1, // 随机单双声道
+            label: "not analysed" // 新增：默认附带一个未分析标签
         }));
     }
 
@@ -696,6 +717,9 @@
 
         closeAllMenus();
         renderAudios();
+
+        // 新增：切换音频时重新渲染右侧 Label
+        renderAudioInfoLabel();
     }
 
     // ================== 显示/隐藏 Annotations 逻辑 ==================
@@ -1636,6 +1660,77 @@
             container.style.display = checkbox.checked ? 'block' : 'none';
         }
     };
+    // ================= Audio Info Select Label 核心逻辑 =================
+    const BASE_LABELS = ["not analysed", "tagged", "reviewed"];
+    let AVAILABLE_LABELS = [...BASE_LABELS];
+
+    // 渲染下拉框的选项
+    function renderAudioInfoLabel() {
+        const selectEl = document.getElementById('audio-label-select');
+        if (!selectEl || !currentAudio) return;
+
+        let currentLabel = currentAudio.label || "not analysed";
+
+        if (!AVAILABLE_LABELS.includes(currentLabel)) {
+            AVAILABLE_LABELS.push(currentLabel);
+        }
+
+        let html = '';
+        AVAILABLE_LABELS.forEach(label => {
+            const isSelected = (currentLabel === label) ? 'selected' : '';
+            html += `<option value="${label}" ${isSelected}>${label}</option>`;
+        });
+
+        selectEl.innerHTML = html;
+    }
+
+    // 切换下拉框选择时触发，直接保存到当前音频
+    window.changeAudioLabel = function(newLabel) {
+        if (!currentAudio) return;
+        currentAudio.label = newLabel;
+    };
+
+    // 新增标签
+    window.addNewCustomLabel = function() {
+        const inputEl = document.getElementById('new-label-input');
+        if (!inputEl) return;
+        const newLabel = inputEl.value.trim();
+
+        if (!newLabel) {
+            alert("Please enter a valid label name.");
+            return;
+        }
+        if (AVAILABLE_LABELS.includes(newLabel)) {
+            alert("This label already exists.");
+            return;
+        }
+
+        AVAILABLE_LABELS.push(newLabel);
+        inputEl.value = '';
+
+        // 新增后自动应用为当前标签
+        if (currentAudio) {
+            currentAudio.label = newLabel;
+        }
+        renderAudioInfoLabel();
+    };
+
+    // 删除当前下拉框选中的自定义标签
+    window.deleteCurrentCustomLabel = function() {
+        if (!currentAudio) return;
+        const labelToDelete = currentAudio.label;
+
+        if (BASE_LABELS.includes(labelToDelete)) {
+            alert("Cannot delete basic labels.");
+            return;
+        }
+
+        if (confirm(`Are you sure you want to delete the label "${labelToDelete}"?`)) {
+            AVAILABLE_LABELS = AVAILABLE_LABELS.filter(l => l !== labelToDelete);
+            currentAudio.label = "not analysed"; // 退回到默认值
+            renderAudioInfoLabel();
+        }
+    };
     // ================== 6. 初始化 ==================
     window.addEventListener('DOMContentLoaded', () => {
         const saved = localStorage.getItem('theme');
@@ -1654,6 +1749,10 @@
 
         applySiteTheme(siteNames[0]);
         renderChannelCapsule(currentAudio.channel_num);
+
+        // 新增：页面初次加载时渲染右侧 Label
+        renderAudioInfoLabel();
+
         lucide.createIcons();
     });
 </script>
