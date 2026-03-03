@@ -27,13 +27,15 @@
             box-sizing: border-box !important;
         }
 
-        /* 新增：工具栏按钮被选中时的状态 */
+        /* 仅针对底部播放控件 和 特定的 Label 标签启用主题色高亮，排除普通工具栏按钮（如显示/隐藏） */
+        #audio-label-tag.active,
         .player-toolbar-bottom .btn-toolbar.active {
             background: var(--brand) !important;
             color: white !important;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
         }
 
+        #audio-label-tag.active i,
         .player-toolbar-bottom .btn-toolbar.active i {
             color: white !important;
         }
@@ -378,14 +380,17 @@
                         </div>
                         <div class="fft-dropdown-menu" id="fft-menu">
                             <div class="fft-option" onclick="selectFft('256', this, event)">256</div>
+                            <div class="fft-option" onclick="selectFft('512', this, event)">512</div>
+                            <div class="fft-option selected" onclick="selectFft('1024', this, event)">1024</div>
+                            <div class="fft-option" onclick="selectFft('2048', this, event)">2048</div>
                             <div class="fft-option" onclick="selectFft('4096', this, event)">4096</div>
                         </div>
                     </div>
 
-                    <div class="fft-dropdown-wrapper" title="Audio Label">
+                    <div class="fft-dropdown-wrapper" title="Audio Label" style="flex-shrink: 0;">
                         <div id="audio-label-tag" class="btn-toolbar" onclick="toggleAudioLabelDropdown(event)" style="padding: 0 12px; gap: 6px; cursor: pointer;">
                             <i data-lucide="tag" size="14"></i>
-                            <span id="audio-label-display" style="font-size: 0.85rem; font-weight: 600; display: inline-block; width: 80px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">not analysed</span>
+                            <span id="audio-label-display" style="font-size: 0.85rem; font-weight: 600; display: inline-block; white-space: nowrap;">not analysed</span>
                         </div>
 
                         <div class="fft-dropdown-menu" id="audio-label-dropdown" style="width: 240px;">
