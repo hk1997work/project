@@ -384,10 +384,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <button class="btn-toolbar active" id="btn-toggle-annotations" onclick="toggleAnnotationsVisibility(this)" title="Hide Annotations">
-                        <i data-lucide="eye" size="14"></i>
-                    </button>
                     <div id="channel-capsule-container"></div>
                     <div class="fft-dropdown-wrapper">
                         <div class="btn-toolbar" onclick="toggleFftDropdown(event)" style="padding: 0 12px; gap: 6px; cursor: pointer;" title="FFT Window Size">
@@ -402,6 +398,9 @@
                             <div class="fft-option" onclick="selectFft('4096', this, event)">4096</div>
                         </div>
                     </div>
+                    <button class="btn-toolbar active" id="btn-toggle-annotations" onclick="toggleAnnotationsVisibility(this)" title="Hide Annotations">
+                        <i data-lucide="eye" size="14"></i>
+                    </button>
                     <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
                     <button class="btn-toolbar" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
                     <button class="btn-toolbar" title="Pan Right (Next Time Segment)"><i data-lucide="chevron-right" size="14"></i></button>
