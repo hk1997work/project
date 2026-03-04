@@ -626,38 +626,35 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div class="form-group" style="margin: 0;">
                                 <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Start Time (s)</label>
-                                <input type="number" id="anno-min-x" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" oninput="updateDraftBoxFromInputs()">
+                                <input type="number" id="anno-min-x" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" oninput="updateDraftBoxFromInputs()" step="0.01">
                             </div>
                             <div class="form-group" style="margin: 0;">
                                 <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">End Time (s)</label>
-                                <input type="number" id="anno-max-x" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" oninput="updateDraftBoxFromInputs()">
+                                <input type="number" id="anno-max-x" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" oninput="updateDraftBoxFromInputs()" step="0.01">
                             </div>
                             <div class="form-group" style="margin: 0;">
                                 <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Low Freq (Hz)</label>
-                                <input type="number" id="anno-min-y" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" oninput="updateDraftBoxFromInputs()">
+                                <input type="number" id="anno-min-y" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" oninput="updateDraftBoxFromInputs()" step="1">
                             </div>
                             <div class="form-group" style="margin: 0;">
                                 <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">High Freq (Hz)</label>
-                                <input type="number" id="anno-max-y" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" oninput="updateDraftBoxFromInputs()">
+                                <input type="number" id="anno-max-y" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" oninput="updateDraftBoxFromInputs()" step="1">
                             </div>
 
                             <div style="grid-column: 1 / -1; height: 1px; background: var(--border-color); opacity: 0.5; margin: 2px 0;"></div>
 
                             <div class="form-group" style="margin: 0;">
-                                <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Sound Class</label>
-                                <select id="anno-sound-class" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" onchange="toggleBiophonyFields(this.value)">
+                                <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Soundscape</label>
+                                <select id="anno-soundscape" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" onchange="updateSoundTypeOptionsAudio(); toggleBiophonyFields(this.value)">
                                     <option value="Biophony">Biophony</option>
+                                    <option value="Anthropophony">Anthropophony</option>
                                     <option value="Geophony">Geophony</option>
-                                    <option value="Anthrophony">Anthrophony</option>
+                                    <option value="Other">Other</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin: 0;">
                                 <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Sound Type</label>
                                 <select id="anno-sound-type" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;">
-                                    <option value="">-- Select --</option>
-                                    <option value="Call">Call</option>
-                                    <option value="Song">Song</option>
-                                    <option value="Drumming">Drumming</option>
                                 </select>
                             </div>
                         </div>
@@ -665,13 +662,19 @@
                         <div id="biophony-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
                             <div class="form-group" style="margin: 0;">
                                 <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Taxon</label>
-                                <input type="text" id="anno-taxon" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" placeholder="e.g. Aves, Insecta">
+                                <select id="anno-taxon" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" onchange="updateAnimalSoundTypeOptionsAudio()">
+                                    <option value="">-- Select --</option>
+                                    <option value="AMPHIBIA">AMPHIBIA</option>
+                                    <option value="AVES">AVES</option>
+                                    <option value="MAMMALIA CHIROPTERA">MAMMALIA CHIROPTERA</option>
+                                    <option value="MAMMALIA PRIMATA">MAMMALIA PRIMATA</option>
+                                </select>
                             </div>
-
-                            <div class="form-group" style="margin: 0; display: flex; align-items: flex-end;">
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-main); cursor: pointer; height: 28px;">
-                                    <input type="checkbox" id="anno-uncertain" style="accent-color: var(--brand);"> Uncertain
-                                </label>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Animal Sound</label>
+                                <select id="anno-animal-sound-type" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;">
+                                    <option value="Unknown">Unknown</option>
+                                </select>
                             </div>
 
                             <div class="form-group" style="margin: 0;">
@@ -687,6 +690,11 @@
                             <div class="form-group" style="margin: 0;">
                                 <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Indiv. Num</label>
                                 <input type="number" id="anno-indiv-num" class="form-input" style="height: 28px; font-size: 0.8rem; width: 100%;" min="1">
+                            </div>
+                            <div class="form-group" style="margin: 0; display: flex; align-items: flex-end;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-main); cursor: pointer; height: 28px;">
+                                    <input type="checkbox" id="anno-uncertain" style="accent-color: var(--brand);"> Uncertain
+                                </label>
                             </div>
                         </div>
 
@@ -1032,9 +1040,22 @@
 
 
     // ================== 2. 表格 Schema 和 数据生成 ==================
-    // 注意：SOUNDSCAPE_MAPPING 和 TAXON_SOUND_TYPE_MAPPING 已经从公共的 data.js 中读取，这里不再重复声明。
+    // 采用 window 挂载的方式避免“重复声明”报错
+    window.SOUNDSCAPE_MAPPING = window.SOUNDSCAPE_MAPPING || {
+        "Biophony": ["Fish chorus", "Bat swarm", "Insect broadband noise", "Reptile", "Bird chorus", ""],
+        "Anthropophony": ["Human voices", "Transportation", "Mining", ""],
+        "Geophony": ["Wind", "Wave", "Earthquake", "Rain", ""],
+        "Other": ["Template matching result", "Equipment self-noise", "Ambient sound (background)", "Thermal bat detection", "Unknown", "TEST", ""]
+    };
 
-    const annotationSchema = [
+    window.TAXON_SOUND_TYPE_MAPPING = window.TAXON_SOUND_TYPE_MAPPING || {
+        "AMPHIBIA": ["Courtship", "Advertisement towards males", "Acquisition/defense - reproductive", "Discouragement", "Defense - non reproductive"],
+        "AVES": ["Call - unspecific", "Song", "Non-vocal", "Call - contact", "Call - flight", "Call - begging", "Alarm"],
+        "MAMMALIA CHIROPTERA": ["Searching", "Feeding", "Social"],
+        "MAMMALIA PRIMATA": ["Agonistic", "Affiliative", "Contact", "Song", "Advertisement - territory", "Advertisement - mating", "Foraging", "Alarm", "Begging", "Adult - offspring"]
+    };
+
+    var annotationSchema = [
         {key: "id", label: "ID", type: "number"},
         {key: "uuid", label: "UUID", type: "text"},
         {key: "min_x", label: "Min X", type: "number", filterType: 'range'},
@@ -1055,35 +1076,28 @@
         {key: "comments", label: "Comments", type: "text"}
     ];
 
-    const mockAnnotations = Array.from({length: 30}, (_, i) => {
+    var mockAnnotations = Array.from({length: 30}, (_, i) => {
         const creatorType = ["user", "model", "automated"][Math.floor(Math.random() * 3)];
 
-        // 随机分配级联数据
-        const soundscapeKeys = Object.keys(SOUNDSCAPE_MAPPING);
+        const soundscapeKeys = Object.keys(window.SOUNDSCAPE_MAPPING);
         const comp = soundscapeKeys[Math.floor(Math.random() * soundscapeKeys.length)];
-        const sTypes = SOUNDSCAPE_MAPPING[comp];
+        const sTypes = window.SOUNDSCAPE_MAPPING[comp];
         const sType = sTypes[Math.floor(Math.random() * sTypes.length)];
 
         const isBio = (comp === 'Biophony');
-        const taxonKeys = Object.keys(TAXON_SOUND_TYPE_MAPPING);
+        const taxonKeys = Object.keys(window.TAXON_SOUND_TYPE_MAPPING);
         const taxon = isBio ? taxonKeys[Math.floor(Math.random() * taxonKeys.length)] : "";
-        const aTypes = taxon ? TAXON_SOUND_TYPE_MAPPING[taxon] : [];
+        const aTypes = taxon ? window.TAXON_SOUND_TYPE_MAPPING[taxon] : [];
         const aType = taxon ? (aTypes.length > 0 ? aTypes[Math.floor(Math.random() * aTypes.length)] : "Unknown") : "";
-
-        // 核心修复：确保 maxX 永远大于 minX，并且适配 300s 的长图数据
-        const minX = parseFloat((Math.random() * 280).toFixed(1));
-        const maxX = parseFloat((minX + 0.5 + Math.random() * 4.5).toFixed(1)); // 保证比 minX 大 0.5~5s
-        const minY = Math.floor(Math.random() * 8000);
-        const maxY = Math.floor(minY + 1000 + Math.random() * 4000); // 保证比 minY 大
 
         return {
             id: i + 1,
             uuid: `5570-e29b-41d4-a716-${String(i + 1).padStart(12, '0')}`,
             media_name: ['REC_c10000_20260000.wav', 'REC_c10000_20260001.wav'][Math.floor(Math.random() * 2)],
-            min_x: minX,
-            max_x: maxX,
-            min_y: minY,
-            max_y: maxY,
+            min_x: parseFloat((Math.random() * 280).toFixed(1)),
+            max_x: parseFloat((Math.random() * 280 + 5).toFixed(1)),
+            min_y: Math.floor(Math.random() * 1000),
+            max_y: Math.floor(2000 + Math.random() * 6000),
             creator_type: creatorType,
             soundscape_component: comp,
             sound_type: sType,
@@ -1095,9 +1109,7 @@
             distance_not_estimable: isBio ? Math.random() > 0.8 : false,
             individual_num: isBio ? Math.floor(Math.random() * 5) + 1 : null,
             reference: Math.random() > 0.7,
-            comments: ["Clear", "Noisy", "Overlapping", "Needs review", ""][Math.floor(Math.random() * 5)],
-            creator_id: ["Liudilong", "A. Schmidt", "J. Doe", "System"][Math.floor(Math.random() * 4)],
-            creation_date: `2026-02-${String((i % 28) + 1).padStart(2, '0')} 10:00:00`
+            comments: ["Clear", "Noisy", "Overlapping", "Needs review", ""][Math.floor(Math.random() * 5)]
         };
     });
 
@@ -1411,10 +1423,9 @@
         const layer = document.getElementById('annotations-layer');
         if (!layer) return;
 
-        // 如果没有传入数据，默认设为空数组
         const data = filteredData || [];
 
-        // 核心修复：对齐 UI 上的总时长 (300s) 和最大频率
+        // 核心修复：对齐 UI 上的总时长为 300s，确保画出的框能被正确显示
         const MAX_TIME = 300;
         const MAX_FREQ = 24000;
 
@@ -1428,13 +1439,12 @@
             const bottom = (anno.min_y / MAX_FREQ) * 100;
             let height = ((anno.max_y - anno.min_y) / MAX_FREQ) * 100;
 
-            // 容错处理：如果因误操作导致 max_x < min_x（即宽/高为负数），自动取绝对值
             if (width < 0) width = Math.abs(width);
             if (height < 0) height = Math.abs(height);
-
             if (left + width > 100) width = 100 - left;
             if (bottom + height > 100) height = 100 - bottom;
 
+            // 核心修复：将旧的 sound_id 替换为 soundscape_component，恢复彩色标注
             let color = '#3b82f6';
             if (anno.soundscape_component === 'Biophony') color = '#10b981';
             else if (anno.soundscape_component === 'Anthropophony') color = '#ef4444';
@@ -1446,18 +1456,17 @@
                 bottom: ${bottom}%;
                 width: ${width}%;
                 height: ${height}%;
-                min-width: 6px;   /* ★ 核心修复：强制最小物理宽度，哪怕不到0.1秒也绝对能看清、能点到 */
-                min-height: 6px;  /* ★ 核心修复：强制最小物理高度 */
+                min-width: 6px;   /* ★ 核心修复：强制最小物理宽度，防止因时长过短而不可见 */
+                min-height: 6px;
                 border: 2px solid ${color};
-                background-color: ${color}33; /* 20% 透明度底色 */
-                /* 核心：使用 0 模糊半径的黑边作为内外描边，彻底去除发光感，保证极高清晰度 */
+                background-color: ${color}33;
                 box-shadow: 0 0 0 1px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.5);
                 pointer-events: auto;
                 cursor: pointer;
-                border-radius: 2px; /* 极小的圆角显得专业干练 */
+                border-radius: 2px;
                 box-sizing: border-box;
-                transition: all 0.15s ease; /* 加快过渡，消除拖泥带水的感觉 */
-            " title="${anno.soundscape_component} - ${anno.sound_type} (ID: ${anno.id})"
+                transition: all 0.15s ease;
+            " title="${anno.soundscape_component} - ${anno.animal_sound_type} (ID: ${anno.id})"
               onclick="handleBoxClick(${anno.id}, event)"
               onmouseenter="syncHoverState(${anno.id}, true)"
               onmouseleave="syncHoverState(${anno.id}, false)">
@@ -1921,24 +1930,55 @@
             renderAudioInfoLabel();
         }
     };
+    // ================= 频谱图画框与新建标注逻辑 (支持拖拽缩放与移动) =================
 
-    // ================= 频谱图画框与新建标注逻辑 =================
+    // 【级联菜单逻辑】
+    window.updateSoundTypeOptionsAudio = function() {
+        const component = document.getElementById('anno-soundscape').value;
+        const typeSelect = document.getElementById('anno-sound-type');
+        const options = window.SOUNDSCAPE_MAPPING[component] || [];
+        typeSelect.innerHTML = options.map(opt => `<option value="${opt}">${opt === "" ? "-- Unspecified --" : opt}</option>`).join('');
+    };
+
+    window.updateAnimalSoundTypeOptionsAudio = function() {
+        const taxon = document.getElementById('anno-taxon').value;
+        const animalTypeSelect = document.getElementById('anno-animal-sound-type');
+        const options = window.TAXON_SOUND_TYPE_MAPPING[taxon] || [];
+
+        let html = `<option value="Unknown">Unknown</option>`;
+        html += options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+        if (animalTypeSelect) animalTypeSelect.innerHTML = html;
+    };
+
+    // 【状态控制变量】
     let isDrawingAnno = false;
+    let isResizingAnno = false;
     let drawStartX = 0;
     let drawStartY = 0;
     let draftBox = null;
     let currentDraftData = null;
 
-    // 获取频谱图容器
+    // 拖拽与缩放专用变量
+    let currentResizeHandle = '';
+    let resizeStartX = 0;
+    let resizeStartY = 0;
+    let boxStartLeft = 0;
+    let boxStartTop = 0;
+    let boxStartWidth = 0;
+    let boxStartHeight = 0;
+
     const viewport = document.getElementById('spectrogram-viewport');
     if (viewport) {
         viewport.style.cursor = 'crosshair';
 
-        // 1. 鼠标按下，开始画框
+        // 1. 鼠标按下事件
         viewport.addEventListener('mousedown', (e) => {
             if (e.button !== 0 || e.target.closest('.annotation-box')) return;
 
-            // 【需求更新】：一旦点击了图上的空白处，不仅清除旧框，同时立刻关闭右侧新建表单
+            // 如果点在了现存的虚线框或它的句柄上，交给缩放逻辑处理，不新建框
+            if (e.target === draftBox || e.target.closest('.resize-handle')) return;
+
+            // 点击图表空白处：清除旧框，关闭表单，开始画新框
             if (draftBox) {
                 draftBox.remove();
                 draftBox = null;
@@ -1958,57 +1998,345 @@
             draftBox.style.boxShadow = '0 0 10px rgba(var(--brand-rgb), 0.5)';
             draftBox.style.zIndex = '100';
             draftBox.style.pointerEvents = 'none';
-
+            // 【核心修复1】：强制设定为 border-box，解决每次点击边框时尺寸累加变大的 Bug！
+            draftBox.style.boxSizing = 'border-box';
             document.getElementById('annotations-layer').appendChild(draftBox);
         });
 
-        // 2. 鼠标拖拽
+        // 2. 鼠标移动事件 (兼容画新框与修改旧框)
         viewport.addEventListener('mousemove', (e) => {
-            if (!isDrawingAnno || !draftBox) return;
             const rect = viewport.getBoundingClientRect();
-            let currentX = e.clientX - rect.left;
-            let currentY = e.clientY - rect.top;
 
-            currentX = Math.max(0, Math.min(currentX, rect.width));
-            currentY = Math.max(0, Math.min(currentY, rect.height));
+            // A: 正在拖拽或缩放已有的框
+            if (isResizingAnno && draftBox) {
+                const dx = e.clientX - resizeStartX;
+                const dy = e.clientY - resizeStartY;
 
-            const left = Math.min(drawStartX, currentX);
-            const top = Math.min(drawStartY, currentY);
-            const width = Math.abs(currentX - drawStartX);
-            const height = Math.abs(currentY - drawStartY);
+                let newLeft = boxStartLeft;
+                let newTop = boxStartTop;
+                let newWidth = boxStartWidth;
+                let newHeight = boxStartHeight;
 
-            draftBox.style.left = left + 'px';
-            draftBox.style.top = top + 'px';
-            draftBox.style.width = width + 'px';
-            draftBox.style.height = height + 'px';
+                if (currentResizeHandle === 'move') {
+                    newLeft += dx;
+                    newTop += dy;
+                } else {
+                    if (currentResizeHandle.includes('e')) newWidth += dx;
+                    if (currentResizeHandle.includes('w')) { newLeft += dx; newWidth -= dx; }
+                    if (currentResizeHandle.includes('s')) newHeight += dy;
+                    if (currentResizeHandle.includes('n')) { newTop += dy; newHeight -= dy; }
+                }
+
+                // 限制在画布边界内
+                if (newLeft < 0) { newWidth += newLeft; newLeft = 0; }
+                if (newTop < 0) { newHeight += newTop; newTop = 0; }
+                if (newLeft + newWidth > rect.width) newWidth = rect.width - newLeft;
+                if (newTop + newHeight > rect.height) newHeight = rect.height - newTop;
+
+                // 【核心修复2】：将拖拽的最小物理像素尺寸限制降低到 1px (原来是5px会导致突变)
+                if (newWidth < 1) newWidth = 1;
+                if (newHeight < 1) newHeight = 1;
+
+                // 实时更新 DOM
+                draftBox.style.left = newLeft + 'px';
+                draftBox.style.top = newTop + 'px';
+                draftBox.style.width = newWidth + 'px';
+                draftBox.style.height = newHeight + 'px';
+
+                // 实时反向更新右侧表单输入框
+                updateInputsFromDraftBox(newLeft, newTop, newWidth, newHeight, rect);
+                return;
+            }
+
+            // B: 正在画全新的框
+            if (isDrawingAnno && draftBox) {
+                let currentX = e.clientX - rect.left;
+                let currentY = e.clientY - rect.top;
+                currentX = Math.max(0, Math.min(currentX, rect.width));
+                currentY = Math.max(0, Math.min(currentY, rect.height));
+
+                const left = Math.min(drawStartX, currentX);
+                const top = Math.min(drawStartY, currentY);
+                const width = Math.abs(currentX - drawStartX);
+                const height = Math.abs(currentY - drawStartY);
+
+                draftBox.style.left = left + 'px';
+                draftBox.style.top = top + 'px';
+                draftBox.style.width = width + 'px';
+                draftBox.style.height = height + 'px';
+            }
         });
 
-        // 3. 鼠标抬起
-        viewport.addEventListener('mouseup', handleDrawEnd);
+        // 3. 鼠标抬起事件
+        viewport.addEventListener('mouseup', (e) => {
+            if (isResizingAnno) { endResize(); return; }
+            if (isDrawingAnno) handleDrawEnd();
+        });
+
         viewport.addEventListener('mouseleave', (e) => {
-            if (isDrawingAnno) handleDrawEnd(e);
+            if (isResizingAnno) { endResize(); return; }
+            if (isDrawingAnno) handleDrawEnd();
         });
     }
 
-    // 【新增】二级菜单级联刷新逻辑 (用于新建表单)
-    window.updateSoundTypeOptionsAudio = function() {
-        const component = document.getElementById('anno-soundscape').value;
-        const typeSelect = document.getElementById('anno-sound-type');
-        const options = SOUNDSCAPE_MAPPING[component] || [];
-        typeSelect.innerHTML = options.map(opt => `<option value="${opt}">${opt === "" ? "-- Unspecified --" : opt}</option>`).join('');
+    // 结束缩放或移动 (将像素坐标换算回自适应的百分比)
+    function endResize() {
+        if (!isResizingAnno) return;
+        isResizingAnno = false;
+
+        const rect = viewport.getBoundingClientRect();
+        const boxRect = draftBox.getBoundingClientRect();
+        const left = boxRect.left - rect.left;
+        const top = boxRect.top - rect.top;
+        const width = boxRect.width;
+        const height = boxRect.height;
+        const bottomPx = rect.height - (top + height);
+
+        draftBox.style.left = (left / rect.width * 100) + '%';
+        draftBox.style.width = (width / rect.width * 100) + '%';
+        draftBox.style.bottom = (bottomPx / rect.height * 100) + '%';
+        draftBox.style.height = (height / rect.height * 100) + '%';
+        draftBox.style.top = 'auto'; // 清除临时 top 锁定底部
+    }
+
+    // 结束画新框
+    function handleDrawEnd() {
+        if (!isDrawingAnno) return;
+        isDrawingAnno = false;
+
+        const rect = viewport.getBoundingClientRect();
+        const boxLeft = parseFloat(draftBox.style.left || 0);
+        const boxTop = parseFloat(draftBox.style.top || 0);
+        const boxWidth = parseFloat(draftBox.style.width || 0);
+        const boxHeight = parseFloat(draftBox.style.height || 0);
+
+        // 如果点击太小则取消
+        if (boxWidth < 5 || boxHeight < 5) {
+            draftBox.remove();
+            draftBox = null;
+            switchRightPanel('audio-info');
+            return;
+        }
+
+        // 换算百分比并激活框的交互属性 (允许拖拽和缩放)
+        const bottomPx = rect.height - (boxTop + boxHeight);
+        draftBox.style.left = (boxLeft / rect.width * 100) + '%';
+        draftBox.style.width = (boxWidth / rect.width * 100) + '%';
+        draftBox.style.bottom = (bottomPx / rect.height * 100) + '%';
+        draftBox.style.height = (boxHeight / rect.height * 100) + '%';
+        draftBox.style.top = 'auto';
+
+        addDraftBoxHandles(draftBox);
+        updateInputsFromDraftBox(boxLeft, boxTop, boxWidth, boxHeight, rect);
+
+        // 恢复右侧表单的默认分类值
+        document.getElementById('anno-soundscape').value = 'Biophony';
+        updateSoundTypeOptionsAudio();
+        document.getElementById('anno-taxon').value = '';
+        updateAnimalSoundTypeOptionsAudio();
+        document.getElementById('anno-comments').value = '';
+        document.getElementById('anno-uncertain').checked = false;
+        document.getElementById('anno-distance').value = '';
+        document.getElementById('anno-distance').disabled = false;
+        document.getElementById('anno-not-estimable').checked = false;
+        document.getElementById('anno-indiv-num').value = '';
+        document.getElementById('anno-reference').checked = false;
+
+        toggleBiophonyFields('Biophony');
+        switchRightPanel('new-annotation');
+    }
+
+    // 为虚线框注入 8个缩放句柄 以及 拖拽功能
+    function addDraftBoxHandles(box) {
+        box.style.pointerEvents = 'auto'; // 允许鼠标互动
+        box.style.cursor = 'move'; // 鼠标悬停显示移动十字标
+
+        const cursors = {
+            'n': 'ns-resize', 's': 'ns-resize', 'e': 'ew-resize', 'w': 'ew-resize',
+            'nw': 'nwse-resize', 'ne': 'nesw-resize', 'sw': 'nesw-resize', 'se': 'nwse-resize'
+        };
+
+        Object.keys(cursors).forEach(pos => {
+            const handle = document.createElement('div');
+            handle.className = 'resize-handle';
+            handle.style.position = 'absolute';
+            handle.style.zIndex = '105';
+            handle.style.cursor = cursors[pos];
+
+            // 四条边设为透明的热区，四角设为可见的圆点
+            if (pos.length === 1) {
+                if (pos === 'n' || pos === 's') {
+                    handle.style.width = '100%'; handle.style.height = '8px'; handle.style.left = '0';
+                    if (pos === 'n') handle.style.top = '-4px'; else handle.style.bottom = '-4px';
+                } else {
+                    handle.style.width = '8px'; handle.style.height = '100%'; handle.style.top = '0';
+                    if (pos === 'w') handle.style.left = '-4px'; else handle.style.right = '-4px';
+                }
+            } else {
+                handle.style.width = '10px'; handle.style.height = '10px';
+                handle.style.backgroundColor = 'var(--bg-surface)';
+                handle.style.border = '2px solid var(--brand)';
+                handle.style.borderRadius = '50%';
+                if (pos.includes('n')) handle.style.top = '-5px';
+                if (pos.includes('s')) handle.style.bottom = '-5px';
+                if (pos.includes('w')) handle.style.left = '-5px';
+                if (pos.includes('e')) handle.style.right = '-5px';
+            }
+
+            // 监听句柄拖拽
+            handle.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                isResizingAnno = true;
+                currentResizeHandle = pos;
+                startResizeOrMove(e, box);
+            });
+            box.appendChild(handle);
+        });
+
+        // 监听框内拖拽移动
+        box.addEventListener('mousedown', (e) => {
+            if (e.target !== box) return; // 忽略点击在句柄上的事件
+            e.stopPropagation();
+            isResizingAnno = true;
+            currentResizeHandle = 'move';
+            startResizeOrMove(e, box);
+        });
+    }
+
+    // 记录拖拽/缩放的初始坐标
+    function startResizeOrMove(e, box) {
+        resizeStartX = e.clientX;
+        resizeStartY = e.clientY;
+        const parentRect = viewport.getBoundingClientRect();
+        const boxRect = box.getBoundingClientRect();
+        boxStartLeft = boxRect.left - parentRect.left;
+        boxStartTop = boxRect.top - parentRect.top;
+        boxStartWidth = boxRect.width;
+        boxStartHeight = boxRect.height;
+
+        // 拖拽时临时切换回绝对像素定位，避免抖动
+        box.style.left = boxStartLeft + 'px';
+        box.style.top = boxStartTop + 'px';
+        box.style.width = boxStartWidth + 'px';
+        box.style.height = boxStartHeight + 'px';
+        box.style.bottom = 'auto';
+    }
+
+    // 将框的物理坐标反向换算为时间和频率，并填入表单
+    function updateInputsFromDraftBox(left, top, width, height, rect) {
+        const MAX_TIME = 300;
+        const MAX_FREQ = 24000;
+
+        const min_x = (left / rect.width) * MAX_TIME;
+        const max_x = ((left + width) / rect.width) * MAX_TIME;
+        const bottomPx = rect.height - (top + height);
+        const min_y = (bottomPx / rect.height) * MAX_FREQ;
+        const max_y = ((bottomPx + height) / rect.height) * MAX_FREQ;
+
+        currentDraftData = {
+            min_x: min_x.toFixed(2),
+            max_x: max_x.toFixed(2),
+            min_y: Math.round(min_y),
+            max_y: Math.round(max_y)
+        };
+
+        document.getElementById('anno-min-x').value = currentDraftData.min_x;
+        document.getElementById('anno-max-x').value = currentDraftData.max_x;
+        document.getElementById('anno-min-y').value = currentDraftData.min_y;
+        document.getElementById('anno-max-y').value = currentDraftData.max_y;
+    }
+
+    // 当用户直接在右侧表单输入数字时，实时更新画布里的虚线框
+    window.updateDraftBoxFromInputs = function() {
+        if (!draftBox) return;
+
+        const minX = parseFloat(document.getElementById('anno-min-x').value) || 0;
+        const maxX = parseFloat(document.getElementById('anno-max-x').value) || 0;
+        const minY = parseFloat(document.getElementById('anno-min-y').value) || 0;
+        const maxY = parseFloat(document.getElementById('anno-max-y').value) || 0;
+
+        const MAX_TIME = 300;
+        const MAX_FREQ = 24000;
+
+        const left = (minX / MAX_TIME) * 100;
+        const width = ((maxX - minX) / MAX_TIME) * 100;
+        const bottom = (minY / MAX_FREQ) * 100;
+        const height = ((maxY - minY) / MAX_FREQ) * 100;
+
+        draftBox.style.left = left + '%';
+        draftBox.style.width = width + '%';
+        draftBox.style.top = 'auto';
+        draftBox.style.bottom = bottom + '%';
+        draftBox.style.height = height + '%';
+
+        currentDraftData.min_x = minX;
+        currentDraftData.max_x = maxX;
+        currentDraftData.min_y = minY;
+        currentDraftData.max_y = maxY;
     };
 
-    window.updateAnimalSoundTypeOptionsAudio = function() {
-        const taxon = document.getElementById('anno-taxon').value;
-        const animalTypeSelect = document.getElementById('anno-animal-sound-type');
-        const options = TAXON_SOUND_TYPE_MAPPING[taxon] || [];
-
-        let html = `<option value="Unknown">Unknown</option>`;
-        html += options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-        animalTypeSelect.innerHTML = html;
+    window.toggleBiophonyFields = function(val) {
+        const bioFields = document.getElementById('biophony-fields');
+        if (bioFields) {
+            bioFields.style.display = (val === 'Biophony') ? 'grid' : 'none';
+        }
     };
 
+    window.cancelNewAnnotation = function() {
+        if (draftBox) {
+            draftBox.remove();
+            draftBox = null;
+        }
+        currentDraftData = null;
+        switchRightPanel('audio-info');
+    };
 
+    window.saveNewAnnotation = function() {
+        if (!currentDraftData) return;
+
+        const newId = mockAnnotations.length > 0 ? Math.max(...mockAnnotations.map(a => a.id)) + 1 : 1;
+        const comp = document.getElementById('anno-soundscape').value;
+        const isBio = (comp === 'Biophony');
+        const isNotEstimable = document.getElementById('anno-not-estimable').checked;
+
+        const newAnno = {
+            id: newId,
+            uuid: `5570-e29b-41d4-a716-new${String(newId).padStart(9, '0')}`,
+            media_name: currentAudio ? currentAudio.name : 'Unknown',
+            min_x: parseFloat(document.getElementById('anno-min-x').value),
+            max_x: parseFloat(document.getElementById('anno-max-x').value),
+            min_y: parseInt(document.getElementById('anno-min-y').value),
+            max_y: parseInt(document.getElementById('anno-max-y').value),
+            creator_type: 'user',
+
+            soundscape_component: comp,
+            sound_type: document.getElementById('anno-sound-type').value,
+            taxon_id: isBio ? document.getElementById('anno-taxon').value : "",
+            animal_sound_type: isBio && document.getElementById('anno-animal-sound-type') ? document.getElementById('anno-animal-sound-type').value : "Unknown",
+
+            confidence: null,
+            uncertain: isBio ? document.getElementById('anno-uncertain').checked : false,
+            sound_distance_m: (isBio && !isNotEstimable && document.getElementById('anno-distance').value) ? parseInt(document.getElementById('anno-distance').value) : null,
+            distance_not_estimable: isBio ? isNotEstimable : false,
+            individual_num: (isBio && document.getElementById('anno-indiv-num').value) ? parseInt(document.getElementById('anno-indiv-num').value) : null,
+
+            reference: document.getElementById('anno-reference').checked,
+            comments: document.getElementById('anno-comments').value,
+            creator_id: 'Liudilong',
+            creation_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        };
+
+        mockAnnotations.push(newAnno);
+
+        if (draftBox) {
+            draftBox.remove();
+            draftBox = null;
+        }
+        currentDraftData = null;
+
+        switchRightPanel('audio-info');
+        renderCrudTable();
+    };
     // ================== 6. 初始化 ==================
     window.addEventListener('DOMContentLoaded', () => {
         const saved = localStorage.getItem('theme');
