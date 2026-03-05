@@ -752,7 +752,12 @@
                                 </button>
                             </div>
 
-                            <input type="number" class="form-input" id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule);" disabled>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                                <input type="number" class="form-input" id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed;" disabled placeholder="Click icon to listen">
+                                <button type="button" onclick="playAnnotationAudio()" title="Play Annotation Audio" style="width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; color: var(--brand); transition: all 0.2s;" onmouseover="this.style.background='var(--brand-tint)'; this.style.borderColor='var(--brand)';" onmouseout="this.style.background='var(--bg-surface)'; this.style.borderColor='var(--border-color)';">
+                                    <i data-lucide="volume-2" size="16"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
@@ -2079,21 +2084,19 @@
         }
         lucide.createIcons();
     };
-    window.toggleAudioNotEstimable = function() {
-        const input = document.getElementById('anno-not-estimable');
-        const btn = document.getElementById('btn-bool-anno-not-estimable');
+    // 模拟播放局部音频并解锁 Distance 输入框
+    window.playAnnotationAudio = function() {
+        console.log("Playing audio for current annotation range...");
 
-        const newVal = input.value !== 'true';
-        input.value = newVal;
-
-        if (newVal) {
-            btn.style.backgroundColor = 'var(--brand)';
-            btn.style.justifyContent = 'flex-end';
-        } else {
-            btn.style.backgroundColor = 'var(--border-color)';
-            btn.style.justifyContent = 'flex-start';
+        const distInput = document.getElementById('anno-distance');
+        if (distInput) {
+            distInput.disabled = false;
+            distInput.style.opacity = '1';
+            distInput.style.background = '';
+            distInput.style.cursor = 'text';
+            distInput.placeholder = "";
+            distInput.focus();
         }
-        // 移除了操作 distInput 的代码，让其永远保持 HTML 中的禁用属性
     };
 
     window.updateSoundTypeOptionsAudio = function() {
@@ -2205,15 +2208,13 @@
             const iconRef = document.getElementById('icon-bool-anno-reference');
             if (iconRef) iconRef.setAttribute('data-lucide', 'x');
 
-            document.getElementById('anno-not-estimable').value = 'false';
-            const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
-            if (btnNotEst) {
-                btnNotEst.style.backgroundColor = 'var(--border-color)';
-                btnNotEst.style.justifyContent = 'flex-start';
-            }
-
             const distInput = document.getElementById('anno-distance');
-            if (distInput) distInput.value = '';
+            if (distInput) {
+                distInput.value = '';
+                distInput.disabled = true;
+                distInput.style.opacity = '0.5';
+                distInput.style.background = 'var(--bg-capsule)';
+            }
 
             document.getElementById('anno-indiv-num').value = '';
 
@@ -2525,7 +2526,7 @@
 
         const comp = document.getElementById('anno-soundscape').value;
         const isBio = (comp === 'Biophony');
-        const isNotEstimable = document.getElementById('anno-not-estimable').value === 'true';
+
 
         const newAnno = {
             id: newId,
@@ -2544,8 +2545,8 @@
 
             confidence: null,
             uncertain: isBio ? (document.getElementById('anno-uncertain').value === 'true') : false,
-            sound_distance_m: (isBio && !isNotEstimable && document.getElementById('anno-distance').value) ? parseInt(document.getElementById('anno-distance').value) : null,
-            distance_not_estimable: isBio ? isNotEstimable : false,
+            sound_distance_m: (isBio && document.getElementById('anno-distance').value !== '') ? parseInt(document.getElementById('anno-distance').value) : null,
+            distance_not_estimable: false,
             individual_num: (isBio && document.getElementById('anno-indiv-num').value) ? parseInt(document.getElementById('anno-indiv-num').value) : null,
 
             reference: document.getElementById('anno-reference').value === 'true',
@@ -2638,11 +2639,26 @@
             document.getElementById('anno-animal-sound-type').value = anno.animal_sound_type || '';
             document.getElementById('span-anno-animal-sound-type').textContent = anno.animal_sound_type || 'Select...';
 
-            document.getElementById('anno-distance').value = anno.sound_distance_m !== null ? anno.sound_distance_m : '';
             document.getElementById('anno-indiv-num').value = anno.individual_num !== null ? anno.individual_num : '';
-
             window.setAudioBooleanValue('anno-uncertain', anno.uncertain);
-            window.setAudioNotEstimableValue(anno.distance_not_estimable);
+
+            const distVal = anno.sound_distance_m !== null ? anno.sound_distance_m : '';
+            const distInput = document.getElementById('anno-distance');
+            if (distInput) {
+                distInput.value = distVal;
+                // 如果已有值，直接解锁；如果为空，则锁定要求重新听
+                if (distVal !== '') {
+                    distInput.disabled = false;
+                    distInput.style.opacity = '1';
+                    distInput.style.background = '';
+                    distInput.placeholder = "";
+                } else {
+                    distInput.disabled = true;
+                    distInput.style.opacity = '0.5';
+                    distInput.style.background = 'var(--bg-capsule)';
+                    distInput.placeholder = "Click icon to listen";
+                }
+            }
         } else {
             window.setAudioBooleanValue('anno-uncertain', false);
             window.setAudioNotEstimableValue(false);
@@ -2683,7 +2699,7 @@
 
         const comp = document.getElementById('anno-soundscape').value;
         const isBio = (comp === 'Biophony');
-        const isNotEstimable = document.getElementById('anno-not-estimable').value === 'true';
+
 
         // 覆盖更新现有对象
         mockAnnotations[annoIndex] = {
@@ -2699,8 +2715,8 @@
             animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "",
 
             uncertain: isBio ? (document.getElementById('anno-uncertain').value === 'true') : false,
-            sound_distance_m: (isBio && !isNotEstimable && document.getElementById('anno-distance').value) ? parseInt(document.getElementById('anno-distance').value) : null,
-            distance_not_estimable: isBio ? isNotEstimable : false,
+            sound_distance_m: (isBio && document.getElementById('anno-distance').value !== '') ? parseInt(document.getElementById('anno-distance').value) : null,
+            distance_not_estimable: false,
             individual_num: (isBio && document.getElementById('anno-indiv-num').value) ? parseInt(document.getElementById('anno-indiv-num').value) : null,
 
             reference: document.getElementById('anno-reference').value === 'true',
