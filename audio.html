@@ -624,14 +624,13 @@
 
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <label class="form-label" style="margin: 0; width: 60px; flex-shrink: 0;">Time (s)</label>
+                            <label class="form-label" style="margin: 0; width: 24px; flex-shrink: 0; text-align: center;">X</label>
                             <input type="number" id="anno-min-x" class="form-input" style="flex: 1; min-width: 0; padding: 0 8px; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="0.01" title="Min X">
                             <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: bold;">-</span>
                             <input type="number" id="anno-max-x" class="form-input" style="flex: 1; min-width: 0; padding: 0 8px; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="0.01" title="Max X">
                         </div>
-
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <label class="form-label" style="margin: 0; width: 60px; flex-shrink: 0;">Freq (Hz)</label>
+                            <label class="form-label" style="margin: 0; width: 24px; flex-shrink: 0; text-align: center;">Y</label>
                             <input type="number" id="anno-min-y" class="form-input" style="flex: 1; min-width: 0; padding: 0 8px; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="1" title="Min Y">
                             <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: bold;">-</span>
                             <input type="number" id="anno-max-y" class="form-input" style="flex: 1; min-width: 0; padding: 0 8px; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="1" title="Max Y">
@@ -640,42 +639,44 @@
 
                     <div style="height: 1px; background: var(--border-color); opacity: 0.5;"></div>
 
-                    <div class="form-group">
-                        <label class="form-label">Soundscape</label>
-                        <div class="form-select-wrapper">
-                            <input type="hidden" id="anno-soundscape" value="Biophony">
-                            <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-soundscape')">
-                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-soundscape">Biophony</span>
-                                <i data-lucide="chevron-down" size="16"></i>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Soundscape</label>
+                            <div class="form-select-wrapper">
+                                <input type="hidden" id="anno-soundscape" value="Biophony">
+                                <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-soundscape')">
+                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-soundscape">Biophony</span>
+                                    <i data-lucide="chevron-down" size="16"></i>
+                                </div>
+                                <div class="form-select-dropdown" id="dropdown-anno-soundscape">
+                                    <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-soundscape', this.value)" onclick="event.stopPropagation()">
+                                    <div class="form-select-options-list">
+                                        <div class="form-select-option selected" onclick="selectAudioDropdown('anno-soundscape', 'Biophony', this)">Biophony</div>
+                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Anthropophony', this)">Anthropophony</div>
+                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Geophony', this)">Geophony</div>
+                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Other', this)">Other</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-select-dropdown" id="dropdown-anno-soundscape">
-                                <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-soundscape', this.value)" onclick="event.stopPropagation()">
-                                <div class="form-select-options-list">
-                                    <div class="form-select-option selected" onclick="selectAudioDropdown('anno-soundscape', 'Biophony', this)">Biophony</div>
-                                    <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Anthropophony', this)">Anthropophony</div>
-                                    <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Geophony', this)">Geophony</div>
-                                    <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Other', this)">Other</div>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Sound Type</label>
+                            <div class="form-select-wrapper">
+                                <input type="hidden" id="anno-sound-type" value="">
+                                <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-sound-type')">
+                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-sound-type">Select...</span>
+                                    <i data-lucide="chevron-down" size="16"></i>
+                                </div>
+                                <div class="form-select-dropdown" id="dropdown-anno-sound-type">
+                                    <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-sound-type', this.value)" onclick="event.stopPropagation()">
+                                    <div class="form-select-options-list" id="list-anno-sound-type"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Sound Type</label>
-                        <div class="form-select-wrapper">
-                            <input type="hidden" id="anno-sound-type" value="">
-                            <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-sound-type')">
-                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-sound-type">Select...</span>
-                                <i data-lucide="chevron-down" size="16"></i>
-                            </div>
-                            <div class="form-select-dropdown" id="dropdown-anno-sound-type">
-                                <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-sound-type', this.value)" onclick="event.stopPropagation()">
-                                <div class="form-select-options-list" id="list-anno-sound-type"></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div id="biophony-fields" style="display: flex; flex-direction: column; gap: 16px;">
-                        <div class="form-group">
+                    <div id="biophony-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group" style="margin: 0;">
                             <label class="form-label">Taxon</label>
                             <div class="form-select-wrapper">
                                 <input type="hidden" id="anno-taxon" value="">
@@ -695,61 +696,61 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="margin: 0;">
                             <label class="form-label">Animal Sound</label>
                             <div class="form-select-wrapper">
-                                <input type="hidden" id="anno-animal-sound-type" value="Unknown">
+                                <input type="hidden" id="anno-animal-sound-type" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-animal-sound-type')">
-                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-animal-sound-type">Unknown</span>
+                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-animal-sound-type">Select...</span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-animal-sound-type">
                                     <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-animal-sound-type', this.value)" onclick="event.stopPropagation()">
                                     <div class="form-select-options-list" id="list-anno-animal-sound-type">
-                                        <div class="form-select-option selected" onclick="selectAudioDropdown('anno-animal-sound-type', 'Unknown', this)">Unknown</div>
+                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-animal-sound-type', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-group" style="position:relative;">
+                        <div class="form-group" style="margin: 0;">
                             <label class="form-label">Distance (m)</label>
-                            <div style="position:absolute; top:0; right:0; display:flex; align-items:center; gap:8px;">
-                                <label class="form-label" style="margin-bottom:0; font-size:0.8rem; color:var(--text-muted); cursor:pointer; font-weight:normal;" onclick="document.getElementById('btn-bool-anno-not-estimable').click()">Not Estimable</label>
-                                <input type="hidden" id="anno-not-estimable" value="false">
-                                <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" type="button" style="width:36px; height:20px; background:var(--border-color); border-radius:10px; border:none; padding:2px; display:flex; justify-content:flex-start; cursor:pointer; transition:all 0.2s;">
-                                    <span style="width:16px; height:16px; background:white; border-radius:50%; display:block; box-shadow:0 1px 2px rgba(0,0,0,0.2);"></span>
-                                </button>
-                            </div>
                             <input type="number" class="form-input" id="anno-distance" style="width:100%;">
                         </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Not Estimable</label>
+                            <input type="hidden" id="anno-not-estimable" value="false">
+                            <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" type="button" class="form-bool-trigger" style="width: 100%;">
+                                <span id="lbl-bool-anno-not-estimable">False</span>
+                                <i id="icon-bool-anno-not-estimable" data-lucide="x" size="16"></i>
+                            </button>
+                        </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div class="form-group">
-                                <label class="form-label">Indiv. Num</label>
-                                <input type="number" class="form-input" id="anno-indiv-num" style="width:100%;">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Uncertain</label>
-                                <input type="hidden" id="anno-uncertain" value="false">
-                                <button class="form-bool-trigger" id="btn-bool-anno-uncertain" onclick="toggleAudioBoolean('anno-uncertain')" type="button">
-                                    <span id="lbl-bool-anno-uncertain">False</span>
-                                    <i id="icon-bool-anno-uncertain" data-lucide="x" size="16"></i>
-                                </button>
-                            </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Indiv. Num</label>
+                            <input type="number" class="form-input" id="anno-indiv-num" style="width:100%;" min="1">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Uncertain</label>
+                            <input type="hidden" id="anno-uncertain" value="false">
+                            <button class="form-bool-trigger" id="btn-bool-anno-uncertain" onclick="toggleAudioBoolean('anno-uncertain')" type="button" style="width: 100%;">
+                                <span id="lbl-bool-anno-uncertain">False</span>
+                                <i id="icon-bool-anno-uncertain" data-lucide="x" size="16"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="form-group">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group" style="margin: 0;">
                             <label class="form-label">Reference</label>
                             <input type="hidden" id="anno-reference" value="false">
-                            <button class="form-bool-trigger" id="btn-bool-anno-reference" onclick="toggleAudioBoolean('anno-reference')" type="button">
+                            <button class="form-bool-trigger" id="btn-bool-anno-reference" onclick="toggleAudioBoolean('anno-reference')" type="button" style="width: 100%;">
                                 <span id="lbl-bool-anno-reference">False</span>
                                 <i id="icon-bool-anno-reference" data-lucide="x" size="16"></i>
                             </button>
                         </div>
                     </div>
+
                     <div class="form-group" style="margin: 0;">
                         <label class="form-label">Comments</label>
                         <input type="text" id="anno-comments" class="form-input" style="width:100%;">
@@ -757,8 +758,8 @@
                 </div>
 
                 <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;">
-                    <button class="btn-secondary" style="padding: 0 16px; height: 30px;" onclick="cancelNewAnnotation()">Cancel</button>
-                    <button class="btn-primary" style="padding: 0 16px; height: 30px; box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3);" onclick="saveNewAnnotation()">Save</button>
+                    <button class="btn-secondary" onclick="cancelNewAnnotation()">Cancel</button>
+                    <button class="btn-primary" style="background-color: var(--brand); border-color: var(--brand); transition: filter 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='none'" onclick="saveNewAnnotation()">Save</button>
                 </div>
             </div>
             <div id="panel-ai-models" style="display: none; flex-direction: column; height: 100%;"></div>
@@ -1975,10 +1976,60 @@
             renderAudioInfoLabel();
         }
     };
-  
+
     // ================= 频谱图画框与新建标注逻辑 =================
 
     // 【自定义组件交互与级联菜单逻辑】
+
+    // 1. 控制下拉框的展开与收起
+    window.toggleFormSelect = function(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        if (!dropdown) return;
+        const isActive = dropdown.classList.contains('active');
+
+        // 打开新的之前，先关闭页面上所有其他打开的表单下拉框
+        document.querySelectorAll('.form-select-dropdown.active').forEach(el => {
+            el.classList.remove('active');
+        });
+
+        if (!isActive) {
+            dropdown.classList.add('active');
+            // 自动聚焦到搜索框，并清空上次的搜索记录
+            const searchInput = dropdown.querySelector('.form-select-search');
+            if (searchInput) {
+                searchInput.value = '';
+                window.filterFormSelect(dropdownId, '');
+                setTimeout(() => searchInput.focus(), 50);
+            }
+        }
+    };
+
+    // 2. 控制下拉框内的搜索过滤
+    window.filterFormSelect = function(dropdownId, query) {
+        const dropdown = document.getElementById(dropdownId);
+        if (!dropdown) return;
+        const options = dropdown.querySelectorAll('.form-select-option');
+        const lowerQuery = query.toLowerCase();
+
+        options.forEach(opt => {
+            const text = opt.textContent.toLowerCase();
+            if (text.includes(lowerQuery)) {
+                opt.style.display = 'block';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+    };
+
+    // 3. 全局点击拦截：点击页面空白处时，自动收起表单下拉框
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.form-select-wrapper')) {
+            document.querySelectorAll('.form-select-dropdown.active').forEach(el => {
+                el.classList.remove('active');
+            });
+        }
+    });
+
     window.selectAudioDropdown = function(key, value, element) {
         document.getElementById(key).value = value;
         document.getElementById(`span-${key}`).textContent = value || 'Select...';
@@ -2020,22 +2071,32 @@
     window.toggleAudioNotEstimable = function() {
         const input = document.getElementById('anno-not-estimable');
         const btn = document.getElementById('btn-bool-anno-not-estimable');
+        const lbl = document.getElementById('lbl-bool-anno-not-estimable');
+        const icon = document.getElementById('icon-bool-anno-not-estimable');
         const distInput = document.getElementById('anno-distance');
 
         const newVal = input.value !== 'true';
         input.value = newVal;
 
+        // 使用标准胶囊开关的 UI 切换逻辑
+        lbl.textContent = newVal ? 'True' : 'False';
         if (newVal) {
-            btn.style.backgroundColor = 'var(--brand)';
-            btn.style.justifyContent = 'flex-end';
+            btn.classList.add('is-true');
+            icon.setAttribute('data-lucide', 'check');
+        } else {
+            btn.classList.remove('is-true');
+            icon.setAttribute('data-lucide', 'x');
+        }
+        lucide.createIcons();
+
+        // 处理 Distance 输入框的禁用逻辑
+        if (newVal) {
             distInput.dataset.savedValue = distInput.value;
             distInput.value = '';
             distInput.disabled = true;
             distInput.style.opacity = '0.5';
             distInput.style.backgroundColor = 'var(--bg-capsule)';
         } else {
-            btn.style.backgroundColor = 'var(--border-color)';
-            btn.style.justifyContent = 'flex-start';
             if (distInput.dataset.savedValue !== undefined) distInput.value = distInput.dataset.savedValue;
             distInput.disabled = false;
             distInput.style.opacity = '1';
@@ -2103,7 +2164,6 @@
             if (draftBox) {
                 draftBox.remove();
                 draftBox = null;
-                switchRightPanel('audio-info');
             }
 
             isDrawingAnno = true;
@@ -2120,7 +2180,49 @@
             draftBox.style.zIndex = '100';
             draftBox.style.pointerEvents = 'none';
             draftBox.style.boxSizing = 'border-box';
+            draftBox.style.left = drawStartX + 'px';
+            draftBox.style.top = drawStartY + 'px';
+            draftBox.style.width = '0px';
+            draftBox.style.height = '0px';
             document.getElementById('annotations-layer').appendChild(draftBox);
+
+            // 【核心调整】：鼠标点下瞬间，立刻调出右侧表单并清空所有状态！
+            document.getElementById('anno-soundscape').value = 'Biophony';
+            document.getElementById('span-anno-soundscape').textContent = 'Biophony';
+            updateSoundTypeOptionsAudio();
+
+            document.getElementById('anno-taxon').value = '';
+            document.getElementById('span-anno-taxon').textContent = 'Select...';
+            updateAnimalSoundTypeOptionsAudio();
+
+            document.getElementById('anno-comments').value = '';
+
+            document.getElementById('anno-uncertain').value = 'false';
+            document.getElementById('lbl-bool-anno-uncertain').textContent = 'False';
+            document.getElementById('btn-bool-anno-uncertain').classList.remove('is-true');
+            document.getElementById('icon-bool-anno-uncertain').setAttribute('data-lucide', 'x');
+
+            document.getElementById('anno-reference').value = 'false';
+            document.getElementById('lbl-bool-anno-reference').textContent = 'False';
+            document.getElementById('btn-bool-anno-reference').classList.remove('is-true');
+            document.getElementById('icon-bool-anno-reference').setAttribute('data-lucide', 'x');
+
+            document.getElementById('anno-distance').value = '';
+            document.getElementById('anno-distance').disabled = false;
+            document.getElementById('anno-distance').style.opacity = '1';
+            document.getElementById('anno-distance').style.backgroundColor = '';
+            document.getElementById('anno-not-estimable').value = 'false';
+            document.getElementById('btn-bool-anno-not-estimable').style.backgroundColor = 'var(--border-color)';
+            document.getElementById('btn-bool-anno-not-estimable').style.justifyContent = 'flex-start';
+
+            document.getElementById('anno-indiv-num').value = '';
+
+            lucide.createIcons();
+            toggleBiophonyFields('Biophony');
+            switchRightPanel('new-annotation');
+
+            // 初始化左侧输入框的数据为当前点击的点
+            updateInputsFromDraftBox(drawStartX, drawStartY, 0, 0, rect);
         });
 
         viewport.addEventListener('mousemove', (e) => {
@@ -2177,6 +2279,8 @@
                 draftBox.style.top = top + 'px';
                 draftBox.style.width = width + 'px';
                 draftBox.style.height = height + 'px';
+
+                updateInputsFromDraftBox(left, top, width, height, rect);
             }
         });
 
@@ -2215,17 +2319,14 @@
         isDrawingAnno = false;
 
         const rect = viewport.getBoundingClientRect();
-        const boxLeft = parseFloat(draftBox.style.left || 0);
-        const boxTop = parseFloat(draftBox.style.top || 0);
-        const boxWidth = parseFloat(draftBox.style.width || 0);
-        const boxHeight = parseFloat(draftBox.style.height || 0);
+        let boxLeft = parseFloat(draftBox.style.left || 0);
+        let boxTop = parseFloat(draftBox.style.top || 0);
+        let boxWidth = parseFloat(draftBox.style.width || 0);
+        let boxHeight = parseFloat(draftBox.style.height || 0);
 
-        if (boxWidth < 5 || boxHeight < 5) {
-            draftBox.remove();
-            draftBox = null;
-            switchRightPanel('audio-info');
-            return;
-        }
+        // 如果用户只是点了一下没有拖拽，为了确保框可见且可操作，赋予一个极小的宽高
+        if (boxWidth < 1) boxWidth = 5;
+        if (boxHeight < 1) boxHeight = 5;
 
         const bottomPx = rect.height - (boxTop + boxHeight);
         draftBox.style.left = (boxLeft / rect.width * 100) + '%';
@@ -2236,41 +2337,6 @@
 
         addDraftBoxHandles(draftBox);
         updateInputsFromDraftBox(boxLeft, boxTop, boxWidth, boxHeight, rect);
-
-        // 完美重置高级表单 UI 状态
-        document.getElementById('anno-soundscape').value = 'Biophony';
-        document.getElementById('span-anno-soundscape').textContent = 'Biophony';
-        updateSoundTypeOptionsAudio();
-
-        document.getElementById('anno-taxon').value = '';
-        document.getElementById('span-anno-taxon').textContent = 'Select...';
-        updateAnimalSoundTypeOptionsAudio();
-
-        document.getElementById('anno-comments').value = '';
-
-        document.getElementById('anno-uncertain').value = 'false';
-        document.getElementById('lbl-bool-anno-uncertain').textContent = 'False';
-        document.getElementById('btn-bool-anno-uncertain').classList.remove('is-true');
-        document.getElementById('icon-bool-anno-uncertain').setAttribute('data-lucide', 'x');
-
-        document.getElementById('anno-reference').value = 'false';
-        document.getElementById('lbl-bool-anno-reference').textContent = 'False';
-        document.getElementById('btn-bool-anno-reference').classList.remove('is-true');
-        document.getElementById('icon-bool-anno-reference').setAttribute('data-lucide', 'x');
-
-        document.getElementById('anno-distance').value = '';
-        document.getElementById('anno-distance').disabled = false;
-        document.getElementById('anno-distance').style.opacity = '1';
-        document.getElementById('anno-distance').style.backgroundColor = '';
-        document.getElementById('anno-not-estimable').value = 'false';
-        document.getElementById('btn-bool-anno-not-estimable').style.backgroundColor = 'var(--border-color)';
-        document.getElementById('btn-bool-anno-not-estimable').style.justifyContent = 'flex-start';
-
-        document.getElementById('anno-indiv-num').value = '';
-
-        lucide.createIcons();
-        toggleBiophonyFields('Biophony');
-        switchRightPanel('new-annotation');
     }
 
     function addDraftBoxHandles(box) {
