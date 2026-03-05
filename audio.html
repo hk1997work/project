@@ -263,6 +263,19 @@
         .label-add-wrapper:focus-within {
             box-shadow: 0 0 0 2px var(--brand-tint);
         }
+        /* 统一新建标注表单中 label 和 input 的垂直间距 */
+        #panel-new-annotation .form-group {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 6px !important; /* 强制统一下方元素与 label 之间的间距为 6px */
+            justify-content: flex-start;
+        }
+
+        #panel-new-annotation .form-label {
+            margin-bottom: 0 !important; /* 清除默认的外边距干扰 */
+            line-height: 1.2 !important;
+            display: block;
+        }
     </style>
     <script src="data.js"></script>
 </head>
@@ -697,6 +710,11 @@
                                     </div>
                                 </div>
                             </div>
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; padding-left: 2px;">
+                                <a href="#" target="_blank" style="color: var(--brand); text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Images</a>
+                                <span style="color: var(--text-muted); opacity: 0.5;">|</span>
+                                <a href="#" target="_blank" style="color: var(--brand); text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Xeno-canto <span style="color: var(--text-muted); font-size: 0.7rem;">(for birds only)</span></a>
+                            </div>
                         </div>
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Uncertain</label>
@@ -723,16 +741,18 @@
                             </div>
                         </div>
 
-                        <div class="form-group bio-field-item" style="position:relative; margin: 0; min-width: 0; display: none;">
-                            <label class="form-label">Distance (m)</label>
-                            <div style="position:absolute; top:0; right:0; display:flex; align-items:center; gap:8px;">
-                                <label class="form-label" style="margin-bottom:0; font-size:0.8rem; color:var(--text-muted); cursor:pointer; font-weight:normal;" onclick="document.getElementById('btn-bool-anno-not-estimable').click()">Not Estimable</label>
+                        <div class="form-group bio-field-item" style="position: relative; margin: 0; min-width: 0; display: none;">
+                            <label class="form-label" style="margin: 0;">Distance (m)</label>
+
+                            <div style="position: absolute; top: -1px; right: 0; display: flex; align-items: center; gap: 6px; height: 18px;">
+                                <label class="form-label" style="margin: 0; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; font-weight: normal; line-height: 1;" onclick="document.getElementById('btn-bool-anno-not-estimable').click()">Not Estimable</label>
                                 <input type="hidden" id="anno-not-estimable" value="false">
-                                <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" type="button" style="width:36px; height:20px; background:var(--border-color); border-radius:10px; border:none; padding:2px; display:flex; justify-content:flex-start; cursor:pointer; transition:all 0.2s;">
-                                    <span style="width:16px; height:16px; background:white; border-radius:50%; display:block; box-shadow:0 1px 2px rgba(0,0,0,0.2);"></span>
+                                <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" type="button" style="width: 32px; height: 18px; background: var(--border-color); border-radius: 9px; border: none; padding: 2px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; transition: all 0.2s; box-sizing: border-box;">
+                                    <span style="width: 14px; height: 14px; background: white; border-radius: 50%; display: block; box-shadow: 0 1px 2px rgba(0,0,0,0.2);"></span>
                                 </button>
                             </div>
-                            <input type="number" class="form-input" id="anno-distance" style="width:100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed;" disabled>
+
+                            <input type="number" class="form-input" id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed;" disabled>
                         </div>
 
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
