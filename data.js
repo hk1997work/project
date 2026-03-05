@@ -65,50 +65,27 @@ const mockIndexTypes = ["ACI", "ADI", "AEI", "BI", "NDSI", "H", "M"];
 
 // --- 新增：Soundscape & Taxon 级联数据 ---
 const SOUNDSCAPE_MAPPING = {
-    "Biophony": ["fish chorus", "bat swarm", "insect broadband noise", "reptile", "bird chorus", ""],
-    "Anthropophony": ["human voices", "transportation", "mining", ""],
-    "Geophony": ["wind", "wave", "earthquake", "rain", ""],
-    "Other": ["template matching result", "equipment self-noise", "ambient sound (background)", "thermal bat detection", "unknown", "TEST", ""]
+    "Biophony": ["fish chorus", "bat swarm", "insect broadband noise", "reptile", "bird chorus", ""], "Anthropophony": ["human voices", "transportation", "mining", ""], "Geophony": ["wind", "wave", "earthquake", "rain", ""], "Other": ["template matching result", "equipment self-noise", "ambient sound (background)", "thermal bat detection", "unknown", "TEST", ""]
 };
 
 const TAXON_SOUND_TYPE_MAPPING = {
-    "AMPHIBIA": ["Courtship", "Advertisement towards males", "Acquisition/defense - reproductive", "Discouragement", "Defense - non reproductive"],
-    "AVES": ["Call - unspecific", "Song", "Non-vocal", "Call - contact", "Call - flight", "Call - begging", "Alarm"],
-    "MAMMALIA CHIROPTERA": ["Searching", "Feeding", "Social"],
-    "MAMMALIA PRIMATA": ["Agonistic", "Affiliative", "Contact", "Song", "Advertisement - territory", "Advertisement - mating", "Foraging", "Alarm", "Begging", "Adult - offspring"]
+    "AMPHIBIA": ["Courtship", "Advertisement towards males", "Acquisition/defense - reproductive", "Discouragement", "Defense - non reproductive"], "AVES": ["Call - unspecific", "Song", "Non-vocal", "Call - contact", "Call - flight", "Call - begging", "Alarm"], "MAMMALIA CHIROPTERA": ["Searching", "Feeding", "Social"], "MAMMALIA PRIMATA": ["Agonistic", "Affiliative", "Contact", "Song", "Advertisement - territory", "Advertisement - mating", "Foraging", "Alarm", "Begging", "Adult - offspring"]
 };
 
 // --- 新增：GADM 3级行政区和 IHO 海域的模拟数据 ---
 const GADM_DATA = {
     "United States": {
-        "California": ["Los Angeles", "San Francisco", "San Diego"],
-        "New York": ["New York City", "Albany", "Buffalo"]
-    },
-    "Australia": {
-        "Queensland": ["Brisbane", "Cairns", "Townsville"],
-        "New South Wales": ["Sydney", "Newcastle", "Wollongong"]
-    },
-    "Brazil": {
-        "Amazonas": ["Manaus", "Tefé", "Parintins"],
-        "Pará": ["Belém", "Santarém", "Altamira"]
+        "California": ["Los Angeles", "San Francisco", "San Diego"], "New York": ["New York City", "Albany", "Buffalo"]
+    }, "Australia": {
+        "Queensland": ["Brisbane", "Cairns", "Townsville"], "New South Wales": ["Sydney", "Newcastle", "Wollongong"]
+    }, "Brazil": {
+        "Amazonas": ["Manaus", "Tefé", "Parintins"], "Pará": ["Belém", "Santarém", "Altamira"]
     }
 };
 const IHO_OPTIONS = ["North Pacific Ocean", "South Atlantic Ocean", "Indian Ocean", "Caribbean Sea", "Mediterranean Sea"];
-const mockTaxonDB = [
-    {id: "tx_101", name: "Felidae", rank: "family"},
-    {id: "tx_102", name: "Canidae", rank: "family"},
-    {id: "tx_103", name: "Panthera", rank: "genus"},
-    {id: "tx_104", name: "Canis", rank: "genus"},
-    {id: "tx_105", name: "Panthera leo", rank: "species"},
-    {id: "tx_106", name: "Panthera tigris", rank: "species"},
-    {id: "tx_107", name: "Canis lupus", rank: "species"},
-    {id: "tx_108", name: "Ursidae", rank: "family"},
-    {id: "tx_109", name: "Ursus", rank: "genus"},
-    {id: "tx_110", name: "Ursus arctos", rank: "species"},
-    {id: "tx_111", name: "Accipitridae", rank: "family"},
-    {id: "tx_112", name: "Aquila", rank: "genus"},
-    {id: "tx_113", name: "Aquila chrysaetos", rank: "species"}
-];
+const mockTaxonDB = [{id: "tx_101", name: "Felidae", rank: "family"}, {id: "tx_102", name: "Canidae", rank: "family"}, {id: "tx_103", name: "Panthera", rank: "genus"}, {id: "tx_104", name: "Canis", rank: "genus"}, {id: "tx_105", name: "Panthera leo", rank: "species"}, {id: "tx_106", name: "Panthera tigris", rank: "species"}, {id: "tx_107", name: "Canis lupus", rank: "species"}, {id: "tx_108", name: "Ursidae", rank: "family"}, {id: "tx_109", name: "Ursus", rank: "genus"}, {
+    id: "tx_110", name: "Ursus arctos", rank: "species"
+}, {id: "tx_111", name: "Accipitridae", rank: "family"}, {id: "tx_112", name: "Aquila", rank: "genus"}, {id: "tx_113", name: "Aquila chrysaetos", rank: "species"}];
 
 const getContributors = (count, type, leadName = null) => {
     const list = [];
@@ -139,13 +116,7 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
         const numTaxons = Math.floor(Math.random() * 3) + 1;
         const shuffledTaxons = [...mockTaxonDB].sort(() => 0.5 - Math.random());
         const initialTaxons = shuffledTaxons.slice(0, numTaxons).map(t => ({
-            collection_id: String(colId),
-            col_taxon_id: t.id,
-            col_rank: t.rank,
-            cached_name: t.name,
-            asserted_by: creatorName || collectionCreator,
-            asserted_at: `2025-0${(i % 9) + 1}-15 10:00:00`,
-            notes: "Initial automated assignment."
+            collection_id: String(colId), col_taxon_id: t.id, col_rank: t.rank, cached_name: t.name, asserted_by: creatorName || collectionCreator, asserted_at: `2025-0${(i % 9) + 1}-15 10:00:00`, notes: "Initial automated assignment."
         }));
 
         return {
@@ -161,8 +132,7 @@ const createCollections = (baseName, count, startImgIdx, creatorName) => {
             description: colGenerators[i % 3](`${baseName}`),
             image: getImg(startImgIdx + i + 1),
             stats: {users: rInt(2, 10), projects: 1, audios: rInt(100, 5000), annotations: rInt(50, 300), sites: rInt(1, 5)},
-            contributors: getContributors(rInt(3, 5), 'collection', collectionCreator),
-            // 将初始的 taxon 数组赋值给 collection
+            contributors: getContributors(rInt(3, 5), 'collection', collectionCreator), // 将初始的 taxon 数组赋值给 collection
             _taxons: initialTaxons
         };
     });
@@ -247,26 +217,14 @@ const dbSchema = {
         }]
     }, collection: {
         label: "Collections", icon: "library", pk: "collection_id", columns: [{key: "collection_id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "project_names", label: "Linked Projects", type: "text", readonly: true, hiddenInForm: true, hiddenInTable: true}, {key: "name", label: "Name", type: "text"}, {
-            key: "sphere",
-            label: "Sphere",
-            type: "select",
-            options: [
-                "Atmosphere",
-                "Biosphere",
-                "Hydrosphere",
-                "Lithosphere",
-                "Cryosphere",     // 新增
+            key: "sphere", label: "Sphere", type: "select", options: ["Atmosphere", "Biosphere", "Hydrosphere", "Lithosphere", "Cryosphere",     // 新增
                 "Pedosphere",     // 新增
                 "Anthroposphere"  // 新增
             ]
         }, {key: "external_project_url", label: "Ext. Project", type: "text"}, {
             key: "external_media_url", label: "Ext. Media", type: "text"
         }, {key: "doi", label: "DOI", type: "text"}, {key: "description", label: "Description", type: "richtext", hiddenInTable: true}, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}, {key: "public_access", label: "Public Access", type: "boolean"}, {key: "public_annotations", label: "Public Annotations", type: "boolean"}, {
-            key: "taxons_display",
-            label: "Taxons",
-            type: "text",
-            readonly: true,
-            hiddenInForm: true
+            key: "taxons_display", label: "Taxons", type: "text", readonly: true, hiddenInForm: true
         }]
     }, "user": {
         label: "Users",
@@ -295,24 +253,11 @@ const dbSchema = {
             key: "annotations_display", label: "Labels", type: "text", readonly: true, hiddenInForm: true, filterType: 'select'
         }]
     }, site: {
-        label: "Sites", icon: "map-pin", pk: "id", columns: [
-            {key: "id", label: "ID", type: "text", readonly: true},
-            {key: "uuid", label: "UUID", type: "text", readonly: true},
-            {key: "name", label: "Name", type: "text"},
-            {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true},
-            {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true},
-            {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'},
-            {key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'},
-            {key: "gadm0", label: "GADM0", type: "select", options: Object.keys(GADM_DATA)},
-            {key: "gadm1", label: "GADM1", type: "select", options: []},
-            {key: "gadm2", label: "GADM2", type: "select", options: []},
-            {key: "iho", label: "IHO", type: "select", options: IHO_OPTIONS},
-            {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)},
-            {key: "biome", label: "Biome", type: "select", options: []},
-            {key: "functional_type", label: "Functional Type", type: "select", options: []},
-            {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'},
-            {key: "creation_date", label: "Created", type: "text", readonly: true}
-        ]
+        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true}, {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true}, {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'}, {
+            key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'
+        }, {key: "gadm0", label: "GADM0", type: "select", options: Object.keys(GADM_DATA)}, {key: "gadm1", label: "GADM1", type: "select", options: []}, {key: "gadm2", label: "GADM2", type: "select", options: []}, {key: "iho", label: "IHO", type: "select", options: IHO_OPTIONS}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "select", options: []}, {
+            key: "functional_type", label: "Functional Type", type: "select", options: []
+        }, {key: "creator_id", label: "Creator", type: "text", readonly: true, filterType: 'select'}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, annotation: {
         label: "Annotations", icon: "scan-line", pk: "id", columns: [{key: "id", label: "ID", type: "number", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {
             key: "media_name", label: "Media Name", type: "text", filterType: 'select', readonlyOnUpdate: true
@@ -328,11 +273,11 @@ const dbSchema = {
             key: "creator_type", label: "Creator Type", type: "text", readonlyOnUpdate: true, filterType: 'select'
         }, {key: "soundscape_component", label: "Soundscape", type: "select", options: ["Biophony", "Anthropophony", "Geophony", "Other"]}, {
             key: "sound_type", label: "Sound Type", type: "select", options: [] // 将动态填充
-        }, {key: "taxon_id", label: "Taxon", type: "select", options: ["AMPHIBIA", "AVES", "MAMMALIA CHIROPTERA", "MAMMALIA PRIMATA"]}, {
+        }, {key: "taxon_id", label: "Taxon", type: "select", options: ["AMPHIBIA", "AVES", "MAMMALIA CHIROPTERA", "MAMMALIA PRIMATA"]}, {key: "uncertain", label: "Uncertain", type: "boolean"}, {
             key: "animal_sound_type", label: "Animal Sound", type: "select", options: [] // 将动态填充
         }, {
             key: "confidence", label: "Confidence", type: "number", readonlyOnUpdate: true, filterType: 'range'
-        }, {key: "uncertain", label: "Uncertain", type: "boolean"}, {
+        }, {
             key: "sound_distance_m", label: "Distance (m)", type: "number", filterType: 'range'
         }, {key: "distance_not_estimable", label: "Not Estimable", type: "boolean"}, {
             key: "individual_num", label: "Indiv. Num", type: "number", filterType: 'range'
@@ -352,52 +297,19 @@ const dbSchema = {
             filterType: 'select'
         }, {key: "annotation_review_status_id", label: "Status", type: "select", options: mockReviewStatuses}, {key: "taxon_id", label: "Taxon", type: "select", options: mockTaxons}, {key: "note", label: "Note", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, task: {
-        label: "Tasks",
-        icon: "clipboard-list",
-        pk: "task_id",
-        columns: [
-            {key: "task_id", label: "ID", type: "number", readonly: true},
-            {key: "type", label: "Type", type: "select", options: ["tag", "recording"]},
-            // 修改这里：增加 filterType: "select" 使其可以在表头筛选
-            {key: "media_name", label: "Media Name", type: "text", filterType: "select"},
-            // 修改这里：增加 filterType: "select"
-            {key: "annotation_id", label: "Annotation ID", type: "text", filterType: "select"},
-            {key: "assigner_id", label: "Assigner", type: "text", filterType: 'select'},
-            {key: "assignee_id", label: "Assignee", type: "text", filterType: 'select'},
-            {key: "status", label: "Status", type: "select", options: ["assigned", "reviewed"]},
-            {key: "comment", label: "Comment", type: "text"},
-            {key: "creation_date", label: "Created", type: "text", readonly: true}
-        ]
+        label: "Tasks", icon: "clipboard-list", pk: "task_id", columns: [{key: "task_id", label: "ID", type: "number", readonly: true}, {key: "type", label: "Type", type: "select", options: ["tag", "recording"]}, // 修改这里：增加 filterType: "select" 使其可以在表头筛选
+            {key: "media_name", label: "Media Name", type: "text", filterType: "select"}, // 修改这里：增加 filterType: "select"
+            {key: "annotation_id", label: "Annotation ID", type: "text", filterType: "select"}, {key: "assigner_id", label: "Assigner", type: "text", filterType: 'select'}, {key: "assignee_id", label: "Assignee", type: "text", filterType: 'select'}, {key: "status", label: "Status", type: "select", options: ["assigned", "reviewed"]}, {key: "comment", label: "Comment", type: "text"}, {key: "creation_date", label: "Created", type: "text", readonly: true}]
     }, queue: {
-        label: "Queue",
-        icon: "layers", // 可以使用 layers, cpu, 或者 server 图标
-        pk: "queue_id",
-        columns: [
-            {key: "queue_id", label: "ID", type: "number", readonly: true},
-            {key: "type", label: "Type", type: "select", options: ["ai model", "upload", "index analysis"], filterType: "select"},
-            {key: "user_id", label: "User", type: "text", filterType: "select"},
-            {key: "completed", label: "Completed", type: "number", filterType: 'range'},
-            {key: "total", label: "Total", type: "number", filterType: 'range'},
-            {key: "status", label: "Status", type: "text", filterType: "select"},
-            {key: "start_time", label: "Start Time", type: "text"},
-            {key: "stop_time", label: "Stop Time", type: "text"},
-            {key: "error", label: "Error", type: "text"},
-            {key: "warning", label: "Warning", type: "text"}
-        ]
+        label: "Queue", icon: "layers", // 可以使用 layers, cpu, 或者 server 图标
+        pk: "queue_id", columns: [{key: "queue_id", label: "ID", type: "number", readonly: true}, {key: "type", label: "Type", type: "select", options: ["ai model", "upload", "index analysis"], filterType: "select"}, {key: "user_id", label: "User", type: "text", filterType: "select"}, {key: "completed", label: "Completed", type: "number", filterType: 'range'}, {key: "total", label: "Total", type: "number", filterType: 'range'}, {
+            key: "status", label: "Status", type: "text", filterType: "select"
+        }, {key: "start_time", label: "Start Time", type: "text"}, {key: "stop_time", label: "Stop Time", type: "text"}, {key: "error", label: "Error", type: "text"}, {key: "warning", label: "Warning", type: "text"}]
     }, index_log: {
-        label: "Index Logs",
-        icon: "bar-chart-2",
-        pk: "log_id",
-        columns: [{key: "log_id", label: "ID", type: "number", readonly: true}, {key: "media", label: "Media", type: "text", filterType: "select"}, {key: "user_id", label: "User", type: "select", options: mockNames}, {key: "index_id", label: "Index Type", type: "select", options: mockIndexTypes}, {key: "version", label: "Version", type: "text"}, {key: "min_time", label: "Min T", type: "text", filterType: 'range'}, {
-            key: "max_time",
-            label: "Max T",
-            type: "text",
-            filterType: 'range'
+        label: "Index Logs", icon: "bar-chart-2", pk: "log_id", columns: [{key: "log_id", label: "ID", type: "number", readonly: true}, {key: "media", label: "Media", type: "text", filterType: "select"}, {key: "user_id", label: "User", type: "select", options: mockNames}, {key: "index_id", label: "Index Type", type: "select", options: mockIndexTypes}, {key: "version", label: "Version", type: "text"}, {key: "min_time", label: "Min T", type: "text", filterType: 'range'}, {
+            key: "max_time", label: "Max T", type: "text", filterType: 'range'
         }, {key: "min_frequency", label: "Min F", type: "text", filterType: 'range'}, {key: "max_frequency", label: "Max F", type: "text", filterType: 'range'}, {key: "variable_type", label: "Var Type", type: "select", options: ["input", "output"]}, {key: "variable_order", label: "Var Order", type: "number", filterType: 'range'}, {key: "variable_name", label: "Var Name", type: "text"}, {key: "variable_value", label: "Var Value", type: "text", filterType: 'range'}, {
-            key: "creation_date",
-            label: "Created",
-            type: "text",
-            readonly: true
+            key: "creation_date", label: "Created", type: "text", readonly: true
         }]
     }
 };
@@ -406,98 +318,22 @@ const staticMockDB = {
     sensor: [{sensor_id: 1, name: "AudioMoth v1.2", sensor_type: "audio"}, {sensor_id: 2, name: "Song Meter Micro", sensor_type: "audio"}],
     license: mockLicenses.map((l, i) => ({license_id: i + 1, name: l})),
     audio_setting: mockAudioSettings.map((s, i) => ({audio_setting_id: i + 1, name: s})), // 更新 annotation mock 数据：使用 media_name
-    annotation: [{id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", soundscape_component: "Biophony", sound_type: "bird chorus", media_name: "REC_10100020250000.wav", creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "AVES", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Song", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"}],
+    annotation: [{
+        id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", soundscape_component: "Biophony", sound_type: "bird chorus", media_name: "REC_10100020250000.wav", creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "AVES", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Song", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"
+    }],
     annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "AVES", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
     index_log: [{log_id: 1, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "output", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}, {
-        log_id: 2,
-        media: "REC_10100020250000.wav",
-        user_id: "System",
-        index_id: "ACI",
-        version: "1.0",
-        min_time: "0",
-        max_time: "60",
-        min_frequency: "0",
-        max_frequency: "24000",
-        variable_type: "input",
-        variable_order: 1,
-        variable_name: "fft_window",
-        variable_value: "512",
-        creation_date: "2025-01-22 15:00:10"
+        log_id: 2, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "input", variable_order: 1, variable_name: "fft_window", variable_value: "512", creation_date: "2025-01-22 15:00:10"
     }, {log_id: 3, media: "REC_10100020250001.wav", user_id: "A. Schmidt", index_id: "NDSI", version: "2.1", min_time: "10", max_time: "70", min_frequency: "1000", max_frequency: "8000", variable_type: "output", variable_order: 1, variable_name: "ndsi_score", variable_value: "0.85", creation_date: "2025-01-23 09:15:00"}, {
-        log_id: 4,
-        media: "REC_10100020250001.wav",
-        user_id: "A. Schmidt",
-        index_id: "NDSI",
-        version: "2.1",
-        min_time: "10",
-        max_time: "70",
-        min_frequency: "1000",
-        max_frequency: "8000",
-        variable_type: "input",
-        variable_order: 1,
-        variable_name: "anthro_max",
-        variable_value: "2000",
-        creation_date: "2025-01-23 09:15:00"
+        log_id: 4, media: "REC_10100020250001.wav", user_id: "A. Schmidt", index_id: "NDSI", version: "2.1", min_time: "10", max_time: "70", min_frequency: "1000", max_frequency: "8000", variable_type: "input", variable_order: 1, variable_name: "anthro_max", variable_value: "2000", creation_date: "2025-01-23 09:15:00"
     }, {log_id: 5, media: "REC_10100020250001.wav", user_id: "A. Schmidt", index_id: "NDSI", version: "2.1", min_time: "10", max_time: "70", min_frequency: "1000", max_frequency: "8000", variable_type: "input", variable_order: 2, variable_name: "bio_min", variable_value: "2000", creation_date: "2025-01-23 09:15:00"}, {
-        log_id: 6,
-        media: "REC_20200020250015.wav",
-        user_id: "Liudilong",
-        index_id: "ADI",
-        version: "1.2",
-        min_time: "0",
-        max_time: "120",
-        min_frequency: "0",
-        max_frequency: "24000",
-        variable_type: "output",
-        variable_order: 1,
-        variable_name: "adi_index",
-        variable_value: "2.4",
-        creation_date: "2025-01-24 10:20:30"
+        log_id: 6, media: "REC_20200020250015.wav", user_id: "Liudilong", index_id: "ADI", version: "1.2", min_time: "0", max_time: "120", min_frequency: "0", max_frequency: "24000", variable_type: "output", variable_order: 1, variable_name: "adi_index", variable_value: "2.4", creation_date: "2025-01-24 10:20:30"
     }, {log_id: 7, media: "REC_20200020250015.wav", user_id: "Liudilong", index_id: "ADI", version: "1.2", min_time: "0", max_time: "120", min_frequency: "0", max_frequency: "24000", variable_type: "input", variable_order: 1, variable_name: "max_freq", variable_value: "10000", creation_date: "2025-01-24 10:20:30"}, {
-        log_id: 8,
-        media: "REC_20200020250015.wav",
-        user_id: "Liudilong",
-        index_id: "ADI",
-        version: "1.2",
-        min_time: "0",
-        max_time: "120",
-        min_frequency: "0",
-        max_frequency: "24000",
-        variable_type: "input",
-        variable_order: 2,
-        variable_name: "freq_step",
-        variable_value: "1000",
-        creation_date: "2025-01-24 10:20:30"
+        log_id: 8, media: "REC_20200020250015.wav", user_id: "Liudilong", index_id: "ADI", version: "1.2", min_time: "0", max_time: "120", min_frequency: "0", max_frequency: "24000", variable_type: "input", variable_order: 2, variable_name: "freq_step", variable_value: "1000", creation_date: "2025-01-24 10:20:30"
     }, {log_id: 9, media: "REC_30300020250042.wav", user_id: "System", index_id: "AEI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "500", max_frequency: "10000", variable_type: "output", variable_order: 1, variable_name: "aei_val", variable_value: "0.67", creation_date: "2025-01-25 14:05:12"}, {
-        log_id: 10,
-        media: "REC_30300020250042.wav",
-        user_id: "System",
-        index_id: "BI",
-        version: "3.0",
-        min_time: "0",
-        max_time: "60",
-        min_frequency: "2000",
-        max_frequency: "8000",
-        variable_type: "output",
-        variable_order: 1,
-        variable_name: "bio_index",
-        variable_value: "12.8",
-        creation_date: "2025-01-25 14:10:00"
+        log_id: 10, media: "REC_30300020250042.wav", user_id: "System", index_id: "BI", version: "3.0", min_time: "0", max_time: "60", min_frequency: "2000", max_frequency: "8000", variable_type: "output", variable_order: 1, variable_name: "bio_index", variable_value: "12.8", creation_date: "2025-01-25 14:10:00"
     }, {log_id: 11, media: "REC_30300020250042.wav", user_id: "System", index_id: "BI", version: "3.0", min_time: "0", max_time: "60", min_frequency: "2000", max_frequency: "8000", variable_type: "input", variable_order: 1, variable_name: "min_f", variable_value: "2000", creation_date: "2025-01-25 14:10:00"}, {
-        log_id: 12,
-        media: "REC_30300020250042.wav",
-        user_id: "System",
-        index_id: "BI",
-        version: "3.0",
-        min_time: "0",
-        max_time: "60",
-        min_frequency: "2000",
-        max_frequency: "8000",
-        variable_type: "input",
-        variable_order: 2,
-        variable_name: "max_f",
-        variable_value: "8000",
-        creation_date: "2025-01-25 14:10:00"
+        log_id: 12, media: "REC_30300020250042.wav", user_id: "System", index_id: "BI", version: "3.0", min_time: "0", max_time: "60", min_frequency: "2000", max_frequency: "8000", variable_type: "input", variable_order: 2, variable_name: "max_f", variable_value: "8000", creation_date: "2025-01-25 14:10:00"
     }]
 };
 const PERMISSIONS = [{id: 1, code: 'collection:read', label: 'Collection: Read'}, {id: 2, code: 'collection:write', label: 'Collection: Write'}, {id: 3, code: 'user:read', label: 'User: Read'}, {id: 4, code: 'user:write', label: 'User: Write'}];

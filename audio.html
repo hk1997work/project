@@ -622,29 +622,29 @@
 
                 <div style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 8px; margin-top: 8px;">
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Min X (s)</label>
-                            <input type="number" id="anno-min-x" class="form-input" style="width: 100%; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
+                    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
+                            <label class="form-label">Min X</label>
+                            <input type="number" id="anno-min-x" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
                         </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Max X (s)</label>
-                            <input type="number" id="anno-max-x" class="form-input" style="width: 100%; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
+                            <label class="form-label">Max X</label>
+                            <input type="number" id="anno-max-x" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
                         </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Min Y (Hz)</label>
-                            <input type="number" id="anno-min-y" class="form-input" style="width: 100%; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="1">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
+                            <label class="form-label">Min Y</label>
+                            <input type="number" id="anno-min-y" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="1">
                         </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Max Y (Hz)</label>
-                            <input type="number" id="anno-max-y" class="form-input" style="width: 100%; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="1">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
+                            <label class="form-label">Max Y</label>
+                            <input type="number" id="anno-max-y" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="1">
                         </div>
                     </div>
 
                     <div style="height: 1px; background: var(--border-color); opacity: 0.5;"></div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="form-group" style="margin: 0;">
+                    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Soundscape</label>
                             <div class="form-select-wrapper">
                                 <input type="hidden" id="anno-soundscape" value="">
@@ -664,7 +664,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group" style="margin: 0;">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Sound Type</label>
                             <div class="form-select-wrapper">
                                 <input type="hidden" id="anno-sound-type" value="">
@@ -680,8 +680,8 @@
                         </div>
                     </div>
 
-                    <div id="biophony-fields" style="display: none; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="form-group" style="margin: 0;">
+                    <div id="biophony-fields" style="display: none; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Taxon</label>
                             <div class="form-select-wrapper">
                                 <input type="hidden" id="anno-taxon" value="">
@@ -701,7 +701,15 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group" style="margin: 0;">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
+                            <label class="form-label">Uncertain</label>
+                            <input type="hidden" id="anno-uncertain" value="false">
+                            <button class="form-bool-trigger" id="btn-bool-anno-uncertain" onclick="toggleAudioBoolean('anno-uncertain')" type="button" style="width: 100%;">
+                                <span id="lbl-bool-anno-uncertain">False</span>
+                                <i id="icon-bool-anno-uncertain" data-lucide="x" size="16"></i>
+                            </button>
+                        </div>
+                        <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Animal Sound</label>
                             <div class="form-select-wrapper">
                                 <input type="hidden" id="anno-animal-sound-type" value="">
@@ -718,35 +726,26 @@
                             </div>
                         </div>
 
-                        <div class="form-group" style="margin: 0; display: none;">
+                        <div class="form-group" style="position:relative; margin: 0; min-width: 0;">
                             <label class="form-label">Distance (m)</label>
-                            <input type="number" class="form-input" id="anno-distance" style="width:100%;">
-                        </div>
-                        <div class="form-group" style="margin: 0; display: none;">
-                            <label class="form-label">Not Estimable</label>
-                            <input type="hidden" id="anno-not-estimable" value="false">
-                            <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" type="button" class="form-bool-trigger" style="width: 100%;">
-                                <span id="lbl-bool-anno-not-estimable">False</span>
-                                <i id="icon-bool-anno-not-estimable" data-lucide="x" size="16"></i>
-                            </button>
+                            <div style="position:absolute; top:0; right:0; display:flex; align-items:center; gap:8px;">
+                                <label class="form-label" style="margin-bottom:0; font-size:0.8rem; color:var(--text-muted); cursor:pointer; font-weight:normal;" onclick="document.getElementById('btn-bool-anno-not-estimable').click()">Not Estimable</label>
+                                <input type="hidden" id="anno-not-estimable" value="false">
+                                <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" type="button" style="width:36px; height:20px; background:var(--border-color); border-radius:10px; border:none; padding:2px; display:flex; justify-content:flex-start; cursor:pointer; transition:all 0.2s;">
+                                    <span style="width:16px; height:16px; background:white; border-radius:50%; display:block; box-shadow:0 1px 2px rgba(0,0,0,0.2);"></span>
+                                </button>
+                            </div>
+                            <input type="number" class="form-input" id="anno-distance" style="width:100%; min-width: 0;">
                         </div>
 
-                        <div class="form-group" style="margin: 0;">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Indiv. Num</label>
-                            <input type="number" class="form-input" id="anno-indiv-num" style="width:100%;" min="1">
-                        </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label class="form-label">Uncertain</label>
-                            <input type="hidden" id="anno-uncertain" value="false">
-                            <button class="form-bool-trigger" id="btn-bool-anno-uncertain" onclick="toggleAudioBoolean('anno-uncertain')" type="button" style="width: 100%;">
-                                <span id="lbl-bool-anno-uncertain">False</span>
-                                <i id="icon-bool-anno-uncertain" data-lucide="x" size="16"></i>
-                            </button>
+                            <input type="number" class="form-input" id="anno-indiv-num" style="width:100%; min-width: 0;" min="1">
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="form-group" style="margin: 0;">
+                    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Reference</label>
                             <input type="hidden" id="anno-reference" value="false">
                             <button class="form-bool-trigger" id="btn-bool-anno-reference" onclick="toggleAudioBoolean('anno-reference')" type="button" style="width: 100%;">
@@ -754,11 +753,11 @@
                                 <i id="icon-bool-anno-reference" data-lucide="x" size="16"></i>
                             </button>
                         </div>
-                    </div>
 
-                    <div class="form-group" style="margin: 0; grid-column: 1 / -1;">
-                        <label class="form-label">Comments</label>
-                        <input type="text" id="anno-comments" class="form-input" style="width:100%;">
+                        <div class="form-group" style="margin: 0; min-width: 0;">
+                            <label class="form-label">Comments</label>
+                            <input type="text" id="anno-comments" class="form-input" style="width:100%; min-width: 0;">
+                        </div>
                     </div>
                 </div>
 
@@ -1117,9 +1116,9 @@
         {key: "soundscape_component", label: "Soundscape", type: "select"},
         {key: "sound_type", label: "Sound Type", type: "select"},
         {key: "taxon_id", label: "Taxon", type: "select"},
+        {key: "uncertain", label: "Uncertain", type: "boolean"},
         {key: "animal_sound_type", label: "Animal Sound", type: "select"},
         {key: "confidence", label: "Confidence", type: "number", filterType: 'range'},
-        {key: "uncertain", label: "Uncertain", type: "boolean"},
         {key: "sound_distance_m", label: "Distance (m)", type: "number", filterType: 'range'},
         {key: "distance_not_estimable", label: "Not Estimable", type: "boolean"},
         {key: "individual_num", label: "Indiv. Num", type: "number", filterType: 'range'},
@@ -2076,36 +2075,30 @@
     window.toggleAudioNotEstimable = function() {
         const input = document.getElementById('anno-not-estimable');
         const btn = document.getElementById('btn-bool-anno-not-estimable');
-        const lbl = document.getElementById('lbl-bool-anno-not-estimable');
-        const icon = document.getElementById('icon-bool-anno-not-estimable');
         const distInput = document.getElementById('anno-distance');
 
         const newVal = input.value !== 'true';
         input.value = newVal;
 
-        // 使用大型胶囊开关的标准 UI 切换逻辑
-        lbl.textContent = newVal ? 'True' : 'False';
         if (newVal) {
-            btn.classList.add('is-true');
-            icon.setAttribute('data-lucide', 'check');
+            btn.style.backgroundColor = 'var(--brand)';
+            btn.style.justifyContent = 'flex-end';
+            if (distInput) {
+                distInput.dataset.savedValue = distInput.value;
+                distInput.value = '';
+                distInput.disabled = true;
+                distInput.style.opacity = '0.5';
+                distInput.style.backgroundColor = 'var(--bg-capsule)';
+            }
         } else {
-            btn.classList.remove('is-true');
-            icon.setAttribute('data-lucide', 'x');
-        }
-        lucide.createIcons();
-
-        // 禁用并灰显 Distance 输入框
-        if (newVal) {
-            distInput.dataset.savedValue = distInput.value;
-            distInput.value = '';
-            distInput.disabled = true;
-            distInput.style.opacity = '0.5';
-            distInput.style.backgroundColor = 'var(--bg-capsule)';
-        } else {
-            if (distInput.dataset.savedValue !== undefined) distInput.value = distInput.dataset.savedValue;
-            distInput.disabled = false;
-            distInput.style.opacity = '1';
-            distInput.style.backgroundColor = '';
+            btn.style.backgroundColor = 'var(--border-color)';
+            btn.style.justifyContent = 'flex-start';
+            if (distInput) {
+                if (distInput.dataset.savedValue !== undefined) distInput.value = distInput.dataset.savedValue;
+                distInput.disabled = false;
+                distInput.style.opacity = '1';
+                distInput.style.backgroundColor = '';
+            }
         }
     };
 
@@ -2131,7 +2124,6 @@
         const typeSelect = document.getElementById('list-anno-animal-sound-type');
         const span = document.getElementById('span-anno-animal-sound-type');
 
-        // 默认显示为 Select... 而不是 Unknown
         document.getElementById('anno-animal-sound-type').value = '';
         span.textContent = 'Select...';
 
@@ -2192,7 +2184,6 @@
             draftBox.style.height = '0px';
             document.getElementById('annotations-layer').appendChild(draftBox);
 
-            // 【核心调整】：鼠标点下瞬间重置，Soundscape 默认不选！
             document.getElementById('anno-soundscape').value = '';
             document.getElementById('span-anno-soundscape').textContent = 'Select...';
             document.querySelectorAll('#dropdown-anno-soundscape .form-select-option').forEach(el => el.classList.remove('selected'));
@@ -2220,27 +2211,27 @@
             const iconRef = document.getElementById('icon-bool-anno-reference');
             if (iconRef) iconRef.setAttribute('data-lucide', 'x');
 
+            // 【对齐 Project：重置小滑块和 Distance 输入框】
             document.getElementById('anno-not-estimable').value = 'false';
-            const lblNotEst = document.getElementById('lbl-bool-anno-not-estimable');
-            if (lblNotEst) lblNotEst.textContent = 'False';
             const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
-            if (btnNotEst) btnNotEst.classList.remove('is-true');
-            const iconNotEst = document.getElementById('icon-bool-anno-not-estimable');
-            if (iconNotEst) iconNotEst.setAttribute('data-lucide', 'x');
-
-            document.getElementById('anno-distance').value = '';
-            document.getElementById('anno-distance').disabled = false;
-            document.getElementById('anno-distance').style.opacity = '1';
-            document.getElementById('anno-distance').style.backgroundColor = '';
+            if (btnNotEst) {
+                btnNotEst.style.backgroundColor = 'var(--border-color)';
+                btnNotEst.style.justifyContent = 'flex-start';
+            }
+            const distInput = document.getElementById('anno-distance');
+            if (distInput) {
+                distInput.value = '';
+                distInput.disabled = false;
+                distInput.style.opacity = '1';
+                distInput.style.backgroundColor = '';
+            }
 
             document.getElementById('anno-indiv-num').value = '';
 
             lucide.createIcons();
-            // 因为没选 Soundscape，所以下方 Biophony 区域也应当隐藏
             toggleBiophonyFields('');
             switchRightPanel('new-annotation');
 
-            // 初始化左侧输入框的数据为当前点击的点
             updateInputsFromDraftBox(drawStartX, drawStartY, 0, 0, rect);
         });
 
@@ -2356,7 +2347,6 @@
         addDraftBoxHandles(draftBox);
         updateInputsFromDraftBox(boxLeft, boxTop, boxWidth, boxHeight, rect);
 
-        // 【核心调整】：绘制完成时同样将状态恢复为默认
         document.getElementById('anno-soundscape').value = '';
         document.getElementById('span-anno-soundscape').textContent = 'Select...';
         document.querySelectorAll('#dropdown-anno-soundscape .form-select-option').forEach(el => el.classList.remove('selected'));
@@ -2384,18 +2374,20 @@
         const iconRef = document.getElementById('icon-bool-anno-reference');
         if (iconRef) iconRef.setAttribute('data-lucide', 'x');
 
+        // 【对齐 Project：重置小滑块和 Distance 输入框】
         document.getElementById('anno-not-estimable').value = 'false';
-        const lblNotEst = document.getElementById('lbl-bool-anno-not-estimable');
-        if (lblNotEst) lblNotEst.textContent = 'False';
         const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
-        if (btnNotEst) btnNotEst.classList.remove('is-true');
-        const iconNotEst = document.getElementById('icon-bool-anno-not-estimable');
-        if (iconNotEst) iconNotEst.setAttribute('data-lucide', 'x');
-
-        document.getElementById('anno-distance').value = '';
-        document.getElementById('anno-distance').disabled = false;
-        document.getElementById('anno-distance').style.opacity = '1';
-        document.getElementById('anno-distance').style.backgroundColor = '';
+        if (btnNotEst) {
+            btnNotEst.style.backgroundColor = 'var(--border-color)';
+            btnNotEst.style.justifyContent = 'flex-start';
+        }
+        const distInput = document.getElementById('anno-distance');
+        if (distInput) {
+            distInput.value = '';
+            distInput.disabled = false;
+            distInput.style.opacity = '1';
+            distInput.style.backgroundColor = '';
+        }
 
         document.getElementById('anno-indiv-num').value = '';
 
@@ -2528,7 +2520,6 @@
     window.toggleBiophonyFields = function(val) {
         const bioFields = document.getElementById('biophony-fields');
         if (bioFields) {
-            // 配合现在的 2 列强迫症网格布局，改成 grid
             bioFields.style.display = (val === 'Biophony') ? 'grid' : 'none';
         }
     };

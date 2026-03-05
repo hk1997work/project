@@ -1478,7 +1478,7 @@ function getDataForTable(tableName) {
                 const isBiophony = comp === 'Biophony';
 
                 let taxon = "";
-                let aType = "Unknown";
+                let aType = "";
                 let confidence = "";
                 let uncertain = "";
                 let distance = "";
@@ -3250,7 +3250,7 @@ window.selectFormOption = function (key, value, label, element) {
             updateDependentSelect('sound_type', value && SOUNDSCAPE_MAPPING[value] ? SOUNDSCAPE_MAPPING[value] : []);
             if (window.updateAnnotationVisibility) window.updateAnnotationVisibility();
         } else if (key === 'taxon_id') {
-            updateDependentSelect('animal_sound_type', value && TAXON_SOUND_TYPE_MAPPING[value] ? ["Unknown", ...TAXON_SOUND_TYPE_MAPPING[value]] : ["Unknown"]);
+            updateDependentSelect('animal_sound_type', value && TAXON_SOUND_TYPE_MAPPING[value] ? TAXON_SOUND_TYPE_MAPPING[value] : []);
         }
     }
 
@@ -3463,8 +3463,8 @@ function openCrudModal(mode, id = null) {
                     if (comp && SOUNDSCAPE_MAPPING[comp]) options = SOUNDSCAPE_MAPPING[comp];
                 } else if (col.key === 'animal_sound_type') {
                     const tax = currentRow['taxon_id'];
-                    if (tax && TAXON_SOUND_TYPE_MAPPING[tax]) options = ["Unknown", ...TAXON_SOUND_TYPE_MAPPING[tax]];
-                    else options = ["Unknown"];
+                    if (tax && TAXON_SOUND_TYPE_MAPPING[tax]) options = TAXON_SOUND_TYPE_MAPPING[tax];
+                    else options = [];
                 }
             } else if (currentTable === 'annotation_review') {
                 if (col.key === 'annotation_id') {
