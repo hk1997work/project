@@ -622,36 +622,41 @@
 
                 <div style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 8px; margin-top: 8px;">
 
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <label class="form-label" style="margin: 0; width: 24px; flex-shrink: 0; text-align: center;">X</label>
-                            <input type="number" id="anno-min-x" class="form-input" style="flex: 1; min-width: 0; padding: 0 8px; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="0.01" title="Min X">
-                            <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: bold;">-</span>
-                            <input type="number" id="anno-max-x" class="form-input" style="flex: 1; min-width: 0; padding: 0 8px; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="0.01" title="Max X">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Min X (s)</label>
+                            <input type="number" id="anno-min-x" class="form-input" style="width: 100%; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <label class="form-label" style="margin: 0; width: 24px; flex-shrink: 0; text-align: center;">Y</label>
-                            <input type="number" id="anno-min-y" class="form-input" style="flex: 1; min-width: 0; padding: 0 8px; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="1" title="Min Y">
-                            <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: bold;">-</span>
-                            <input type="number" id="anno-max-y" class="form-input" style="flex: 1; min-width: 0; padding: 0 8px; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="1" title="Max Y">
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Max X (s)</label>
+                            <input type="number" id="anno-max-x" class="form-input" style="width: 100%; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Min Y (Hz)</label>
+                            <input type="number" id="anno-min-y" class="form-input" style="width: 100%; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="1">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Max Y (Hz)</label>
+                            <input type="number" id="anno-max-y" class="form-input" style="width: 100%; text-align: center;" oninput="window.updateDraftBoxFromInputs()" step="1">
                         </div>
                     </div>
 
                     <div style="height: 1px; background: var(--border-color); opacity: 0.5;"></div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Soundscape</label>
                             <div class="form-select-wrapper">
-                                <input type="hidden" id="anno-soundscape" value="Biophony">
+                                <input type="hidden" id="anno-soundscape" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-soundscape')">
-                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-soundscape">Biophony</span>
+                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-soundscape">Select...</span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-soundscape">
                                     <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-soundscape', this.value)" onclick="event.stopPropagation()">
                                     <div class="form-select-options-list">
-                                        <div class="form-select-option selected" onclick="selectAudioDropdown('anno-soundscape', 'Biophony', this)">Biophony</div>
+                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>
+                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Biophony', this)">Biophony</div>
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Anthropophony', this)">Anthropophony</div>
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Geophony', this)">Geophony</div>
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Other', this)">Other</div>
@@ -675,7 +680,7 @@
                         </div>
                     </div>
 
-                    <div id="biophony-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div id="biophony-fields" style="display: none; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Taxon</label>
                             <div class="form-select-wrapper">
@@ -713,11 +718,11 @@
                             </div>
                         </div>
 
-                        <div class="form-group" style="margin: 0;">
+                        <div class="form-group" style="margin: 0; display: none;">
                             <label class="form-label">Distance (m)</label>
                             <input type="number" class="form-input" id="anno-distance" style="width:100%;">
                         </div>
-                        <div class="form-group" style="margin: 0;">
+                        <div class="form-group" style="margin: 0; display: none;">
                             <label class="form-label">Not Estimable</label>
                             <input type="hidden" id="anno-not-estimable" value="false">
                             <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" type="button" class="form-bool-trigger" style="width: 100%;">
@@ -740,7 +745,7 @@
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Reference</label>
                             <input type="hidden" id="anno-reference" value="false">
@@ -751,7 +756,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin: 0;">
+                    <div class="form-group" style="margin: 0; grid-column: 1 / -1;">
                         <label class="form-label">Comments</label>
                         <input type="text" id="anno-comments" class="form-input" style="width:100%;">
                     </div>
@@ -2078,7 +2083,7 @@
         const newVal = input.value !== 'true';
         input.value = newVal;
 
-        // 使用标准胶囊开关的 UI 切换逻辑
+        // 使用大型胶囊开关的标准 UI 切换逻辑
         lbl.textContent = newVal ? 'True' : 'False';
         if (newVal) {
             btn.classList.add('is-true');
@@ -2089,7 +2094,7 @@
         }
         lucide.createIcons();
 
-        // 处理 Distance 输入框的禁用逻辑
+        // 禁用并灰显 Distance 输入框
         if (newVal) {
             distInput.dataset.savedValue = distInput.value;
             distInput.value = '';
@@ -2126,11 +2131,12 @@
         const typeSelect = document.getElementById('list-anno-animal-sound-type');
         const span = document.getElementById('span-anno-animal-sound-type');
 
-        document.getElementById('anno-animal-sound-type').value = 'Unknown';
-        span.textContent = 'Unknown';
+        // 默认显示为 Select... 而不是 Unknown
+        document.getElementById('anno-animal-sound-type').value = '';
+        span.textContent = 'Select...';
 
         const options = window.TAXON_SOUND_TYPE_MAPPING[taxon] || [];
-        let html = `<div class="form-select-option selected" onclick="selectAudioDropdown('anno-animal-sound-type', 'Unknown', this)">Unknown</div>`;
+        let html = `<div class="form-select-option" onclick="selectAudioDropdown('anno-animal-sound-type', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
         options.forEach(opt => {
             html += `<div class="form-select-option" onclick="selectAudioDropdown('anno-animal-sound-type', '${opt}', this)">${opt}</div>`;
         });
@@ -2186,9 +2192,10 @@
             draftBox.style.height = '0px';
             document.getElementById('annotations-layer').appendChild(draftBox);
 
-            // 【核心调整】：鼠标点下瞬间，立刻调出右侧表单并清空所有状态！
-            document.getElementById('anno-soundscape').value = 'Biophony';
-            document.getElementById('span-anno-soundscape').textContent = 'Biophony';
+            // 【核心调整】：鼠标点下瞬间重置，Soundscape 默认不选！
+            document.getElementById('anno-soundscape').value = '';
+            document.getElementById('span-anno-soundscape').textContent = 'Select...';
+            document.querySelectorAll('#dropdown-anno-soundscape .form-select-option').forEach(el => el.classList.remove('selected'));
             updateSoundTypeOptionsAudio();
 
             document.getElementById('anno-taxon').value = '';
@@ -2198,27 +2205,39 @@
             document.getElementById('anno-comments').value = '';
 
             document.getElementById('anno-uncertain').value = 'false';
-            document.getElementById('lbl-bool-anno-uncertain').textContent = 'False';
-            document.getElementById('btn-bool-anno-uncertain').classList.remove('is-true');
-            document.getElementById('icon-bool-anno-uncertain').setAttribute('data-lucide', 'x');
+            const lblUncertain = document.getElementById('lbl-bool-anno-uncertain');
+            if (lblUncertain) lblUncertain.textContent = 'False';
+            const btnUncertain = document.getElementById('btn-bool-anno-uncertain');
+            if (btnUncertain) btnUncertain.classList.remove('is-true');
+            const iconUncertain = document.getElementById('icon-bool-anno-uncertain');
+            if (iconUncertain) iconUncertain.setAttribute('data-lucide', 'x');
 
             document.getElementById('anno-reference').value = 'false';
-            document.getElementById('lbl-bool-anno-reference').textContent = 'False';
-            document.getElementById('btn-bool-anno-reference').classList.remove('is-true');
-            document.getElementById('icon-bool-anno-reference').setAttribute('data-lucide', 'x');
+            const lblRef = document.getElementById('lbl-bool-anno-reference');
+            if (lblRef) lblRef.textContent = 'False';
+            const btnRef = document.getElementById('btn-bool-anno-reference');
+            if (btnRef) btnRef.classList.remove('is-true');
+            const iconRef = document.getElementById('icon-bool-anno-reference');
+            if (iconRef) iconRef.setAttribute('data-lucide', 'x');
+
+            document.getElementById('anno-not-estimable').value = 'false';
+            const lblNotEst = document.getElementById('lbl-bool-anno-not-estimable');
+            if (lblNotEst) lblNotEst.textContent = 'False';
+            const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
+            if (btnNotEst) btnNotEst.classList.remove('is-true');
+            const iconNotEst = document.getElementById('icon-bool-anno-not-estimable');
+            if (iconNotEst) iconNotEst.setAttribute('data-lucide', 'x');
 
             document.getElementById('anno-distance').value = '';
             document.getElementById('anno-distance').disabled = false;
             document.getElementById('anno-distance').style.opacity = '1';
             document.getElementById('anno-distance').style.backgroundColor = '';
-            document.getElementById('anno-not-estimable').value = 'false';
-            document.getElementById('btn-bool-anno-not-estimable').style.backgroundColor = 'var(--border-color)';
-            document.getElementById('btn-bool-anno-not-estimable').style.justifyContent = 'flex-start';
 
             document.getElementById('anno-indiv-num').value = '';
 
             lucide.createIcons();
-            toggleBiophonyFields('Biophony');
+            // 因为没选 Soundscape，所以下方 Biophony 区域也应当隐藏
+            toggleBiophonyFields('');
             switchRightPanel('new-annotation');
 
             // 初始化左侧输入框的数据为当前点击的点
@@ -2324,7 +2343,6 @@
         let boxWidth = parseFloat(draftBox.style.width || 0);
         let boxHeight = parseFloat(draftBox.style.height || 0);
 
-        // 如果用户只是点了一下没有拖拽，为了确保框可见且可操作，赋予一个极小的宽高
         if (boxWidth < 1) boxWidth = 5;
         if (boxHeight < 1) boxHeight = 5;
 
@@ -2337,6 +2355,53 @@
 
         addDraftBoxHandles(draftBox);
         updateInputsFromDraftBox(boxLeft, boxTop, boxWidth, boxHeight, rect);
+
+        // 【核心调整】：绘制完成时同样将状态恢复为默认
+        document.getElementById('anno-soundscape').value = '';
+        document.getElementById('span-anno-soundscape').textContent = 'Select...';
+        document.querySelectorAll('#dropdown-anno-soundscape .form-select-option').forEach(el => el.classList.remove('selected'));
+        updateSoundTypeOptionsAudio();
+
+        document.getElementById('anno-taxon').value = '';
+        document.getElementById('span-anno-taxon').textContent = 'Select...';
+        updateAnimalSoundTypeOptionsAudio();
+
+        document.getElementById('anno-comments').value = '';
+
+        document.getElementById('anno-uncertain').value = 'false';
+        const lblUncertain = document.getElementById('lbl-bool-anno-uncertain');
+        if (lblUncertain) lblUncertain.textContent = 'False';
+        const btnUncertain = document.getElementById('btn-bool-anno-uncertain');
+        if (btnUncertain) btnUncertain.classList.remove('is-true');
+        const iconUncertain = document.getElementById('icon-bool-anno-uncertain');
+        if (iconUncertain) iconUncertain.setAttribute('data-lucide', 'x');
+
+        document.getElementById('anno-reference').value = 'false';
+        const lblRef = document.getElementById('lbl-bool-anno-reference');
+        if (lblRef) lblRef.textContent = 'False';
+        const btnRef = document.getElementById('btn-bool-anno-reference');
+        if (btnRef) btnRef.classList.remove('is-true');
+        const iconRef = document.getElementById('icon-bool-anno-reference');
+        if (iconRef) iconRef.setAttribute('data-lucide', 'x');
+
+        document.getElementById('anno-not-estimable').value = 'false';
+        const lblNotEst = document.getElementById('lbl-bool-anno-not-estimable');
+        if (lblNotEst) lblNotEst.textContent = 'False';
+        const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
+        if (btnNotEst) btnNotEst.classList.remove('is-true');
+        const iconNotEst = document.getElementById('icon-bool-anno-not-estimable');
+        if (iconNotEst) iconNotEst.setAttribute('data-lucide', 'x');
+
+        document.getElementById('anno-distance').value = '';
+        document.getElementById('anno-distance').disabled = false;
+        document.getElementById('anno-distance').style.opacity = '1';
+        document.getElementById('anno-distance').style.backgroundColor = '';
+
+        document.getElementById('anno-indiv-num').value = '';
+
+        lucide.createIcons();
+        toggleBiophonyFields('');
+        switchRightPanel('new-annotation');
     }
 
     function addDraftBoxHandles(box) {
@@ -2463,8 +2528,8 @@
     window.toggleBiophonyFields = function(val) {
         const bioFields = document.getElementById('biophony-fields');
         if (bioFields) {
-            // 配合单列的垂直流式布局，恢复为 flex
-            bioFields.style.display = (val === 'Biophony') ? 'flex' : 'none';
+            // 配合现在的 2 列强迫症网格布局，改成 grid
+            bioFields.style.display = (val === 'Biophony') ? 'grid' : 'none';
         }
     };
 
