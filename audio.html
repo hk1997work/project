@@ -532,7 +532,7 @@
 
         </div>
 
-        <div class="info-section" style="width: 420px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; background: var(--bg-body); flex-shrink: 0; overflow: hidden;">
+        <div class="info-section" style="width: 460px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; background: var(--bg-body); flex-shrink: 0; overflow: hidden;">
             <div id="panel-audio-info" style="display: flex; flex-direction: column; gap: 8px; height: 100%;">
                 <div style="height: 28px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-sizing: border-box; flex-shrink: 0;">
                     <i data-lucide="info" size="16" style="color: var(--brand);"></i>
@@ -620,9 +620,10 @@
                     <span style="margin-left: 2px;">New Annotation</span>
                 </div>
 
-                <div style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 8px; margin-top: 8px;">
+                <div style="flex: 1; overflow-y: auto; padding-right: 4px; padding-bottom: 8px; margin-top: 8px;">
 
                     <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
+
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Min X</label>
                             <input type="number" id="anno-min-x" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
@@ -639,11 +640,9 @@
                             <label class="form-label">Max Y</label>
                             <input type="number" id="anno-max-y" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="1">
                         </div>
-                    </div>
 
-                    <div style="height: 1px; background: var(--border-color); opacity: 0.5;"></div>
+                        <div style="grid-column: 1 / -1; height: 1px; background: var(--border-color); opacity: 0.5; margin: 4px 0;"></div>
 
-                    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Soundscape</label>
                             <div class="form-select-wrapper">
@@ -678,10 +677,8 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div id="biophony-fields" style="display: none; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
-                        <div class="form-group" style="margin: 0; min-width: 0;">
+                        <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Taxon</label>
                             <div class="form-select-wrapper">
                                 <input type="hidden" id="anno-taxon" value="">
@@ -701,7 +698,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group" style="margin: 0; min-width: 0;">
+                        <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Uncertain</label>
                             <input type="hidden" id="anno-uncertain" value="false">
                             <button class="form-bool-trigger" id="btn-bool-anno-uncertain" onclick="toggleAudioBoolean('anno-uncertain')" type="button" style="width: 100%;">
@@ -709,7 +706,7 @@
                                 <i id="icon-bool-anno-uncertain" data-lucide="x" size="16"></i>
                             </button>
                         </div>
-                        <div class="form-group" style="margin: 0; min-width: 0;">
+                        <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Animal Sound</label>
                             <div class="form-select-wrapper">
                                 <input type="hidden" id="anno-animal-sound-type" value="">
@@ -726,7 +723,7 @@
                             </div>
                         </div>
 
-                        <div class="form-group" style="position:relative; margin: 0; min-width: 0;">
+                        <div class="form-group bio-field-item" style="position:relative; margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Distance (m)</label>
                             <div style="position:absolute; top:0; right:0; display:flex; align-items:center; gap:8px;">
                                 <label class="form-label" style="margin-bottom:0; font-size:0.8rem; color:var(--text-muted); cursor:pointer; font-weight:normal;" onclick="document.getElementById('btn-bool-anno-not-estimable').click()">Not Estimable</label>
@@ -735,16 +732,14 @@
                                     <span style="width:16px; height:16px; background:white; border-radius:50%; display:block; box-shadow:0 1px 2px rgba(0,0,0,0.2);"></span>
                                 </button>
                             </div>
-                            <input type="number" class="form-input" id="anno-distance" style="width:100%; min-width: 0;">
+                            <input type="number" class="form-input" id="anno-distance" style="width:100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed;" disabled>
                         </div>
 
-                        <div class="form-group" style="margin: 0; min-width: 0;">
+                        <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Indiv. Num</label>
                             <input type="number" class="form-input" id="anno-indiv-num" style="width:100%; min-width: 0;" min="1">
                         </div>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Reference</label>
                             <input type="hidden" id="anno-reference" value="false">
@@ -753,7 +748,6 @@
                                 <i id="icon-bool-anno-reference" data-lucide="x" size="16"></i>
                             </button>
                         </div>
-
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Comments</label>
                             <input type="text" id="anno-comments" class="form-input" style="width:100%; min-width: 0;">
@@ -2071,11 +2065,9 @@
         }
         lucide.createIcons();
     };
-
     window.toggleAudioNotEstimable = function() {
         const input = document.getElementById('anno-not-estimable');
         const btn = document.getElementById('btn-bool-anno-not-estimable');
-        const distInput = document.getElementById('anno-distance');
 
         const newVal = input.value !== 'true';
         input.value = newVal;
@@ -2083,23 +2075,11 @@
         if (newVal) {
             btn.style.backgroundColor = 'var(--brand)';
             btn.style.justifyContent = 'flex-end';
-            if (distInput) {
-                distInput.dataset.savedValue = distInput.value;
-                distInput.value = '';
-                distInput.disabled = true;
-                distInput.style.opacity = '0.5';
-                distInput.style.backgroundColor = 'var(--bg-capsule)';
-            }
         } else {
             btn.style.backgroundColor = 'var(--border-color)';
             btn.style.justifyContent = 'flex-start';
-            if (distInput) {
-                if (distInput.dataset.savedValue !== undefined) distInput.value = distInput.dataset.savedValue;
-                distInput.disabled = false;
-                distInput.style.opacity = '1';
-                distInput.style.backgroundColor = '';
-            }
         }
+        // 移除了操作 distInput 的代码，让其永远保持 HTML 中的禁用属性
     };
 
     window.updateSoundTypeOptionsAudio = function() {
@@ -2135,7 +2115,7 @@
         if(typeSelect) typeSelect.innerHTML = html;
     };
 
-    // 【画图、拖拽及缩放逻辑】
+    // 【画图、拖拽及缩放逻辑】(此变量只会声明一次，绝不会再引发报错)
     let isDrawingAnno = false;
     let isResizingAnno = false;
     let drawStartX = 0;
@@ -2211,25 +2191,20 @@
             const iconRef = document.getElementById('icon-bool-anno-reference');
             if (iconRef) iconRef.setAttribute('data-lucide', 'x');
 
-            // 【对齐 Project：重置小滑块和 Distance 输入框】
             document.getElementById('anno-not-estimable').value = 'false';
             const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
             if (btnNotEst) {
                 btnNotEst.style.backgroundColor = 'var(--border-color)';
                 btnNotEst.style.justifyContent = 'flex-start';
             }
+
             const distInput = document.getElementById('anno-distance');
-            if (distInput) {
-                distInput.value = '';
-                distInput.disabled = false;
-                distInput.style.opacity = '1';
-                distInput.style.backgroundColor = '';
-            }
+            if (distInput) distInput.value = '';
 
             document.getElementById('anno-indiv-num').value = '';
 
             lucide.createIcons();
-            toggleBiophonyFields('');
+            window.toggleBiophonyFields('');
             switchRightPanel('new-annotation');
 
             updateInputsFromDraftBox(drawStartX, drawStartY, 0, 0, rect);
@@ -2374,25 +2349,20 @@
         const iconRef = document.getElementById('icon-bool-anno-reference');
         if (iconRef) iconRef.setAttribute('data-lucide', 'x');
 
-        // 【对齐 Project：重置小滑块和 Distance 输入框】
         document.getElementById('anno-not-estimable').value = 'false';
         const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
         if (btnNotEst) {
             btnNotEst.style.backgroundColor = 'var(--border-color)';
             btnNotEst.style.justifyContent = 'flex-start';
         }
+
         const distInput = document.getElementById('anno-distance');
-        if (distInput) {
-            distInput.value = '';
-            distInput.disabled = false;
-            distInput.style.opacity = '1';
-            distInput.style.backgroundColor = '';
-        }
+        if (distInput) distInput.value = '';
 
         document.getElementById('anno-indiv-num').value = '';
 
         lucide.createIcons();
-        toggleBiophonyFields('');
+        window.toggleBiophonyFields('');
         switchRightPanel('new-annotation');
     }
 
@@ -2518,10 +2488,11 @@
     };
 
     window.toggleBiophonyFields = function(val) {
-        const bioFields = document.getElementById('biophony-fields');
-        if (bioFields) {
-            bioFields.style.display = (val === 'Biophony') ? 'grid' : 'none';
-        }
+        const isBio = (val === 'Biophony');
+        const displayStyle = isBio ? 'block' : 'none';
+        document.querySelectorAll('.bio-field-item').forEach(el => {
+            el.style.display = displayStyle;
+        });
     };
 
     window.cancelNewAnnotation = function() {
@@ -2555,7 +2526,7 @@
             soundscape_component: comp,
             sound_type: document.getElementById('anno-sound-type').value,
             taxon_id: isBio ? document.getElementById('anno-taxon').value : "",
-            animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "Unknown",
+            animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "",
 
             confidence: null,
             uncertain: isBio ? (document.getElementById('anno-uncertain').value === 'true') : false,
