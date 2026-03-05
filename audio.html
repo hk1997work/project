@@ -630,7 +630,7 @@
                             title="Back to Info">
                         <i data-lucide="arrow-left" size="18"></i>
                     </button>
-                    <span style="margin-left: 2px;">New Annotation</span>
+                    <span id="annotation-panel-title" style="margin-left: 2px;">New Annotation</span>
                 </div>
 
                 <div style="flex: 1; overflow-y: auto; padding-right: 4px; padding-bottom: 8px; margin-top: 8px;">
@@ -752,7 +752,7 @@
                                 </button>
                             </div>
 
-                            <input type="number" class="form-input" id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed;" disabled>
+                            <input type="number" class="form-input" id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule);" disabled>
                         </div>
 
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
@@ -777,7 +777,7 @@
 
                 <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;">
                     <button class="btn-secondary" onclick="cancelNewAnnotation()">Cancel</button>
-                    <button class="btn-primary" style="background-color: var(--brand); border-color: var(--brand); transition: filter 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='none'" onclick="saveNewAnnotation()">Save</button>
+                    <button id="btn-save-annotation" class="btn-primary" style="background-color: var(--brand); border-color: var(--brand); transition: filter 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='none'" onclick="saveNewAnnotation()">Save</button>
                 </div>
             </div>
             <div id="panel-ai-models" style="display: none; flex-direction: column; height: 100%;"></div>
@@ -1442,10 +1442,13 @@
         } else {
             processedData.forEach(row => {
                 const isChecked = selectedIds.includes(row.id);
-                bodyHtml += `<tr data-id="${row.id}" class="${isChecked ? 'selected' : ''}"
+                // 新增 style="cursor:pointer;" 和 onclick 事件
+                bodyHtml += `<tr data-id="${row.id}" class="${isChecked ? 'selected' : ''}" style="cursor: pointer;"
                                  onmouseenter="syncHoverState(${row.id}, true)"
-                                 onmouseleave="syncHoverState(${row.id}, false)">`;
-                bodyHtml += `<td style="text-align:center; border-bottom:1px solid var(--border-color);"><input type="checkbox" class="crud-checkbox" ${isChecked ? 'checked' : ''} onclick="toggleRowSelection(${row.id}, this)"></td>`;
+                                 onmouseleave="syncHoverState(${row.id}, false)"
+                                 onclick="handleBoxClick(${row.id}, event)">`;
+                // 新增 td 级别的 onclick="event.stopPropagation()" 防止点击复选框时触发弹窗
+                bodyHtml += `<td style="text-align:center; border-bottom:1px solid var(--border-color);" onclick="event.stopPropagation()"><input type="checkbox" class="crud-checkbox" ${isChecked ? 'checked' : ''} onclick="toggleRowSelection(${row.id}, this)"></td>`;
 
                 annotationSchema.forEach(col => {
                     let val = row[col.key];
@@ -1546,7 +1549,6 @@
 
         // 1. 清除之前所有因点击标注而产生的临时高亮背景色
         document.querySelectorAll('#crud-tbody tr').forEach(row => {
-            // 只要不是被正式勾选（selected）的行，都恢复默认背景
             if (!row.classList.contains('selected')) {
                 row.style.backgroundColor = '';
             }
@@ -1555,22 +1557,14 @@
         // 2. 找到表格中对应的当前行
         const tr = document.querySelector(`tr[data-id="${id}"]`);
         if (tr) {
-            // 自动滚动让这行居中显示
             tr.scrollIntoView({behavior: 'smooth', block: 'center'});
-
-            // 3. 仅改变背景色实现“高亮”视觉，完全不操作 checkbox 和 selectedIds
             if (!tr.classList.contains('selected')) {
-                // 使用主题色作为高亮背景，它会一直保持高亮，直到你点击下一个标注
                 tr.style.backgroundColor = 'var(--brand-tint)';
             }
-
-            // （可选）如果你希望高亮闪烁一下就自动消失，可以取消下面代码的注释：
-            // setTimeout(() => {
-            //     if (!tr.classList.contains('selected')) {
-            //         tr.style.backgroundColor = '';
-            //     }
-            // }, 1500);
         }
+
+        // 【新增】：唤起右侧编辑面板
+        window.openEditAnnotation(id);
     }
 
     // ================== 双向悬停联动逻辑 ==================
@@ -2570,6 +2564,155 @@
 
         switchRightPanel('audio-info');
         renderCrudTable();
+    };
+
+    // ================= 编辑标注功能 =================
+    let editingAnnoId = null;
+
+    // 辅助函数：通过程序设置自定义 Boolean 控件的值
+    window.setAudioBooleanValue = function(key, val) {
+        const input = document.getElementById(key);
+        if (!input) return;
+        if ((input.value === 'true') !== val) {
+            window.toggleAudioBoolean(key);
+        }
+    };
+    window.setAudioNotEstimableValue = function(val) {
+        const input = document.getElementById('anno-not-estimable');
+        if (!input) return;
+        if ((input.value === 'true') !== val) {
+            window.toggleAudioNotEstimable();
+        }
+    };
+
+    // 恢复右侧面板为“新建”模式
+    window.resetAnnotationPanelToNew = function() {
+        document.getElementById('annotation-panel-title').textContent = 'New Annotation';
+        document.getElementById('btn-save-annotation').setAttribute('onclick', 'saveNewAnnotation()');
+        editingAnnoId = null;
+    };
+
+    // 拦截取消和绘图事件，重置状态
+    const originalCancelNewAnno = window.cancelNewAnnotation;
+    window.cancelNewAnnotation = function() {
+        resetAnnotationPanelToNew();
+        originalCancelNewAnno();
+    };
+    if (viewport) {
+        viewport.addEventListener('mousedown', () => {
+            resetAnnotationPanelToNew();
+        });
+    }
+
+    // 打开编辑面板并反填数据
+    window.openEditAnnotation = function(id) {
+        const anno = mockAnnotations.find(a => a.id === id);
+        if (!anno) return;
+
+        editingAnnoId = id;
+
+        // 1. 切换面板模式
+        document.getElementById('annotation-panel-title').textContent = 'Edit Annotation';
+        document.getElementById('btn-save-annotation').setAttribute('onclick', 'updateExistingAnnotation()');
+
+        // 2. 填充坐标
+        document.getElementById('anno-min-x').value = anno.min_x;
+        document.getElementById('anno-max-x').value = anno.max_x;
+        document.getElementById('anno-min-y').value = anno.min_y;
+        document.getElementById('anno-max-y').value = anno.max_y;
+
+        // 3. 填充下拉框和级联选项
+        document.getElementById('anno-soundscape').value = anno.soundscape_component || '';
+        document.getElementById('span-anno-soundscape').textContent = anno.soundscape_component || 'Select...';
+        window.updateSoundTypeOptionsAudio();
+
+        document.getElementById('anno-sound-type').value = anno.sound_type || '';
+        document.getElementById('span-anno-sound-type').textContent = anno.sound_type || 'Select...';
+
+        window.toggleBiophonyFields(anno.soundscape_component || '');
+        if (anno.soundscape_component === 'Biophony') {
+            document.getElementById('anno-taxon').value = anno.taxon_id || '';
+            document.getElementById('span-anno-taxon').textContent = anno.taxon_id || 'Select...';
+            window.updateAnimalSoundTypeOptionsAudio();
+
+            document.getElementById('anno-animal-sound-type').value = anno.animal_sound_type || '';
+            document.getElementById('span-anno-animal-sound-type').textContent = anno.animal_sound_type || 'Select...';
+
+            document.getElementById('anno-distance').value = anno.sound_distance_m !== null ? anno.sound_distance_m : '';
+            document.getElementById('anno-indiv-num').value = anno.individual_num !== null ? anno.individual_num : '';
+
+            window.setAudioBooleanValue('anno-uncertain', anno.uncertain);
+            window.setAudioNotEstimableValue(anno.distance_not_estimable);
+        } else {
+            window.setAudioBooleanValue('anno-uncertain', false);
+            window.setAudioNotEstimableValue(false);
+            document.getElementById('anno-distance').value = '';
+            document.getElementById('anno-indiv-num').value = '';
+        }
+
+        window.setAudioBooleanValue('anno-reference', anno.reference);
+        document.getElementById('anno-comments').value = anno.comments || '';
+
+        // 4. 在频谱图上生成可调整的激活框(draftBox)
+        if (draftBox) { draftBox.remove(); draftBox = null; }
+
+        draftBox = document.createElement('div');
+        draftBox.id = 'draft-annotation';
+        draftBox.style.position = 'absolute';
+        draftBox.style.border = '2px dashed var(--brand)';
+        draftBox.style.backgroundColor = 'rgba(var(--brand-rgb), 0.2)';
+        draftBox.style.boxShadow = '0 0 10px rgba(var(--brand-rgb), 0.5)';
+        draftBox.style.zIndex = '100';
+        draftBox.style.pointerEvents = 'none';
+        draftBox.style.boxSizing = 'border-box';
+        document.getElementById('annotations-layer').appendChild(draftBox);
+
+        currentDraftData = { min_x: anno.min_x, max_x: anno.max_x, min_y: anno.min_y, max_y: anno.max_y };
+        window.updateDraftBoxFromInputs();
+        addDraftBoxHandles(draftBox); // 使其可拖拽调整
+
+        // 5. 展开编辑面板
+        switchRightPanel('new-annotation');
+    };
+
+    // 保存编辑修改
+    window.updateExistingAnnotation = function() {
+        if (!editingAnnoId || !currentDraftData) return;
+        const annoIndex = mockAnnotations.findIndex(a => a.id === editingAnnoId);
+        if (annoIndex === -1) return;
+
+        const comp = document.getElementById('anno-soundscape').value;
+        const isBio = (comp === 'Biophony');
+        const isNotEstimable = document.getElementById('anno-not-estimable').value === 'true';
+
+        // 覆盖更新现有对象
+        mockAnnotations[annoIndex] = {
+            ...mockAnnotations[annoIndex],
+            min_x: parseFloat(document.getElementById('anno-min-x').value),
+            max_x: parseFloat(document.getElementById('anno-max-x').value),
+            min_y: parseInt(document.getElementById('anno-min-y').value),
+            max_y: parseInt(document.getElementById('anno-max-y').value),
+
+            soundscape_component: comp,
+            sound_type: document.getElementById('anno-sound-type').value,
+            taxon_id: isBio ? document.getElementById('anno-taxon').value : "",
+            animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "",
+
+            uncertain: isBio ? (document.getElementById('anno-uncertain').value === 'true') : false,
+            sound_distance_m: (isBio && !isNotEstimable && document.getElementById('anno-distance').value) ? parseInt(document.getElementById('anno-distance').value) : null,
+            distance_not_estimable: isBio ? isNotEstimable : false,
+            individual_num: (isBio && document.getElementById('anno-indiv-num').value) ? parseInt(document.getElementById('anno-indiv-num').value) : null,
+
+            reference: document.getElementById('anno-reference').value === 'true',
+            comments: document.getElementById('anno-comments').value,
+        };
+
+        if (draftBox) { draftBox.remove(); draftBox = null; }
+        currentDraftData = null;
+
+        resetAnnotationPanelToNew();
+        switchRightPanel('audio-info');
+        renderCrudTable(); // 表格和图像会全自动更新
     };
     // ================== 6. 初始化 ==================
     window.addEventListener('DOMContentLoaded', () => {
