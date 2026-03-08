@@ -752,9 +752,10 @@
                                 </button>
                             </div>
 
-                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
-                                <input type="number" class="form-input" id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed;" disabled placeholder="Click icon to listen">
-                                <button type="button" onclick="playAnnotationAudio()" title="Play Annotation Audio" style="width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; color: var(--brand); transition: all 0.2s;" onmouseover="this.style.background='var(--brand-tint)'; this.style.borderColor='var(--brand)';" onmouseout="this.style.background='var(--bg-surface)'; this.style.borderColor='var(--border-color)';">
+                            <div style="display: flex; align-items: stretch; margin-top: 6px;">
+                                <input type="number" class="form-input" id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: none !important;" disabled placeholder="Click icon to listen">
+
+                                <button type="button" onclick="playAnnotationAudio()" title="Play Annotation Audio" style="width: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border-top-left-radius: 0; border-bottom-left-radius: 0; cursor: pointer; color: var(--brand); transition: all 0.2s;" onmouseover="this.style.background='var(--brand-tint)'; this.style.borderColor='var(--brand)';" onmouseout="this.style.background='var(--bg-surface)'; this.style.borderColor='var(--border-color)';">
                                     <i data-lucide="volume-2" size="16"></i>
                                 </button>
                             </div>
@@ -1159,6 +1160,9 @@
         const aTypes = taxon ? window.TAXON_SOUND_TYPE_MAPPING[taxon] : [];
         const aType = taxon ? (aTypes.length > 0 ? aTypes[Math.floor(Math.random() * aTypes.length)] : "Unknown") : "";
 
+        // 【核心修复】：先判定是否属于“不可估测”
+        const isNotEst = isBio ? Math.random() > 0.8 : false;
+
         return {
             id: i + 1,
             uuid: `5570-e29b-41d4-a716-${String(i + 1).padStart(12, '0')}`,
@@ -1174,8 +1178,12 @@
             animal_sound_type: aType,
             confidence: creatorType === 'user' ? null : parseFloat((0.5 + Math.random() * 0.49).toFixed(2)),
             uncertain: Math.random() > 0.8,
-            sound_distance_m: isBio ? Math.floor(Math.random() * 100) : null,
-            distance_not_estimable: isBio ? Math.random() > 0.8 : false,
+
+            // 【核心修复】：同步保存开关状态
+            distance_not_estimable: isNotEst,
+            // 【核心修复】：只有当 isNotEst 为 false 时，才给 sound_distance_m 随机赋值，否则强制为 null
+            sound_distance_m: (isBio && !isNotEst) ? Math.floor(Math.random() * 100) : null,
+
             individual_num: isBio ? Math.floor(Math.random() * 5) + 1 : null,
             reference: Math.random() > 0.7,
             comments: ["Clear", "Noisy", "Overlapping", "Needs review", ""][Math.floor(Math.random() * 5)]
@@ -2084,18 +2092,73 @@
         }
         lucide.createIcons();
     };
+
+    // 核心恢复：不可估算 (Not Estimable) 的状态控制与缓存记忆
+    window.toggleAudioNotEstimable = function() {
+        const input = document.getElementById('anno-not-estimable');
+        const btn = document.getElementById('btn-bool-anno-not-estimable');
+        const distInput = document.getElementById('anno-distance');
+
+        if (!input || !btn || !distInput) return;
+
+        const newVal = input.value !== 'true';
+        input.value = newVal;
+
+        if (newVal) {
+            btn.style.backgroundColor = 'var(--brand)';
+            btn.style.justifyContent = 'flex-end';
+
+            // 勾选不可估算：保存旧值并锁定输入框
+            distInput.dataset.savedValue = distInput.value;
+            distInput.value = '';
+            distInput.disabled = true;
+            distInput.style.opacity = '0.5';
+            distInput.style.backgroundColor = 'var(--bg-capsule)';
+        } else {
+            btn.style.backgroundColor = 'var(--border-color)';
+            btn.style.justifyContent = 'flex-start';
+
+            // 取消勾选：恢复旧值
+            if (distInput.dataset.savedValue !== undefined) {
+                distInput.value = distInput.dataset.savedValue;
+            }
+
+            // 【核心修改】：现在只认有没有听过音频 (dataset.listened === "true")，有值也不放行
+            if (distInput.dataset.listened === "true") {
+                distInput.disabled = false;
+                distInput.style.opacity = '1';
+                distInput.style.backgroundColor = '';
+                distInput.style.cursor = 'text';
+                distInput.placeholder = "";
+                distInput.focus();
+            } else {
+                distInput.disabled = true;
+                distInput.style.opacity = '0.5';
+                distInput.style.backgroundColor = 'var(--bg-capsule)';
+            }
+        }
+    };
+
     // 模拟播放局部音频并解锁 Distance 输入框
     window.playAnnotationAudio = function() {
         console.log("Playing audio for current annotation range...");
+        // TODO: 此处可对接 wavesurfer 或其他音频播放逻辑
 
         const distInput = document.getElementById('anno-distance');
+        const isNotEst = document.getElementById('anno-not-estimable').value === 'true';
+
         if (distInput) {
-            distInput.disabled = false;
-            distInput.style.opacity = '1';
-            distInput.style.background = '';
-            distInput.style.cursor = 'text';
-            distInput.placeholder = "";
-            distInput.focus();
+            distInput.dataset.listened = "true"; // 标记为已听过
+
+            // 只要没勾选 "Not Estimable"，就解锁输入框
+            if (!isNotEst) {
+                distInput.disabled = false;
+                distInput.style.opacity = '1';
+                distInput.style.backgroundColor = '';
+                distInput.style.cursor = 'text';
+                distInput.placeholder = "";
+                distInput.focus();
+            }
         }
     };
 
@@ -2132,7 +2195,7 @@
         if(typeSelect) typeSelect.innerHTML = html;
     };
 
-    // 【画图、拖拽及缩放逻辑】(此变量只会声明一次，绝不会再引发报错)
+    // 【画图、拖拽及缩放逻辑】
     let isDrawingAnno = false;
     let isResizingAnno = false;
     let drawStartX = 0;
@@ -2208,12 +2271,22 @@
             const iconRef = document.getElementById('icon-bool-anno-reference');
             if (iconRef) iconRef.setAttribute('data-lucide', 'x');
 
+            // 彻底复位 Not Estimable 和 Distance 状态
+            document.getElementById('anno-not-estimable').value = 'false';
+            const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
+            if (btnNotEst) {
+                btnNotEst.style.backgroundColor = 'var(--border-color)';
+                btnNotEst.style.justifyContent = 'flex-start';
+            }
+
             const distInput = document.getElementById('anno-distance');
             if (distInput) {
                 distInput.value = '';
+                distInput.dataset.savedValue = '';
+                distInput.dataset.listened = "false";
                 distInput.disabled = true;
                 distInput.style.opacity = '0.5';
-                distInput.style.background = 'var(--bg-capsule)';
+                distInput.style.backgroundColor = 'var(--bg-capsule)';
             }
 
             document.getElementById('anno-indiv-num').value = '';
@@ -2364,6 +2437,7 @@
         const iconRef = document.getElementById('icon-bool-anno-reference');
         if (iconRef) iconRef.setAttribute('data-lucide', 'x');
 
+        // 彻底复位 Not Estimable 和 Distance 状态
         document.getElementById('anno-not-estimable').value = 'false';
         const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
         if (btnNotEst) {
@@ -2372,7 +2446,14 @@
         }
 
         const distInput = document.getElementById('anno-distance');
-        if (distInput) distInput.value = '';
+        if (distInput) {
+            distInput.value = '';
+            distInput.dataset.savedValue = '';
+            distInput.dataset.listened = "false";
+            distInput.disabled = true;
+            distInput.style.opacity = '0.5';
+            distInput.style.backgroundColor = 'var(--bg-capsule)';
+        }
 
         document.getElementById('anno-indiv-num').value = '';
 
@@ -2526,7 +2607,8 @@
 
         const comp = document.getElementById('anno-soundscape').value;
         const isBio = (comp === 'Biophony');
-
+        // 获取当前的 Not Estimable 状态
+        const isNotEstimable = document.getElementById('anno-not-estimable').value === 'true';
 
         const newAnno = {
             id: newId,
@@ -2545,8 +2627,12 @@
 
             confidence: null,
             uncertain: isBio ? (document.getElementById('anno-uncertain').value === 'true') : false,
-            sound_distance_m: (isBio && document.getElementById('anno-distance').value !== '') ? parseInt(document.getElementById('anno-distance').value) : null,
-            distance_not_estimable: false,
+
+            // 【核心修复】：只有在 是生物声音 且 没有勾选不可估算 且 输入框有值时，才保存距离，否则一律给 null
+            sound_distance_m: (isBio && !isNotEstimable && document.getElementById('anno-distance').value !== '') ? parseInt(document.getElementById('anno-distance').value) : null,
+            // 同步保存不可估测的状态
+            distance_not_estimable: isBio ? isNotEstimable : false,
+
             individual_num: (isBio && document.getElementById('anno-indiv-num').value) ? parseInt(document.getElementById('anno-indiv-num').value) : null,
 
             reference: document.getElementById('anno-reference').value === 'true',
@@ -2576,13 +2662,6 @@
         if (!input) return;
         if ((input.value === 'true') !== val) {
             window.toggleAudioBoolean(key);
-        }
-    };
-    window.setAudioNotEstimableValue = function(val) {
-        const input = document.getElementById('anno-not-estimable');
-        if (!input) return;
-        if ((input.value === 'true') !== val) {
-            window.toggleAudioNotEstimable();
         }
     };
 
@@ -2642,27 +2721,61 @@
             document.getElementById('anno-indiv-num').value = anno.individual_num !== null ? anno.individual_num : '';
             window.setAudioBooleanValue('anno-uncertain', anno.uncertain);
 
-            const distVal = anno.sound_distance_m !== null ? anno.sound_distance_m : '';
             const distInput = document.getElementById('anno-distance');
+            const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
+            const inputNotEst = document.getElementById('anno-not-estimable');
+
+            const isNotEst = anno.distance_not_estimable === true;
+            const actualDist = anno.sound_distance_m !== null ? anno.sound_distance_m : '';
+
             if (distInput) {
-                distInput.value = distVal;
-                // 如果已有值，直接解锁；如果为空，则锁定要求重新听
-                if (distVal !== '') {
-                    distInput.disabled = false;
-                    distInput.style.opacity = '1';
-                    distInput.style.background = '';
-                    distInput.placeholder = "";
-                } else {
+                distInput.dataset.savedValue = actualDist;
+                // 【核心修改】：打开编辑面板时，强制视为“未听过”，即使有 actualDist 也不行
+                distInput.dataset.listened = "false";
+                if (inputNotEst) inputNotEst.value = isNotEst;
+
+                if (isNotEst) {
+                    if (btnNotEst) {
+                        btnNotEst.style.backgroundColor = 'var(--brand)';
+                        btnNotEst.style.justifyContent = 'flex-end';
+                    }
+                    distInput.value = '';
                     distInput.disabled = true;
                     distInput.style.opacity = '0.5';
-                    distInput.style.background = 'var(--bg-capsule)';
-                    distInput.placeholder = "Click icon to listen";
+                    distInput.style.backgroundColor = 'var(--bg-capsule)';
+                } else {
+                    if (btnNotEst) {
+                        btnNotEst.style.backgroundColor = 'var(--border-color)';
+                        btnNotEst.style.justifyContent = 'flex-start';
+                    }
+                    // 填入已有数值，但保持绝对锁定状态，要求必须听音频
+                    distInput.value = actualDist;
+                    distInput.disabled = true;
+                    distInput.style.opacity = '0.5';
+                    distInput.style.backgroundColor = 'var(--bg-capsule)';
                 }
             }
         } else {
             window.setAudioBooleanValue('anno-uncertain', false);
-            window.setAudioNotEstimableValue(false);
-            document.getElementById('anno-distance').value = '';
+
+            // 彻底复位隐藏
+            const inputNotEst = document.getElementById('anno-not-estimable');
+            if (inputNotEst) inputNotEst.value = 'false';
+            const btnNotEst = document.getElementById('btn-bool-anno-not-estimable');
+            if (btnNotEst) {
+                btnNotEst.style.backgroundColor = 'var(--border-color)';
+                btnNotEst.style.justifyContent = 'flex-start';
+            }
+
+            const distInput = document.getElementById('anno-distance');
+            if (distInput) {
+                distInput.value = '';
+                distInput.dataset.savedValue = '';
+                distInput.dataset.listened = "false";
+                distInput.disabled = true;
+                distInput.style.opacity = '0.5';
+                distInput.style.backgroundColor = 'var(--bg-capsule)';
+            }
             document.getElementById('anno-indiv-num').value = '';
         }
 
@@ -2699,7 +2812,8 @@
 
         const comp = document.getElementById('anno-soundscape').value;
         const isBio = (comp === 'Biophony');
-
+        // 获取当前的 Not Estimable 状态
+        const isNotEstimable = document.getElementById('anno-not-estimable').value === 'true';
 
         // 覆盖更新现有对象
         mockAnnotations[annoIndex] = {
@@ -2715,8 +2829,12 @@
             animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "",
 
             uncertain: isBio ? (document.getElementById('anno-uncertain').value === 'true') : false,
-            sound_distance_m: (isBio && document.getElementById('anno-distance').value !== '') ? parseInt(document.getElementById('anno-distance').value) : null,
-            distance_not_estimable: false,
+
+            // 【核心修复】：严格保证如果 isNotEstimable 为 true，Distance 必定为 null
+            sound_distance_m: (isBio && !isNotEstimable && document.getElementById('anno-distance').value !== '') ? parseInt(document.getElementById('anno-distance').value) : null,
+            // 同步保存不可估测的状态
+            distance_not_estimable: isBio ? isNotEstimable : false,
+
             individual_num: (isBio && document.getElementById('anno-indiv-num').value) ? parseInt(document.getElementById('anno-indiv-num').value) : null,
 
             reference: document.getElementById('anno-reference').value === 'true',
