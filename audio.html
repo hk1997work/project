@@ -235,15 +235,18 @@
         .crud-table tr.hover-sync:not(.selected) td:first-child {
             box-shadow: inset 4px 0 0 var(--brand) !important;
         }
+
         .label-add-wrapper {
             width: 28px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .label-add-wrapper:hover,
         .label-add-wrapper:focus-within {
             width: 130px; /* 悬停时展开的宽度 */
             border-color: var(--brand) !important;
         }
+
         .label-add-wrapper .label-add-input {
             width: 0;
             padding: 0;
@@ -251,6 +254,7 @@
             pointer-events: none;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         /* 展开状态下输入框的样式 */
         .label-add-wrapper:hover .label-add-input,
         .label-add-wrapper:focus-within .label-add-input {
@@ -259,10 +263,12 @@
             opacity: 1;
             pointer-events: auto;
         }
+
         /* 聚焦发光 */
         .label-add-wrapper:focus-within {
             box-shadow: 0 0 0 2px var(--brand-tint);
         }
+
         /* 统一新建标注表单中 label 和 input 的垂直间距 */
         #panel-new-annotation .form-group {
             display: flex !important;
@@ -382,8 +388,8 @@
             <div class="player-section" style="display: flex; flex-direction: column; padding: 12px 16px; border-bottom: 1px solid var(--border-color); gap: 8px; flex-shrink: 0;">
 
                 <div class="player-toolbar-top" style="display: flex; gap: 8px; align-items: center;">
-                    <div class="fft-dropdown-wrapper" title="Audio Label" style="flex-shrink: 0;">
-                        <div id="audio-label-tag" class="btn-toolbar" onclick="toggleAudioLabelDropdown(event)" style="padding: 0 12px; gap: 6px; cursor: pointer;">
+                    <div class="fft-dropdown-wrapper" style="flex-shrink: 0;" title="Audio Label">
+                        <div class="btn-toolbar" id="audio-label-tag" onclick="toggleAudioLabelDropdown(event)" style="padding: 0 12px; gap: 6px; cursor: pointer;">
                             <i data-lucide="tag" size="14"></i>
                             <span id="audio-label-display" style="font-size: 0.85rem; font-weight: 600; display: inline-block; white-space: nowrap;">not analysed</span>
                         </div>
@@ -392,8 +398,8 @@
                             <div id="audio-label-options" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;">
                             </div>
                             <div style="margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border-color); display: flex; gap: 6px; align-items: center;">
-                                <input type="text" id="new-label-input" class="form-input" style="flex: 1; min-width: 0; height: 26px; font-size: 0.75rem; padding: 0 8px; border-radius: 4px;" onkeydown="if(event.key === 'Enter') handleAddNewLabel(event)" onclick="event.stopPropagation()">
-                                <button onclick="handleAddNewLabel(event)" style="height: 26px; padding: 0 12px; font-size: 0.75rem; border-radius: 4px; background: var(--brand); color: white; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(var(--brand-rgb), 0.2);" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='none'">Add</button>
+                                <input class="form-input" id="new-label-input" onclick="event.stopPropagation()" onkeydown="if(event.key === 'Enter') handleAddNewLabel(event)" style="flex: 1; min-width: 0; height: 26px; font-size: 0.75rem; padding: 0 8px; border-radius: 4px;" type="text">
+                                <button onclick="handleAddNewLabel(event)" onmouseout="this.style.filter='none'" onmouseover="this.style.filter='brightness(1.15)'" style="height: 26px; padding: 0 12px; font-size: 0.75rem; border-radius: 4px; background: var(--brand); color: white; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(var(--brand-rgb), 0.2);">Add</button>
                             </div>
                         </div>
                     </div>
@@ -447,13 +453,13 @@
                     <div style="flex: 1;"></div>
 
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <button class="btn-toolbar" title="Apply AI Models" onclick="switchRightPanel('ai-models')">
+                        <button class="btn-toolbar" onclick="switchRightPanel('ai-models')" title="Apply AI Models">
                             <i data-lucide="cpu" size="14"></i> AI Models
                         </button>
-                        <button class="btn-toolbar" title="Calculate Acoustic Indices" onclick="switchRightPanel('ac-indices')">
+                        <button class="btn-toolbar" onclick="switchRightPanel('ac-indices')" title="Calculate Acoustic Indices">
                             <i data-lucide="bar-chart-2" size="14"></i> Acoustic Indices
                         </button>
-                        <button class="btn-toolbar" title="Perform Acoustic Analysis" onclick="switchRightPanel('ac-analysis')">
+                        <button class="btn-toolbar" onclick="switchRightPanel('ac-analysis')" title="Perform Acoustic Analysis">
                             <i data-lucide="audio-lines" size="14"></i> Acoustic Analysis
                         </button>
                     </div>
@@ -552,7 +558,7 @@
                     <span>Audio Info</span>
                 </div>
 
-                <div class="minimap-container" title="Spectrogram Minimap" style="width: 100%; aspect-ratio: 150 / 69; height: auto; background-color: #1e1e1e; background-image: url('https://ecosound-web.de/ecosound_web/tmp/1300780250/14Callicebusgps59v8_69_0_0_150_1.png'); background-size: 100% 100%; position: relative; overflow: hidden; flex-shrink: 0; border-radius: 4px;">
+                <div class="minimap-container" style="width: 100%; aspect-ratio: 150 / 69; height: auto; background-color: #1e1e1e; background-image: url('https://ecosound-web.de/ecosound_web/tmp/1300780250/14Callicebusgps59v8_69_0_0_150_1.png'); background-size: 100% 100%; position: relative; overflow: hidden; flex-shrink: 0; border-radius: 4px;" title="Spectrogram Minimap">
                     <div id="minimap-viewport" style="position: absolute; left: 20%; bottom: 15%; width: 40%; height: 60%; border: 2px solid var(--brand); background: rgba(var(--brand-rgb), 0.2); box-sizing: border-box; border-radius: 2px; pointer-events: none; transition: all 0.2s ease-out; box-shadow: 0 0 0 1px rgba(0,0,0,0.5) inset;"></div>
                 </div>
 
@@ -608,13 +614,13 @@
                 </div>
                 <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; flex-shrink: 0;">
 
-                    <button class="btn-toolbar" style="flex: 1; justify-content: center; background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3); padding: 0 8px; transition: all 0.2s ease;"
-                            onmouseover="this.style.filter='brightness(1.08)'" onmouseout="this.style.filter='none'" title="Download Original Audio">
+                    <button class="btn-toolbar" onmouseout="this.style.filter='none'"
+                            onmouseover="this.style.filter='brightness(1.08)'" style="flex: 1; justify-content: center; background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3); padding: 0 8px; transition: all 0.2s ease;" title="Download Original Audio">
                         <i data-lucide="download" size="14"></i> Audio
                     </button>
 
-                    <button class="btn-toolbar" style="flex: 1; justify-content: center; background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3); padding: 0 8px; transition: all 0.2s ease;"
-                            onmouseover="this.style.filter='brightness(1.08)'" onmouseout="this.style.filter='none'" title="Download Spectrogram Image">
+                    <button class="btn-toolbar" onmouseout="this.style.filter='none'"
+                            onmouseover="this.style.filter='brightness(1.08)'" style="flex: 1; justify-content: center; background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3); padding: 0 8px; transition: all 0.2s ease;" title="Download Spectrogram Image">
                         <i data-lucide="download" size="14"></i> Spectrogram
                     </button>
 
@@ -624,9 +630,9 @@
             <div id="panel-new-annotation" style="display: none; flex-direction: column; height: 100%;">
 
                 <div style="height: 28px; font-weight: 600; display: flex; align-items: center; gap: 4px; box-sizing: border-box; flex-shrink: 0; margin-bottom: 8px;">
-                    <button onclick="cancelNewAnnotation()" style="padding: 0; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; border: none; background: transparent; cursor: pointer; border-radius: 6px; color: var(--text-secondary); transition: all 0.2s ease; margin-left: -4px;"
+                    <button onclick="cancelNewAnnotation()" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)';"
                             onmouseover="this.style.background='var(--bg-capsule)'; this.style.color='var(--text-main)';"
-                            onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)';"
+                            style="padding: 0; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; border: none; background: transparent; cursor: pointer; border-radius: 6px; color: var(--text-secondary); transition: all 0.2s ease; margin-left: -4px;"
                             title="Back to Info">
                         <i data-lucide="arrow-left" size="18"></i>
                     </button>
@@ -639,19 +645,19 @@
 
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Min X</label>
-                            <input type="number" id="anno-min-x" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
+                            <input class="form-input" id="anno-min-x" oninput="window.updateDraftBoxFromInputs()" step="0.01" style="width: 100%; min-width: 0;" type="number">
                         </div>
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Max X</label>
-                            <input type="number" id="anno-max-x" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="0.01">
+                            <input class="form-input" id="anno-max-x" oninput="window.updateDraftBoxFromInputs()" step="0.01" style="width: 100%; min-width: 0;" type="number">
                         </div>
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Min Y</label>
-                            <input type="number" id="anno-min-y" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="1">
+                            <input class="form-input" id="anno-min-y" oninput="window.updateDraftBoxFromInputs()" step="1" style="width: 100%; min-width: 0;" type="number">
                         </div>
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Max Y</label>
-                            <input type="number" id="anno-max-y" class="form-input" style="width: 100%; min-width: 0;" oninput="window.updateDraftBoxFromInputs()" step="1">
+                            <input class="form-input" id="anno-max-y" oninput="window.updateDraftBoxFromInputs()" step="1" style="width: 100%; min-width: 0;" type="number">
                         </div>
 
                         <div style="grid-column: 1 / -1; height: 1px; background: var(--border-color); opacity: 0.5; margin: 4px 0;"></div>
@@ -659,13 +665,13 @@
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Soundscape</label>
                             <div class="form-select-wrapper">
-                                <input type="hidden" id="anno-soundscape" value="">
+                                <input id="anno-soundscape" type="hidden" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-soundscape')">
-                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-soundscape">Select...</span>
+                                    <span id="span-anno-soundscape" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-soundscape">
-                                    <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-soundscape', this.value)" onclick="event.stopPropagation()">
+                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-soundscape', this.value)" placeholder="Search..." type="text">
                                     <div class="form-select-options-list">
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Biophony', this)">Biophony</div>
@@ -679,13 +685,13 @@
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Sound Type</label>
                             <div class="form-select-wrapper">
-                                <input type="hidden" id="anno-sound-type" value="">
+                                <input id="anno-sound-type" type="hidden" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-sound-type')">
-                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-sound-type">Select...</span>
+                                    <span id="span-anno-sound-type" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-sound-type">
-                                    <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-sound-type', this.value)" onclick="event.stopPropagation()">
+                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-sound-type', this.value)" placeholder="Search..." type="text">
                                     <div class="form-select-options-list" id="list-anno-sound-type"></div>
                                 </div>
                             </div>
@@ -694,13 +700,13 @@
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Taxon</label>
                             <div class="form-select-wrapper">
-                                <input type="hidden" id="anno-taxon" value="">
+                                <input id="anno-taxon" type="hidden" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-taxon')">
-                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-taxon">Select...</span>
+                                    <span id="span-anno-taxon" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-taxon">
-                                    <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-taxon', this.value)" onclick="event.stopPropagation()">
+                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-taxon', this.value)" placeholder="Search..." type="text">
                                     <div class="form-select-options-list">
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-taxon', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-taxon', 'AMPHIBIA', this)">AMPHIBIA</div>
@@ -711,29 +717,29 @@
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; padding-left: 2px;">
-                                <a href="#" target="_blank" style="color: var(--brand); text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Images</a>
+                                <a href="#" onmouseout="this.style.textDecoration='none'" onmouseover="this.style.textDecoration='underline'" style="color: var(--brand); text-decoration: none;" target="_blank">Images</a>
                                 <span style="color: var(--text-muted); opacity: 0.5;">|</span>
-                                <a href="#" target="_blank" style="color: var(--brand); text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Xeno-canto <span style="color: var(--text-muted); font-size: 0.7rem;">(for birds only)</span></a>
+                                <a href="#" onmouseout="this.style.textDecoration='none'" onmouseover="this.style.textDecoration='underline'" style="color: var(--brand); text-decoration: none;" target="_blank">Xeno-canto <span style="color: var(--text-muted); font-size: 0.7rem;">(for birds only)</span></a>
                             </div>
                         </div>
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Uncertain</label>
-                            <input type="hidden" id="anno-uncertain" value="false">
-                            <button class="form-bool-trigger" id="btn-bool-anno-uncertain" onclick="toggleAudioBoolean('anno-uncertain')" type="button" style="width: 100%;">
+                            <input id="anno-uncertain" type="hidden" value="false">
+                            <button class="form-bool-trigger" id="btn-bool-anno-uncertain" onclick="toggleAudioBoolean('anno-uncertain')" style="width: 100%;" type="button">
                                 <span id="lbl-bool-anno-uncertain">False</span>
-                                <i id="icon-bool-anno-uncertain" data-lucide="x" size="16"></i>
+                                <i data-lucide="x" id="icon-bool-anno-uncertain" size="16"></i>
                             </button>
                         </div>
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Animal Sound</label>
                             <div class="form-select-wrapper">
-                                <input type="hidden" id="anno-animal-sound-type" value="">
+                                <input id="anno-animal-sound-type" type="hidden" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-animal-sound-type')">
-                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="span-anno-animal-sound-type">Select...</span>
+                                    <span id="span-anno-animal-sound-type" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-animal-sound-type">
-                                    <input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-anno-animal-sound-type', this.value)" onclick="event.stopPropagation()">
+                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-animal-sound-type', this.value)" placeholder="Search..." type="text">
                                     <div class="form-select-options-list" id="list-anno-animal-sound-type">
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-animal-sound-type', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>
                                     </div>
@@ -745,17 +751,19 @@
                             <label class="form-label" style="margin: 0;">Distance (m)</label>
 
                             <div style="position: absolute; top: -1px; right: 0; display: flex; align-items: center; gap: 6px; height: 18px;">
-                                <label class="form-label" style="margin: 0; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; font-weight: normal; line-height: 1;" onclick="document.getElementById('btn-bool-anno-not-estimable').click()">Not Estimable</label>
-                                <input type="hidden" id="anno-not-estimable" value="false">
-                                <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" type="button" style="width: 32px; height: 18px; background: var(--border-color); border-radius: 9px; border: none; padding: 2px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; transition: all 0.2s; box-sizing: border-box;">
+                                <label class="form-label" onclick="document.getElementById('btn-bool-anno-not-estimable').click()" style="margin: 0; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; font-weight: normal; line-height: 1;">Not Estimable</label>
+                                <input id="anno-not-estimable" type="hidden" value="false">
+                                <button id="btn-bool-anno-not-estimable" onclick="toggleAudioNotEstimable()" style="width: 32px; height: 18px; background: var(--border-color); border-radius: 9px; border: none; padding: 2px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; transition: all 0.2s; box-sizing: border-box;" type="button">
                                     <span style="width: 14px; height: 14px; background: white; border-radius: 50%; display: block; box-shadow: 0 1px 2px rgba(0,0,0,0.2);"></span>
                                 </button>
                             </div>
 
-                            <div style="display: flex; align-items: stretch; margin-top: 6px;">
-                                <input type="number" class="form-input" id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: none !important;" disabled placeholder="Click icon to listen">
+                            <div style="display: flex; align-items: stretch;">
+                                <input class="form-input" disabled id="anno-distance" placeholder="Click icon to listen" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); cursor: not-allowed; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: none !important; margin: 0;" type="number">
 
-                                <button type="button" onclick="playAnnotationAudio()" title="Play Annotation Audio" style="width: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border-top-left-radius: 0; border-bottom-left-radius: 0; cursor: pointer; color: var(--brand); transition: all 0.2s;" onmouseover="this.style.background='var(--brand-tint)'; this.style.borderColor='var(--brand)';" onmouseout="this.style.background='var(--bg-surface)'; this.style.borderColor='var(--border-color)';">
+                                <button onclick="playAnnotationAudio()" onmouseout="this.style.background='var(--bg-surface)'; this.style.borderColor='var(--border-color)';" onmouseover="this.style.background='var(--brand-tint)'; this.style.borderColor='var(--brand)';"
+                                        style="width: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border-top-left-radius: 0; border-bottom-left-radius: 0; cursor: pointer; color: var(--brand); transition: all 0.2s; padding: 0; margin: 0;"
+                                        title="Play Annotation Audio" type="button">
                                     <i data-lucide="volume-2" size="16"></i>
                                 </button>
                             </div>
@@ -763,27 +771,27 @@
 
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
                             <label class="form-label">Indiv. Num</label>
-                            <input type="number" class="form-input" id="anno-indiv-num" style="width:100%; min-width: 0;" min="1">
+                            <input class="form-input" id="anno-indiv-num" min="1" style="width:100%; min-width: 0;" type="number">
                         </div>
 
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Reference</label>
-                            <input type="hidden" id="anno-reference" value="false">
-                            <button class="form-bool-trigger" id="btn-bool-anno-reference" onclick="toggleAudioBoolean('anno-reference')" type="button" style="width: 100%;">
+                            <input id="anno-reference" type="hidden" value="false">
+                            <button class="form-bool-trigger" id="btn-bool-anno-reference" onclick="toggleAudioBoolean('anno-reference')" style="width: 100%;" type="button">
                                 <span id="lbl-bool-anno-reference">False</span>
-                                <i id="icon-bool-anno-reference" data-lucide="x" size="16"></i>
+                                <i data-lucide="x" id="icon-bool-anno-reference" size="16"></i>
                             </button>
                         </div>
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Comments</label>
-                            <input type="text" id="anno-comments" class="form-input" style="width:100%; min-width: 0;">
+                            <input class="form-input" id="anno-comments" style="width:100%; min-width: 0;" type="text">
                         </div>
                     </div>
                 </div>
 
                 <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;">
                     <button class="btn-secondary" onclick="cancelNewAnnotation()">Cancel</button>
-                    <button id="btn-save-annotation" class="btn-primary" style="background-color: var(--brand); border-color: var(--brand); transition: filter 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='none'" onclick="saveNewAnnotation()">Save</button>
+                    <button class="btn-primary" id="btn-save-annotation" onclick="saveNewAnnotation()" onmouseout="this.style.filter='none'" onmouseover="this.style.filter='brightness(1.15)'" style="background-color: var(--brand); border-color: var(--brand); transition: filter 0.2s ease;">Save</button>
                 </div>
             </div>
             <div id="panel-ai-models" style="display: none; flex-direction: column; height: 100%;"></div>
@@ -1163,14 +1171,20 @@
         // 【核心修复】：先判定是否属于“不可估测”
         const isNotEst = isBio ? Math.random() > 0.8 : false;
 
+        // 修复：确保生成的坐标逻辑正确，max 必然大于 min
+        const randomMinX = Math.random() * 280;
+        const randomMaxX = randomMinX + 1 + Math.random() * 10;
+        const randomMinY = Math.floor(Math.random() * 1000);
+        const randomMaxY = randomMinY + Math.floor(1000 + Math.random() * 6000);
+
         return {
             id: i + 1,
             uuid: `5570-e29b-41d4-a716-${String(i + 1).padStart(12, '0')}`,
             media_name: ['REC_c10000_20260000.wav', 'REC_c10000_20260001.wav'][Math.floor(Math.random() * 2)],
-            min_x: parseFloat((Math.random() * 280).toFixed(1)),
-            max_x: parseFloat((Math.random() * 280 + 5).toFixed(1)),
-            min_y: Math.floor(Math.random() * 1000),
-            max_y: Math.floor(2000 + Math.random() * 6000),
+            min_x: parseFloat(randomMinX.toFixed(1)),
+            max_x: parseFloat(randomMaxX.toFixed(1)),
+            min_y: randomMinY,
+            max_y: randomMaxY,
             creator_type: creatorType,
             soundscape_component: comp,
             sound_type: sType,
@@ -1675,6 +1689,7 @@
         // 实际应用中，在这里调用频谱图或音频库切换展示的物理轨道
         console.log("Audio channel switched to view:", val);
     }
+
     // ================== 右侧信息栏 视图切换与配置渲染 ==================
 
     // 1. 数据源 (复刻 project.js 的真实参数)
@@ -1868,7 +1883,7 @@
     }
 
     // ================= 交互控制函数 =================
-    window.toggleSideParams = function(id, checkbox) {
+    window.toggleSideParams = function (id, checkbox) {
         const container = document.getElementById(`side-params-${id}`);
         if (container) {
             container.style.display = checkbox.checked ? 'block' : 'none';
@@ -1931,7 +1946,7 @@
         if (window.lucide) lucide.createIcons();
     }
 
-    window.toggleAudioLabelDropdown = function(e) {
+    window.toggleAudioLabelDropdown = function (e) {
         if (e) e.stopPropagation();
 
         // 点击标签时，自动收起其他菜单
@@ -1944,7 +1959,7 @@
         if (menu) menu.classList.toggle('active');
     };
 
-    window.changeAudioLabel = function(newLabel, e) {
+    window.changeAudioLabel = function (newLabel, e) {
         if (e) e.stopPropagation();
         if (!currentAudio) return;
         currentAudio.label = newLabel;
@@ -1955,7 +1970,7 @@
         renderAudioInfoLabel();
     };
 
-    window.handleAddNewLabel = function(e) {
+    window.handleAddNewLabel = function (e) {
         if (e) e.stopPropagation();
         const inputEl = document.getElementById('new-label-input');
         if (!inputEl) return;
@@ -1984,7 +1999,7 @@
         renderAudioInfoLabel();
     };
 
-    window.deleteCustomLabel = function(labelToDelete, event) {
+    window.deleteCustomLabel = function (labelToDelete, event) {
         if (event) event.stopPropagation();
 
         if (BASE_LABELS.includes(labelToDelete)) {
@@ -2007,7 +2022,7 @@
     // 【自定义组件交互与级联菜单逻辑】
 
     // 1. 控制下拉框的展开与收起
-    window.toggleFormSelect = function(dropdownId) {
+    window.toggleFormSelect = function (dropdownId) {
         const dropdown = document.getElementById(dropdownId);
         if (!dropdown) return;
         const isActive = dropdown.classList.contains('active');
@@ -2030,7 +2045,7 @@
     };
 
     // 2. 控制下拉框内的搜索过滤
-    window.filterFormSelect = function(dropdownId, query) {
+    window.filterFormSelect = function (dropdownId, query) {
         const dropdown = document.getElementById(dropdownId);
         if (!dropdown) return;
         const options = dropdown.querySelectorAll('.form-select-option');
@@ -2047,7 +2062,7 @@
     };
 
     // 3. 全局点击拦截：点击页面空白处时，自动收起表单下拉框
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (!e.target.closest('.form-select-wrapper')) {
             document.querySelectorAll('.form-select-dropdown.active').forEach(el => {
                 el.classList.remove('active');
@@ -2055,12 +2070,12 @@
         }
     });
 
-    window.selectAudioDropdown = function(key, value, element) {
+    window.selectAudioDropdown = function (key, value, element) {
         document.getElementById(key).value = value;
         document.getElementById(`span-${key}`).textContent = value || 'Select...';
 
         const dropdown = document.getElementById(`dropdown-${key}`);
-        if(dropdown) {
+        if (dropdown) {
             dropdown.querySelectorAll('.form-select-option').forEach(el => el.classList.remove('selected'));
             if (element) element.classList.add('selected');
             dropdown.classList.remove('active');
@@ -2074,7 +2089,7 @@
         }
     };
 
-    window.toggleAudioBoolean = function(key) {
+    window.toggleAudioBoolean = function (key) {
         const input = document.getElementById(key);
         const btn = document.getElementById(`btn-bool-${key}`);
         const lbl = document.getElementById(`lbl-bool-${key}`);
@@ -2094,7 +2109,7 @@
     };
 
     // 核心恢复：不可估算 (Not Estimable) 的状态控制与缓存记忆
-    window.toggleAudioNotEstimable = function() {
+    window.toggleAudioNotEstimable = function () {
         const input = document.getElementById('anno-not-estimable');
         const btn = document.getElementById('btn-bool-anno-not-estimable');
         const distInput = document.getElementById('anno-distance');
@@ -2140,7 +2155,7 @@
     };
 
     // 模拟播放局部音频并解锁 Distance 输入框
-    window.playAnnotationAudio = function() {
+    window.playAnnotationAudio = function () {
         console.log("Playing audio for current annotation range...");
         // TODO: 此处可对接 wavesurfer 或其他音频播放逻辑
 
@@ -2162,7 +2177,7 @@
         }
     };
 
-    window.updateSoundTypeOptionsAudio = function() {
+    window.updateSoundTypeOptionsAudio = function () {
         const component = document.getElementById('anno-soundscape').value;
         const typeSelect = document.getElementById('list-anno-sound-type');
         const span = document.getElementById('span-anno-sound-type');
@@ -2176,10 +2191,10 @@
             const display = opt === "" ? "-- Unspecified --" : opt;
             html += `<div class="form-select-option" onclick="selectAudioDropdown('anno-sound-type', '${opt}', this)">${display}</div>`;
         });
-        if(typeSelect) typeSelect.innerHTML = html;
+        if (typeSelect) typeSelect.innerHTML = html;
     };
 
-    window.updateAnimalSoundTypeOptionsAudio = function() {
+    window.updateAnimalSoundTypeOptionsAudio = function () {
         const taxon = document.getElementById('anno-taxon').value;
         const typeSelect = document.getElementById('list-anno-animal-sound-type');
         const span = document.getElementById('span-anno-animal-sound-type');
@@ -2192,7 +2207,7 @@
         options.forEach(opt => {
             html += `<div class="form-select-option" onclick="selectAudioDropdown('anno-animal-sound-type', '${opt}', this)">${opt}</div>`;
         });
-        if(typeSelect) typeSelect.innerHTML = html;
+        if (typeSelect) typeSelect.innerHTML = html;
     };
 
     // 【画图、拖拽及缩放逻辑】
@@ -2315,13 +2330,25 @@
                     newTop += dy;
                 } else {
                     if (currentResizeHandle.includes('e')) newWidth += dx;
-                    if (currentResizeHandle.includes('w')) { newLeft += dx; newWidth -= dx; }
+                    if (currentResizeHandle.includes('w')) {
+                        newLeft += dx;
+                        newWidth -= dx;
+                    }
                     if (currentResizeHandle.includes('s')) newHeight += dy;
-                    if (currentResizeHandle.includes('n')) { newTop += dy; newHeight -= dy; }
+                    if (currentResizeHandle.includes('n')) {
+                        newTop += dy;
+                        newHeight -= dy;
+                    }
                 }
 
-                if (newLeft < 0) { newWidth += newLeft; newLeft = 0; }
-                if (newTop < 0) { newHeight += newTop; newTop = 0; }
+                if (newLeft < 0) {
+                    newWidth += newLeft;
+                    newLeft = 0;
+                }
+                if (newTop < 0) {
+                    newHeight += newTop;
+                    newTop = 0;
+                }
                 if (newLeft + newWidth > rect.width) newWidth = rect.width - newLeft;
                 if (newTop + newHeight > rect.height) newHeight = rect.height - newTop;
 
@@ -2358,12 +2385,18 @@
         });
 
         viewport.addEventListener('mouseup', (e) => {
-            if (isResizingAnno) { endResize(); return; }
+            if (isResizingAnno) {
+                endResize();
+                return;
+            }
             if (isDrawingAnno) handleDrawEnd();
         });
 
         viewport.addEventListener('mouseleave', (e) => {
-            if (isResizingAnno) { endResize(); return; }
+            if (isResizingAnno) {
+                endResize();
+                return;
+            }
             if (isDrawingAnno) handleDrawEnd();
         });
     }
@@ -2480,14 +2513,19 @@
 
             if (pos.length === 1) {
                 if (pos === 'n' || pos === 's') {
-                    handle.style.width = '100%'; handle.style.height = '8px'; handle.style.left = '0';
+                    handle.style.width = '100%';
+                    handle.style.height = '8px';
+                    handle.style.left = '0';
                     if (pos === 'n') handle.style.top = '-4px'; else handle.style.bottom = '-4px';
                 } else {
-                    handle.style.width = '8px'; handle.style.height = '100%'; handle.style.top = '0';
+                    handle.style.width = '8px';
+                    handle.style.height = '100%';
+                    handle.style.top = '0';
                     if (pos === 'w') handle.style.left = '-4px'; else handle.style.right = '-4px';
                 }
             } else {
-                handle.style.width = '10px'; handle.style.height = '10px';
+                handle.style.width = '10px';
+                handle.style.height = '10px';
                 handle.style.backgroundColor = 'var(--bg-surface)';
                 handle.style.border = '2px solid var(--brand)';
                 handle.style.borderRadius = '50%';
@@ -2555,7 +2593,7 @@
         document.getElementById('anno-max-y').value = currentDraftData.max_y;
     }
 
-    window.updateDraftBoxFromInputs = function() {
+    window.updateDraftBoxFromInputs = function () {
         if (!draftBox) return;
 
         const minX = parseFloat(document.getElementById('anno-min-x').value) || 0;
@@ -2563,13 +2601,19 @@
         const minY = parseFloat(document.getElementById('anno-min-y').value) || 0;
         const maxY = parseFloat(document.getElementById('anno-max-y').value) || 0;
 
+        // 【修复】：计算视觉属性时自动使用 min/max，防止用户输入颠倒导致宽度/高度为负数
+        const actualMinX = Math.min(minX, maxX);
+        const actualMaxX = Math.max(minX, maxX);
+        const actualMinY = Math.min(minY, maxY);
+        const actualMaxY = Math.max(minY, maxY);
+
         const MAX_TIME = 300;
         const MAX_FREQ = 24000;
 
-        const left = (minX / MAX_TIME) * 100;
-        const width = ((maxX - minX) / MAX_TIME) * 100;
-        const bottom = (minY / MAX_FREQ) * 100;
-        const height = ((maxY - minY) / MAX_FREQ) * 100;
+        const left = (actualMinX / MAX_TIME) * 100;
+        const width = ((actualMaxX - actualMinX) / MAX_TIME) * 100;
+        const bottom = (actualMinY / MAX_FREQ) * 100;
+        const height = ((actualMaxY - actualMinY) / MAX_FREQ) * 100;
 
         draftBox.style.left = left + '%';
         draftBox.style.width = width + '%';
@@ -2583,7 +2627,7 @@
         currentDraftData.max_y = maxY;
     };
 
-    window.toggleBiophonyFields = function(val) {
+    window.toggleBiophonyFields = function (val) {
         const isBio = (val === 'Biophony');
         const displayStyle = isBio ? 'block' : 'none';
         document.querySelectorAll('.bio-field-item').forEach(el => {
@@ -2591,7 +2635,7 @@
         });
     };
 
-    window.cancelNewAnnotation = function() {
+    window.cancelNewAnnotation = function () {
         if (draftBox) {
             draftBox.remove();
             draftBox = null;
@@ -2600,7 +2644,7 @@
         switchRightPanel('audio-info');
     };
 
-    window.saveNewAnnotation = function() {
+    window.saveNewAnnotation = function () {
         if (!currentDraftData) return;
 
         const newId = mockAnnotations.length > 0 ? Math.max(...mockAnnotations.map(a => a.id)) + 1 : 1;
@@ -2614,10 +2658,11 @@
             id: newId,
             uuid: `5570-e29b-41d4-a716-new${String(newId).padStart(9, '0')}`,
             media_name: currentAudio ? currentAudio.name : 'Unknown',
-            min_x: parseFloat(document.getElementById('anno-min-x').value),
-            max_x: parseFloat(document.getElementById('anno-max-x').value),
-            min_y: parseInt(document.getElementById('anno-min-y').value),
-            max_y: parseInt(document.getElementById('anno-max-y').value),
+            // 【修复】：强制保证入库数据 min 永远小于 max
+            min_x: Math.min(parseFloat(document.getElementById('anno-min-x').value), parseFloat(document.getElementById('anno-max-x').value)),
+            max_x: Math.max(parseFloat(document.getElementById('anno-min-x').value), parseFloat(document.getElementById('anno-max-x').value)),
+            min_y: Math.min(parseInt(document.getElementById('anno-min-y').value), parseInt(document.getElementById('anno-max-y').value)),
+            max_y: Math.max(parseInt(document.getElementById('anno-min-y').value), parseInt(document.getElementById('anno-max-y').value)),
             creator_type: 'user',
 
             soundscape_component: comp,
@@ -2657,7 +2702,7 @@
     let editingAnnoId = null;
 
     // 辅助函数：通过程序设置自定义 Boolean 控件的值
-    window.setAudioBooleanValue = function(key, val) {
+    window.setAudioBooleanValue = function (key, val) {
         const input = document.getElementById(key);
         if (!input) return;
         if ((input.value === 'true') !== val) {
@@ -2666,7 +2711,7 @@
     };
 
     // 恢复右侧面板为“新建”模式
-    window.resetAnnotationPanelToNew = function() {
+    window.resetAnnotationPanelToNew = function () {
         document.getElementById('annotation-panel-title').textContent = 'New Annotation';
         document.getElementById('btn-save-annotation').setAttribute('onclick', 'saveNewAnnotation()');
         editingAnnoId = null;
@@ -2674,7 +2719,7 @@
 
     // 拦截取消和绘图事件，重置状态
     const originalCancelNewAnno = window.cancelNewAnnotation;
-    window.cancelNewAnnotation = function() {
+    window.cancelNewAnnotation = function () {
         resetAnnotationPanelToNew();
         originalCancelNewAnno();
     };
@@ -2685,7 +2730,7 @@
     }
 
     // 打开编辑面板并反填数据
-    window.openEditAnnotation = function(id) {
+    window.openEditAnnotation = function (id) {
         const anno = mockAnnotations.find(a => a.id === id);
         if (!anno) return;
 
@@ -2783,7 +2828,10 @@
         document.getElementById('anno-comments').value = anno.comments || '';
 
         // 4. 在频谱图上生成可调整的激活框(draftBox)
-        if (draftBox) { draftBox.remove(); draftBox = null; }
+        if (draftBox) {
+            draftBox.remove();
+            draftBox = null;
+        }
 
         draftBox = document.createElement('div');
         draftBox.id = 'draft-annotation';
@@ -2796,16 +2844,14 @@
         draftBox.style.boxSizing = 'border-box';
         document.getElementById('annotations-layer').appendChild(draftBox);
 
-        currentDraftData = { min_x: anno.min_x, max_x: anno.max_x, min_y: anno.min_y, max_y: anno.max_y };
+        currentDraftData = {min_x: anno.min_x, max_x: anno.max_x, min_y: anno.min_y, max_y: anno.max_y};
         window.updateDraftBoxFromInputs();
-        addDraftBoxHandles(draftBox); // 使其可拖拽调整
 
-        // 5. 展开编辑面板
         switchRightPanel('new-annotation');
     };
 
     // 保存编辑修改
-    window.updateExistingAnnotation = function() {
+    window.updateExistingAnnotation = function () {
         if (!editingAnnoId || !currentDraftData) return;
         const annoIndex = mockAnnotations.findIndex(a => a.id === editingAnnoId);
         if (annoIndex === -1) return;
@@ -2818,10 +2864,11 @@
         // 覆盖更新现有对象
         mockAnnotations[annoIndex] = {
             ...mockAnnotations[annoIndex],
-            min_x: parseFloat(document.getElementById('anno-min-x').value),
-            max_x: parseFloat(document.getElementById('anno-max-x').value),
-            min_y: parseInt(document.getElementById('anno-min-y').value),
-            max_y: parseInt(document.getElementById('anno-max-y').value),
+            // 【修复】：强制保证入库数据 min 永远小于 max
+            min_x: Math.min(parseFloat(document.getElementById('anno-min-x').value), parseFloat(document.getElementById('anno-max-x').value)),
+            max_x: Math.max(parseFloat(document.getElementById('anno-min-x').value), parseFloat(document.getElementById('anno-max-x').value)),
+            min_y: Math.min(parseInt(document.getElementById('anno-min-y').value), parseInt(document.getElementById('anno-max-y').value)),
+            max_y: Math.max(parseInt(document.getElementById('anno-min-y').value), parseInt(document.getElementById('anno-max-y').value)),
 
             soundscape_component: comp,
             sound_type: document.getElementById('anno-sound-type').value,
@@ -2841,7 +2888,10 @@
             comments: document.getElementById('anno-comments').value,
         };
 
-        if (draftBox) { draftBox.remove(); draftBox = null; }
+        if (draftBox) {
+            draftBox.remove();
+            draftBox = null;
+        }
         currentDraftData = null;
 
         resetAnnotationPanelToNew();
