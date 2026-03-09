@@ -659,9 +659,6 @@
                             <label class="form-label">Max Y</label>
                             <input class="form-input" id="anno-max-y" oninput="window.updateDraftBoxFromInputs()" step="1" style="width: 100%; min-width: 0;" type="number">
                         </div>
-
-                        <div style="grid-column: 1 / -1; height: 1px; background: var(--border-color); opacity: 0.5; margin: 4px 0;"></div>
-
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Soundscape</label>
                             <div class="form-select-wrapper">
@@ -2326,7 +2323,9 @@
 
             lucide.createIcons();
             window.toggleBiophonyFields('');
-            switchRightPanel('new-annotation');
+
+            // 【核心修改1】：移除这里的 switchRightPanel('new-annotation');
+            // 避免鼠标刚按下就立刻切换面板，消除闪烁
 
             updateInputsFromDraftBox(drawStartX, drawStartY, 0, 0, rect);
         });
@@ -2398,6 +2397,11 @@
                 draftBox.style.width = width + 'px';
                 draftBox.style.height = height + 'px';
 
+                // 【核心修改2】：只有当鼠标实际拖拽距离大于3像素时，才弹出“新建标注”面板
+                if ((width > 3 || height > 3) && document.getElementById('panel-new-annotation').style.display !== 'flex') {
+                    switchRightPanel('new-annotation');
+                }
+
                 updateInputsFromDraftBox(left, top, width, height, rect);
             }
         });
@@ -2448,8 +2452,18 @@
         let boxWidth = parseFloat(draftBox.style.width || 0);
         let boxHeight = parseFloat(draftBox.style.height || 0);
 
-        if (boxWidth < 1) boxWidth = 5;
-        if (boxHeight < 1) boxHeight = 5;
+        // 【核心修改3】：鼠标抬起时，如果是极小位移，清理废弃的框并确保面板不弹出
+        if (boxWidth <= 3 && boxHeight <= 3) {
+            if (draftBox) {
+                draftBox.remove();
+                draftBox = null;
+            }
+            // 如果面板已经被切过去了（比如恰好等于4的边界抖动），强制退回信息面板
+            if (document.getElementById('panel-new-annotation').style.display === 'flex') {
+                switchRightPanel('audio-info');
+            }
+            return; // 提前结束函数，不创建标注
+        }
 
         const bottomPx = rect.height - (boxTop + boxHeight);
         draftBox.style.left = (boxLeft / rect.width * 100) + '%';
