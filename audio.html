@@ -2070,6 +2070,21 @@
         }
     });
 
+    // === 新增：同步悬停样式的控制器 ===
+    window.updateDraftBoxStyle = function(component) {
+        if (!draftBox) return;
+        let color = '#3b82f6'; // 默认颜色(Other / 未选择)
+        if (component === 'Biophony') color = '#10b981';
+        else if (component === 'Anthropophony') color = '#ef4444';
+        else if (component === 'Geophony') color = '#f59e0b';
+
+        // 完全复刻 syncHoverState 的高亮样式
+        draftBox.style.backgroundColor = `${color}66`; // 40% 透明度
+        draftBox.style.border = '2px solid #ffffff';
+        draftBox.style.boxShadow = '0 0 0 1.5px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,0,0,0.5)';
+        draftBox.style.borderRadius = '2px';
+    };
+
     window.selectAudioDropdown = function (key, value, element) {
         document.getElementById(key).value = value;
         document.getElementById(`span-${key}`).textContent = value || 'Select...';
@@ -2084,6 +2099,8 @@
         if (key === 'anno-soundscape') {
             window.updateSoundTypeOptionsAudio();
             window.toggleBiophonyFields(value);
+            // 切换类型时，选中框的颜色也跟着同步改变
+            window.updateDraftBoxStyle(value);
         } else if (key === 'anno-taxon') {
             window.updateAnimalSoundTypeOptionsAudio();
         }
@@ -2247,17 +2264,18 @@
             draftBox = document.createElement('div');
             draftBox.id = 'draft-annotation';
             draftBox.style.position = 'absolute';
-            draftBox.style.border = '2px dashed var(--brand)';
-            draftBox.style.backgroundColor = 'rgba(var(--brand-rgb), 0.2)';
-            draftBox.style.boxShadow = '0 0 10px rgba(var(--brand-rgb), 0.5)';
-            draftBox.style.zIndex = '100';
+            draftBox.style.zIndex = '105'; // 提高层级
             draftBox.style.pointerEvents = 'none';
             draftBox.style.boxSizing = 'border-box';
+
             draftBox.style.left = drawStartX + 'px';
             draftBox.style.top = drawStartY + 'px';
             draftBox.style.width = '0px';
             draftBox.style.height = '0px';
             document.getElementById('annotations-layer').appendChild(draftBox);
+
+            // 赋予初始悬停样式 (空字符串代表应用默认的蓝色)
+            window.updateDraftBoxStyle('');
 
             document.getElementById('anno-soundscape').value = '';
             document.getElementById('span-anno-soundscape').textContent = 'Select...';
@@ -2836,13 +2854,13 @@
         draftBox = document.createElement('div');
         draftBox.id = 'draft-annotation';
         draftBox.style.position = 'absolute';
-        draftBox.style.border = '2px dashed var(--brand)';
-        draftBox.style.backgroundColor = 'rgba(var(--brand-rgb), 0.2)';
-        draftBox.style.boxShadow = '0 0 10px rgba(var(--brand-rgb), 0.5)';
-        draftBox.style.zIndex = '100';
+        draftBox.style.zIndex = '105';
         draftBox.style.pointerEvents = 'none';
         draftBox.style.boxSizing = 'border-box';
         document.getElementById('annotations-layer').appendChild(draftBox);
+
+        // 读取该标注的类别，赋予完全一致的悬停高亮样式
+        window.updateDraftBoxStyle(anno.soundscape_component || '');
 
         currentDraftData = {min_x: anno.min_x, max_x: anno.max_x, min_y: anno.min_y, max_y: anno.max_y};
         window.updateDraftBoxFromInputs();
