@@ -34,7 +34,7 @@
                         <div class="dropdown-search-box">
                             <div class="search-input-wrapper">
                                 <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchProject(this.value)" placeholder="Search..." type="text">
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchProject(this.value)" type="text">
                             </div>
                         </div>
                         <div class="dropdown-list-scroll" id="project-list-container"></div>
@@ -50,7 +50,7 @@
                         <div class="dropdown-search-box">
                             <div class="search-input-wrapper">
                                 <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchCollection(this.value)" placeholder="Search..." type="text">
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="handleSearchCollection(this.value)" type="text">
                             </div>
                         </div>
                         <div class="dropdown-list-scroll" id="collection-list-container"></div>
@@ -151,7 +151,7 @@
             <div class="card-header media-header">
                 <div class="media-title"><i data-lucide="file-audio" size="24"></i> Media <span class="media-count-badge" id="media-count-badge">Loading...</span></div>
                 <div class="media-controls">
-                    <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" oninput="handleSearchMedia(this.value)" placeholder="Search" type="text"></div>
+                    <div class="media-search-box"><i class="media-search-icon" data-lucide="search"></i><input class="media-search-input" oninput="handleSearchMedia(this.value)" type="text"></div>
                     <div class="view-switcher-container">
                         <div class="view-pill" id="view-pill"></div>
                         <button class="view-btn active" onclick="switchMediaView('gallery', this)"><i data-lucide="grid" size="14"></i>Gallery</button>

@@ -306,7 +306,7 @@
                         <div class="dropdown-search-box">
                             <div class="search-input-wrapper">
                                 <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderProjects(this.value)" placeholder="Search Project..." type="text">
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderProjects(this.value)" type="text">
                             </div>
                         </div>
                         <div class="dropdown-list-scroll" id="project-list-container"></div>
@@ -324,7 +324,7 @@
                         <div class="dropdown-search-box">
                             <div class="search-input-wrapper">
                                 <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderCollections(this.value)" placeholder="Search Collection..." type="text">
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderCollections(this.value)" type="text">
                             </div>
                         </div>
                         <div class="dropdown-list-scroll" id="collection-list-container"></div>
@@ -342,7 +342,7 @@
                         <div class="dropdown-search-box">
                             <div class="search-input-wrapper">
                                 <i class="search-icon-small" data-lucide="search"></i>
-                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderAudios(this.value)" placeholder="Search Audio..." type="text">
+                                <input class="dropdown-input" onclick="event.stopPropagation()" oninput="renderAudios(this.value)" type="text">
                             </div>
                         </div>
                         <div class="dropdown-list-scroll" id="audio-list-container"></div>
@@ -398,7 +398,7 @@
                             <div id="audio-label-options" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;">
                             </div>
                             <div style="margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border-color); display: flex; gap: 6px; align-items: center;">
-                                <input class="form-input" id="new-label-input" onclick="event.stopPropagation()" onkeydown="if(event.key === 'Enter') handleAddNewLabel(event)" style="flex: 1; min-width: 0; height: 28px; font-size: 0.8rem; padding: 0 10px; border-radius: 8px;" type="text" placeholder="New label...">
+                                <input class="form-input" id="new-label-input" onclick="event.stopPropagation()" onkeydown="if(event.key === 'Enter') handleAddNewLabel(event)" style="flex: 1; min-width: 0; height: 28px; font-size: 0.8rem; padding: 0 10px; border-radius: 8px;" type="text">
 
                                 <button class="btn-primary" onclick="handleAddNewLabel(event)"
                                         onmouseover="this.style.filter='brightness(1.15)'"
@@ -674,7 +674,7 @@
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-soundscape">
-                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-soundscape', this.value)" placeholder="Search..." type="text">
+                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-soundscape', this.value)" type="text">
                                     <div class="form-select-options-list">
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-soundscape', 'Biophony', this)">Biophony</div>
@@ -694,7 +694,7 @@
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-sound-type">
-                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-sound-type', this.value)" placeholder="Search..." type="text">
+                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-sound-type', this.value)" type="text">
                                     <div class="form-select-options-list" id="list-anno-sound-type"></div>
                                 </div>
                             </div>
@@ -702,7 +702,7 @@
 
                         <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none; position: relative;">
                             <label class="form-label">Taxon</label>
-                            <input class="form-input" id="anno-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'anno-taxon')" onclick="handleAudioTaxonSearch(this.value, 'anno-taxon')" placeholder="Search taxon..." style="width: 100%; min-width: 0;" type="text" autocomplete="off">
+                            <input class="form-input" id="anno-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'anno-taxon')" onclick="handleAudioTaxonSearch(this.value, 'anno-taxon')" style="width: 100%; min-width: 0;" type="text" autocomplete="off">
                             <div class="form-select-dropdown" id="dropdown-anno-taxon" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; padding-left: 2px; margin-top: 4px;">
                                 <a href="#" onmouseout="this.style.textDecoration='none'" onmouseover="this.style.textDecoration='underline'" style="color: var(--brand); text-decoration: none;" target="_blank">Images</a>
@@ -727,7 +727,7 @@
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-animal-sound-type">
-                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-animal-sound-type', this.value)" placeholder="Search..." type="text">
+                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-animal-sound-type', this.value)" type="text">
                                     <div class="form-select-options-list" id="list-anno-animal-sound-type">
                                         <div class="form-select-option" onclick="selectAudioDropdown('anno-animal-sound-type', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>
                                     </div>
@@ -747,7 +747,7 @@
                             </div>
 
                             <div style="display: flex; align-items: stretch;">
-                                <input class="form-input" disabled id="anno-distance" placeholder="Click icon to listen" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: none !important; margin: 0;" type="number">
+                                <input class="form-input" disabled id="anno-distance" style="width: 100%; min-width: 0; opacity: 0.5; background: var(--bg-capsule); border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; border-right: none !important; margin: 0;" type="number">
 
                                 <button onclick="playAnnotationAudio()" onmouseout="this.style.background='var(--bg-surface)'; this.style.borderColor='var(--border-color)';" onmouseover="this.style.background='var(--brand-tint)'; this.style.borderColor='var(--brand)';"
                                         style="width: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border-top-left-radius: 0; border-bottom-left-radius: 0; cursor: pointer; color: var(--brand); transition: all 0.2s; padding: 0; margin: 0;"
@@ -800,14 +800,14 @@
 
                             <div class="form-group" id="review-taxon-group" style="display: none; margin: 0; flex: 1; min-width: 0; position: relative;">
                                 <label class="form-label">Taxon</label>
-                                <input class="form-input" id="review-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'review-taxon')" onclick="handleAudioTaxonSearch(this.value, 'review-taxon')" placeholder="Search taxon..." style="width: 100%; min-width: 0; height: 28px; padding: 0 8px;" type="text" autocomplete="off">
+                                <input class="form-input" id="review-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'review-taxon')" onclick="handleAudioTaxonSearch(this.value, 'review-taxon')" style="width: 100%; min-width: 0; height: 28px; padding: 0 8px;" type="text" autocomplete="off">
 
                                 <div class="form-select-dropdown" id="dropdown-review-taxon" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
                             </div>
 
                             <div class="form-group" style="margin: 0; flex: 1; min-width: 0;">
                                 <label class="form-label">Note</label>
-                                <input class="form-input" id="review-note" style="width: 100%; min-width: 0; height: 28px;" type="text" placeholder="Add comments...">
+                                <input class="form-input" id="review-note" style="width: 100%; min-width: 0; height: 28px;" type="text">
                             </div>
 
                             <button class="btn-primary" onclick="submitReview()" style="height: 28px; padding: 0 16px; flex-shrink: 0; background-color: var(--brand); border-color: var(--brand);">Submit</button>
@@ -1434,7 +1434,7 @@
                         <i data-lucide="chevron-down" size="12" style="position:absolute; right:8px; opacity:0.5;"></i>
                     </div>
                     <div class="table-filter-dropdown" id="filter-dropdown-${col.key}" onclick="event.stopPropagation()">
-                        <input type="text" class="table-filter-search" placeholder="Search..." oninput="filterTableFilterSelect('filter-dropdown-${col.key}', this.value)">
+                        <input type="text" class="table-filter-search" oninput="filterTableFilterSelect('filter-dropdown-${col.key}', this.value)">
                         <div class="table-filter-options-list">
                             <div class="table-filter-option ${!valStr || valStr === 'all' ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', 'all', 'All')">All</div>
                             ${uniqueVals.map(o => `<div class="table-filter-option ${String(valStr) === String(o) ? 'selected' : ''}" onclick="selectTableFilterOption('${col.key}', '${String(o).replace(/'/g, "\\'")}', '${String(o).replace(/'/g, "\\'")}')">${o}</div>`).join('')}
@@ -2738,7 +2738,7 @@
 
             soundscape_component: comp,
             sound_type: document.getElementById('anno-sound-type').value,
-            taxon_id: isBio ? document.getElementById('anno-taxon-input').value
+            taxon_id: isBio ? document.getElementById('anno-taxon-input').value : "",
             animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "",
 
             confidence: null,
@@ -2834,7 +2834,7 @@
 
         window.toggleBiophonyFields(anno.soundscape_component || '');
         if (anno.soundscape_component === 'Biophony') {
-            document.getElementById('anno-taxon-input').value = anno.taxon_id ||
+            document.getElementById('anno-taxon-input').value = anno.taxon_id || '';
             window.updateAnimalSoundTypeOptionsAudio();
 
             document.getElementById('anno-animal-sound-type').value = anno.animal_sound_type || '';
@@ -2974,7 +2974,7 @@
 
             soundscape_component: comp,
             sound_type: document.getElementById('anno-sound-type').value,
-            taxon_id: isBio ? document.getElementById('anno-taxon-input').value : ""
+            taxon_id: isBio ? document.getElementById('anno-taxon-input').value : "",
             animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "",
 
             uncertain: isBio ? (document.getElementById('anno-uncertain').value === 'true') : false,

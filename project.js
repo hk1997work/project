@@ -1666,7 +1666,6 @@ function switchCrudTable(tableName) {
     const searchInput = document.getElementById('data-search-input');
     if (searchInput) {
         searchInput.value = "";
-        searchInput.placeholder = "Search";
     }
     const schema = dbSchema[tableName];
     const firstColKey = schema.columns[0].key;
@@ -3007,7 +3006,7 @@ function openAssignmentModal() {
                 ${badgeHtml}
             </label>
             <div id="comment-container-${safeU}" style="display:none; margin-top:8px; padding-left:26px;">
-                <input type="text" id="comment-input-${safeU}" class="form-input" placeholder="Comment" style="width:100%; height: 32px; font-size: 0.85rem;">
+                <input type="text" id="comment-input-${safeU}" class="form-input" style="width:100%; height: 32px; font-size: 0.85rem;">
             </div>
         </div>`;
     });
@@ -3494,7 +3493,7 @@ function openCrudModal(mode, id = null) {
             let customAttr = isReadOnly ? "disabled" : "";
 
             fieldHtml += `<div style="position: relative;">`;
-            fieldHtml += `<input class="form-input" id="input-${col.key}" value="${val}" oninput="handleCrudTaxonSearch(this.value, '${col.key}')" onclick="handleCrudTaxonSearch(this.value, '${col.key}')" style="${customStyle}" type="text" placeholder="Search taxon..." autocomplete="off" ${customAttr}>`;
+            fieldHtml += `<input class="form-input" id="input-${col.key}" value="${val}" oninput="handleCrudTaxonSearch(this.value, '${col.key}')" onclick="handleCrudTaxonSearch(this.value, '${col.key}')" style="${customStyle}" type="text" autocomplete="off" ${customAttr}>`;
             fieldHtml += `<div class="form-select-dropdown" id="dropdown-${col.key}" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>`;
             fieldHtml += `</div>`;
         } else if (effectiveType === 'select') {
