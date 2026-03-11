@@ -60,7 +60,7 @@ const mockLicenses = ["CC BY 4.0", "CC BY-NC 4.0", "CC0 1.0", "All Rights Reserv
 const mockAudioSettings = ["Default Audio", "High Res 96kHz", "Low Power 16kHz", "Duty Cycle A"];
 const mockSoundClasses = ["Biophony", "Geophony", "Anthropophony", "Unknown"];
 const mockTaxons = ["Aves", "Amphibia", "Insecta", "Mammalia", "Chiroptera"];
-const mockReviewStatuses = ["Pending", "Approved", "Rejected", "Unsure", "Revise"]; // 添加 Revise
+const mockReviewStatuses = ["Accept", "Revise", "Reject", "Uncertain"];
 const mockIndexTypes = ["ACI", "ADI", "AEI", "BI", "NDSI", "H", "M"];
 
 // --- 新增：Soundscape & Taxon 级联数据 ---
@@ -321,7 +321,7 @@ const staticMockDB = {
     annotation: [{
         id: 1, uuid: "550e8400-e29b-41d4-a716-446655440001", soundscape_component: "Biophony", sound_type: "bird chorus", media_name: "REC_10100020250000.wav", creator_id: "Liudilong", creator_type: "user", confidence: 1.0, min_x: 2.5, max_x: 5.0, min_y: 1000, max_y: 4000, taxon_id: "AVES", uncertain: false, sound_distance_m: 15, distance_not_estimable: false, individual_num: 1, animal_sound_type: "Song", reference: true, comments: "Clear bird call", creation_date: "2025-01-20 09:12:05"
     }],
-    annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Approved", taxon_id: "AVES", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
+    annotation_review: [{id: "1-J.Smith", annotation_id: 1, reviewer_id: "J. Smith", annotation_review_status_id: "Accept", taxon_id: "AVES", note: "Agreed.", creation_date: "2025-01-21 11:30:00"}],
     index_log: [{log_id: 1, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "output", variable_order: 1, variable_name: "aci_value", variable_value: "145.2", creation_date: "2025-01-22 15:00:10"}, {
         log_id: 2, media: "REC_10100020250000.wav", user_id: "System", index_id: "ACI", version: "1.0", min_time: "0", max_time: "60", min_frequency: "0", max_frequency: "24000", variable_type: "input", variable_order: 1, variable_name: "fft_window", variable_value: "512", creation_date: "2025-01-22 15:00:10"
     }, {log_id: 3, media: "REC_10100020250001.wav", user_id: "A. Schmidt", index_id: "NDSI", version: "2.1", min_time: "10", max_time: "70", min_frequency: "1000", max_frequency: "8000", variable_type: "output", variable_order: 1, variable_name: "ndsi_score", variable_value: "0.85", creation_date: "2025-01-23 09:15:00"}, {
