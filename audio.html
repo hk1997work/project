@@ -802,51 +802,51 @@
                         </div>
 
                     </div>
-                </div>
+                    <div id="annotation-review-section" style="display: none; flex-direction: column; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; gap: 16px;">
 
+                        <div style="display: flex; gap: 6px;">
+                            <button class="review-status-btn" data-status="accept" onclick="selectReviewStatus('accept')" style="flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #10b981; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">Accept</button>
+                            <button class="review-status-btn" data-status="revise" onclick="selectReviewStatus('revise')" style="flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #f59e0b; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">Revise</button>
+                            <button class="review-status-btn" data-status="reject" onclick="selectReviewStatus('reject')" style="flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #ef4444; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">Reject</button>
+                            <button class="review-status-btn" data-status="uncertain" onclick="selectReviewStatus('uncertain')" style="flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #6b7280; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">Uncertain</button>
+                        </div>
+
+                        <div style="display: flex; gap: 16px; align-items: flex-end;">
+
+                            <div class="form-group" id="review-taxon-group" style="display: none; margin: 0; flex: 1; min-width: 0; position: relative;">
+                                <label class="form-label">Taxon</label>
+                                <input class="form-input" id="review-taxon-input" oninput="handleReviewTaxonSearch(this.value)" onclick="handleReviewTaxonSearch(this.value)" placeholder="Search taxon..." style="width: 100%; min-width: 0; height: 28px; padding: 0 8px;" type="text" autocomplete="off">
+
+                                <div class="form-select-dropdown" id="review-taxon-dropdown" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
+                            </div>
+
+                            <div class="form-group" style="margin: 0; flex: 1; min-width: 0;">
+                                <label class="form-label">Note</label>
+                                <input class="form-input" id="review-note" style="width: 100%; min-width: 0; height: 28px;" type="text" placeholder="Add comments...">
+                            </div>
+
+                            <button class="btn-primary" onclick="submitReview()" style="height: 28px; padding: 0 16px; flex-shrink: 0; background-color: var(--brand); border-color: var(--brand);">Submit</button>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">History</div>
+                            <div id="review-history-list" style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 160px; overflow-y: auto; padding-right: 4px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;">
+                    <button class="btn-secondary" onclick="cancelNewAnnotation()">Cancel</button>
+                    <button class="btn-primary" id="btn-save-annotation" onclick="saveNewAnnotation()" onmouseout="this.style.filter='none'" onmouseover="this.style.filter='brightness(1.15)'" style="background-color: var(--brand); border-color: var(--brand); transition: filter 0.2s ease;">Save</button>
+                </div>
             </div>
-            <div id="annotation-review-section" style="display: none; flex-direction: column; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; gap: 12px;">
+            <div id="panel-ai-models" style="display: none; flex-direction: column; height: 100%;"></div>
 
-                <div style="display: flex; gap: 6px;">
-                    <button class="review-status-btn" data-status="accept" onclick="selectReviewStatus('accept')" style="flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #10b981; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">Accept</button>
-                    <button class="review-status-btn" data-status="revise" onclick="selectReviewStatus('revise')" style="flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #f59e0b; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">Revise</button>
-                    <button class="review-status-btn" data-status="reject" onclick="selectReviewStatus('reject')" style="flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #ef4444; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">Reject</button>
-                    <button class="review-status-btn" data-status="uncertain" onclick="selectReviewStatus('uncertain')" style="flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #6b7280; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">Uncertain</button>
-                </div>
+            <div id="panel-ac-indices" style="display: none; flex-direction: column; height: 100%;"></div>
 
-                <div style="display: flex; flex-direction: column; gap: 8px; background: var(--bg-capsule); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <div id="review-taxon-group" style="display: none; align-items: center; gap: 8px;">
-                        <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-main); width: 42px; text-align: right; flex-shrink: 0;">Taxon</span>
-                        <input class="form-input" id="review-taxon" style="flex: 1; min-width: 0; font-size: 0.8rem; height: 26px; padding: 0 8px; background: var(--bg-surface);" type="text" placeholder="Suggested taxon...">
-                    </div>
-
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-main); width: 42px; text-align: right; flex-shrink: 0;">Note</span>
-                        <input class="form-input" id="review-note" style="flex: 1; min-width: 0; font-size: 0.8rem; height: 26px; padding: 0 8px; background: var(--bg-surface);" type="text" placeholder="Add comments...">
-                        <button class="btn-primary" onclick="submitReview()" style="height: 26px; padding: 0 12px; font-size: 0.75rem; flex-shrink: 0; background-color: var(--brand); border-color: var(--brand); border-radius: 4px;">Submit</button>
-                    </div>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">History</div>
-                    <div id="review-history-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto; padding-right: 4px;">
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;">
-            <button class="btn-secondary" onclick="cancelNewAnnotation()">Cancel</button>
-            <button class="btn-primary" id="btn-save-annotation" onclick="saveNewAnnotation()" onmouseout="this.style.filter='none'" onmouseover="this.style.filter='brightness(1.15)'" style="background-color: var(--brand); border-color: var(--brand); transition: filter 0.2s ease;">Save</button>
+            <div id="panel-ac-analysis" style="display: none; flex-direction: column; height: 100%;"></div>
         </div>
     </div>
-    <div id="panel-ai-models" style="display: none; flex-direction: column; height: 100%;"></div>
-
-    <div id="panel-ac-indices" style="display: none; flex-direction: column; height: 100%;"></div>
-
-    <div id="panel-ac-analysis" style="display: none; flex-direction: column; height: 100%;"></div>
-</div>
-</div>
 </div>
 <script>
     // ================== 1. 顶部下拉框数据源逻辑 ==================
@@ -3021,7 +3021,7 @@
     // 模拟的 Review 数据库 (key 为 annotation 的 id)
     window.mockReviews = {
         1: [
-            { reviewer: 'System', status: 'uncertain', taxon: '', note: 'Low confidence score', created: '2026-02-16 09:00:00' }
+            {reviewer: 'System', status: 'uncertain', taxon: '', note: 'Low confidence score', created: '2026-02-16 09:00:00'}
         ]
     };
 
@@ -3032,10 +3032,47 @@
         'uncertain': '#6b7280'
     };
 
+    // ======= Review 相关的 Taxon 搜索逻辑 =======
+    const availableReviewTaxons = ['AMPHIBIA', 'AVES', 'MAMMALIA CHIROPTERA', 'MAMMALIA PRIMATA', 'INSECTA', 'REPTILIA'];
+
+    window.handleReviewTaxonSearch = function(query) {
+        const dropdown = document.getElementById('review-taxon-dropdown');
+        const lowerQuery = query.toLowerCase().trim();
+
+        let matched = availableReviewTaxons;
+        if (lowerQuery) {
+            matched = availableReviewTaxons.filter(t => t.toLowerCase().includes(lowerQuery));
+        }
+
+        if (matched.length === 0) {
+            dropdown.innerHTML = '<div style="padding: 8px 12px; font-size: 0.75rem; color: var(--text-muted);">No matches found</div>';
+        } else {
+            dropdown.innerHTML = matched.map(t => `
+                <div class="form-select-option" style="padding: 6px 10px; font-size: 0.75rem;" onclick="selectReviewTaxonItem('${t}')">${t}</div>
+            `).join('');
+        }
+
+        dropdown.style.display = 'block';
+    };
+
+    window.selectReviewTaxonItem = function(value) {
+        document.getElementById('review-taxon-input').value = value;
+        document.getElementById('review-taxon-dropdown').style.display = 'none';
+    };
+
+    // 点击空白处关闭悬浮菜单
+    document.addEventListener('click', function(e) {
+        const group = document.getElementById('review-taxon-group');
+        const dropdown = document.getElementById('review-taxon-dropdown');
+        if (group && !group.contains(e.target) && dropdown) {
+            dropdown.style.display = 'none';
+        }
+    });
+    // ============================================
+
     window.selectReviewStatus = function(status) {
         currentReviewStatus = status;
 
-        // 1. 更新按钮样式 (选中态变为实心背景)
         document.querySelectorAll('.review-status-btn').forEach(btn => {
             const btnStatus = btn.getAttribute('data-status');
             if (btnStatus === status) {
@@ -3049,13 +3086,14 @@
             }
         });
 
-        // 2. 控制 Taxon 输入框显隐
         const taxonGroup = document.getElementById('review-taxon-group');
+        const dropdown = document.getElementById('review-taxon-dropdown');
         if (status === 'revise') {
-            taxonGroup.style.display = 'flex';
+            taxonGroup.style.display = 'block';
         } else {
             taxonGroup.style.display = 'none';
-            document.getElementById('review-taxon').value = ''; // 清空之前的数据
+            document.getElementById('review-taxon-input').value = '';
+            if (dropdown) dropdown.style.display = 'none';
         }
     };
 
@@ -3066,16 +3104,16 @@
             return;
         }
 
-        const taxonVal = document.getElementById('review-taxon').value.trim();
+        const taxonVal = document.getElementById('review-taxon-input').value.trim();
         const noteVal = document.getElementById('review-note').value.trim();
 
         if (currentReviewStatus === 'revise' && !taxonVal) {
-            alert('Please enter a suggested taxon for revision.');
+            alert('Please enter or select a suggested taxon for revision.');
             return;
         }
 
         const newReview = {
-            reviewer: 'Liudilong', // 模拟当前用户
+            reviewer: 'Liudilong',
             status: currentReviewStatus,
             taxon: taxonVal,
             note: noteVal,
@@ -3086,10 +3124,8 @@
             window.mockReviews[editingAnnoId] = [];
         }
 
-        // 追加至最前（最新的显示在上面）
         window.mockReviews[editingAnnoId].unshift(newReview);
 
-        // 重置表单
         currentReviewStatus = null;
         document.querySelectorAll('.review-status-btn').forEach(btn => {
             const btnStatus = btn.getAttribute('data-status');
@@ -3097,11 +3133,12 @@
             btn.style.color = statusColors[btnStatus];
             btn.style.borderColor = 'var(--border-color)';
         });
-        document.getElementById('review-taxon-group').style.display = 'none';
-        document.getElementById('review-taxon').value = '';
-        document.getElementById('review-note').value = '';
 
-        // 重新渲染历史记录
+        document.getElementById('review-taxon-group').style.display = 'none';
+        document.getElementById('review-taxon-input').value = '';
+        document.getElementById('review-note').value = '';
+        document.getElementById('review-taxon-dropdown').style.display = 'none';
+
         renderReviewHistory(editingAnnoId);
     };
 
@@ -3115,16 +3152,16 @@
         }
 
         container.innerHTML = reviews.map(r => `
-            <div style="background: var(--bg-capsule); padding: 8px 10px; border-radius: 6px; border-left: 3px solid ${statusColors[r.status]}; font-size: 0.75rem;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <div style="background: var(--bg-capsule); padding: 6px 8px; border-radius: 6px; border-left: 3px solid ${statusColors[r.status]}; font-size: 0.7rem; display: flex; flex-direction: column; gap: 4px; flex: 1 1 calc(50% - 6px); min-width: 140px; box-sizing: border-box;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-weight: 600; color: var(--text-main);">${r.reviewer}</span>
-                    <span style="color: var(--text-muted); font-variant-numeric: tabular-nums;">${r.created}</span>
+                    <span style="color: var(--text-muted); font-size: 0.65rem; font-variant-numeric: tabular-nums;">${r.created.slice(5, 16)}</span>
                 </div>
-                <div style="display: flex; gap: 6px; align-items: center; margin-bottom: ${r.note ? '4px' : '0'};">
-                    <span style="background: ${statusColors[r.status]}22; color: ${statusColors[r.status]}; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">${r.status}</span>
-                    ${r.taxon ? `<span style="color: var(--text-main); font-weight: 500;">Taxon: <span style="color: var(--brand);">${r.taxon}</span></span>` : ''}
+                <div style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+                    <span style="background: ${statusColors[r.status]}22; color: ${statusColors[r.status]}; padding: 2px 4px; border-radius: 4px; font-weight: 700; text-transform: uppercase; font-size: 0.6rem;">${r.status}</span>
+                    ${r.taxon ? `<span style="color: var(--text-main); font-weight: 600; font-size: 0.65rem;">${r.taxon}</span>` : ''}
                 </div>
-                ${r.note ? `<div style="color: var(--text-secondary); line-height: 1.4;">${r.note}</div>` : ''}
+                ${r.note ? `<div style="color: var(--text-secondary); line-height: 1.3; font-size: 0.65rem; word-break: break-word;">${r.note}</div>` : ''}
             </div>
         `).join('');
     };
