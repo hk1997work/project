@@ -670,7 +670,7 @@
                             <div class="form-select-wrapper">
                                 <input id="anno-soundscape" type="hidden" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-soundscape')">
-                                    <span id="span-anno-soundscape" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span>
+                                    <span id="span-anno-soundscape" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-soundscape">
@@ -690,7 +690,7 @@
                             <div class="form-select-wrapper">
                                 <input id="anno-sound-type" type="hidden" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-sound-type')">
-                                    <span id="span-anno-sound-type" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span>
+                                    <span id="span-anno-sound-type" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-sound-type">
@@ -705,7 +705,7 @@
                             <div class="form-select-wrapper">
                                 <input id="anno-taxon" type="hidden" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-taxon')">
-                                    <span id="span-anno-taxon" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span>
+                                    <span id="span-anno-taxon" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-taxon">
@@ -738,7 +738,7 @@
                             <div class="form-select-wrapper">
                                 <input id="anno-animal-sound-type" type="hidden" value="">
                                 <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-animal-sound-type')">
-                                    <span id="span-anno-animal-sound-type" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span>
+                                    <span id="span-anno-animal-sound-type" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></span>
                                     <i data-lucide="chevron-down" size="16"></i>
                                 </div>
                                 <div class="form-select-dropdown" id="dropdown-anno-animal-sound-type">
@@ -2137,7 +2137,7 @@
 
     window.selectAudioDropdown = function (key, value, element) {
         document.getElementById(key).value = value;
-        document.getElementById(`span-${key}`).textContent = value || 'Select...';
+        document.getElementById(`span-${key}`).textContent = value || '';
 
         const dropdown = document.getElementById(`dropdown-${key}`);
         if (dropdown) {
@@ -2250,7 +2250,7 @@
         const span = document.getElementById('span-anno-sound-type');
 
         document.getElementById('anno-sound-type').value = '';
-        span.textContent = 'Select...';
+        span.textContent = '';
 
         const options = window.SOUNDSCAPE_MAPPING[component] || [];
         let html = `<div class="form-select-option" onclick="selectAudioDropdown('anno-sound-type', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
@@ -2267,7 +2267,7 @@
         const span = document.getElementById('span-anno-animal-sound-type');
 
         document.getElementById('anno-animal-sound-type').value = '';
-        span.textContent = 'Select...';
+        span.textContent = '';
 
         const options = window.TAXON_SOUND_TYPE_MAPPING[taxon] || [];
         let html = `<div class="form-select-option" onclick="selectAudioDropdown('anno-animal-sound-type', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
@@ -2328,12 +2328,12 @@
             window.updateDraftBoxStyle('');
 
             document.getElementById('anno-soundscape').value = '';
-            document.getElementById('span-anno-soundscape').textContent = 'Select...';
+            document.getElementById('span-anno-soundscape').textContent = '';
             document.querySelectorAll('#dropdown-anno-soundscape .form-select-option').forEach(el => el.classList.remove('selected'));
             updateSoundTypeOptionsAudio();
 
             document.getElementById('anno-taxon').value = '';
-            document.getElementById('span-anno-taxon').textContent = 'Select...';
+            document.getElementById('span-anno-taxon').textContent = '';
             updateAnimalSoundTypeOptionsAudio();
 
             document.getElementById('anno-comments').value = '';
@@ -2529,12 +2529,12 @@
         updateInputsFromDraftBox(boxLeft, boxTop, boxWidth, boxHeight, rect);
 
         document.getElementById('anno-soundscape').value = '';
-        document.getElementById('span-anno-soundscape').textContent = 'Select...';
+        document.getElementById('span-anno-soundscape').textContent = '';
         document.querySelectorAll('#dropdown-anno-soundscape .form-select-option').forEach(el => el.classList.remove('selected'));
         updateSoundTypeOptionsAudio();
 
         document.getElementById('anno-taxon').value = '';
-        document.getElementById('span-anno-taxon').textContent = 'Select...';
+        document.getElementById('span-anno-taxon').textContent = '';
         updateAnimalSoundTypeOptionsAudio();
 
         document.getElementById('anno-comments').value = '';
@@ -2840,20 +2840,20 @@
 
         // 3. 填充下拉框和级联选项
         document.getElementById('anno-soundscape').value = anno.soundscape_component || '';
-        document.getElementById('span-anno-soundscape').textContent = anno.soundscape_component || 'Select...';
+        document.getElementById('span-anno-soundscape').textContent = anno.soundscape_component || '';
         window.updateSoundTypeOptionsAudio();
 
         document.getElementById('anno-sound-type').value = anno.sound_type || '';
-        document.getElementById('span-anno-sound-type').textContent = anno.sound_type || 'Select...';
+        document.getElementById('span-anno-sound-type').textContent = anno.sound_type || '';
 
         window.toggleBiophonyFields(anno.soundscape_component || '');
         if (anno.soundscape_component === 'Biophony') {
             document.getElementById('anno-taxon').value = anno.taxon_id || '';
-            document.getElementById('span-anno-taxon').textContent = anno.taxon_id || 'Select...';
+            document.getElementById('span-anno-taxon').textContent = anno.taxon_id || '';
             window.updateAnimalSoundTypeOptionsAudio();
 
             document.getElementById('anno-animal-sound-type').value = anno.animal_sound_type || '';
-            document.getElementById('span-anno-animal-sound-type').textContent = anno.animal_sound_type || 'Select...';
+            document.getElementById('span-anno-animal-sound-type').textContent = anno.animal_sound_type || '';
 
             document.getElementById('anno-indiv-num').value = anno.individual_num !== null ? anno.individual_num : '';
             window.setAudioBooleanValue('anno-uncertain', anno.uncertain);

@@ -922,7 +922,7 @@ function updateContent(project, immediate = false) {
     const projLabel = document.getElementById('label-project');
     if (immediate) projLabel.textContent = project.name; else animateTextSwap(projLabel, project.name);
     const fullList = [{name: "All Collections"}, ...project.collections];
-    const colName = fullList[0] ? fullList[0].name : "Select...";
+    const colName = fullList[0] ? fullList[0].name : "";
     if (immediate) document.getElementById('label-collection').textContent = colName; else animateTextSwap('label-collection', colName);
     const refreshAllViews = () => {
         renderSummary();
@@ -1623,14 +1623,11 @@ function renderTableNav() {
     Object.keys(dbSchema).forEach(key => {
         const table = dbSchema[key];
         const isActive = currentTable === key ? 'active' : '';
-        const data = getDataForTable(key);
-        const count = data ? data.length : 0;
         html += `
             <div class="dt-item ${isActive}" onclick="switchCrudTable('${key}')">
                 <span style="display:flex; align-items:center; gap:8px;">
                     <i data-lucide="${table.icon}" size="16"></i> ${table.label}
                 </span>
-                <span class="dt-count">${count}</span>
             </div>
         `;
     });
@@ -3194,7 +3191,7 @@ window.selectFormOption = function (key, value, label, element) {
 
     const trigger = document.getElementById(`trigger-${key}`);
     if (trigger) {
-        trigger.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${label || 'Select...'}</span> <i data-lucide="chevron-down" size="16"></i>`;
+        trigger.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${label || ''}</span> <i data-lucide="chevron-down" size="16"></i>`;
         lucide.createIcons();
     }
 
@@ -3267,12 +3264,12 @@ function updateDependentSelect(key, options) {
     if (input) input.value = "";
     const trigger = document.getElementById(`trigger-${key}`);
     if (trigger) {
-        trigger.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span> <i data-lucide="chevron-down" size="16"></i>`;
+        trigger.innerHTML = `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></span> <i data-lucide="chevron-down" size="16"></i>`;
         lucide.createIcons();
     }
     const list = dropdown.querySelector('.form-select-options-list');
     if (list) {
-        let html = `<div class="form-select-option" onclick="selectFormOption('${key}', '', 'Select...', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
+        let html = `<div class="form-select-option" onclick="selectFormOption('${key}', '', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
         options.forEach(opt => {
             html += `<div class="form-select-option" onclick="selectFormOption('${key}', '${opt}', '${opt}', this)">${opt}</div>`;
         });
@@ -3322,6 +3319,58 @@ function toggleFieldVisibility(key, show) {
         }
     }
 }
+
+// ======= CRUD Modal Taxon 搜索逻辑 =======
+window.handleCrudTaxonSearch = function(query, colKey) {
+    const dropdown = document.getElementById(`dropdown-${colKey}`);
+    if (!dropdown) return;
+    query = query.toLowerCase().trim();
+    if (!query) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    const results = mockTaxonDB.filter(t => t.name.toLowerCase().includes(query));
+    if (results.length > 0) {
+        dropdown.innerHTML = `<div class="form-select-options-list">` + results.map(r => {
+            const safeName = r.name.replace(/'/g, "\\'");
+            return `
+            <div class="form-select-option" style="display: flex; justify-content: space-between; align-items: center;" onclick="selectCrudTaxon('${safeName}', '${colKey}')">
+                <span>${r.name}</span>
+                <span style="opacity: 0.6; font-size: 0.85em;">${r.rank}</span>
+            </div>`;
+        }).join('') + `</div>`;
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.innerHTML = `<div class="form-select-options-list"><div style="padding: 10px 14px; color: var(--text-muted); font-size: 0.9rem; text-align: left;">No matches found</div></div>`;
+        dropdown.style.display = 'block';
+    }
+};
+
+window.selectCrudTaxon = function(name, colKey) {
+    const input = document.getElementById(`input-${colKey}`);
+    if (input) {
+        input.value = name;
+        // 触发后续联动逻辑 (例如 Annotation 里的 animal_sound_type)
+        if (window.selectFormOption) {
+            window.selectFormOption(colKey, name, name, null);
+        }
+    }
+    const dropdown = document.getElementById(`dropdown-${colKey}`);
+    if (dropdown) dropdown.style.display = 'none';
+};
+
+// 点击弹窗空白处自动隐藏悬浮菜单 (兼容所有带 taxon 的动态字段)
+document.addEventListener('click', function(e) {
+    const taxonInputs = document.querySelectorAll('input[id^="input-taxon"]');
+    taxonInputs.forEach(input => {
+        const colKey = input.id.replace('input-', '');
+        const dropdown = document.getElementById(`dropdown-${colKey}`);
+        if (dropdown && e.target !== input && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+});
+// ============================================
 
 function openCrudModal(mode, id = null) {
     const schema = dbSchema[currentTable];
@@ -3443,7 +3492,18 @@ function openCrudModal(mode, id = null) {
 
         let fieldHtml = `<div class="form-group"><label class="form-label">${col.label}</label>`;
 
-        if (effectiveType === 'select') {
+        // 兼容所有键名或标签名包含 taxon 的字段 (如 taxon, taxon_id 等)
+        if (col.key === 'taxon_id' || col.key === 'taxon' || (col.label && col.label.toLowerCase().includes('taxon'))) {
+            // 为 Taxon 独立渲染带有输入联想功能的组件
+            let customStyle = "width: 100%;";
+            if (isReadOnly) customStyle += " opacity:0.6; background:var(--bg-capsule); color:var(--text-muted);";
+            let customAttr = isReadOnly ? "disabled" : "";
+
+            fieldHtml += `<div style="position: relative;">`;
+            fieldHtml += `<input class="form-input" id="input-${col.key}" value="${val}" oninput="handleCrudTaxonSearch(this.value, '${col.key}')" onclick="handleCrudTaxonSearch(this.value, '${col.key}')" style="${customStyle}" type="text" placeholder="Search taxon..." autocomplete="off" ${customAttr}>`;
+            fieldHtml += `<div class="form-select-dropdown" id="dropdown-${col.key}" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>`;
+            fieldHtml += `</div>`;
+        } else if (effectiveType === 'select') {
             let options = col.options || [];
             if (currentTable === 'project' && col.key === 'creator_name') {
                 const currentUser = document.querySelector('.user-name-text').textContent.trim();
@@ -3490,7 +3550,7 @@ function openCrudModal(mode, id = null) {
                 }
             }
 
-            let currentLabel = "Select...";
+            let currentLabel = "";
             if (val) currentLabel = val;
             const isDisabled = attrStr.includes('disabled');
             const disabledClass = isDisabled ? 'disabled' : '';
@@ -3505,7 +3565,7 @@ function openCrudModal(mode, id = null) {
             fieldHtml += `<div class="form-select-dropdown" id="dropdown-${col.key}">`;
             fieldHtml += `<input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-${col.key}', this.value)" onclick="event.stopPropagation()">`;
             fieldHtml += `<div class="form-select-options-list">`;
-            fieldHtml += `<div class="form-select-option" onclick="selectFormOption('${col.key}', '', 'Select...', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
+            fieldHtml += `<div class="form-select-option" onclick="selectFormOption('${col.key}', '', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
             options.forEach(opt => {
                 const isSelected = String(val) === String(opt) ? 'selected' : '';
                 fieldHtml += `<div class="form-select-option ${isSelected}" onclick="selectFormOption('${col.key}', '${opt}', '${opt}', this)">${opt}</div>`;
@@ -3529,8 +3589,6 @@ function openCrudModal(mode, id = null) {
             fieldHtml += `<span id="input-${col.key}-preview" style="display:flex; align-items:center; gap:8px; overflow:hidden;">`;
             if (val) {
                 fieldHtml += `<img src="${val}" style="height:24px; border-radius:4px; border:1px solid var(--border-color);">`;
-            } else {
-                fieldHtml += `<span style="color:var(--text-muted); font-size:0.9rem;">Click to upload...</span>`;
             }
             fieldHtml += `</span>`;
             fieldHtml += `<i data-lucide="upload" size="16"></i>`;
@@ -3541,7 +3599,7 @@ function openCrudModal(mode, id = null) {
             fieldHtml += `<input type="hidden" id="input-${col.key}" value='${safeVal}'>`;
             fieldHtml += `<div class="form-select-trigger" onclick="openEditorForInput('input-${col.key}')" style="cursor:pointer; ${attrStr.includes('disabled') ? 'pointer-events:none;' : ''}" ${attrStr}>`;
             fieldHtml += `<span id="input-${col.key}-preview" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:${textPreview ? 'var(--text-main)' : 'var(--text-muted)'}; font-size:0.9rem;">`;
-            fieldHtml += textPreview ? (textPreview.substring(0, 40) + (textPreview.length > 40 ? '...' : '')) : 'Edit content...';
+            fieldHtml += textPreview ? (textPreview.substring(0, 40) + (textPreview.length > 40 ? '...' : '')) : '';
             fieldHtml += `</span>`;
             fieldHtml += `<i data-lucide="file-edit" size="16"></i>`;
             fieldHtml += `</div>`;
@@ -3945,7 +4003,7 @@ function showUploadModalUI() {
         html += `<div class="form-select-wrapper">`;
         html += `<input type="hidden" id="input-${key}" value="">`;
         html += `<div class="form-select-trigger" id="trigger-${key}" onclick="toggleFormSelect('dropdown-${key}')">`;
-        html += `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Select...</span> <i data-lucide="chevron-down" size="16"></i></div>`;
+        html += `<span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></span> <i data-lucide="chevron-down" size="16"></i></div>`;
         html += `<div class="form-select-dropdown" id="dropdown-${key}">`;
         html += `<input type="text" class="form-select-search" placeholder="Search..." oninput="filterFormSelect('dropdown-${key}', this.value)" onclick="event.stopPropagation()">`;
         html += `<div class="form-select-options-list">`;
@@ -4451,58 +4509,59 @@ function updateSiteCoordinates(realm) {
 
 // --- 新增：处理 Review 状态变更的联动逻辑 ---
 function handleReviewStatusChange(status) {
-    const taxonInput = document.getElementById('input-taxon_id');
-    const taxonTrigger = document.getElementById('trigger-taxon_id');
-    const wrapper = document.getElementById('wrapper-taxon_id');
+    // 动态识别当前表单中的 Taxon 键名究竟是 taxon_id 还是 taxon
+    const colKey = document.getElementById('input-taxon_id') ? 'taxon_id' : 'taxon';
+    const taxonInput = document.getElementById(`input-${colKey}`);
+    const taxonTrigger = document.getElementById(`trigger-${colKey}`);
+    const wrapper = document.getElementById(`wrapper-${colKey}`);
 
-    if (!taxonInput || !taxonTrigger) return;
+    if (!taxonInput) return;
 
     if (status === 'Revise') {
-        // 启用
         if (wrapper) wrapper.style.pointerEvents = 'auto';
-        taxonTrigger.classList.remove('disabled');
-        taxonTrigger.style.opacity = '1';
-        taxonTrigger.style.backgroundColor = '';
 
-        // 恢复之前保存的值（如果有）
+        // 兼容新版直接输入框
+        taxonInput.disabled = false;
+        taxonInput.style.opacity = '1';
+        taxonInput.style.backgroundColor = '';
+
+        if (taxonTrigger) {
+            taxonTrigger.classList.remove('disabled');
+            taxonTrigger.style.opacity = '1';
+            taxonTrigger.style.backgroundColor = '';
+        }
+
+        // 恢复之前保存的值
         if (taxonInput.dataset.savedValue) {
             const savedVal = taxonInput.dataset.savedValue;
             taxonInput.value = savedVal;
-            const span = taxonTrigger.querySelector('span');
-            // 显示恢复的值
-            if (span) span.textContent = savedVal;
-            // 也要同步选中下拉列表中的样式（可选，视觉优化）
-            const dropdown = document.getElementById('dropdown-taxon_id');
-            if (dropdown) {
-                dropdown.querySelectorAll('.form-select-option').forEach(opt => {
-                    if (opt.innerText === savedVal) opt.classList.add('selected'); else opt.classList.remove('selected');
-                });
+            if (taxonTrigger) {
+                const span = taxonTrigger.querySelector('span');
+                if (span) span.textContent = savedVal;
             }
         }
     } else {
-        // 禁用
-        // 如果当前有值，先保存起来以便恢复
         if (taxonInput.value) {
             taxonInput.dataset.savedValue = taxonInput.value;
         }
-
-        // 清空当前值
         taxonInput.value = "";
 
-        // 设置禁用样式
+        // 禁用新版直接输入框
+        taxonInput.disabled = true;
+        taxonInput.style.opacity = '0.5';
+        taxonInput.style.backgroundColor = 'var(--bg-capsule)';
+
+        // 关闭新版下拉菜单
+        const customDropdown = document.getElementById(`dropdown-${colKey}`);
+        if (customDropdown) customDropdown.style.display = 'none';
+
         if (wrapper) wrapper.style.pointerEvents = 'none';
-        taxonTrigger.classList.add('disabled');
-        taxonTrigger.style.opacity = '0.5';
-        taxonTrigger.style.backgroundColor = 'var(--bg-capsule)';
 
-        // 重置显示文本
-        const span = taxonTrigger.querySelector('span');
-        if (span) span.textContent = "Select...";
-
-        // 清除下拉选中状态
-        const dropdown = document.getElementById('dropdown-taxon_id');
-        if (dropdown) {
-            dropdown.querySelectorAll('.form-select-option').forEach(opt => opt.classList.remove('selected'));
+        if (taxonTrigger) {
+            taxonTrigger.classList.add('disabled');
+            taxonTrigger.style.opacity = '0.5';
+            taxonTrigger.style.backgroundColor = 'var(--bg-capsule)';
+            const span = taxonTrigger.querySelector('span');
         }
     }
 }
