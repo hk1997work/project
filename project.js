@@ -1677,11 +1677,6 @@ function switchCrudTable(tableName) {
     renderCrudTable();
 }
 
-function handleDataSearch(val) {
-    crudSearchQuery = val.toLowerCase();
-    renderCrudTable();
-}
-
 function handleSort(key) {
     if (sortState.key === key) {
         sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
@@ -2340,8 +2335,7 @@ let currentPermDraft = null;
 let currentPermUserIds = [];
 
 // 根据 data.js 中的 dbSchema 动态映射权限资源
-const PERM_RESOURCES = [{key: 'audio', label: 'Audio', icon: 'mic'}, {key: 'site', label: 'Site', icon: 'map-pin'}, {key: 'annotation', label: 'Annotation', icon: 'scan-line'}, {key: 'annotation_review', label: 'Review', icon: 'check-square'}, {key: 'task', label: 'Task', icon: 'clipboard-list'}, {key: 'queue', label: 'Queue', icon: 'layers'}, // >>> 新增这一行 <<<
-    {key: 'index_log', label: 'Index Log', icon: 'bar-chart-2'}];
+const PERM_RESOURCES = [{key: 'audio', label: 'Audio', icon: 'mic'}, {key: 'site', label: 'Site', icon: 'map-pin'}, {key: 'annotation', label: 'Annotation', icon: 'scan-line'}, {key: 'annotation_review', label: 'Review', icon: 'check-square'}];
 
 function initUserPermission(userId) {
     if (!USER_PERMISSIONS_DB[userId]) {
