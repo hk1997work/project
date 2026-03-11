@@ -700,26 +700,11 @@
                             </div>
                         </div>
 
-                        <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none;">
+                        <div class="form-group bio-field-item" style="margin: 0; min-width: 0; display: none; position: relative;">
                             <label class="form-label">Taxon</label>
-                            <div class="form-select-wrapper">
-                                <input id="anno-taxon" type="hidden" value="">
-                                <div class="form-select-trigger" onclick="toggleFormSelect('dropdown-anno-taxon')">
-                                    <span id="span-anno-taxon" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></span>
-                                    <i data-lucide="chevron-down" size="16"></i>
-                                </div>
-                                <div class="form-select-dropdown" id="dropdown-anno-taxon">
-                                    <input class="form-select-search" onclick="event.stopPropagation()" oninput="filterFormSelect('dropdown-anno-taxon', this.value)" placeholder="Search..." type="text">
-                                    <div class="form-select-options-list">
-                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-taxon', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>
-                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-taxon', 'AMPHIBIA', this)">AMPHIBIA</div>
-                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-taxon', 'AVES', this)">AVES</div>
-                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-taxon', 'MAMMALIA CHIROPTERA', this)">MAMMALIA CHIROPTERA</div>
-                                        <div class="form-select-option" onclick="selectAudioDropdown('anno-taxon', 'MAMMALIA PRIMATA', this)">MAMMALIA PRIMATA</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; padding-left: 2px;">
+                            <input class="form-input" id="anno-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'anno-taxon')" onclick="handleAudioTaxonSearch(this.value, 'anno-taxon')" placeholder="Search taxon..." style="width: 100%; min-width: 0;" type="text" autocomplete="off">
+                            <div class="form-select-dropdown" id="dropdown-anno-taxon" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; padding-left: 2px; margin-top: 4px;">
                                 <a href="#" onmouseout="this.style.textDecoration='none'" onmouseover="this.style.textDecoration='underline'" style="color: var(--brand); text-decoration: none;" target="_blank">Images</a>
                                 <span style="color: var(--text-muted); opacity: 0.5;">|</span>
                                 <a href="#" onmouseout="this.style.textDecoration='none'" onmouseover="this.style.textDecoration='underline'" style="color: var(--brand); text-decoration: none;" target="_blank">Xeno-canto <span style="color: var(--text-muted); font-size: 0.7rem;">(for birds only)</span></a>
@@ -815,9 +800,9 @@
 
                             <div class="form-group" id="review-taxon-group" style="display: none; margin: 0; flex: 1; min-width: 0; position: relative;">
                                 <label class="form-label">Taxon</label>
-                                <input class="form-input" id="review-taxon-input" oninput="handleReviewTaxonSearch(this.value)" onclick="handleReviewTaxonSearch(this.value)" placeholder="Search taxon..." style="width: 100%; min-width: 0; height: 28px; padding: 0 8px;" type="text" autocomplete="off">
+                                <input class="form-input" id="review-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'review-taxon')" onclick="handleAudioTaxonSearch(this.value, 'review-taxon')" placeholder="Search taxon..." style="width: 100%; min-width: 0; height: 28px; padding: 0 8px;" type="text" autocomplete="off">
 
-                                <div class="form-select-dropdown" id="review-taxon-dropdown" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
+                                <div class="form-select-dropdown" id="dropdown-review-taxon" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
                             </div>
 
                             <div class="form-group" style="margin: 0; flex: 1; min-width: 0;">
@@ -2262,12 +2247,12 @@
     };
 
     window.updateAnimalSoundTypeOptionsAudio = function () {
-        const taxon = document.getElementById('anno-taxon').value;
+        const taxon = document.getElementById('anno-taxon-input').value; // 改为从输入框读取
         const typeSelect = document.getElementById('list-anno-animal-sound-type');
         const span = document.getElementById('span-anno-animal-sound-type');
 
         document.getElementById('anno-animal-sound-type').value = '';
-        span.textContent = '';
+        if (span) span.textContent = '';
 
         const options = window.TAXON_SOUND_TYPE_MAPPING[taxon] || [];
         let html = `<div class="form-select-option" onclick="selectAudioDropdown('anno-animal-sound-type', '', this)"><span style="opacity:0.5; font-style:italic;">Clear Selection</span></div>`;
@@ -2332,8 +2317,7 @@
             document.querySelectorAll('#dropdown-anno-soundscape .form-select-option').forEach(el => el.classList.remove('selected'));
             updateSoundTypeOptionsAudio();
 
-            document.getElementById('anno-taxon').value = '';
-            document.getElementById('span-anno-taxon').textContent = '';
+            document.getElementById('anno-taxon-input').value = '';
             updateAnimalSoundTypeOptionsAudio();
 
             document.getElementById('anno-comments').value = '';
@@ -2533,8 +2517,7 @@
         document.querySelectorAll('#dropdown-anno-soundscape .form-select-option').forEach(el => el.classList.remove('selected'));
         updateSoundTypeOptionsAudio();
 
-        document.getElementById('anno-taxon').value = '';
-        document.getElementById('span-anno-taxon').textContent = '';
+        document.getElementById('anno-taxon-input').value = '';
         updateAnimalSoundTypeOptionsAudio();
 
         document.getElementById('anno-comments').value = '';
@@ -2714,9 +2697,12 @@
 
     window.toggleBiophonyFields = function (val) {
         const isBio = (val === 'Biophony');
-        const displayStyle = isBio ? 'block' : 'none';
         document.querySelectorAll('.bio-field-item').forEach(el => {
-            el.style.display = displayStyle;
+            if (isBio) {
+                el.style.setProperty('display', 'flex', 'important');
+            } else {
+                el.style.setProperty('display', 'none', 'important');
+            }
         });
     };
 
@@ -2752,7 +2738,7 @@
 
             soundscape_component: comp,
             sound_type: document.getElementById('anno-sound-type').value,
-            taxon_id: isBio ? document.getElementById('anno-taxon').value : "",
+            taxon_id: isBio ? document.getElementById('anno-taxon-input').value
             animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "",
 
             confidence: null,
@@ -2848,8 +2834,7 @@
 
         window.toggleBiophonyFields(anno.soundscape_component || '');
         if (anno.soundscape_component === 'Biophony') {
-            document.getElementById('anno-taxon').value = anno.taxon_id || '';
-            document.getElementById('span-anno-taxon').textContent = anno.taxon_id || '';
+            document.getElementById('anno-taxon-input').value = anno.taxon_id ||
             window.updateAnimalSoundTypeOptionsAudio();
 
             document.getElementById('anno-animal-sound-type').value = anno.animal_sound_type || '';
@@ -2989,7 +2974,7 @@
 
             soundscape_component: comp,
             sound_type: document.getElementById('anno-sound-type').value,
-            taxon_id: isBio ? document.getElementById('anno-taxon').value : "",
+            taxon_id: isBio ? document.getElementById('anno-taxon-input').value : ""
             animal_sound_type: isBio ? document.getElementById('anno-animal-sound-type').value : "",
 
             uncertain: isBio ? (document.getElementById('anno-uncertain').value === 'true') : false,
@@ -3032,41 +3017,59 @@
         'uncertain': '#6b7280'
     };
 
-    // ======= Review 相关的 Taxon 搜索逻辑 =======
-    const availableReviewTaxons = ['AMPHIBIA', 'AVES', 'MAMMALIA CHIROPTERA', 'MAMMALIA PRIMATA', 'INSECTA', 'REPTILIA'];
-
-    window.handleReviewTaxonSearch = function(query) {
-        const dropdown = document.getElementById('review-taxon-dropdown');
-        const lowerQuery = query.toLowerCase().trim();
-
-        let matched = availableReviewTaxons;
-        if (lowerQuery) {
-            matched = availableReviewTaxons.filter(t => t.toLowerCase().includes(lowerQuery));
-        }
-
-        if (matched.length === 0) {
-            dropdown.innerHTML = '<div style="padding: 8px 12px; font-size: 0.75rem; color: var(--text-muted);">No matches found</div>';
-        } else {
-            dropdown.innerHTML = matched.map(t => `
-                <div class="form-select-option" style="padding: 6px 10px; font-size: 0.75rem;" onclick="selectReviewTaxonItem('${t}')">${t}</div>
-            `).join('');
-        }
-
-        dropdown.style.display = 'block';
-    };
-
-    window.selectReviewTaxonItem = function(value) {
-        document.getElementById('review-taxon-input').value = value;
-        document.getElementById('review-taxon-dropdown').style.display = 'none';
-    };
-
-    // 点击空白处关闭悬浮菜单
-    document.addEventListener('click', function(e) {
-        const group = document.getElementById('review-taxon-group');
-        const dropdown = document.getElementById('review-taxon-dropdown');
-        if (group && !group.contains(e.target) && dropdown) {
+    // ======= ★ 修复：统一 Annotation & Review 的 Taxon 搜索逻辑 (使用 mockTaxonDB) =======
+    window.handleAudioTaxonSearch = function(query, prefix) {
+        const dropdown = document.getElementById(`dropdown-${prefix}`);
+        if (!dropdown) return;
+        query = query.toLowerCase().trim();
+        if (!query) {
             dropdown.style.display = 'none';
+            return;
         }
+
+        // 使用 data.js 中完整的 mockTaxonDB 进行搜索匹配
+        const results = mockTaxonDB.filter(t => t.name.toLowerCase().includes(query));
+
+        if (results.length > 0) {
+            dropdown.innerHTML = `<div class="form-select-options-list">` + results.map(r => {
+                const safeName = r.name.replace(/'/g, "\\'");
+                return `
+                <div class="form-select-option" style="display: flex; justify-content: space-between; align-items: center;" onclick="selectAudioTaxonItem('${safeName}', '${prefix}')">
+                    <span>${r.name}</span>
+                    <span style="opacity: 0.6; font-size: 0.85em;">${r.rank}</span>
+                </div>`;
+            }).join('') + `</div>`;
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.innerHTML = `<div class="form-select-options-list"><div style="padding: 10px 14px; color: var(--text-muted); font-size: 0.9rem; text-align: left;">No matches found</div></div>`;
+            dropdown.style.display = 'block';
+        }
+    };
+
+    window.selectAudioTaxonItem = function(name, prefix) {
+        const input = document.getElementById(`${prefix}-input`);
+        if (input) {
+            input.value = name;
+        }
+        const dropdown = document.getElementById(`dropdown-${prefix}`);
+        if (dropdown) dropdown.style.display = 'none';
+
+        // 联动更新：如果是 Annotation 里的 Taxon 发生了选择，更新下方的 Animal Sound Type
+        if (prefix === 'anno-taxon') {
+            window.updateAnimalSoundTypeOptionsAudio();
+        }
+    };
+
+    // 点击空白处自动隐藏悬浮菜单
+    document.addEventListener('click', function(e) {
+        ['anno-taxon', 'review-taxon'].forEach(prefix => {
+            const input = document.getElementById(`${prefix}-input`);
+            const dropdown = document.getElementById(`dropdown-${prefix}`);
+            // 注意检查 input 存在与否，防止非编辑模式报错
+            if (dropdown && input && e.target !== input && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
     });
     // ============================================
 
