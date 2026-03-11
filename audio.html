@@ -387,19 +387,25 @@
 
             <div class="player-section" style="display: flex; flex-direction: column; padding: 12px 16px; border-bottom: 1px solid var(--border-color); gap: 8px; flex-shrink: 0;">
 
-                <div class="player-toolbar-top" style="display: flex; gap: 8px; align-items: center;">
+                <div class="player-toolbar-top" style="display: flex; gap: 4px; align-items: center;">
                     <div class="fft-dropdown-wrapper" style="flex-shrink: 0;" title="Audio Label">
                         <div class="btn-toolbar" id="audio-label-tag" onclick="toggleAudioLabelDropdown(event)" style="padding: 0 12px; gap: 6px; cursor: pointer;">
                             <i data-lucide="tag" size="14"></i>
-                            <span id="audio-label-display" style="font-size: 0.85rem; font-weight: 600; display: inline-block; white-space: nowrap;">not analysed</span>
+                            <span id="audio-label-display" style="font-size: 0.85rem; font-weight: 600; display: inline-block; width: 90px; text-align: center; white-space: nowrap; overflow-x: auto; scrollbar-width: none;">not analysed</span>
                         </div>
 
                         <div class="fft-dropdown-menu" id="audio-label-dropdown" style="width: 240px;">
                             <div id="audio-label-options" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;">
                             </div>
                             <div style="margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border-color); display: flex; gap: 6px; align-items: center;">
-                                <input class="form-input" id="new-label-input" onclick="event.stopPropagation()" onkeydown="if(event.key === 'Enter') handleAddNewLabel(event)" style="flex: 1; min-width: 0; height: 26px; font-size: 0.75rem; padding: 0 8px; border-radius: 4px;" type="text">
-                                <button onclick="handleAddNewLabel(event)" onmouseout="this.style.filter='none'" onmouseover="this.style.filter='brightness(1.15)'" style="height: 26px; padding: 0 12px; font-size: 0.75rem; border-radius: 4px; background: var(--brand); color: white; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(var(--brand-rgb), 0.2);">Add</button>
+                                <input class="form-input" id="new-label-input" onclick="event.stopPropagation()" onkeydown="if(event.key === 'Enter') handleAddNewLabel(event)" style="flex: 1; min-width: 0; height: 28px; font-size: 0.8rem; padding: 0 10px; border-radius: 8px;" type="text" placeholder="New label...">
+
+                                <button class="btn-primary" onclick="handleAddNewLabel(event)"
+                                        onmouseover="this.style.filter='brightness(1.15)'"
+                                        onmouseout="this.style.filter='none'"
+                                        style="height: 28px; padding: 0 14px; font-size: 0.8rem; width: auto; min-width: 50px; background-color: var(--brand) !important; border-color: var(--brand) !important; transition: filter 0.2s ease;">
+                                    Add
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -420,11 +426,11 @@
                     <button class="btn-toolbar active" id="btn-toggle-annotations" onclick="toggleAnnotationsVisibility(this)" title="Hide Annotations">
                         <i data-lucide="eye" size="14"></i>
                     </button>
-                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
+                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0;"></span>
                     <button class="btn-toolbar" title="Pan Left (Previous Time Segment)"><i data-lucide="chevron-left" size="14"></i></button>
                     <button class="btn-toolbar" title="Pan Right (Next Time Segment)"><i data-lucide="chevron-right" size="14"></i></button>
 
-                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 4px;"></span>
+                    <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0;"></span>
 
                     <div class="zoom-control-wrapper">
                         <button class="zoom-control-btn" title="Zoom In Proportionally">
@@ -452,7 +458,7 @@
 
                     <div style="flex: 1;"></div>
 
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; gap: 4px; align-items: center;">
                         <button class="btn-toolbar" onclick="switchRightPanel('ai-models')" title="Apply AI Models">
                             <i data-lucide="cpu" size="14"></i> AI Models
                         </button>
@@ -473,7 +479,7 @@
 
                     </div>
                 </div>
-                <div class="player-toolbar-bottom" style="display: flex; gap: 12px; align-items: center; margin-top: 4px;">
+                <div class="player-toolbar-bottom" style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
 
                     <div style="display: flex; gap: 4px; align-items: center;">
                         <button class="btn-toolbar" id="btn-play-toggle" onclick="togglePlayState()" style="padding: 4px 8px;" title="Play">
@@ -492,7 +498,7 @@
 
                     <div style="flex: 1;"></div>
 
-                    <div style="display: flex; align-items: center; gap: 8px;" title="Playback Speed">
+                    <div style="display: flex; align-items: center; gap: 4px;" title="Playback Speed">
                         <input max="1" min="0.05" oninput="this.style.setProperty('--p', ((this.value - this.min) / (this.max - this.min) * 100) + '%'); this.nextElementSibling.innerText = Number(this.value).toFixed(2) + 'x';" step="0.01" style="width: 200px; height: 8px; cursor: pointer; border-radius: 0; --p: 100%; border: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent; margin: 6px 0;"
                                type="range"
                                value="1">
@@ -783,6 +789,16 @@
                             <label class="form-label">Comments</label>
                             <input class="form-input" id="anno-comments" style="width:100%; min-width: 0;" type="text">
                         </div>
+
+                        <div id="anno-meta-info" style="grid-column: 1 / -1; display: none; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 10px; border-top: 1px dashed var(--border-color); font-size: 0.75rem;">
+                            <div style="display: flex; gap: 6px; align-items: center; color: var(--text-muted);">
+                                <span>By</span>
+                                <span id="anno-meta-creator" style="font-weight: 600; color: var(--text-main);"></span>
+                                <span id="anno-meta-type" style="padding: 2px 6px; background: var(--bg-capsule); border-radius: 4px; font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;"></span>
+                            </div>
+                            <span id="anno-meta-date" style="color: var(--text-muted); font-variant-numeric: tabular-nums;"></span>
+                        </div>
+
                     </div>
                 </div>
 
@@ -1220,13 +1236,17 @@
             closeAllMenus();
         }
 
-        // --- 新增：点击空白处关闭 工具栏的下拉框 (FFT 和 Channel) ---
+        // --- 新增：点击空白处关闭 工具栏的下拉框 (FFT, Channel 和 Label) ---
         if (!e.target.closest('.fft-dropdown-wrapper')) {
             const fftMenu = document.getElementById('fft-menu');
             if (fftMenu) fftMenu.classList.remove('active');
 
             const channelMenu = document.getElementById('channel-menu');
             if (channelMenu) channelMenu.classList.remove('active');
+
+            // 新增：点击空白处时，自动收起 Label 标签下拉菜单
+            const labelMenu = document.getElementById('audio-label-dropdown');
+            if (labelMenu) labelMenu.classList.remove('active');
         }
     });
 
@@ -1932,9 +1952,9 @@
                                  onclick="deleteCustomLabel('${label}', event)"></i>`;
             }
 
-            // 彻底移除高度和字号的强制内联覆盖，全盘继承 css 中的 fft-option 样式 (居中排版、0.85rem 字号、8px 圆角)
-            html += `<div class="fft-option ${isSelected}" style="position: relative; display: flex; align-items: center; justify-content: center;" onclick="changeAudioLabel('${label}', event)">
-                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 80%;">${label}</span>
+            // 修改下拉选项：移除单行截断，允许超长字符自动换行显示全部
+            html += `<div class="fft-option ${isSelected}" style="position: relative; display: flex; align-items: center; justify-content: center; padding: 6px 24px; min-height: 28px;" onclick="changeAudioLabel('${label}', event)">
+                        <span style="white-space:normal; word-break:break-word; text-align:center; line-height:1.2;">${label}</span>
                         ${deleteHtml}
                      </div>`;
         });
@@ -2269,7 +2289,7 @@
             draftBox.style.top = drawStartY + 'px';
             draftBox.style.width = '0px';
             draftBox.style.height = '0px';
-            document.getElementById('annotations-layer').appendChild(draftBox);
+            viewport.appendChild(draftBox);
 
             // 赋予初始悬停样式 (空字符串代表应用默认的蓝色)
             window.updateDraftBoxStyle('');
@@ -2747,6 +2767,12 @@
         document.getElementById('annotation-panel-title').textContent = 'New Annotation';
         document.getElementById('btn-save-annotation').setAttribute('onclick', 'saveNewAnnotation()');
         editingAnnoId = null;
+
+        // 新增：新建模式下隐藏底部的只读元数据信息
+        const metaInfo = document.getElementById('anno-meta-info');
+        if (metaInfo) {
+            metaInfo.style.display = 'none';
+        }
     };
 
     // 拦截取消和绘图事件，重置状态
@@ -2859,6 +2885,27 @@
         window.setAudioBooleanValue('anno-reference', anno.reference);
         document.getElementById('anno-comments').value = anno.comments || '';
 
+        // 新增：填充并显示底部的不可编辑元数据信息
+        const metaInfo = document.getElementById('anno-meta-info');
+        if (metaInfo) {
+            metaInfo.style.display = 'flex';
+
+            // 决定 By 后面显示的具体名称
+            let displayCreator = anno.creator_id;
+            if (!displayCreator) {
+                if (anno.creator_type === 'model') displayCreator = 'BirdNET v2.4';
+                else if (anno.creator_type === 'automated') displayCreator = 'Auto Script';
+                else displayCreator = 'Liudilong';
+            }
+
+            document.getElementById('anno-meta-creator').textContent = displayCreator;
+            document.getElementById('anno-meta-date').textContent = anno.creation_date || '2026-02-15 08:30:00';
+
+            // 恢复显示 type 属性
+            const typeSpan = document.getElementById('anno-meta-type');
+            if (typeSpan) typeSpan.textContent = anno.creator_type || 'Unknown';
+        }
+
         // 4. 在频谱图上生成可调整的激活框(draftBox)
         if (draftBox) {
             draftBox.remove();
@@ -2871,7 +2918,7 @@
         draftBox.style.zIndex = '105';
         draftBox.style.pointerEvents = 'none';
         draftBox.style.boxSizing = 'border-box';
-        document.getElementById('annotations-layer').appendChild(draftBox);
+        document.getElementById('spectrogram-viewport').appendChild(draftBox);
 
         // 读取该标注的类别，赋予完全一致的悬停高亮样式
         window.updateDraftBoxStyle(anno.soundscape_component || '');
