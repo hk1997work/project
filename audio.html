@@ -649,21 +649,23 @@
 
                     <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
 
-                        <div class="form-group" style="margin: 0; min-width: 0;">
-                            <label class="form-label">Min X</label>
-                            <input class="form-input" id="anno-min-x" oninput="window.updateDraftBoxFromInputs()" step="0.01" style="width: 100%; min-width: 0;" type="number">
-                        </div>
-                        <div class="form-group" style="margin: 0; min-width: 0;">
-                            <label class="form-label">Max X</label>
-                            <input class="form-input" id="anno-max-x" oninput="window.updateDraftBoxFromInputs()" step="0.01" style="width: 100%; min-width: 0;" type="number">
-                        </div>
-                        <div class="form-group" style="margin: 0; min-width: 0;">
-                            <label class="form-label">Min Y</label>
-                            <input class="form-input" id="anno-min-y" oninput="window.updateDraftBoxFromInputs()" step="1" style="width: 100%; min-width: 0;" type="number">
-                        </div>
-                        <div class="form-group" style="margin: 0; min-width: 0;">
-                            <label class="form-label">Max Y</label>
-                            <input class="form-input" id="anno-max-y" oninput="window.updateDraftBoxFromInputs()" step="1" style="width: 100%; min-width: 0;" type="number">
+                        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+                            <div class="form-group" style="margin: 0; min-width: 0;">
+                                <label class="form-label">Min X</label>
+                                <input class="form-input" id="anno-min-x" oninput="window.updateDraftBoxFromInputs()" step="0.01" style="width: 100%; min-width: 0;" type="number">
+                            </div>
+                            <div class="form-group" style="margin: 0; min-width: 0;">
+                                <label class="form-label">Max X</label>
+                                <input class="form-input" id="anno-max-x" oninput="window.updateDraftBoxFromInputs()" step="0.01" style="width: 100%; min-width: 0;" type="number">
+                            </div>
+                            <div class="form-group" style="margin: 0; min-width: 0;">
+                                <label class="form-label">Min Y</label>
+                                <input class="form-input" id="anno-min-y" oninput="window.updateDraftBoxFromInputs()" step="1" style="width: 100%; min-width: 0;" type="number">
+                            </div>
+                            <div class="form-group" style="margin: 0; min-width: 0;">
+                                <label class="form-label">Max Y</label>
+                                <input class="form-input" id="anno-max-y" oninput="window.updateDraftBoxFromInputs()" step="1" style="width: 100%; min-width: 0;" type="number">
+                            </div>
                         </div>
                         <div class="form-group" style="margin: 0; min-width: 0;">
                             <label class="form-label">Soundscape</label>
@@ -770,20 +772,26 @@
                                 <i data-lucide="x" id="icon-bool-anno-reference" size="16"></i>
                             </button>
                         </div>
-                        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
-                            <div class="form-group" style="margin: 0; min-width: 0;">
-                                <label class="form-label">Comments</label>
-                                <input class="form-input" id="anno-comments" style="width:100%; min-width: 0;" type="text">
+
+                        <div class="form-group" style="margin: 0; min-width: 0;">
+                            <label class="form-label">Comments</label>
+                            <input class="form-input" id="anno-comments" style="width:100%; min-width: 0;" type="text">
+                        </div>
+
+                        <div id="anno-meta-info" style="display: none; grid-column: 2; flex-direction: column; align-items: flex-end; justify-content: flex-end; gap: 6px; padding-bottom: 2px; margin-top: auto;">
+
+                            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                                <span id="anno-meta-type" style="padding: 2px 6px; background: var(--bg-surface-secondary); color: var(--text-secondary); border-radius: 4px; font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;"></span>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                    By <span id="anno-meta-creator" style="font-weight: 600; color: var(--text-main);"></span>
+                                </div>
                             </div>
 
-                            <div id="anno-meta-info" style="display: none; flex-direction: column; align-items: flex-end; justify-content: flex-end; gap: 4px; font-size: 0.75rem; padding-bottom: 2px;">
-                                <div style="display: flex; gap: 6px; align-items: center; color: var(--text-muted);">
-                                    <span>By</span>
-                                    <span id="anno-meta-creator" style="font-weight: 600; color: var(--text-main);"></span>
-                                    <span id="anno-meta-type" style="padding: 2px 6px; background: var(--bg-capsule); border-radius: 4px; font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;"></span>
-                                </div>
-                                <span id="anno-meta-date" style="color: var(--text-muted); font-variant-numeric: tabular-nums;"></span>
+                            <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                                <span id="anno-meta-confidence" style="display: none; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;"></span>
+                                <span id="anno-meta-date" style="font-size: 0.75rem; color: var(--text-muted); font-variant-numeric: tabular-nums;"></span>
                             </div>
+
                         </div>
 
                     </div>
@@ -1223,6 +1231,7 @@
             animal_sound_type: aType,
             confidence: creatorType === 'user' ? null : parseFloat((0.5 + Math.random() * 0.49).toFixed(2)),
             uncertain: Math.random() > 0.8,
+            has_task: Math.random() > 0.8, // ★ 新增：让 20% 的框随机带上 Task 标记
 
             // 【核心修复】：同步保存开关状态
             distance_not_estimable: isNotEst,
@@ -1231,7 +1240,9 @@
 
             individual_num: isBio ? Math.floor(Math.random() * 5) + 1 : null,
             reference: Math.random() > 0.7,
-            comments: ["Clear", "Noisy", "Overlapping", "Needs review", ""][Math.floor(Math.random() * 5)]
+            comments: ["Clear", "Noisy", "Overlapping", "Needs review", ""][Math.floor(Math.random() * 5)],
+            // 新增：模拟是否给当前用户分配了Task（20%概率有Task）
+            has_task: Math.random() > 0.8
         };
     });
 
@@ -1521,6 +1532,15 @@
                         else if (val === false) val = `<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; box-shadow:0 2px 5px rgba(239,68,68,0.3); display:inline-block;">False</span>`;
                         else val = "";
                     }
+
+                    // 新增：如果是 ID 列，且该标注分配了任务，增加标准胶囊标签（并靠右对齐）
+                    if (col.key === 'id' && row.has_task) {
+                        val = `<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;">
+                                   <span>${val}</span>
+                                   <span style="background: var(--brand); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(var(--brand-rgb), 0.3); display: inline-flex; flex-shrink: 0;" title="Task Assigned">Task</span>
+                               </div>`;
+                    }
+
                     // 核心修复：移除了针对 taxon_id 的特殊 if 判断，让它作为普通纯文本显示
                     bodyHtml += `<td>${val}</td>`;
                 });
@@ -1573,11 +1593,28 @@
             if (left + width > 100) width = 100 - left;
             if (bottom + height > 100) height = 100 - bottom;
 
-            // 核心修复：将旧的 sound_id 替换为 soundscape_component，恢复彩色标注
+            // 动态色彩编码
             let color = '#3b82f6';
             if (anno.soundscape_component === 'Biophony') color = '#10b981';
             else if (anno.soundscape_component === 'Anthropophony') color = '#ef4444';
             else if (anno.soundscape_component === 'Geophony') color = '#f59e0b';
+
+            // ★ 新增：判断该标注是否有 Review 历史记录
+            let hasReview = window.mockReviews && window.mockReviews[anno.id] && window.mockReviews[anno.id].length > 0;
+            let borderStyle = hasReview ? 'solid' : 'dashed';
+
+            // ★ 修复：缩小三角尺寸到 10px
+            let taskBadgeHtml = '';
+            if (anno.has_task) {
+                taskBadgeHtml = `
+                <svg viewBox="0 0 100 100" preserveAspectRatio="xMinYMin meet" style="position: absolute; top: 0; left: 0; width: 8px; height: 8px; max-width: 100%; max-height: 100%; z-index: 10; pointer-events: none;">
+                    <polygon points="0,0 100,0 0,100" fill="${color}" />
+                </svg>`;
+            }
+
+            // ★ 新增：鼠标悬停提示文本 (包含 Task 信息)
+            let titleText = `${anno.soundscape_component} - ${anno.animal_sound_type} (ID: ${anno.id})`;
+            if (anno.has_task) titleText += ' [TASK ASSIGNED]';
 
             html += `<div class="annotation-box" data-id="${anno.id}" data-color="${color}" style="
                 position: absolute;
@@ -1585,9 +1622,9 @@
                 bottom: ${bottom}%;
                 width: ${width}%;
                 height: ${height}%;
-                min-width: 6px;   /* ★ 核心修复：强制最小物理宽度，防止因时长过短而不可见 */
+                min-width: 6px;   /* 强制最小物理宽度 */
                 min-height: 6px;
-                border: 2px solid ${color};
+                border: 2px ${borderStyle} ${color};
                 background-color: ${color}33;
                 box-shadow: 0 0 0 1px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.5);
                 pointer-events: auto;
@@ -1595,10 +1632,11 @@
                 border-radius: 2px;
                 box-sizing: border-box;
                 transition: all 0.15s ease;
-            " title="${anno.soundscape_component} - ${anno.animal_sound_type} (ID: ${anno.id})"
+            " title="${titleText}"
               onclick="handleBoxClick(${anno.id}, event)"
               onmouseenter="syncHoverState(${anno.id}, true)"
               onmouseleave="syncHoverState(${anno.id}, false)">
+                ${taskBadgeHtml}
             </div>`;
         });
 
@@ -2106,18 +2144,27 @@
     });
 
     // === 新增：同步悬停样式的控制器 ===
-    window.updateDraftBoxStyle = function (component) {
+    window.updateDraftBoxStyle = function (component, isReviewed = false) {
         if (!draftBox) return;
         let color = '#3b82f6'; // 默认颜色(Other / 未选择)
         if (component === 'Biophony') color = '#10b981';
         else if (component === 'Anthropophony') color = '#ef4444';
         else if (component === 'Geophony') color = '#f59e0b';
 
+        // 核心修改：根据是否被 review 过，应用实线或虚线
+        const borderStyle = isReviewed ? 'solid' : 'dashed';
+
         // 完全复刻 syncHoverState 的高亮样式
         draftBox.style.backgroundColor = `${color}66`; // 40% 透明度
-        draftBox.style.border = '2px solid #ffffff';
+        draftBox.style.border = `2px ${borderStyle} #ffffff`;
         draftBox.style.boxShadow = '0 0 0 1.5px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,0,0,0.5)';
         draftBox.style.borderRadius = '2px';
+
+        // 同步更新 draftBox 里 SVG 三角形的颜色
+        const polygon = draftBox.querySelector('svg polygon');
+        if (polygon) {
+            polygon.setAttribute('fill', color);
+        }
     };
 
     window.selectAudioDropdown = function (key, value, element) {
@@ -2134,8 +2181,14 @@
         if (key === 'anno-soundscape') {
             window.updateSoundTypeOptionsAudio();
             window.toggleBiophonyFields(value);
-            // 切换类型时，选中框的颜色也跟着同步改变
-            window.updateDraftBoxStyle(value);
+
+            // 获取当前处于编辑状态的框的 review 状态
+            let isRev = false;
+            if (typeof editingAnnoId !== 'undefined' && editingAnnoId && window.mockReviews && window.mockReviews[editingAnnoId] && window.mockReviews[editingAnnoId].length > 0) {
+                isRev = true;
+            }
+            // 切换类型时，选中框的颜色和虚实线跟着同步改变
+            window.updateDraftBoxStyle(value, isRev);
         } else if (key === 'anno-taxon') {
             window.updateAnimalSoundTypeOptionsAudio();
         }
@@ -2790,6 +2843,10 @@
         const metaInfo = document.getElementById('anno-meta-info');
         if (metaInfo) metaInfo.style.display = 'none';
 
+        // 确保新建时也隐藏置信度标签
+        const confSpan = document.getElementById('anno-meta-confidence');
+        if (confSpan) confSpan.style.display = 'none';
+
         // ★ 新增：新建模式下隐藏 Review 模块
         const reviewSection = document.getElementById('annotation-review-section');
         if (reviewSection) reviewSection.style.display = 'none';
@@ -2904,25 +2961,53 @@
         window.setAudioBooleanValue('anno-reference', anno.reference);
         document.getElementById('anno-comments').value = anno.comments || '';
 
-        // 新增：填充并显示底部的不可编辑元数据信息
+        // 填充并显示底部的不可编辑元数据信息
         const metaInfo = document.getElementById('anno-meta-info');
         if (metaInfo) {
             metaInfo.style.display = 'flex';
 
-            // 决定 By 后面显示的具体名称
-            let displayCreator = anno.creator_id;
-            if (!displayCreator) {
-                if (anno.creator_type === 'model') displayCreator = 'BirdNET v2.4';
-                else if (anno.creator_type === 'automated') displayCreator = 'Auto Script';
-                else displayCreator = 'Liudilong';
-            }
+            // 1. 创建人：更正为始终显示用户名 (当前操作用户或录入用户)
+            document.getElementById('anno-meta-creator').textContent = anno.creator_id || 'Liudilong';
 
-            document.getElementById('anno-meta-creator').textContent = displayCreator;
+            // 2. 创建时间
             document.getElementById('anno-meta-date').textContent = anno.creation_date || '2026-02-15 08:30:00';
 
-            // 恢复显示 type 属性
+            // 3. 创建方式：更正为具体的 AI 模型版本或脚本名称
             const typeSpan = document.getElementById('anno-meta-type');
-            if (typeSpan) typeSpan.textContent = anno.creator_type || 'Unknown';
+            if (typeSpan) {
+                let typeLabel = 'MANUAL';
+                if (anno.creator_type === 'model') {
+                    // 模拟真实场景：根据不同特征判断是 BirdNET 还是 BET
+                    typeLabel = (anno.confidence && anno.confidence > 0.85) ? 'BirdNET v2.4' : 'BET v1.0';
+                } else if (anno.creator_type === 'automated') {
+                    typeLabel = 'Auto Script';
+                }
+                typeSpan.textContent = typeLabel;
+            }
+
+            // 4. 置信度：动态色彩编码 (柔和微光样式)
+            const confSpan = document.getElementById('anno-meta-confidence');
+            if (confSpan) {
+                if (anno.creator_type !== 'user' && anno.confidence !== null && anno.confidence !== undefined) {
+                    const conf = parseFloat(anno.confidence);
+                    confSpan.textContent = `CONF: ${conf.toFixed(2)}`;
+                    confSpan.style.display = 'inline-block';
+
+                    // 动态红绿灯颜色判断
+                    if (conf >= 0.8) {
+                        confSpan.style.color = '#10b981';
+                        confSpan.style.background = 'rgba(16, 185, 129, 0.12)';
+                    } else if (conf >= 0.4) {
+                        confSpan.style.color = '#f59e0b';
+                        confSpan.style.background = 'rgba(245, 158, 11, 0.12)';
+                    } else {
+                        confSpan.style.color = '#ef4444';
+                        confSpan.style.background = 'rgba(239, 68, 68, 0.12)';
+                    }
+                } else {
+                    confSpan.style.display = 'none';
+                }
+            }
         }
 
         // 4. 在频谱图上生成可调整的激活框(draftBox)
@@ -2937,10 +3022,25 @@
         draftBox.style.zIndex = '105';
         draftBox.style.pointerEvents = 'none';
         draftBox.style.boxSizing = 'border-box';
+
+        // ★ 修复：同步将选中框的三角形也缩小到 10px
+        if (anno.has_task) {
+            let color = '#3b82f6';
+            if (anno.soundscape_component === 'Biophony') color = '#10b981';
+            else if (anno.soundscape_component === 'Anthropophony') color = '#ef4444';
+            else if (anno.soundscape_component === 'Geophony') color = '#f59e0b';
+
+            draftBox.innerHTML = `
+            <svg viewBox="0 0 100 100" preserveAspectRatio="xMinYMin meet" style="position: absolute; top: 0; left: 0; width: 8px; height: 8px; max-width: 100%; max-height: 100%; z-index: 10; pointer-events: none;">
+                <polygon points="0,0 100,0 0,100" fill="${color}" />
+            </svg>`;
+        }
+
         document.getElementById('spectrogram-viewport').appendChild(draftBox);
 
-        // 读取该标注的类别，赋予完全一致的悬停高亮样式
-        window.updateDraftBoxStyle(anno.soundscape_component || '');
+        // 读取该标注的类别与审核状态，赋予完全一致的悬停高亮样式
+        let hasReview = window.mockReviews && window.mockReviews[anno.id] && window.mockReviews[anno.id].length > 0;
+        window.updateDraftBoxStyle(anno.soundscape_component || '', hasReview);
 
         currentDraftData = {min_x: anno.min_x, max_x: anno.max_x, min_y: anno.min_y, max_y: anno.max_y};
         window.updateDraftBoxFromInputs();
