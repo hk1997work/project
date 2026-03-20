@@ -1573,8 +1573,6 @@
         if (!layer) return;
 
         const data = filteredData || [];
-
-        // 核心修复：对齐 UI 上的总时长为 300s，确保画出的框能被正确显示
         const MAX_TIME = 300;
         const MAX_FREQ = 24000;
 
@@ -1599,33 +1597,32 @@
             else if (anno.soundscape_component === 'Anthropophony') color = '#ef4444';
             else if (anno.soundscape_component === 'Geophony') color = '#f59e0b';
 
-            // ★ 新增：判断该标注是否有 Review 历史记录
+            // 判断虚实线 (审核状态)
             let hasReview = window.mockReviews && window.mockReviews[anno.id] && window.mockReviews[anno.id].length > 0;
             let borderStyle = hasReview ? 'solid' : 'dashed';
 
-            // ★ 修复：缩小三角尺寸到 10px
-            let taskBadgeHtml = '';
+            // ★ 全新：工程斜纹背景 (任务状态)
+            // 如果没有任务，使用默认的 20% 透明度纯色 (#RRGGBB33)
+            let bgStyle = `background: ${color}33;`;
             if (anno.has_task) {
-                taskBadgeHtml = `
-                <svg viewBox="0 0 100 100" preserveAspectRatio="xMinYMin meet" style="position: absolute; top: 0; left: 0; width: 8px; height: 8px; max-width: 100%; max-height: 100%; z-index: 10; pointer-events: none;">
-                    <polygon points="0,0 100,0 0,100" fill="${color}" />
-                </svg>`;
+                // 如果有任务，使用 45度角交替的斜纹 (10% 透明度 和 40% 透明度交替，条纹宽 6px)
+                bgStyle = `background: repeating-linear-gradient(-45deg, ${color}1A, ${color}1A 6px, ${color}66 6px, ${color}66 12px);`;
             }
 
-            // ★ 新增：鼠标悬停提示文本 (包含 Task 信息)
             let titleText = `${anno.soundscape_component} - ${anno.animal_sound_type} (ID: ${anno.id})`;
             if (anno.has_task) titleText += ' [TASK ASSIGNED]';
 
-            html += `<div class="annotation-box" data-id="${anno.id}" data-color="${color}" style="
+            // 注意这里加入了 data-has-task 属性，方便悬停时读取
+            html += `<div class="annotation-box" data-id="${anno.id}" data-color="${color}" data-has-task="${anno.has_task}" style="
                 position: absolute;
                 left: ${left}%;
                 bottom: ${bottom}%;
                 width: ${width}%;
                 height: ${height}%;
-                min-width: 6px;   /* 强制最小物理宽度 */
+                min-width: 6px;
                 min-height: 6px;
                 border: 2px ${borderStyle} ${color};
-                background-color: ${color}33;
+                ${bgStyle}
                 box-shadow: 0 0 0 1px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.5);
                 pointer-events: auto;
                 cursor: pointer;
@@ -1636,7 +1633,6 @@
               onclick="handleBoxClick(${anno.id}, event)"
               onmouseenter="syncHoverState(${anno.id}, true)"
               onmouseleave="syncHoverState(${anno.id}, false)">
-                ${taskBadgeHtml}
             </div>`;
         });
 
@@ -1672,27 +1668,33 @@
         // 1. 同步表格行的高亮
         const tr = document.querySelector(`tr[data-id="${id}"]`);
         if (tr) {
-            if (isHovering) {
-                tr.classList.add('hover-sync');
-            } else {
-                tr.classList.remove('hover-sync');
-            }
+            if (isHovering) tr.classList.add('hover-sync');
+            else tr.classList.remove('hover-sync');
         }
 
-        // 2. 同步频谱图标注框的高亮 (专业/扁平化风格)
+        // 2. 同步频谱图标注框的高亮
         const box = document.querySelector(`.annotation-box[data-id="${id}"]`);
         if (box) {
-            // 从 DOM 中读取该框独有的配色
             const color = box.getAttribute('data-color');
+            const hasTask = box.getAttribute('data-has-task') === 'true'; // 读取任务状态
+
             if (isHovering) {
-                // 悬停时：加深底色，边框变纯白，增强外层的黑色硬描边
-                box.style.backgroundColor = `${color}66`; // 40% 透明度
+                // 悬停时：整体提亮加深
+                if (hasTask) {
+                    box.style.background = `repeating-linear-gradient(-45deg, ${color}33, ${color}33 6px, ${color}99 6px, ${color}99 12px)`;
+                } else {
+                    box.style.background = `${color}66`;
+                }
                 box.style.borderColor = '#ffffff';
                 box.style.boxShadow = `0 0 0 1.5px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,0,0,0.5)`;
                 box.style.zIndex = '50';
             } else {
-                // 恢复默认专业样式
-                box.style.backgroundColor = `${color}33`;
+                // 恢复默认
+                if (hasTask) {
+                    box.style.background = `repeating-linear-gradient(-45deg, ${color}1A, ${color}1A 6px, ${color}66 6px, ${color}66 12px)`;
+                } else {
+                    box.style.background = `${color}33`;
+                }
                 box.style.borderColor = color;
                 box.style.boxShadow = `0 0 0 1px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.5)`;
                 box.style.zIndex = '1';
@@ -2144,27 +2146,29 @@
     });
 
     // === 新增：同步悬停样式的控制器 ===
-    window.updateDraftBoxStyle = function (component, isReviewed = false) {
+    // 增加 hasTask 参数
+    window.updateDraftBoxStyle = function (component, isReviewed = false, hasTask = false) {
         if (!draftBox) return;
-        let color = '#3b82f6'; // 默认颜色(Other / 未选择)
+        let color = '#3b82f6';
         if (component === 'Biophony') color = '#10b981';
         else if (component === 'Anthropophony') color = '#ef4444';
         else if (component === 'Geophony') color = '#f59e0b';
 
-        // 核心修改：根据是否被 review 过，应用实线或虚线
         const borderStyle = isReviewed ? 'solid' : 'dashed';
 
-        // 完全复刻 syncHoverState 的高亮样式
-        draftBox.style.backgroundColor = `${color}66`; // 40% 透明度
+        // ★ 应用对应的底色（平滑 or 斜纹）
+        if (hasTask) {
+            draftBox.style.background = `repeating-linear-gradient(-45deg, ${color}33, ${color}33 6px, ${color}99 6px, ${color}99 12px)`;
+        } else {
+            draftBox.style.background = `${color}66`;
+        }
+
         draftBox.style.border = `2px ${borderStyle} #ffffff`;
         draftBox.style.boxShadow = '0 0 0 1.5px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,0,0,0.5)';
         draftBox.style.borderRadius = '2px';
 
-        // 同步更新 draftBox 里 SVG 三角形的颜色
-        const polygon = draftBox.querySelector('svg polygon');
-        if (polygon) {
-            polygon.setAttribute('fill', color);
-        }
+        // 清理可能残留的 SVG
+        draftBox.innerHTML = '';
     };
 
     window.selectAudioDropdown = function (key, value, element) {
@@ -2363,7 +2367,7 @@
             viewport.appendChild(draftBox);
 
             // 赋予初始悬停样式 (空字符串代表应用默认的蓝色)
-            window.updateDraftBoxStyle('');
+            window.updateDraftBoxStyle('', false, false);
 
             document.getElementById('anno-soundscape').value = '';
             document.getElementById('span-anno-soundscape').textContent = '';
@@ -3029,11 +3033,6 @@
             if (anno.soundscape_component === 'Biophony') color = '#10b981';
             else if (anno.soundscape_component === 'Anthropophony') color = '#ef4444';
             else if (anno.soundscape_component === 'Geophony') color = '#f59e0b';
-
-            draftBox.innerHTML = `
-            <svg viewBox="0 0 100 100" preserveAspectRatio="xMinYMin meet" style="position: absolute; top: 0; left: 0; width: 8px; height: 8px; max-width: 100%; max-height: 100%; z-index: 10; pointer-events: none;">
-                <polygon points="0,0 100,0 0,100" fill="${color}" />
-            </svg>`;
         }
 
         document.getElementById('spectrogram-viewport').appendChild(draftBox);
@@ -3050,6 +3049,10 @@
         renderReviewHistory(id);
 
         switchRightPanel('new-annotation');
+
+        // 读取该标注的类别、审核状态与任务状态
+        let hasReview = window.mockReviews && window.mockReviews[anno.id] && window.mockReviews[anno.id].length > 0;
+        window.updateDraftBoxStyle(anno.soundscape_component || '', hasReview, anno.has_task);
     };
 
     // 保存编辑修改
