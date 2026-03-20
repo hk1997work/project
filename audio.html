@@ -788,27 +788,27 @@
                         </div>
 
                     </div>
-                    <div id="annotation-review-section" style="display: none; grid-template-columns: 1fr 1fr; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; gap: 16px; align-items: start; max-height: 450px; overflow-y: auto; padding-right: 4px;">
+                    <div id="annotation-review-section" style="display: none; grid-template-columns: 1fr 1fr; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; gap: 16px; align-items: stretch; flex: 1; min-height: 0;">
 
                         <div id="review-left-panel" style="display: flex; flex-direction: column; min-width: 0; grid-column: 1 / -1;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; min-height: 28px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; min-height: 28px; flex-shrink: 0;">
                                 <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Review</div>
                                 <button id="btn-edit-my-review" class="btn-primary" onclick="enableReviewEditMode()" style="display: none; height: 28px; padding: 0 24px; font-size: 0.8rem; border-radius: 14px;">Edit</button>
                             </div>
-                            <div id="review-history-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: start;">
+                            <div id="review-history-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: start; flex: 1; overflow-y: auto; padding-bottom: 8px;">
                             </div>
                         </div>
 
                         <div id="review-right-panel" style="display: flex; flex-direction: column; gap: 16px; padding-left: 16px; border-left: 1px solid var(--border-color); box-sizing: border-box; grid-column: 2;">
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0;">
                                 <button class="review-status-btn" data-status="accept" onclick="selectReviewStatus('accept')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #10b981; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Accept</button>
                                 <button class="review-status-btn" data-status="revise" onclick="selectReviewStatus('revise')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #f59e0b; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Revise</button>
                                 <button class="review-status-btn" data-status="reject" onclick="selectReviewStatus('reject')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #ef4444; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Reject</button>
                                 <button class="review-status-btn" data-status="uncertain" onclick="selectReviewStatus('uncertain')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #6b7280; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Uncertain</button>
                             </div>
 
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
                                 <div class="form-group" id="review-taxon-group" style="display: none; margin: 0; min-width: 0; position: relative;">
                                     <label class="form-label">Taxon</label>
                                     <input class="form-input" id="review-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'review-taxon')" onclick="handleAudioTaxonSearch(this.value, 'review-taxon')" style="width: 100%; min-width: 0;" type="text" autocomplete="off">
@@ -821,7 +821,7 @@
                                 </div>
                             </div>
 
-                            <div style="display: flex; justify-content: flex-end; margin-top: auto;">
+                            <div style="display: flex; justify-content: flex-end;">
                                 <button class="btn-primary" id="btn-submit-review" onclick="submitReview()" style="height: 28px; padding: 0 24px; font-size: 0.8rem; border-radius: 14px;">Submit</button>
                             </div>
                         </div>
@@ -3162,7 +3162,7 @@
         });
     });
     // ======= 初始化 Review 表单（判断是新建还是修改） =======
-    window.setupReviewPanel = function(annoId) {
+    window.setupReviewPanel = function (annoId) {
         const reviewSection = document.getElementById('annotation-review-section');
         if (!reviewSection) return;
         // ★ 注意：外层改为了 grid
@@ -3236,7 +3236,7 @@
     };
 
     // ======= 激活编辑模式 =======
-    window.enableReviewEditMode = function() {
+    window.enableReviewEditMode = function () {
         const rightPanel = document.getElementById('review-right-panel');
         const leftPanel = document.getElementById('review-left-panel');
         const btnEdit = document.getElementById('btn-edit-my-review');
@@ -3255,7 +3255,7 @@
         }
     };
 
-    window.selectReviewStatus = function(status) {
+    window.selectReviewStatus = function (status) {
         currentReviewStatus = status;
 
         // 1. 更新四个按钮的选中/未选中视觉状态
@@ -3300,7 +3300,7 @@
         }
     };
 
-    window.submitReview = function() {
+    window.submitReview = function () {
         if (!editingAnnoId) return;
         if (!currentReviewStatus) {
             alert('Please select a review status first.');
@@ -3356,7 +3356,7 @@
         renderCrudTable();
     };
 
-    window.renderReviewHistory = function(annoId) {
+    window.renderReviewHistory = function (annoId) {
         const container = document.getElementById('review-history-list');
         const reviews = window.mockReviews[annoId] || [];
 
