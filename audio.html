@@ -638,7 +638,7 @@
                     <span id="annotation-panel-title" style="margin-left: 2px;">New Annotation</span>
                 </div>
 
-                <div style="flex: 1; overflow-y: auto; padding-right: 4px; padding-bottom: 8px; margin-top: 8px; display: flex; flex-direction: column;">
+                <div style="flex: 1; overflow-y: auto; padding-right: 4px; padding-bottom: 8px; margin-top: 8px; display: flex; flex-direction: column; min-height: 0;">
 
                     <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; flex-shrink: 0;">
 
@@ -790,16 +790,17 @@
                     </div>
                     <div id="annotation-review-section" style="display: none; grid-template-columns: 1fr 1fr; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; gap: 16px; align-items: stretch; flex: 1; min-height: 0;">
 
-                        <div id="review-left-panel" style="display: flex; flex-direction: column; min-width: 0; grid-column: 1 / -1;">
+                        <div id="review-left-panel" style="display: flex; flex-direction: column; min-width: 0; grid-column: 1 / -1; height: 100%;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; min-height: 28px; flex-shrink: 0;">
                                 <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Review</div>
                                 <button id="btn-edit-my-review" class="btn-primary" onclick="enableReviewEditMode()" style="display: none; height: 28px; padding: 0 24px; font-size: 0.8rem; border-radius: 14px;">Edit</button>
                             </div>
-                            <div id="review-history-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: start; flex: 1; overflow-y: auto; padding-bottom: 8px;">
+
+                            <div id="review-history-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; padding-bottom: 12px;">
                             </div>
                         </div>
 
-                        <div id="review-right-panel" style="display: flex; flex-direction: column; gap: 16px; padding-left: 16px; border-left: 1px solid var(--border-color); box-sizing: border-box; grid-column: 2;">
+                        <div id="review-right-panel" style="display: flex; flex-direction: column; gap: 16px; padding-left: 16px; border-left: 1px solid var(--border-color); box-sizing: border-box; grid-column: 2; flex-shrink: 0;">
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0;">
                                 <button class="review-status-btn" data-status="accept" onclick="selectReviewStatus('accept')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #10b981; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Accept</button>
@@ -812,7 +813,7 @@
                                 <div class="form-group" id="review-taxon-group" style="display: none; margin: 0; min-width: 0; position: relative;">
                                     <label class="form-label">Taxon</label>
                                     <input class="form-input" id="review-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'review-taxon')" onclick="handleAudioTaxonSearch(this.value, 'review-taxon')" style="width: 100%; min-width: 0;" type="text" autocomplete="off">
-                                    <div class="form-select-dropdown" id="dropdown-review-taxon" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 150px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
+                                    <div class="form-select-dropdown" id="dropdown-review-taxon" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 150px; overflow-y: auto; z-index: 100;"></div>
                                 </div>
 
                                 <div class="form-group" style="margin: 0; min-width: 0;">
@@ -821,7 +822,7 @@
                                 </div>
                             </div>
 
-                            <div style="display: flex; justify-content: flex-end;">
+                            <div style="display: flex; justify-content: flex-end; padding-top: 8px; flex-shrink: 0;">
                                 <button class="btn-primary" id="btn-submit-review" onclick="submitReview()" style="height: 28px; padding: 0 24px; font-size: 0.8rem; border-radius: 14px;">Submit</button>
                             </div>
                         </div>
@@ -3094,8 +3095,18 @@
     window.mockReviews = {
         1: [
             {reviewer: 'System', status: 'uncertain', taxon: '', note: 'Low confidence score', created: '2026-02-16 09:00:00'},
-            {reviewer: 'Liudilong', status: 'revise', taxon: 'Chloropsis hardwickii', note: 'I am pretty sure about this one.', created: '2026-02-16 10:30:00'}
-        ]
+            {reviewer: 'Liudilong', status: 'revise', taxon: 'Chloropsis hardwickii', note: 'I am pretty sure about this one.', created: '2026-02-16 10:30:00'},
+            {reviewer: 'Admin', status: 'accept', taxon: '', note: 'Looks good.', created: '2026-03-01 14:00:00'},
+            {reviewer: 'User_B', status: 'revise', taxon: 'Aves', note: 'Check frequency range.', created: '2026-03-01 15:30:00'},
+            {reviewer: 'Admin', status: 'accept', taxon: '', note: 'Looks good.', created: '2026-03-01 14:00:00'},
+            {reviewer: 'User_B', status: 'revise', taxon: 'Aves', note: 'Check frequency range.', created: '2026-03-01 15:30:00'},
+            {reviewer: 'Admin', status: 'accept', taxon: '', note: 'Looks good.', created: '2026-03-01 14:00:00'},
+            {reviewer: 'User_B', status: 'revise', taxon: 'Aves', note: 'Check frequency range.', created: '2026-03-01 15:30:00'},
+            {reviewer: 'Admin', status: 'accept', taxon: '', note: 'Looks good.', created: '2026-03-01 14:00:00'},
+            {reviewer: 'User_B', status: 'revise', taxon: 'Aves', note: 'Check frequency range.', created: '2026-03-01 15:30:00'},
+            {reviewer: 'Admin', status: 'accept', taxon: '', note: 'Looks good.', created: '2026-03-01 14:00:00'},
+            {reviewer: 'User_B', status: 'revise', taxon: 'Aves', note: 'Check frequency range.', created: '2026-03-01 15:30:00'}
+        ],
     };
 
     const statusColors = {
