@@ -818,7 +818,7 @@
                                 <input class="form-input" id="review-note" style="width: 100%; min-width: 0; height: 28px;" type="text">
                             </div>
 
-                            <button class="btn-primary" onclick="submitReview()" style="height: 28px; padding: 0 16px; flex-shrink: 0; background-color: var(--brand); border-color: var(--brand);">Submit</button>
+                            <button class="btn-primary" id="btn-submit-review" onclick="submitReview()" style="height: 28px; padding: 0 16px; flex-shrink: 0; background-color: var(--brand); border-color: var(--brand); transition: all 0.2s;">Submit</button>
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -3037,20 +3037,14 @@
 
         document.getElementById('spectrogram-viewport').appendChild(draftBox);
 
-        // 读取该标注的类别与审核状态，赋予完全一致的悬停高亮样式
-        let hasReview = window.mockReviews && window.mockReviews[anno.id] && window.mockReviews[anno.id].length > 0;
-        window.updateDraftBoxStyle(anno.soundscape_component || '', hasReview);
-
         currentDraftData = {min_x: anno.min_x, max_x: anno.max_x, min_y: anno.min_y, max_y: anno.max_y};
         window.updateDraftBoxFromInputs();
 
-        const reviewSection = document.getElementById('annotation-review-section');
-        if (reviewSection) reviewSection.style.display = 'flex';
-        renderReviewHistory(id);
-
         switchRightPanel('new-annotation');
 
-        // 读取该标注的类别、审核状态与任务状态
+        // ★ 核心：调用全新的 Review 面板加载逻辑
+        window.setupReviewPanel(id);
+
         let hasReview = window.mockReviews && window.mockReviews[anno.id] && window.mockReviews[anno.id].length > 0;
         window.updateDraftBoxStyle(anno.soundscape_component || '', hasReview, anno.has_task);
     };
@@ -3193,12 +3187,96 @@
         });
 
         const taxonGroup = document.getElementById('review-taxon-group');
-        const dropdown = document.getElementById('review-taxon-dropdown');
+        const dropdown = document.getElementById('dropdown-review-taxon'); // ★ 修复 ID
         if (status === 'revise') {
             taxonGroup.style.display = 'block';
         } else {
             taxonGroup.style.display = 'none';
             document.getElementById('review-taxon-input').value = '';
+            if (dropdown) dropdown.style.display = 'none';
+        }
+    };
+
+    // ================== Review 功能逻辑 ==================
+    let currentReviewStatus = null;
+    const CURRENT_USER = 'Liudilong'; // 当前操作的用户
+
+    // 模拟的 Review 数据库 (key 为 annotation 的 id)
+    window.mockReviews = {
+        1: [
+            {reviewer: 'System', status: 'uncertain', taxon: '', note: 'Low confidence score', created: '2026-02-16 09:00:00'},
+            {reviewer: 'Liudilong', status: 'revise', taxon: 'Chloropsis hardwickii', note: 'I am pretty sure about this one.', created: '2026-02-16 10:30:00'}
+        ]
+    };
+
+    const statusColors = {
+        'accept': '#10b981',
+        'revise': '#f59e0b',
+        'reject': '#ef4444',
+        'uncertain': '#6b7280'
+    };
+
+    // ======= 初始化 Review 表单（判断是新建还是修改） =======
+    window.setupReviewPanel = function(annoId) {
+        const reviewSection = document.getElementById('annotation-review-section');
+        if (!reviewSection) return;
+        reviewSection.style.display = 'flex';
+
+        const btnSubmit = document.getElementById('btn-submit-review');
+        const reviews = window.mockReviews[annoId] || [];
+
+        // 查找当前用户是否已经 review 过这个标注
+        const myExistingReview = reviews.find(r => r.reviewer === CURRENT_USER);
+
+        if (myExistingReview) {
+            // 1. 如果已评审过：反填数据，进入修改模式
+            window.selectReviewStatus(myExistingReview.status);
+            document.getElementById('review-taxon-input').value = myExistingReview.taxon || '';
+            document.getElementById('review-note').value = myExistingReview.note || '';
+            if (btnSubmit) btnSubmit.textContent = 'Update';
+        } else {
+            // 2. 如果没评审过：清空表单，进入新建模式
+            currentReviewStatus = null;
+            document.querySelectorAll('.review-status-btn').forEach(btn => {
+                const btnStatus = btn.getAttribute('data-status');
+                btn.style.background = 'var(--bg-surface)';
+                btn.style.color = statusColors[btnStatus];
+                btn.style.borderColor = 'var(--border-color)';
+            });
+            document.getElementById('review-taxon-group').style.display = 'none';
+            document.getElementById('review-taxon-input').value = '';
+            document.getElementById('review-note').value = '';
+            if (btnSubmit) btnSubmit.textContent = 'Submit';
+        }
+
+        renderReviewHistory(annoId);
+    };
+
+    window.selectReviewStatus = function(status) {
+        currentReviewStatus = status;
+
+        document.querySelectorAll('.review-status-btn').forEach(btn => {
+            const btnStatus = btn.getAttribute('data-status');
+            if (btnStatus === status) {
+                btn.style.background = statusColors[btnStatus];
+                btn.style.color = '#ffffff';
+                btn.style.borderColor = statusColors[btnStatus];
+            } else {
+                btn.style.background = 'var(--bg-surface)';
+                btn.style.color = statusColors[btnStatus];
+                btn.style.borderColor = 'var(--border-color)';
+            }
+        });
+
+        const taxonGroup = document.getElementById('review-taxon-group');
+        const dropdown = document.getElementById('dropdown-review-taxon');
+
+        // 核心逻辑：只有 Revise 状态才显示并允许输入 Taxon
+        if (status === 'revise') {
+            taxonGroup.style.display = 'block';
+        } else {
+            taxonGroup.style.display = 'none';
+            document.getElementById('review-taxon-input').value = ''; // 强行清空
             if (dropdown) dropdown.style.display = 'none';
         }
     };
@@ -3218,34 +3296,51 @@
             return;
         }
 
-        const newReview = {
-            reviewer: 'Liudilong',
-            status: currentReviewStatus,
-            taxon: taxonVal,
-            note: noteVal,
-            created: new Date().toISOString().slice(0, 19).replace('T', ' ')
-        };
-
         if (!window.mockReviews[editingAnnoId]) {
             window.mockReviews[editingAnnoId] = [];
         }
 
-        window.mockReviews[editingAnnoId].unshift(newReview);
+        const reviews = window.mockReviews[editingAnnoId];
+        const existingReviewIndex = reviews.findIndex(r => r.reviewer === CURRENT_USER);
 
-        currentReviewStatus = null;
-        document.querySelectorAll('.review-status-btn').forEach(btn => {
-            const btnStatus = btn.getAttribute('data-status');
-            btn.style.background = 'var(--bg-surface)';
-            btn.style.color = statusColors[btnStatus];
-            btn.style.borderColor = 'var(--border-color)';
-        });
+        // ★ 核心逻辑：只有 Revise 状态才保存 Taxon 数据，其他状态强行存为空
+        const finalTaxon = currentReviewStatus === 'revise' ? taxonVal : '';
 
-        document.getElementById('review-taxon-group').style.display = 'none';
-        document.getElementById('review-taxon-input').value = '';
-        document.getElementById('review-note').value = '';
-        document.getElementById('review-taxon-dropdown').style.display = 'none';
+        if (existingReviewIndex !== -1) {
+            // 如果找到了自己之前的 Review 记录 -> 执行覆盖修改 (Update)
+            reviews[existingReviewIndex].status = currentReviewStatus;
+            reviews[existingReviewIndex].taxon = finalTaxon;
+            reviews[existingReviewIndex].note = noteVal;
+            reviews[existingReviewIndex].created = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        } else {
+            // 如果没找到 -> 新增记录 (Submit)
+            const newReview = {
+                reviewer: CURRENT_USER,
+                status: currentReviewStatus,
+                taxon: finalTaxon,
+                note: noteVal,
+                created: new Date().toISOString().slice(0, 19).replace('T', ' ')
+            };
+            reviews.unshift(newReview); // 插入到最新
+        }
+
+        // 保存成功后的按钮视觉反馈
+        const btnSubmit = document.getElementById('btn-submit-review');
+        if (btnSubmit) {
+            btnSubmit.textContent = 'Saved!';
+            btnSubmit.style.backgroundColor = '#10b981';
+            btnSubmit.style.borderColor = '#10b981';
+            setTimeout(() => {
+                btnSubmit.textContent = 'Update'; // 保存后自动变成修改模式
+                btnSubmit.style.backgroundColor = 'var(--brand)';
+                btnSubmit.style.borderColor = 'var(--brand)';
+            }, 1200);
+        }
 
         renderReviewHistory(editingAnnoId);
+
+        // 触发一次全局刷新，确保频谱图框从虚线变实线
+        renderCrudTable();
     };
 
     window.renderReviewHistory = function(annoId) {
