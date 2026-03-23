@@ -253,7 +253,7 @@ const dbSchema = {
             key: "annotations_display", label: "Labels", type: "text", readonly: true, hiddenInForm: true, filterType: 'select'
         }]
     }, site: {
-        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "latitude", label: "Latitude", type: "number", filterType: 'range', readonly: true}, {key: "longitude", label: "Longitude", type: "number", filterType: 'range', readonly: true}, {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'}, {
+        label: "Sites", icon: "map-pin", pk: "id", columns: [{key: "id", label: "ID", type: "text", readonly: true}, {key: "uuid", label: "UUID", type: "text", readonly: true}, {key: "name", label: "Name", type: "text"}, {key: "latitude", label: "Latitude", type: "number", filterType: 'range'}, {key: "longitude", label: "Longitude", type: "number", filterType: 'range'}, {key: "topography_m", label: "Topography (m)", type: "number", filterType: 'range'}, {
             key: "freshwater_depth_m", label: "Water Depth (m)", type: "number", filterType: 'range'
         }, {key: "gadm0", label: "GADM0", type: "select", options: Object.keys(GADM_DATA)}, {key: "gadm1", label: "GADM1", type: "select", options: []}, {key: "gadm2", label: "GADM2", type: "select", options: []}, {key: "iho", label: "IHO", type: "select", options: IHO_OPTIONS}, {key: "realm", label: "Realm", type: "select", options: Object.keys(TAXONOMY)}, {key: "biome", label: "Biome", type: "select", options: []}, {
             key: "functional_type", label: "Functional Type", type: "select", options: []
