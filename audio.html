@@ -8,6 +8,56 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="project.css" rel="stylesheet">
     <style>
+
+        /* --- 编辑模式右侧导航工具栏专属样式 --- */
+        .nav-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-toggle-btn span {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .nav-toggle-btn:hover {
+            color: var(--text-main);
+        }
+
+        .nav-toggle-btn.active {
+            background: var(--bg-surface);
+            color: var(--brand);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .nav-arrow-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            width: 26px;
+            height: 26px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .nav-arrow-btn:hover {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
         /* 统一频谱图上下功能栏的基础字体大小，覆盖默认继承 */
         .player-toolbar-top,
         .player-toolbar-bottom {
@@ -27,17 +77,32 @@
             box-sizing: border-box !important;
         }
 
-        /* 仅针对底部播放控件 和 特定的 Label 标签启用主题色高亮，排除普通工具栏按钮（如显示/隐藏） */
+        /* 仅针对底部播放控件、Label 标签以及右侧全生命周期导航栏 启用主题色高亮 */
         #audio-label-tag.active,
-        .player-toolbar-bottom .btn-toolbar.active {
+        .player-toolbar-bottom .btn-toolbar.active,
+        #anno-nav-toolbar .btn-toolbar.active {
             background: var(--brand) !important;
             color: white !important;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
         }
 
         #audio-label-tag.active i,
-        .player-toolbar-bottom .btn-toolbar.active i {
+        .player-toolbar-bottom .btn-toolbar.active i,
+        #anno-nav-toolbar .btn-toolbar.active i {
             color: white !important;
+        }
+
+        /* --- 移除右侧导航工具栏的悬停样式，仅保留点击激活效果 --- */
+        #anno-nav-toolbar .btn-toolbar:hover:not(.active) {
+            background: transparent !important;
+            border-color: var(--border-light) !important;
+            color: var(--text-secondary) !important;
+            box-shadow: none !important;
+        }
+
+        #anno-nav-toolbar .btn-toolbar:active:not(.active) {
+            background: var(--bg-capsule) !important;
+            border-color: var(--border-color) !important;
         }
 
         /* 新增：暂停等 danger 按钮被选中时的红色状态 */
@@ -636,6 +701,36 @@
                         <i data-lucide="arrow-left" size="18"></i>
                     </button>
                     <span id="annotation-panel-title" style="margin-left: 2px;">New Annotation</span>
+
+                    <div id="anno-nav-toolbar" style="display: flex; align-items: center; gap: 4px; margin-left: auto;">
+
+                        <button class="btn-toolbar" id="btn-manual-zoom" onclick="zoomToCurrentAnnotation(this)" title="Zoom to fit annotation">
+                            <i data-lucide="zoom-in" size="14"></i>
+                        </button>
+
+                        <div id="edit-nav-group" style="display: none; align-items: center; gap: 4px;">
+                            <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 2px;"></span>
+
+                            <button class="btn-toolbar active" onclick="toggleNavOption('nav-zoom-toggle', this)" title="Auto zoom on navigation">
+                                <i data-lucide="search" size="14"></i>
+                            </button>
+                            <button class="btn-toolbar" onclick="toggleNavOption('nav-task-toggle', this)" title="Navigate task annotations only">
+                                <i data-lucide="clipboard-list" size="14"></i>
+                            </button>
+
+                            <span style="width: 1px; height: 14px; background: var(--border-color); margin: 0 2px;"></span>
+
+                            <button class="btn-toolbar" onclick="navigateAnnotation('prev')" title="Previous Annotation">
+                                <i data-lucide="chevron-left" size="14"></i>
+                            </button>
+                            <button class="btn-toolbar" onclick="navigateAnnotation('next')" title="Next Annotation">
+                                <i data-lucide="chevron-right" size="14"></i>
+                            </button>
+                        </div>
+
+                        <input type="checkbox" id="nav-zoom-toggle" checked style="display:none;">
+                        <input type="checkbox" id="nav-task-toggle" style="display:none;">
+                    </div>
                 </div>
 
                 <div style="flex: 1; overflow: hidden; padding-right: 4px; padding-bottom: 8px; margin-top: 8px; display: flex; flex-direction: column; min-height: 0;">
@@ -2845,13 +2940,20 @@
         const metaInfo = document.getElementById('anno-meta-info');
         if (metaInfo) metaInfo.style.display = 'none';
 
-        // 确保新建时也隐藏置信度标签
         const confSpan = document.getElementById('anno-meta-confidence');
         if (confSpan) confSpan.style.display = 'none';
 
-        // ★ 新增：新建模式下隐藏 Review 模块
         const reviewSection = document.getElementById('annotation-review-section');
         if (reviewSection) reviewSection.style.display = 'none';
+
+        // 隐藏编辑专用的导航组
+        const navGroup = document.getElementById('edit-nav-group');
+        if (navGroup) navGroup.style.display = 'none';
+
+        // 切回新建/退出时，强制重置频谱图缩放
+        if (typeof zoomToCurrentAnnotation === 'function') {
+            zoomToCurrentAnnotation(document.getElementById('btn-manual-zoom'), true);
+        }
     };
 
     // 拦截取消和绘图事件，重置状态
@@ -2876,6 +2978,10 @@
         // 1. 切换面板模式
         document.getElementById('annotation-panel-title').textContent = 'Edit Annotation';
         document.getElementById('btn-save-annotation').setAttribute('onclick', 'updateExistingAnnotation()');
+
+        // 显示编辑专用的导航组
+        const navGroup = document.getElementById('edit-nav-group');
+        if (navGroup) navGroup.style.display = 'flex';
 
         // 2. 填充坐标
         document.getElementById('anno-min-x').value = anno.min_x;
@@ -3086,6 +3192,63 @@
         resetAnnotationPanelToNew();
         switchRightPanel('audio-info');
         renderCrudTable(); // 表格和图像会全自动更新
+    };
+
+    // ================= 前后切换标注导航逻辑 =================
+    window.navigateAnnotation = function(direction) {
+        if (!editingAnnoId) return;
+
+        const isTaskOnly = document.getElementById('nav-task-toggle').checked;
+        const shouldZoom = document.getElementById('nav-zoom-toggle').checked;
+
+        // 1. 依据是否选中 Task Only 进行过滤
+        let validAnnos = mockAnnotations;
+        if (isTaskOnly) {
+            validAnnos = validAnnos.filter(a => a.has_task);
+        }
+
+        // 2. 按照时间轴 (min_x) 排序，保证上一个/下一个符合视觉直觉
+        validAnnos.sort((a, b) => a.min_x - b.min_x);
+
+        if (validAnnos.length === 0) {
+            alert("No annotations match the current filter.");
+            return;
+        }
+
+        // 3. 寻找当前 ID 在列表中的位置
+        const currentIndex = validAnnos.findIndex(a => a.id === editingAnnoId);
+
+        let nextIndex;
+        if (direction === 'next') {
+            nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % validAnnos.length;
+        } else {
+            nextIndex = currentIndex === -1 ? validAnnos.length - 1 : (currentIndex - 1 + validAnnos.length) % validAnnos.length;
+        }
+
+        const targetId = validAnnos[nextIndex].id;
+
+        // 4. 加载目标标注到编辑面板
+        window.openEditAnnotation(targetId);
+
+        // 5. 联动表格高亮并滚动到视口
+        if (typeof handleBoxClick === 'function') {
+            handleBoxClick(targetId);
+        }
+
+        // 6. 联动处理缩放逻辑
+        const zoomBtn = document.getElementById('btn-manual-zoom');
+        if (shouldZoom) {
+            setTimeout(() => {
+                // 强制应用缩放以适配新框
+                zoomToCurrentAnnotation(zoomBtn, false, true);
+            }, 50);
+        } else {
+            // 如果关闭了自动缩放开关，则在切换数据时强制复位视图
+            zoomToCurrentAnnotation(zoomBtn, true);
+        }
+
+        // 重新渲染图标以确保所有动态组件正常显示
+        if (window.lucide) lucide.createIcons();
     };
     // ================== Review 功能逻辑 ==================
     let currentReviewStatus = null;
@@ -3393,6 +3556,20 @@
             </div>
             `;
         }).join('');
+    };
+
+    // 切换导航工具栏的按钮高亮状态，并同步底层 Checkbox
+    window.toggleNavOption = function(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if(!input) return;
+
+        input.checked = !input.checked;
+
+        if(input.checked) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
     };
     // ================== 6. 初始化 ==================
     window.addEventListener('DOMContentLoaded', () => {
