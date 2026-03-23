@@ -883,50 +883,51 @@
                         </div>
 
                     </div>
-                    <div id="annotation-review-section" style="display: none; grid-template-columns: 1fr 1fr; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; gap: 16px; align-items: stretch; flex: 1; min-height: 0;">
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; margin-bottom: 16px;">
+                        <button id="btn-save-annotation" class="btn-primary" onclick="saveNewAnnotation()">Save</button>
+                    </div>
+                 </div>
+                <div id="annotation-review-section" style="display: none; flex-direction: column; gap: 8px; margin-top: 16px;">
 
-                        <div id="review-left-panel" style="display: flex; flex-direction: column; min-width: 0; grid-column: 1 / -1; height: 100%; min-height: 0; overflow: hidden;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; min-height: 28px; flex-shrink: 0;">
-                                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Review</div>
-                                <button id="btn-edit-my-review" class="btn-primary" onclick="enableReviewEditMode()" style="display: none; height: 28px; padding: 0 24px; font-size: 0.8rem; border-radius: 14px;">Edit</button>
+                    <div id="review-left-panel" style="display: flex; flex-direction: column; min-width: 0; grid-column: 1 / -1; height: 100%; min-height: 0; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; min-height: 28px; flex-shrink: 0;">
+                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Review</div>
+                            <button id="btn-edit-my-review" class="btn-primary" onclick="enableReviewEditMode()" style="display: none; height: 28px; padding: 0 24px; font-size: 0.8rem; border-radius: 14px;">Edit</button>
+                        </div>
+
+                        <div id="review-history-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; padding-bottom: 12px;">
+                        </div>
+                    </div>
+
+                    <div id="review-right-panel" style="display: flex; flex-direction: column; gap: 16px; padding-left: 16px; border-left: 1px solid var(--border-color); box-sizing: border-box; grid-column: 2; flex-shrink: 0;">
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0;">
+                            <button class="review-status-btn" data-status="accept" onclick="selectReviewStatus('accept')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #10b981; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Accept</button>
+                            <button class="review-status-btn" data-status="revise" onclick="selectReviewStatus('revise')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #f59e0b; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Revise</button>
+                            <button class="review-status-btn" data-status="reject" onclick="selectReviewStatus('reject')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #ef4444; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Reject</button>
+                            <button class="review-status-btn" data-status="uncertain" onclick="selectReviewStatus('uncertain')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #6b7280; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Uncertain</button>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
+                            <div class="form-group" id="review-taxon-group" style="display: none; margin: 0; min-width: 0; position: relative;">
+                                <label class="form-label">Taxon</label>
+                                <input class="form-input" id="review-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'review-taxon')" onclick="handleAudioTaxonSearch(this.value, 'review-taxon')" style="width: 100%; min-width: 0;" type="text" autocomplete="off">
+                                <div class="form-select-dropdown" id="dropdown-review-taxon" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 150px; overflow-y: auto; z-index: 100;"></div>
                             </div>
 
-                            <div id="review-history-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; padding-bottom: 12px;">
+                            <div class="form-group" style="margin: 0; min-width: 0;">
+                                <label class="form-label">Note</label>
+                                <input class="form-input" id="review-note" style="width: 100%; min-width: 0;" type="text">
                             </div>
                         </div>
 
-                        <div id="review-right-panel" style="display: flex; flex-direction: column; gap: 16px; padding-left: 16px; border-left: 1px solid var(--border-color); box-sizing: border-box; grid-column: 2; flex-shrink: 0;">
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0;">
-                                <button class="review-status-btn" data-status="accept" onclick="selectReviewStatus('accept')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #10b981; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Accept</button>
-                                <button class="review-status-btn" data-status="revise" onclick="selectReviewStatus('revise')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #f59e0b; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Revise</button>
-                                <button class="review-status-btn" data-status="reject" onclick="selectReviewStatus('reject')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #ef4444; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Reject</button>
-                                <button class="review-status-btn" data-status="uncertain" onclick="selectReviewStatus('uncertain')" style="height: 28px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: #6b7280; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Uncertain</button>
-                            </div>
-
-                            <div style="display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
-                                <div class="form-group" id="review-taxon-group" style="display: none; margin: 0; min-width: 0; position: relative;">
-                                    <label class="form-label">Taxon</label>
-                                    <input class="form-input" id="review-taxon-input" oninput="handleAudioTaxonSearch(this.value, 'review-taxon')" onclick="handleAudioTaxonSearch(this.value, 'review-taxon')" style="width: 100%; min-width: 0;" type="text" autocomplete="off">
-                                    <div class="form-select-dropdown" id="dropdown-review-taxon" style="top: 100%; left: 0; right: 0; margin-top: 4px; display: none; max-height: 150px; overflow-y: auto; z-index: 100;"></div>
-                                </div>
-
-                                <div class="form-group" style="margin: 0; min-width: 0;">
-                                    <label class="form-label">Note</label>
-                                    <input class="form-input" id="review-note" style="width: 100%; min-width: 0;" type="text">
-                                </div>
-                            </div>
-
-                            <div style="display: flex; justify-content: flex-end; flex-shrink: 0;">
-                                <button class="btn-primary" id="btn-submit-review" onclick="submitReview()" style="height: 28px; padding: 0 24px; font-size: 0.8rem; border-radius: 14px;">Submit</button>
-                            </div>
+                        <div style="display: flex; justify-content: flex-end; flex-shrink: 0;">
+                            <button class="btn-primary" id="btn-submit-review" onclick="submitReview()" style="height: 28px; padding: 0 24px; font-size: 0.8rem; border-radius: 14px;">Submit</button>
                         </div>
                     </div>
                 </div>
-                <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;">
-                    <button class="btn-secondary" onclick="cancelNewAnnotation()">Cancel</button>
-                    <button class="btn-primary" id="btn-save-annotation" onclick="saveNewAnnotation()" onmouseout="this.style.filter='none'" onmouseover="this.style.filter='brightness(1.15)'" style="background-color: var(--brand); border-color: var(--brand); transition: filter 0.2s ease;">Save</button>
-                </div>
+
+
             </div>
             <div id="panel-ai-models" style="display: none; flex-direction: column; height: 100%;"></div>
 
