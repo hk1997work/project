@@ -557,6 +557,14 @@
 
                     <div style="flex: 1;"></div>
 
+                    <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">
+                        <span id="spectro-time-range" title="Visible Time Range">x: 0.0 - 15.0</span>
+                        <span style="width: 1px; height: 12px; background: var(--border-color);"></span>
+                        <span id="spectro-freq-range" title="Visible Frequency Range">y: 0 - 24000</span>
+                    </div>
+
+                    <span style="width: 1px; height: 12px; background: var(--border-color); margin: 0 4px;"></span>
+
                     <div style="display: flex; align-items: center; gap: 4px;" title="Playback Speed">
                         <input max="1" min="0.05" oninput="this.style.setProperty('--p', ((this.value - this.min) / (this.max - this.min) * 100) + '%'); this.nextElementSibling.innerText = Number(this.value).toFixed(2) + 'x';" step="0.01" style="width: 200px; height: 8px; cursor: pointer; border-radius: 0; --p: 100%; border: none; outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent; margin: 6px 0;"
                                type="range"
