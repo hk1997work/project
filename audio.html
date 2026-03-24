@@ -589,7 +589,7 @@
                     <div style="width: 24px; height: 1px; background: var(--border-color); margin: 6px 0; border-radius: 1px; opacity: 0.8;"></div>
 
                     <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-                        <button class="btn-toolbar" disabled id="btn-assign" style="padding: 8px; justify-content: center;" title="Assign Task">
+                        <button class="btn-toolbar" disabled id="btn-assign" onclick="openTaskPanel()" style="padding: 8px; justify-content: center;" title="Assign Task">
                             <i data-lucide="clipboard-list" size="16"></i>
                         </button>
 
@@ -936,6 +936,25 @@
             <div id="panel-ac-indices" style="display: none; flex-direction: column; height: 100%;"></div>
 
             <div id="panel-ac-analysis" style="display: none; flex-direction: column; height: 100%;"></div>
+
+            <div id="panel-task" style="display: none; flex-direction: column; height: 100%;">
+                <div style="height: 28px; font-weight: 600; display: flex; align-items: center; gap: 4px; box-sizing: border-box; flex-shrink: 0; margin-bottom: 8px;">
+                    <button onclick="switchRightPanel('audio-info')" style="padding: 0; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; border: none; background: transparent; cursor: pointer; border-radius: 6px; color: var(--text-secondary); transition: all 0.2s ease; margin-left: -4px;" onmouseover="this.style.background='var(--bg-capsule)'; this.style.color='var(--text-main)';"
+                            onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)';" title="Back to Info">
+                        <i data-lucide="arrow-left" size="18"></i>
+                    </button>
+                    <span style="margin-left: 2px;">Assign Tasks</span>
+                </div>
+
+                <div id="task-panel-content" style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 8px;">
+                </div>
+
+                <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0;">
+                    <button class="btn-toolbar" style="padding: 0 20px; font-weight: 600;" onclick="switchRightPanel('audio-info')">Cancel</button>
+                    <button class="btn-toolbar" style="justify-content: center; background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.3); padding: 0 24px; font-weight: 600;" onclick="saveAssignmentData()">Assign</button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -1926,8 +1945,8 @@
 
     // 2. 核心切换逻辑
     function switchRightPanel(panelId) {
-        // 新增：加入 'new-annotation'，确保切换面板时能正确隐藏它
-        ['audio-info', 'ai-models', 'ac-indices', 'ac-analysis', 'new-annotation'].forEach(id => {
+        // ★ 将 'task' 补充进列表，确保面板相互切换时正确隐藏彼此
+        ['audio-info', 'ai-models', 'ac-indices', 'ac-analysis', 'new-annotation', 'task'].forEach(id => {
             const el = document.getElementById('panel-' + id);
             if (el) el.style.display = 'none';
         });
@@ -3571,6 +3590,168 @@
         } else {
             btn.classList.remove('active');
         }
+    };
+    // ================= Assignment (Task) 面板逻辑 =================
+    window.toggleAssignComment = function (checkbox, safeU) {
+        const container = document.getElementById(`comment-container-${safeU}`);
+        if (checkbox.checked) {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+            document.getElementById(`comment-input-${safeU}`).value = '';
+        }
+    };
+
+    window.openTaskPanel = function () {
+        if (selectedIds.length === 0) return;
+
+        const container = document.getElementById('task-panel-content');
+
+        let users = typeof mockNames !== 'undefined' ? mockNames : ['Liudilong', 'User A', 'User B'];
+
+        let taskData = [];
+        if (typeof staticMockDB !== 'undefined' && staticMockDB.task) {
+            taskData = staticMockDB.task;
+        }
+
+        const type = 'tag';
+
+        // 提取当前选中项的关键比对信息
+        const selectedItemsInfo = selectedIds.map(id => {
+            const item = mockAnnotations.find(d => String(d.id) === String(id));
+            if (!item) return null;
+            return {
+                mediaName: item.media_name || "",
+                annotationId: item.id || ""
+            };
+        }).filter(Boolean);
+
+        let userHtml = `<div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: var(--bg-capsule);">`;
+
+        users.forEach(u => {
+            const safeU = String(u).replace(/\W/g, '_');
+            let assignedCount = 0;
+
+            selectedItemsInfo.forEach(info => {
+                const isAssigned = taskData.some(t =>
+                    t.assignee_id === u &&
+                    t.type === type &&
+                    t.media_name === info.mediaName &&
+                    String(t.annotation_id) === String(info.annotationId)
+                );
+                if (isAssigned) assignedCount++;
+            });
+
+            let badgeHtml = '';
+            if (assignedCount > 0) {
+                const total = selectedItemsInfo.length;
+                if (assignedCount === total) {
+                    badgeHtml = `<span style="font-size:0.7rem; color:#b91c1c; margin-left:8px; background:#fee2e2; border: 1px solid #fca5a5; padding:2px 8px; border-radius:12px; font-weight:700;">Assigned All (${assignedCount}/${total})</span>`;
+                } else {
+                    badgeHtml = `<span style="font-size:0.7rem; color:#b45309; margin-left:8px; background:#fef3c7; border: 1px solid #fcd34d; padding:2px 8px; border-radius:12px; font-weight:700;">Assigned (${assignedCount}/${total})</span>`;
+                }
+            }
+
+            userHtml += `
+            <div style="border-bottom: 1px dashed var(--border-color); padding: 8px 4px;">
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" class="assign-user-cb" value="${u}" onchange="toggleAssignComment(this, '${safeU}')" style="width:16px; height:16px; accent-color:var(--brand);">
+                    <span style="font-size:0.9rem; color:var(--text-main); font-weight:600;">${u}</span>
+                    ${badgeHtml}
+                </label>
+                <div id="comment-container-${safeU}" style="display:none; margin-top:8px; padding-left:26px;">
+                    <input type="text" id="comment-input-${safeU}" class="form-input" style="width:100%; height: 32px; font-size: 0.85rem;">
+                </div>
+            </div>`;
+        });
+        userHtml += `</div>`;
+
+        // 将提示语和用户列表写入右侧面板
+        container.innerHTML = userHtml;
+
+        // 呼出右侧面板
+        switchRightPanel('task');
+        if (window.lucide) lucide.createIcons();
+    };
+
+    window.saveAssignmentData = function () {
+        const userCbs = document.querySelectorAll('#panel-task .assign-user-cb:checked');
+        if (userCbs.length === 0) {
+            alert("Please select at least one assignee.");
+            return;
+        }
+
+        const assigneesData = Array.from(userCbs).map(cb => {
+            const u = cb.value;
+            const safeU = String(u).replace(/\W/g, '_');
+            const comment = document.getElementById(`comment-input-${safeU}`).value.trim();
+            return {username: u, comment: comment};
+        });
+
+        let taskData = [];
+        if (typeof staticMockDB !== 'undefined' && staticMockDB.task) {
+            taskData = staticMockDB.task;
+        }
+
+        let maxId = taskData && taskData.length > 0 ? Math.max(...taskData.map(t => t.task_id || 0)) : 10000;
+        const currentUser = 'Liudilong';
+        const type = 'tag';
+
+        let addedCount = 0;
+        let duplicateCount = 0;
+
+        selectedIds.forEach(id => {
+            const item = mockAnnotations.find(d => String(d.id) === String(id));
+            if (!item) return;
+
+            // 将此标注标记为包含任务 (以显示斜纹和徽章)
+            item.has_task = true;
+
+            let mediaName = item.media_name || "";
+            let annotationId = item.id || "";
+
+            assigneesData.forEach(assigneeData => {
+                const isDuplicate = taskData.some(t =>
+                    t.assignee_id === assigneeData.username &&
+                    t.type === type &&
+                    t.media_name === mediaName &&
+                    String(t.annotation_id) === String(annotationId)
+                );
+
+                if (isDuplicate) {
+                    duplicateCount++;
+                    return;
+                }
+
+                maxId++;
+                const newTask = {
+                    task_id: maxId,
+                    type: type,
+                    media_name: mediaName,
+                    annotation_id: annotationId,
+                    assigner_id: currentUser,
+                    assignee_id: assigneeData.username,
+                    status: 'assigned',
+                    comment: assigneeData.comment || "Please check this.",
+                    creation_date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                };
+                if (taskData) taskData.unshift(newTask);
+                addedCount++;
+            });
+        });
+
+        let msg = `Created ${addedCount} tasks.`;
+        if (duplicateCount > 0) {
+            msg += `\nSkipped ${duplicateCount} duplicate assignment(s).`;
+        }
+        alert(msg);
+
+        // 关闭任务面板，回到信息面板
+        switchRightPanel('audio-info');
+
+        // 清空选择并刷新表格
+        selectedIds = [];
+        renderCrudTable();
     };
     // ================== 6. 初始化 ==================
     window.addEventListener('DOMContentLoaded', () => {
